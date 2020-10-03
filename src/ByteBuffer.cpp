@@ -1,6 +1,6 @@
 #include <sharpen/ByteBuffer.hpp>
 
-void sharpen::ByteBuffer::swap(sharpen::ByteBuffer &other)
+void sharpen::ByteBuffer::swap(sharpen::ByteBuffer &other) noexcept
 {
     vector_.swap(other.vector_);
     mark_ = other.mark_;
@@ -11,7 +11,7 @@ sharpen::ByteBuffer::ByteBuffer(sharpen::Size size)
     ,mark_(0)
 {}
 
-sharpen::ByteBuffer::ByteBuffer(Vector &&vector)
+sharpen::ByteBuffer::ByteBuffer(Vector &&vector) noexcept
     :vector_(std::move(vector))
     ,mark_(0)
 {}
@@ -26,12 +26,12 @@ sharpen::ByteBuffer::ByteBuffer(const sharpen::Char *p,sharpen::Size size)
     }
 }
 
-sharpen::ByteBuffer::ByteBuffer(sharpen::ByteBuffer &&other)
+sharpen::ByteBuffer::ByteBuffer(sharpen::ByteBuffer &&other) noexcept
     :vector_(std::move(other.vector_))
     ,mark_(other.mark_)
 {}
 
-sharpen::ByteBuffer &sharpen::ByteBuffer::operator=(sharpen::ByteBuffer &&other)
+sharpen::ByteBuffer &sharpen::ByteBuffer::operator=(sharpen::ByteBuffer &&other) noexcept
 {
     this->vector_ = std::move(other.vector_);
     this->mark_ = other.mark_;
