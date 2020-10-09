@@ -20,12 +20,23 @@
 namespace sharpen
 {
 #ifdef SHARPEN_HAS_FIBER
-  using NativeContextPtr = LPVOID;
+    using NativeExecuteContextHandle = LPVOID;
 #else
-  using NativeContextPtr = ucontext*;
+    using NativeExecuteContextHandle = ucontext_t;
 #endif
   
-  class ExecuteContext;
+    class ExecuteContext
+    {
+    private:
+        using Self = sharpen::ExecuteContext;
+    
+        sharpen::NativeExecuteContextPtr handle_;
+    public:
+      
+        void Switch();
+      
+        
+  };
 }
 
 #endif
