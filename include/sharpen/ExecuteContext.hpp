@@ -36,14 +36,24 @@ namespace sharpen
     
         sharpen::NativeExecuteContextHandle handle_;
         
-        static ExecuteContext InternalMakeContext(Function *entry);
+        static Self InternalMakeContext(Function *entry);
     public:
+        
+        ExecuteContext(sharpen::NativeExecuteContextHandle handle);
       
         void Switch();
+        
+        //should not be used directly
+        static void InternalContextEntry(void *arg);
       
         template<typename _Fn,typename ..._Args>
-        static ExecuteContext MakeContext(_Fn &&fn,_Args &&...args);
+        static Self MakeContext(_Fn &&fn,_Args &&...args)
+        {
+            Function *fn = new Function(std::bind(std::move(fn),args...));
+            return Self::InternalMakeContext(fn);
+        }
         
+        static Self GetCurrentContext();
   };
 }
 
