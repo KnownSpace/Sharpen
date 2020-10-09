@@ -30,11 +30,12 @@ namespace sharpen
     private:
         using Self = sharpen::ExecuteContext;
     
-        sharpen::NativeExecuteContextPtr handle_;
+        sharpen::NativeExecuteContextHandle handle_;
     public:
       
         void Switch();
       
+        static ExecuteContext MakeContext();
         
   };
 }
