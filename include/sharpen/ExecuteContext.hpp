@@ -5,17 +5,18 @@
 #include <functional>
 
 #include "SystemMacro.hpp"
+#include "TypeDef.hpp"
+#include "Noncopyable.hpp"
 
 #ifdef SHARPEN_IS_WIN
 
 #define SHARPEN_HAS_FIBER 
+//use fiber
 #include <winbase.h>
-
 #else
-
 #define SHARPEN_HAS_UCONTEXT
+//use ucontext
 #include <ucontext.h>
-
 #endif
 
 
@@ -27,7 +28,7 @@ namespace sharpen
     using NativeExecuteContextHandle = ucontext_t;
 #endif
   
-    class ExecuteContext
+    class ExecuteContext:public sharpen::Noncopyable
     {
     private:
         using Self = sharpen::ExecuteContext;
@@ -36,11 +37,25 @@ namespace sharpen
     
         sharpen::NativeExecuteContextHandle handle_;
         
+#ifdef SHARPEN_HAS_UCONTEXT
+        //the stack may be in the heap
+        sharpen::Char *stack_;
+        
+        bool isStackMemory_;
+#endif
+        
         static Self InternalMakeContext(Function *entry);
     public:
         
-        ExecuteContext(sharpen::NativeExecuteContextHandle handle);
+        explicit ExecuteContext(sharpen::NativeExecuteContextHandle handle);
+        
+        ExecuteContext(Self &&other) noexcept;
+        
+        Self &operator=(Self &&other) noexcept;
       
+        //free the stack memory if necessary
+        ~ExecuteContext() noexcept;
+        
         void Switch();
         
         //should not be used directly
