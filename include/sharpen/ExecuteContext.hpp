@@ -45,10 +45,10 @@ namespace sharpen
 #endif
         
         static Self InternalMakeContext(Function *entry);
-    public:
         
         explicit ExecuteContext(sharpen::NativeExecuteContextHandle handle);
         
+    public:
         ExecuteContext(Self &&other) noexcept;
         
         Self &operator=(Self &&other) noexcept;
