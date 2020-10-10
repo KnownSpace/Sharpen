@@ -27,6 +27,8 @@ namespace sharpen
 #else
     using NativeExecuteContextHandle = ucontext_t;
 #endif
+    
+    extern NativeExecuteContextHandle MainContextHandle;
   
     class ExecuteContext:public sharpen::Noncopyable
     {
