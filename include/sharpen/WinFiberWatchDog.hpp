@@ -5,6 +5,7 @@
 #include "SystemMacro.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
+#include "ExecuteContext.hpp"
 
 #ifdef SHARPEN_IS_WIN
 namespace sharpen
@@ -12,7 +13,7 @@ namespace sharpen
     class WinFiberWatchDog:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
-        
+        sharpen::ExecuteContext _pendingExitContext;
     public:
     };
     
