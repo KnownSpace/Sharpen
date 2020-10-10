@@ -41,9 +41,8 @@ namespace sharpen
         
 #ifdef SHARPEN_HAS_UCONTEXT
         //the stack may be in the heap
+        //is nullptr if ucontext stack is a stack of some thread
         sharpen::Char *stack_;
-        
-        bool isStackMemory_;
 #endif
         
         static Self InternalMakeContext(Function *entry);
