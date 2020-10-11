@@ -44,6 +44,9 @@ namespace sharpen
 #ifdef SHARPEN_HAS_UCONTEXT
         //the stack may be in the heap
         bool stackInHeap_;
+
+        //set this flag if has been moved
+        bool moved_;
 #endif
         
         static Self InternalMakeContext(Function *entry);
