@@ -22,6 +22,12 @@ namespace sharpen
         std::condition_variable cond_;
         List list_;
     public:
+        BlockingQueue()
+        :lock_()
+        ,cond_()
+        ,list_()
+        {}
+
         void Push(_T object) noexcept
         {
             {
