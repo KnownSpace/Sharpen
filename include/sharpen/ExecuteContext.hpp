@@ -83,8 +83,12 @@ namespace sharpen
         
         //it call ConvertThreadToFiberEx in windows
         //or makecontext and copy the stack to heap area meanwhile set the old stack pointer to sharpen::LocalStack
+        //also set sharpen::LocalEnableContextSwitch to true
         static void InternalEnableContextSwitch();
         
+        //it call ConvertFiberToThread in windows
+        //or copy current stack to sharpen::LocalStack and set move current stack pointer to sharpen::LocalStack
+        //also set sharpen::LocalEnableContextSwitch to false
         static void InteralDisableContextSwitch();
   };
 }
