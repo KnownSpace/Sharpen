@@ -28,6 +28,7 @@ namespace sharpen
     using NativeExecuteContextHandle = ucontext_t;
 #endif
     
+    //it is true if current thread enable context switch function
     extern thread_local bool LocalEnableContextSwitch;
     
 #ifdef SHARPEN_HAS_UCONTEXT
@@ -80,6 +81,8 @@ namespace sharpen
         
         static Self GetCurrentContext();
         
+        //it call ConvertThreadToFiberEx in windows
+        //or makecontext and copy the stack to heap area meanwhile set the old stack pointer to sharpen::LocalStack
         static void InternalEnableContextSwitch();
         
         static void InteralDisableContextSwitch();
