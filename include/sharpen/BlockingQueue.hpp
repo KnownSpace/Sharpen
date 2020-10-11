@@ -5,7 +5,6 @@
 #include <mutex>
 #include <condition_variable>
 #include <list>
-#include <type_trait>
 
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
