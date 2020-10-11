@@ -37,6 +37,8 @@ namespace sharpen
         
         using Function = std::function<void()>;
     
+        //it is a fiber(LPVOID) in windows
+        //and a ucontext_t in *nix
         sharpen::NativeExecuteContextHandle handle_;
         
 #ifdef SHARPEN_HAS_UCONTEXT
