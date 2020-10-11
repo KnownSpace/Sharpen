@@ -28,8 +28,12 @@ namespace sharpen
     using NativeExecuteContextHandle = ucontext_t;
 #endif
     
-    extern thread_local NativeExecuteContextHandle MainContextHandle;
-  
+    extern thread_local bool LocalEnableContextSwitch;
+    
+#ifdef SHARPEN_HAS_UCONTEXT
+    extern thread_local sharpen::Char *LocalStack;
+#endif
+     
     class ExecuteContext:public sharpen::Noncopyable
     {
     private:
@@ -75,6 +79,10 @@ namespace sharpen
         }
         
         static Self GetCurrentContext();
+        
+        static void InternalEnableContextSwitch();
+        
+        static void InteralDisableContextSwitch();
   };
 }
 
