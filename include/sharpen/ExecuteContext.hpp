@@ -47,9 +47,6 @@ namespace sharpen
         sharpen::NativeExecuteContextHandle handle_;
         
 #ifdef SHARPEN_HAS_UCONTEXT
-        //the stack may be in the heap
-        bool stackInHeap_;
-
         //set this flag if has been moved
         bool moved_;
 #endif
