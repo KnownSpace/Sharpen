@@ -56,13 +56,14 @@ namespace sharpen
         
         Self &operator=(Self &&other) noexcept;
       
-        //free the stack memory if necessary
+        //free the stack memory or delete fiber if necessary
         ~ExecuteContext() noexcept;
         
         void Switch();
         
         //should not be used directly
-        static void InternalContextEntry(void *arg);
+        //lpFn is a pointer of std::function<void()>
+        static void InternalContextEntry(void *lpFn);
       
         template<typename _Fn,typename ..._Args>
         static Self MakeContext(_Fn &&fn,_Args &&...args)
