@@ -21,7 +21,10 @@ namespace sharpen
     class CoroutineEngine:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
+        using List = sharpen::BlockingQueue<sharpen::ExecuteContext>;
         
+        List contexts_;
+
         void InternalPushTask(std::function<void()> &&fn);
     public:
         
