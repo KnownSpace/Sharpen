@@ -47,7 +47,7 @@ namespace sharpen
   
     //it is a internal function and you should not use it directly
     //equal to while(true) WaitContext();
-    extern void CentralEngineLoopEntry();
+    extern void CentralEngineLoopEntry(void *lpNull);
 }
 
 #endif
