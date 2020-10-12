@@ -2,6 +2,7 @@
 #ifndef _SHARPEN_EXECUTECONTEXT_HPP
 #define _SHARPEN_EXECUTECONTEXT_HPP
 
+#include <type_traits>
 #include <functional>
 #include <memory>
 
