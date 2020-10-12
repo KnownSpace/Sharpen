@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <cassert>
+#include <stdexcept>
 
 #include <sharpen/ExecuteContext.hpp>
 
@@ -8,7 +9,11 @@ thread_local bool sharpen::LocalEnableContextSwitch(false);
 sharpen::ExecuteContext::ExecuteContext()
     :handle_()
     ,enableAutoRelease_(false)
-{}
+{
+#ifdef SHARPEN_HAS_FIBER
+    this->handle_ = nullptr;
+#endif
+}
 
 void sharpen::ExecuteContext::InternalEnableContextSwitch()
 {
@@ -50,7 +55,7 @@ sharpen::ExecuteContext::~ExecuteContext()
 void sharpen::ExecuteContext::Switch()
 {
 #ifdef SHARPEN_HAS_FIBER
-    std::assert(this->handle_ != nullptr);
+    assert(this->handle_ != nullptr);
     ::SwitchToFiber(this->handle_);
 #else
     ::setcontext(&(this->handle_));
@@ -75,6 +80,11 @@ void sharpen::ExecuteContext::SetAutoRelease(bool flag)
 std::unique_ptr<sharpen::ExecuteContext> sharpen::GetCurrentContext()
 {
     std::unique_ptr ctx(new sharpen::ExecuteContext());
+    asert(ctx != nullptr);
+    if(!ctx)
+    {
+        throw std::bad_alloc();
+    }
 #ifdef SHARPEN_HAS_FIBER
     sharpen::NativeExecuteContxtHandle handle = GetCurrentFiber();
     ctx->handle_ = handle;
@@ -89,4 +99,31 @@ void sharpen::ExecuteContext::InternalContextEntry(void *lpFn)
     auto *p = (sharpen::ExecuteContext::Function*)lpFn;
     std::unique_ptr<sharpen::ExecuteContext::Function> fn(p);
     (*p)();
+}
+
+std::unique_ptr<sharpen::ExecuteContext> sharpen::ExecuteContext::InternalMakeContext(sharpen::ExecuteContext::Function *entry)
+{
+    assert(entry != nullptr);
+    std::unique_ptr<sharpen::ExecuteContext> ctx(new sharpen::ExecuteContext());
+    assert(ctx != nullptr);
+    if(!ctx)
+    {
+        throw std::bad_alloc();
+    }
+#ifdef SHARPEN_HAS_FIBER
+    sharpen::NativeExecuteContextHandle handle = nullptr;
+    handle = CreateFiberEx(0,0,FIBER_FLAG_FLOAT_SWITCH,(LPFIBER_START_ROUTINE)&sharpen::ExecuteContext::InternalContextEntry,entry);
+    ctx->handle_ = handle;
+#else
+    ::getcontext(&(ctx->handle_));
+    ctx->handle_.uc_stack.ss_sp = std::malloc(SIGSTKSZ);
+    assert(ctx->handle_.uc_stack.ss_sp != nullptr);
+    if(!ctx->handle_.uc_stack.ss_sp)
+    {
+        throw std::bad_alloc();
+    }
+    ctx->handle_.uc_stack.ss_size = SIGSTKSZ;
+    ctx->handle_.uc_link = nullptr;
+    ::makecontext(&(ctx->handle_),&sharpen::ExecuteContext::InternalContextEntry,1,entry);
+#endif
 }
