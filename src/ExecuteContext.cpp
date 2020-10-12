@@ -7,7 +7,7 @@ thread_local bool sharpen::LocalEnableContextSwitch(false);
 
 sharpen::ExecuteContext::ExecuteContext()
     :handle_()
-    ,ownContext_(false)
+    ,enableAutoRelease_(false)
 {}
 
 void sharpen::ExecuteContext::InternalEnableContextSwitch()
@@ -35,12 +35,12 @@ void sharpen::ExecuteContext::InternalDisableContextSwitch()
 sharpen::ExecuteContext::~ExecuteContext()
 {
 #ifdef SHARPEN_HAS_FIBER
-    if(this->handle_ != nullptr)
+    if(this->enableAutoRelease_ && this->handle_ != nullptr)
     {
       ::DeleteFiber(this->handle_);
     }
 #else
-    if(this->ownStack_)
+    if(this->enableAutoRelease_ && this->handle_.uc_stack.ss_up != nullptr)
     {
       std::free(this->handle_.uc_stack.ss_up);
     }
@@ -55,6 +55,21 @@ void sharpen::ExecuteContext::Switch()
 #else
     ::setcontext(&(this->handle_));
 #endif
+}
+
+void sharpen::ExecuteContext::Switch(sharpen::ExecuteContext &oldContext)
+{
+#ifdef SHARPEN_HAS_FIBER
+    oldContext.handle_ = GetCurrentFiber();
+    this->Switch();
+#else
+    ::swapcontext(&(oldContext.handle_),&(this->handle_));
+#endif
+}
+
+void sharpen::ExecuteContext::SetAutoRelease(bool flag)
+{
+    this->enableAutoRelease_ = flag;
 }
 
 std::unique_ptr<sharpen::ExecuteContext> sharpen::GetCurrentContext()
