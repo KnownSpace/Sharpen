@@ -30,7 +30,7 @@ namespace sharpen
 
         void InternalPushTask(std::function<void()> &&fn);
         
-        void InitThisThread();
+        static void InitThisThread();
     public:
         
         //actually,we initializa LocalEngineContext in here
