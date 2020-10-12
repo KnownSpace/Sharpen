@@ -17,7 +17,6 @@ void sharpen::CentralEngineLoopEntry(void *lpNull)
     {
         if(sharpen::LocalFromContext)
         {
-            sharpen::LocalFromContext->SetAutoRelease(true);
             sharpen::CentralEngine.PushContext(std::move(sharpen::LocalFromContext));
         }
         std::unique_ptr<sharpen::ExecuteContext> ctx = std::move(sharpen::CentralEngine.WaitContext());
