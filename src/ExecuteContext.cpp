@@ -70,3 +70,10 @@ std::unique_ptr<sharpen::ExecuteContext> sharpen::GetCurrentContext()
 #endif
     return std::move(ctx);
 }
+
+void sharpen::ExecuteContext::InternalContextEntry(void *lpFn)
+{
+    auto *p = (sharpen::ExecuteContext::Function*)lpFn;
+    std::unique_ptr<sharpen::ExecuteContext::Function> fn(p);
+    (*p)();
+}
