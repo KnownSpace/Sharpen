@@ -30,10 +30,6 @@ namespace sharpen
     
     //it is true if current thread enable context switch function
     extern thread_local bool LocalEnableContextSwitch;
-    
-#ifdef SHARPEN_HAS_UCONTEXT
-    extern thread_local sharpen::Char *LocalStack;
-#endif
      
     class ExecuteContext:public sharpen::Noncopyable
     {
@@ -78,14 +74,10 @@ namespace sharpen
         
         static Self GetCurrentContext();
         
-        //it call ConvertThreadToFiberEx in windows
-        //or makecontext and copy the stack to heap area meanwhile set the old stack pointer to sharpen::LocalStack
-        //also set sharpen::LocalEnableContextSwitch to true
+        //it call ConvertThreadToFiberEx in windows and set sharpen::LocalEnableContextSwitch to true
         static void InternalEnableContextSwitch();
         
-        //it call ConvertFiberToThread in windows
-        //or copy current stack to sharpen::LocalStack and set move current stack pointer to sharpen::LocalStack
-        //also set sharpen::LocalEnableContextSwitch to false
+        //it call ConvertFiberToThread in windows and set sharpen::LocalEnableContextSwitch to false
         static void InteralDisableContextSwitch();
   };
 }
