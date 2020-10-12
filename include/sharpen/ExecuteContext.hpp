@@ -59,7 +59,7 @@ namespace sharpen
         
         void Switch();
         
-        void Switch(Self &other);
+        void Switch(Self &saveCurrentContext);
         
         //should not be used directly
         //lpFn is a pointer of std::function<void()>
