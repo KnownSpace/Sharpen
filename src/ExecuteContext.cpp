@@ -58,3 +58,15 @@ void sharpen::ExecuteContext::Switch()
     ::setcontext(&(this->handle_));
 #endif
 }
+
+std::unique_ptr<sharpen::ExecuteContext> sharpen::GetCurrentContext()
+{
+    std::unique_ptr ctx(new sharpen::ExecuteContext());
+#ifdef SHARPEN_HAS_FIBER
+    sharpen::NativeExecuteContxtHandle handle = GetCurrentFiber();
+    ctx->handle_ = handle;
+#else
+    ::getcontext(&(ctx->handle_));
+#endif
+    return std::move(ctx);
+}
