@@ -3,6 +3,7 @@
 #define _SHARPEN_COROUTINEENGINE_HPP
 
 #include <memory>
+#include <atomic>
 
 #include "ExecuteContext.hpp"
 #include "Nonmovable.hpp"
@@ -27,6 +28,8 @@ namespace sharpen
         using List = sharpen::BlockingQueue<sharpen::ExecuteContext>;
         
         List contexts_;
+        
+        std::atomic_bool alive_;
 
         void InternalPushTask(std::function<void()> &&fn);
         
@@ -49,6 +52,8 @@ namespace sharpen
             std::function<void()> func = std::bind(std::move(fn),args...);
             this->InternalPushTask(std::move(func));
         }
+        
+        bool IsAlive() const;
     };
   
     extern sharpen::CoroutineEngine CentralEngine;
