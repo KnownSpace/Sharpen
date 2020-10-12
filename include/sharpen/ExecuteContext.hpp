@@ -45,9 +45,8 @@ namespace sharpen
         //and a ucontext_t in *nix
         sharpen::NativeExecuteContextHandle handle_;
         
-#ifdef SHARPEN_HAS_UCONTEXT
-        bool ownStack_;
-#endif
+        //it is true if own the context
+        bool ownContext_;
         
         static std::unique_ptr<Self> InternalMakeContext(Function *entry);
         
