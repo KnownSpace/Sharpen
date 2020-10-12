@@ -63,7 +63,7 @@ namespace sharpen
         //lpFn is a pointer of std::function<void()>
         static void InternalContextEntry(void *lpFn);
       
-        template<typename _Fn,typename ..._Args>
+        template<typename _Fn,typename ..._Args,typename = decltype(std::declval<_Fn>()(std::declval<_Args>()...))>
         static std::unique_ptr<Self> MakeContext(_Fn &&fn,_Args &&...args)
         {
             Function *fn = new Function(std::bind(std::move(fn),args...));
