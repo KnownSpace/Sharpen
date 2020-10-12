@@ -7,9 +7,7 @@ thread_local bool sharpen::LocalEnableContextSwitch(false);
 
 sharpen::ExecuteContext::ExecuteContext()
     :handle_()
-#ifdef SHARPEN_HAS_UCONTEXT
-    ,ownStack_(false)
-#endif
+    ,ownContext_(false)
 {}
 
 void sharpen::ExecuteContext::InternalEnableContextSwitch()
