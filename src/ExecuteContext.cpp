@@ -6,6 +6,9 @@ thread_local bool sharpen::LocalEnableContextSwitch(false);
 
 sharpen::ExecuteContext::ExecuteContext()
     :handle_()
+#ifdef SHARPEN_HAS_UCONTEXT
+    ,ownStack_(false)
+#endif
 {}
 
 void sharpen::ExecuteContext::InternalEnableContextSwitch()
@@ -38,7 +41,7 @@ sharpen::ExecuteContext::~ExecuteContext()
       ::DeleteFiber(this->handle_);
     }
 #else
-    if(this->handle_.uc_stack.ss_sp != nullptr)
+    if(this->ownStack_)
     {
       std::free(this->handle_.uc_stack.ss_up);
     }
