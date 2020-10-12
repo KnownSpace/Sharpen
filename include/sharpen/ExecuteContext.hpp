@@ -49,7 +49,7 @@ namespace sharpen
         
         static Self InternalMakeContext(Function *entry);
         
-        explicit ExecuteContext(sharpen::NativeExecuteContextHandle handle);
+        ExecuteContext();
         
     public:
         ExecuteContext(Self &&other) noexcept;
