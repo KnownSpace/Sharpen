@@ -45,8 +45,7 @@ namespace sharpen
         sharpen::NativeExecuteContextHandle handle_;
         
 #ifdef SHARPEN_HAS_UCONTEXT
-        //set this flag if has been moved
-        bool moved_;
+        bool ownStack_;
 #endif
         
         static std::unique_ptr<Self> InternalMakeContext(Function *entry);
