@@ -16,6 +16,9 @@ namespace sharpen
     //we will make some initializational operations
     //it will call ConvertThreadToFiberEx and CreateFiberEx in windows or call getcontext and makecontext in *nix
     extern thread_local std::unique_ptr<sharpen::ExecuteContext> LocalEngineContext;
+
+    //it save the last execute context and will be pushed into sharpen::CentralEngine when we switch to sharpen::LocalEngineContext
+    extern thread_local std::unique_ptr<sharpen::ExecuteContext> LocalFromContext;
   
     //it is a internal class and you should never use it directly
     class CoroutineEngine:public sharpen::Noncopyable,public sharpen::Nonmovable
