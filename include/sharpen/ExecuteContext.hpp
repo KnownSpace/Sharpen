@@ -59,8 +59,6 @@ namespace sharpen
         
         void Switch();
         
-        void Switch(Self &saveCurrentContext);
-        
         //should not be used directly
         //lpFn is a pointer of std::function<void()>
         static void InternalContextEntry(void *lpFn);
