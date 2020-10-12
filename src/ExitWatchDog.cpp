@@ -2,7 +2,7 @@
 
 sharpen::ExitWatchDog::~ExitWatchDog() noexcept
 {
-    if(sharpen::LocalEngineContext)
+    if(sharpen::LocalEnableContextSwitch)
     {
         this->ReleaseResource();
     }
@@ -10,10 +10,7 @@ sharpen::ExitWatchDog::~ExitWatchDog() noexcept
 
 void sharpen::ExitWatchDog::ReleaseResource() noexcept
 {
-#ifdef SHARPEN_HAS_FIBER
-    sharpen::LocalEngineContext.reset(nullptr);
-    ::ConvertFiberToThread();
-#endif
+    sharpen::ExecuteContext::InternalDisableContextSwitch();
 }
 
 thread_local sharpen::LocalWatchDog;
