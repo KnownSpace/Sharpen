@@ -46,7 +46,7 @@ namespace sharpen
         sharpen::NativeExecuteContextHandle handle_;
         
         //it is true if own the context
-        bool ownContext_;
+        bool enableAutoRelease_;
         
         static std::unique_ptr<Self> InternalMakeContext(Function *entry);
         
@@ -57,6 +57,8 @@ namespace sharpen
         ~ExecuteContext() noexcept;
         
         void Switch();
+        
+        void Switch(Self &oldContext);
         
         //should not be used directly
         //lpFn is a pointer of std::function<void()>
@@ -76,6 +78,8 @@ namespace sharpen
         
         //it call ConvertFiberToThread in windows and set sharpen::LocalEnableContextSwitch to false
         static void InteralDisableContextSwitch();
+        
+        void SetAutoRelease(bool flag);
   };
 }
 
