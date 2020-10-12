@@ -3,10 +3,12 @@
 #define _SHARPEN_EXECUTECONTEXT_HPP
 
 #include <functional>
+#include <memory>
 
 #include "SystemMacro.hpp"
 #include "TypeDef.hpp"
 #include "Noncopyable.hpp"
+#include "Nonmovable.hpp"
 
 #ifdef SHARPEN_IS_WIN
 
@@ -31,7 +33,7 @@ namespace sharpen
     //it is true if current thread enable context switch function
     extern thread_local bool LocalEnableContextSwitch;
 
-    class ExecuteContext:public sharpen::Noncopyable
+    class ExecuteContext:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
         using Self = sharpen::ExecuteContext;
@@ -47,15 +49,12 @@ namespace sharpen
         bool moved_;
 #endif
         
-        static Self InternalMakeContext(Function *entry);
+        static std::unique_ptr<Self> InternalMakeContext(Function *entry);
         
         ExecuteContext();
         
     public:
-        ExecuteContext(Self &&other) noexcept;
         
-        Self &operator=(Self &&other) noexcept;
-      
         //free the stack memory or delete fiber if necessary
         ~ExecuteContext() noexcept;
         
@@ -66,13 +65,13 @@ namespace sharpen
         static void InternalContextEntry(void *lpFn);
       
         template<typename _Fn,typename ..._Args>
-        static Self MakeContext(_Fn &&fn,_Args &&...args)
+        static std::unique_ptr<Self> MakeContext(_Fn &&fn,_Args &&...args)
         {
             Function *fn = new Function(std::bind(std::move(fn),args...));
             return Self::InternalMakeContext(fn);
         }
         
-        static Self GetCurrentContext();
+        static std::unique_ptr<Self> GetCurrentContext();
         
         //it call ConvertThreadToFiberEx in windows and set sharpen::LocalEnableContextSwitch to true
         static void InternalEnableContextSwitch();
