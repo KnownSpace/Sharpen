@@ -29,6 +29,8 @@ namespace sharpen
         List contexts_;
 
         void InternalPushTask(std::function<void()> &&fn);
+        
+        void InitThisThread();
     public:
         
         //actually,we initializa LocalEngineContext in here
