@@ -51,14 +51,15 @@ namespace sharpen
         
         static std::unique_ptr<Self> InternalMakeContext(Function *entry);
         
-        ExecuteContext();
-        
     public:
+        ExexuteContext();
         
         //free the stack memory or delete fiber if necessary
         ~ExecuteContext() noexcept;
         
         void Switch();
+        
+        void Switch(Self &other);
         
         //should not be used directly
         //lpFn is a pointer of std::function<void()>
