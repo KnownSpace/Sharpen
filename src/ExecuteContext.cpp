@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <cassert>
 
 #include <sharpen/ExecuteContext.hpp>
 
@@ -45,5 +46,15 @@ sharpen::ExecuteContext::~ExecuteContext()
     {
       std::free(this->handle_.uc_stack.ss_up);
     }
+#endif
+}
+
+void sharpen::ExecuteContext::Switch()
+{
+#ifdef SHARPEN_HAS_FIBER
+    std::assert(this->handle_ != nullptr);
+    ::SwitchToFiber(this->handle_);
+#else
+    ::setcontext(&(this->handle_));
 #endif
 }
