@@ -30,7 +30,7 @@ namespace sharpen
     
     //it is true if current thread enable context switch function
     extern thread_local bool LocalEnableContextSwitch;
-     
+
     class ExecuteContext:public sharpen::Noncopyable
     {
     private:
