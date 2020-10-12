@@ -45,7 +45,7 @@ namespace sharpen
         //and a ucontext_t in *nix
         sharpen::NativeExecuteContextHandle handle_;
         
-        //it is true if own the context
+        //it is true if enable resource release
         bool enableAutoRelease_;
         
         static std::unique_ptr<Self> InternalMakeContext(Function *entry);
