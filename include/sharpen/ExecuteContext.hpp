@@ -77,7 +77,7 @@ namespace sharpen
         static void InternalEnableContextSwitch();
         
         //it call ConvertFiberToThread in windows and set sharpen::LocalEnableContextSwitch to false
-        static void InteralDisableContextSwitch();
+        static void InternalDisableContextSwitch();
         
         void SetAutoRelease(bool flag);
   };
