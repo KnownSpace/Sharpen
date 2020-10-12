@@ -25,7 +25,9 @@ namespace sharpen
     class CoroutineEngine:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
-        using List = sharpen::BlockingQueue<sharpen::ExecuteContext>;
+        using ContextPtr = std::unique_ptr<sharpen::ExecuteContext>;
+        
+        using List = sharpen::BlockingQueue<ContextPtr>;
         
         List contexts_;
         
@@ -41,7 +43,7 @@ namespace sharpen
         
         //if there are no any context in the queue
         //we will block the thread
-        sharpen::ExecuteContext WaitContext();
+        ContextPtr WaitContext();
         
         //push a context to the queue
         void PushContext(sharpen::ExecuteContext &&context) noexcept;
