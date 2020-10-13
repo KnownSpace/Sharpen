@@ -37,8 +37,9 @@ namespace sharpen
     
     public:
         
-        //actually,we initializa LocalEngineContext in here
-        void LoadEngineContext();
+        CouroutineEngine();
+        
+        ~CoroutineEngine() noexcept;
         
         //if there are no any context in the queue
         //we will block the thread
