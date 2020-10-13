@@ -32,3 +32,28 @@ void sharpen::CentralEngineLoopEntry()
         ctx->Switch(sharpen::LocalEngineContext);
     }
 }
+
+sharpen::CoroutineEngine::CoroutineEngine()
+    :contexts_()
+    ,alive_(true)
+{}
+
+sharpen::CoroutineEngine::~CoroutineEngine() noexcept
+{
+    this->alive_ = false;
+}
+
+sharpen::CoroutineEngine::ContextPtr sharpen::CoroutineEngine::WaitContext()
+{
+    return std::move(this->contexts.Pop());
+}
+
+void sharpen::CoroutineEngine::PushContext(sharpen::CoroutineEngine::ContextPtr context)
+{
+    this->context_.Push(std::move(context));
+}
+
+bool sharpen::CoroutineEngine::IsAlive() const
+{
+    return this->alive_;
+}
