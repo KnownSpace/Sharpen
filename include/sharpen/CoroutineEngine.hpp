@@ -34,8 +34,7 @@ namespace sharpen
         std::atomic_bool alive_;
 
         void InternalPushTask(std::function<void()> &&fn);
-        
-        static void InitThisThread();
+    
     public:
         
         //actually,we initializa LocalEngineContext in here
@@ -63,6 +62,8 @@ namespace sharpen
     //it is a internal function and you should not use it directly
     //equal to while(true) WaitContext();
     extern void CentralEngineLoopEntry(void *lpNull);
+    
+    extern void InitThisThreadForCentralEngine();
 }
 
 #endif
