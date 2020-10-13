@@ -15,9 +15,10 @@ void sharpen::CentralEngineLoopEntry(void *lpNull)
 {
     while(sharpen::CentralEngine.IsAlive())
     {
-        if(sharpen::LocalFromContext)
+        if(sharpen::LocalSwitchCallback)
         {
-            sharpen::CentralEngine.PushContext(std::move(sharpen::LocalFromContext));
+            auto fn = std::move(sharpen::LocalSwitchCallback);
+            fn();
         }
         std::unique_ptr<sharpen::ExecuteContext> ctx = std::move(sharpen::CentralEngine.WaitContext());
         ctx->Switch(sharpen::LocalEngineContext);
