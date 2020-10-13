@@ -28,6 +28,8 @@ namespace sharpen
     class Awaiter:public sharpen::Noncopyable
     {
     private:
+        using Self = sharpen::Awaiter<_T>;
+    
         std::unique_ptr<sharpen::ExecuteContext> context_;
     public:
         Awaiter(std::unique_ptr &&context)
@@ -36,12 +38,23 @@ namespace sharpen
             assert(this->context_ != nullptr);
         }
         
-        ~Awaiter() = default;
+        Awaiter(Self &&other) noexcept
+            :context_(std::move(other.context_))
+        {
+            assert(this->context_ != nullptr);
+        }
+        
+        ~Awaiter() noexcept = default;
         
         void operator()(sharpen::Future<_T> &future)
         {
             this->context_.SetAutoRelease(true);
             sharpen::CentralEngine.Push(std::move(this->context_));
+        }
+        
+        sharpen::ExecuteContext &GetContext()
+        {
+            return *(this->context_);
         }
     };
 }
