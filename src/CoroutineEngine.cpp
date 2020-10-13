@@ -57,3 +57,12 @@ bool sharpen::CoroutineEngine::IsAlive() const
 {
     return this->alive_;
 }
+
+void sharpen::CoroutineEngine::InternalPushTask(std::function<void()> &&fn)
+{
+    std::function<void> tmp = std::move(fn);
+    std::function<void> apply = [tmp](){
+        tmp();
+        sharpen::LocalEngineContext->Switch();
+    };
+}
