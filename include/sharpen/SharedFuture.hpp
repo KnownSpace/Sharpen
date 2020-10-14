@@ -18,30 +18,30 @@ namespace sharpen
         std::shared_ptr<Future> future_
     public:
     
-        template<typename ..._Args>
+        template<typename ..._Args,typename = decltype(std::declval<Future>().Complete(std::declval<_Args>()...))>
         void Complete(_Args &&...args)
         {
-            this->future.Complete(std::forward(args)...);
+            this->future_->Complete(std::forward(args)...);
         }
         
         void Fail(std::exception_ptr &&exception)
         {
-            this->future_.Fail(std::move(exception));
+            this->future_->Fail(std::move(exception));
         }
         
         void Wait()
         {
-            this->future_.Wait();
+            this->future_->Wait();
         }
         
-        auto Get() -> decltype(this->future_.Get())
+        auto Get() -> decltype(this->future_->Get())
         {
-            return this->future_.Get();
+            return this->future_->Get();
         }
         
-        auto Get() const -> decltype(this->future.Get())
+        auto Get() const -> decltype(this->future_->Get())
         {
-            return this->future_.Get();
+            return this->future_->Get();
         }
         
         template<typename _Result>
