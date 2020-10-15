@@ -50,7 +50,7 @@ sharpen::CoroutineEngine::ContextPtr sharpen::CoroutineEngine::WaitContext()
 
 void sharpen::CoroutineEngine::PushContext(sharpen::CoroutineEngine::ContextPtr context)
 {
-    this->context_.Push(std::move(context));
+    this->context_.PushAsync(std::move(context));
 }
 
 bool sharpen::CoroutineEngine::IsAlive() const
@@ -65,4 +65,8 @@ void sharpen::CoroutineEngine::InternalPushTask(std::function<void()> &&fn)
         tmp();
         sharpen::LocalEngineContext->Switch();
     };
+    std::unique_ptr<sharpen::ExecuteContext> context = sharpen::ExecuteContext::MakeContext(std::move(apply));
+    assert(context != nullptr);
+    context->SetAutoRelease(true);
+    this->PushContext(std::move(context));
 }
