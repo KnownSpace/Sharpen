@@ -35,7 +35,7 @@ namespace sharpen
         void Push(_T object) noexcept
         {
             {
-                std::unique_lock lock(this->lock_);
+                std::unique_lock<std::mutex> lock(this->lock_);
                 this->list_.push_back(std::move(object));
             }
             this->cond_.notice_once();
