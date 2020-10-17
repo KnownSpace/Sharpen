@@ -74,7 +74,7 @@ namespace sharpen
                     this->list_.push_back(std::move(object));
                     //get the lock again
                     std::unique_lock<sharpen::SpinLock> subLock(this->subLock_);
-                    List &&pending = GetPending();
+                    List &&pending = this->GetPending();
                     //handle pending list
                     for(auto begin = std::begin(pending),end = std::end(pending);begin != end;begin++)
                     {
