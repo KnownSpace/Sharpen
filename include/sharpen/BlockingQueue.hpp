@@ -51,7 +51,7 @@ namespace sharpen
         ,cond_()
         ,list_()
         ,subLock_()
-        ,subLocked(false)
+        ,subLocked_(false)
         ,pendingList_()
         {}
 
