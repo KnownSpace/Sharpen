@@ -10,7 +10,7 @@
 
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
-#include "AsyncMutex.hpp"
+#include "SpinLock.hpp"
 
 namespace sharpen
 {
@@ -19,11 +19,14 @@ namespace sharpen
     {
     private:
         using List = std::list<_T>;
+        using Callback = std::function<void()>;
+        using CallbackList = std::list<Callback>
 
         std::mutex lock_;
         std::condition_variable cond_;
         List list_;
-        sharpen::AsyncMutex asyncLock_;
+        sharpen::SpinLock subLock_;
+        
     public:
         BlockingQueue()
         :lock_()
