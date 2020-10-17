@@ -6,7 +6,6 @@
 #include <condition_variable>
 #include <list>
 #include <memory>
-#include <cassert>
 
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
