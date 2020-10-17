@@ -50,7 +50,7 @@ sharpen::CoroutineEngine::ContextPtr sharpen::CoroutineEngine::WaitContext()
 
 void sharpen::CoroutineEngine::PushContext(sharpen::CoroutineEngine::ContextPtr context)
 {
-    this->context_.PushAsync(std::move(context));
+    this->context_.Push(std::move(context));
 }
 
 bool sharpen::CoroutineEngine::IsAlive() const
