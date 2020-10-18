@@ -10,7 +10,7 @@ namespace sharpen
 {
     DWORD GetCurrentThreadId()
     {
-        return GetCurrentThreadId();
+        return ::GetCurrentThreadId();
     }
 }
 
