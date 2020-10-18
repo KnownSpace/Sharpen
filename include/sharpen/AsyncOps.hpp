@@ -9,7 +9,7 @@
 namespace sharpen
 {
     template<typename _Fn,typename ..._Args>
-    void Launch(_Fn &&fn,_Args &&...args)
+    inline void Launch(_Fn &&fn,_Args &&...args)
     {
         sharpen::CentralEngine.PushTask(fn,args...);
     }
@@ -50,7 +50,7 @@ namespace sharpen
     
 
     template<typename _Fn,typename ..._Args,typename _Result = decltype(std::declval<_Fn>()(std::declval<_Args>()...))>
-    sharpen::SharedAwaitableFuturePtr<_Result> Async(_Fn &&fn,_Args &&...args)
+    inline sharpen::SharedAwaitableFuturePtr<_Result> Async(_Fn &&fn,_Args &&...args)
     {
         auto future = sharpen::MakeSharedAwaitableFuture<_Result>();
         std::function<_Result()> func = std::bind(fn,args...);
