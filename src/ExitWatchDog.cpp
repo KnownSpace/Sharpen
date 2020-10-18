@@ -13,4 +13,4 @@ void sharpen::ExitWatchDog::ReleaseResource() noexcept
     sharpen::ExecuteContext::InternalDisableContextSwitch();
 }
 
-thread_local sharpen::LocalWatchDog;
+thread_local sharpen::ExitWatchDog sharpen::LocalWatchDog;

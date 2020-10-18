@@ -3,8 +3,9 @@
 #define _SHARPEN_SYSTEMMACRO_HPP
 
 //Windows
-#if (defined (_Win32)) || (defined (_Win64))
-#deinfe SHARPEN_IS_WIN
+#if (defined (_WIN32)) || (defined (_WIN64))
+#define SHARPEN_IS_WIN
+#define WIN32_LEAN_AND_MEAN
 #endif
 
 //Linux

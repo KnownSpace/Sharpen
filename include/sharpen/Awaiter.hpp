@@ -32,7 +32,9 @@ namespace sharpen
     
         std::unique_ptr<sharpen::ExecuteContext> context_;
     public:
-        Awaiter(std::unique_ptr &&context)
+        Awaiter() = default;
+
+        Awaiter(std::unique_ptr<sharpen::ExecuteContext> &&context) noexcept
             :context_(std::move(context))
         {
             assert(this->context_ != nullptr);
@@ -46,15 +48,21 @@ namespace sharpen
         
         ~Awaiter() noexcept = default;
         
-        void operator()(sharpen::Future<_T> &future)
+        void operator()(sharpen::Future<_T> &future) noexcept
         {
-            this->context_.SetAutoRelease(true);
-            sharpen::CentralEngine.Push(std::move(this->context_));
+            this->context_->SetAutoRelease(true);
+            sharpen::CentralEngine.PushContext(std::move(this->context_));
         }
         
-        sharpen::ExecuteContext &GetContext()
+        sharpen::ExecuteContext &GetContext() noexcept
         {
             return *(this->context_);
+        }
+
+        Self &operator=(Self &&other) noexcept
+        {
+            this->context_ = std::move(other.context_);
+            return *this;
         }
     };
 }

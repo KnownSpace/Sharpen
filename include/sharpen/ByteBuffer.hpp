@@ -40,7 +40,7 @@ namespace sharpen
 
         inline void Swap(Self &other) noexcept
         {
-            this->swap(std::move(other));
+            this->swap(other);
         }
 
         void PushBack(Char val);

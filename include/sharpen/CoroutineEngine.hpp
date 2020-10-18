@@ -9,6 +9,7 @@
 #include "ExecuteContext.hpp"
 #include "Nonmovable.hpp"
 #include "BlockingQueue.hpp"
+#include "IContextSwitchCallback.hpp"
 
 namespace sharpen
 {
@@ -19,7 +20,7 @@ namespace sharpen
     //it will call ConvertThreadToFiberEx and CreateFiberEx in windows or call getcontext and makecontext in *nix
     extern thread_local std::unique_ptr<sharpen::ExecuteContext> LocalEngineContext;
 
-    extern thread_local std::function<void()> LocalSwitchCallback;
+    extern thread_local std::unique_ptr<sharpen::IContextSwitchCallback> LocalContextSwitchCallback;
   
     //it is a internal class and you should never use it directly
     class CoroutineEngine:public sharpen::Noncopyable,public sharpen::Nonmovable
@@ -37,7 +38,7 @@ namespace sharpen
     
     public:
         
-        CouroutineEngine();
+        CoroutineEngine();
         
         ~CoroutineEngine() noexcept;
         

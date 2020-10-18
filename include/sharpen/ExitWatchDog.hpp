@@ -17,7 +17,7 @@ namespace sharpen
         //we will free resource in here
         ~ExitWatchDog() noexcept;
 
-        void ReleaseResource() noexcept();
+        void ReleaseResource() noexcept;
     };
     
     //it release coroutine resource when thread exit

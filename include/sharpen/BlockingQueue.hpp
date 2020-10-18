@@ -82,12 +82,12 @@ namespace sharpen
                     this->UnlockSub();
             }
             //notice all threads
-            this->cond_.notice_all();
+            this->cond_.notify_all();
         }
         
         _T Pop() noexcept
         {
-            std::unique_lock lock(this->lock_);
+            std::unique_lock<std::mutex> lock(this->lock_);
             while(this->list_.empty())
             {
                 this->cond_.wait(lock);

@@ -15,7 +15,7 @@
 
 #define SHARPEN_HAS_FIBER 
 //use fiber
-#include <winbase.h>
+#include <Windows.h>
 #else
 #define SHARPEN_HAS_UCONTEXT
 //use ucontext
@@ -51,7 +51,7 @@ namespace sharpen
         static std::unique_ptr<Self> InternalMakeContext(Function *entry);
         
     public:
-        ExexuteContext();
+        ExecuteContext();
         
         //free the stack memory or delete fiber if necessary
         ~ExecuteContext() noexcept;
@@ -67,8 +67,8 @@ namespace sharpen
         template<typename _Fn,typename ..._Args,typename = decltype(std::declval<_Fn>()(std::declval<_Args>()...))>
         static std::unique_ptr<Self> MakeContext(_Fn &&fn,_Args &&...args)
         {
-            Function *fn = new Function(std::bind(std::move(fn),args...));
-            return Self::InternalMakeContext(fn);
+            Function *func = new Function(std::bind(std::move(fn),args...));
+            return Self::InternalMakeContext(func);
         }
         
         static std::unique_ptr<Self> GetCurrentContext();

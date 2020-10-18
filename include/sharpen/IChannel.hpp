@@ -10,9 +10,9 @@ namespace sharpen
     class IChannel:public sharpen::Noncopyable,public sharpen::Nonmovable 
     {
     public:
-        IChannel() =default;
+        IChannel() = default;
 
-        virtual ~IChannel() noexcept;
+        virtual ~IChannel() noexcept = 0;
 
         virtual void Close() = 0;
     };

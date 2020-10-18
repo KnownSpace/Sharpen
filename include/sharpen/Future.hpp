@@ -259,9 +259,9 @@ namespace sharpen
             std::swap(this->waiters_,other.waiters_);
         }
 
-        inline void Swap(Self &&other) noexcept
+        inline void Swap(Self &other) noexcept
         {
-            this->swap(std::move(other));
+            this->swap(other);
         }
 
         void Complete()
@@ -346,7 +346,7 @@ namespace sharpen
     template<typename _Value>
     sharpen::SharedFuturePtr<_Value> MakeSharedFuturePtr()
     {
-        auto p = std::make_shared<sharpen::Future<_Value>();
+        auto p = std::make_shared<sharpen::Future<_Value>>();
         if (!p)
         {
             throw std::bad_alloc();

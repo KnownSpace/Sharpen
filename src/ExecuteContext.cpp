@@ -3,6 +3,7 @@
 #include <stdexcept>
 
 #include <sharpen/ExecuteContext.hpp>
+#include <sharpen/TypeDef.hpp>
 
 thread_local bool sharpen::LocalEnableContextSwitch(false);
 
@@ -45,9 +46,9 @@ sharpen::ExecuteContext::~ExecuteContext()
       ::DeleteFiber(this->handle_);
     }
 #else
-    if(this->enableAutoRelease_ && this->handle_.uc_stack.ss_up != nullptr)
+    if(this->enableAutoRelease_ && this->handle_.uc_stack.ss_sp != nullptr)
     {
-      std::free(this->handle_.uc_stack.ss_up);
+      std::free(this->handle_.uc_stack.ss_sp);
     }
 #endif
 }
@@ -77,16 +78,16 @@ void sharpen::ExecuteContext::SetAutoRelease(bool flag)
     this->enableAutoRelease_ = flag;
 }
 
-std::unique_ptr<sharpen::ExecuteContext> sharpen::GetCurrentContext()
+std::unique_ptr<sharpen::ExecuteContext> sharpen::ExecuteContext::GetCurrentContext()
 {
-    std::unique_ptr ctx(new sharpen::ExecuteContext());
-    asert(ctx != nullptr);
+    std::unique_ptr<sharpen::ExecuteContext> ctx(new sharpen::ExecuteContext());
+    assert(ctx != nullptr);
     if(!ctx)
     {
         throw std::bad_alloc();
     }
 #ifdef SHARPEN_HAS_FIBER
-    sharpen::NativeExecuteContxtHandle handle = GetCurrentFiber();
+    sharpen::NativeExecuteContextHandle handle = GetCurrentFiber();
     ctx->handle_ = handle;
 #else
     ::getcontext(&(ctx->handle_));
@@ -116,14 +117,16 @@ std::unique_ptr<sharpen::ExecuteContext> sharpen::ExecuteContext::InternalMakeCo
     ctx->handle_ = handle;
 #else
     ::getcontext(&(ctx->handle_));
-    ctx->handle_.uc_stack.ss_sp = std::malloc(SIGSTKSZ);
+    constexpr sharpen::Size stackSize = 1024*1024;
+    ctx->handle_.uc_stack.ss_sp = std::malloc(stackSize);
     assert(ctx->handle_.uc_stack.ss_sp != nullptr);
     if(!ctx->handle_.uc_stack.ss_sp)
     {
         throw std::bad_alloc();
     }
-    ctx->handle_.uc_stack.ss_size = SIGSTKSZ;
+    ctx->handle_.uc_stack.ss_size = stackSize;
     ctx->handle_.uc_link = nullptr;
-    ::makecontext(&(ctx->handle_),&sharpen::ExecuteContext::InternalContextEntry,1,entry);
+    ::makecontext(&(ctx->handle_),(void(*)())&sharpen::ExecuteContext::InternalContextEntry,1,entry);
 #endif
+    return std::move(ctx);
 }
