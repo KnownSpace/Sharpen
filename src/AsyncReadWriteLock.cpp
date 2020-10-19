@@ -84,7 +84,7 @@ void sharpen::AsyncReadWriteLock::ReadUnlock()
         lock.unlock();
         futurePtr->Complete();
         return;
-	}
+    }
     this->state_ = sharpen::ReadWriteLockState::Free;
 }
 
