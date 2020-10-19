@@ -71,9 +71,9 @@ void sharpen::AsyncReadWriteLock::WriteUnlock()
 void sharpen::AsyncReadWriteLock::ReadUnlock()
 {
     std::unique_lock<sharpen::SpinLock> lock(this->lock_);
-    if (this->readers_ != 1)
+    this->readers_ -= 1;
+    if (this->readers_ != 0)
     {
-        this->readers_ -= 1;
         return;
     }
     if (!this->writeWaiters_.empty())
