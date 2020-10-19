@@ -13,7 +13,8 @@ namespace sharpen
         
     private:
         using MyFuture = sharpen::AwaitableFuture<void>;
-        using List = std::list<MyFuture>;
+        using MyFuturePtr = MyFuture*;
+        using List = std::list<MyFuturePtr>;
 
         bool locked_;
         List waiters_;
