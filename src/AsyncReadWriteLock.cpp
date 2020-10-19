@@ -42,19 +42,19 @@ void sharpen::AsyncReadWriteLock::LockWriteAsync()
 
 void sharpen::AsyncReadWriteLock::WriteUnlock()
 {
-	std::unique_lock<sharpen::SpinLock> lock(this->lock_);
-	if (!this->writeWaiters_.empty())
-	{
-		sharpen::AsyncReadWriteLock::MyFuturePtr futurePtr = thus->writeWaiters_.front();
+    std::unique_lock<sharpen::SpinLock> lock(this->lock_);
+    if (!this->writeWaiters_.empty())
+    {
+        sharpen::AsyncReadWriteLock::MyFuturePtr futurePtr = thus->writeWaiters_.front();
         this->writeWaiters_.pop();
         this->state_ = sharpen::ReadWriteLockState::UniquedWriting;
-		lock.unlock();
-		futurePtr->Complete();
-		return;
-	}
-	else if (!this->readWaiters_.empty())
-	{
-		sharpen::AsyncReadWriteLock::List list;
+        lock.unlock();
+        futurePtr->Complete();
+        return;
+    }
+    else if (!this->readWaiters_.empty())
+    {
+        sharpen::AsyncReadWriteLock::List list;
         std::swap(list,this->readWaiters_);
         this->readers_ = list.size();
         this->state_ = sharpen::ReadWriteLockState::SharedReading;
@@ -64,8 +64,8 @@ void sharpen::AsyncReadWriteLock::WriteUnlock()
             (*begin)->Complete();
         }
         return;
-	}
-	this->state_ = sharpen::ReadWriteLockState::Free;
+    }
+    this->state_ = sharpen::ReadWriteLockState::Free;
 }
 
 void sharpen::AsyncReadWriteLock::ReadUnlock()
@@ -77,13 +77,13 @@ void sharpen::AsyncReadWriteLock::ReadUnlock()
         return;
     }
     if (!this->writeWaiters_.empty())
-	{
+    {
         sharpen::AsyncReadWriteLock::MyFuturePtr futurePtr = this->writeWaiters_.front();
         this->writeWaiters_.pop();
         this->state_ = sharpen::ReadWriteLockState::UniquedWriting;
         lock.unlock();
         futurePtr->Complete();
-		return;
+        return;
 	}
     this->state_ = sharpen::ReadWriteLockState::Free;
 }
