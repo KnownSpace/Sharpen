@@ -2,10 +2,9 @@
 #ifndef _SHARPEN_ASYNCREADWRITELOCK_HPP
 #define _SHARPEN_ASYNCREADWRITELOCK_HPP
 
-#include <functional>
 #include <list>
 
-#include "Future.hpp"
+#include "AwaitableFuture.hpp"
 
 namespace sharpen
 {
@@ -19,8 +18,9 @@ namespace sharpen
     class AsyncReadWriteLock:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
-        using Function = std::function<void()>;
-        using List = std::list<Function>;
+        using MyFuture = sharpen::AwaitableFuture<void>;
+        using MyFuturePtr = MyFuture*;
+        using List = std::list<MyFuturePtr>;
 
         sharpen::ReadWriteLockState state_;
         List readWaiters_;
@@ -33,22 +33,18 @@ namespace sharpen
         void ReadUnlock();
 
         void NoticeAllReaders(List &newList);
-
-        void NoticeWriter(Function &callback);
+        
+        void NoticeOneWriter(MyFuturePtr futurePtr);
     public:
         AsyncReadWriteLock();
 
-        void ReadLock(Function &&callback);
+        void LockReadAsync();
 
-        void WriteLock(Function &&callback);
+        void LockWriteAsync();
 
-        sharpen::SharedFuturePtr<void> ReadLockAsync();
+        void Unlock() noexcept;
 
-        sharpen::SharedFuturePtr<void> WriteLockAsync();
-
-        void Unlock();
-
-        ~AsyncReadWriteLock() = default;
+        ~AsyncReadWriteLock() noexcept = default;
     };
     
 }
