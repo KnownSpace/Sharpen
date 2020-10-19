@@ -40,7 +40,7 @@ void sharpen::AsyncReadWriteLock::LockWriteAsync()
     future.Await();
 }
 
-void sharpen::AsyncReadWriteLock::WriteUnlock()
+void sharpen::AsyncReadWriteLock::WriteUnlock() noexcept
 {
     std::unique_lock<sharpen::SpinLock> lock(this->lock_);
     if (!this->writeWaiters_.empty())
@@ -68,7 +68,7 @@ void sharpen::AsyncReadWriteLock::WriteUnlock()
     this->state_ = sharpen::ReadWriteLockState::Free;
 }
 
-void sharpen::AsyncReadWriteLock::ReadUnlock()
+void sharpen::AsyncReadWriteLock::ReadUnlock() noexcept
 {
     std::unique_lock<sharpen::SpinLock> lock(this->lock_);
     this->readers_ -= 1;
@@ -88,7 +88,7 @@ void sharpen::AsyncReadWriteLock::ReadUnlock()
     this->state_ = sharpen::ReadWriteLockState::Free;
 }
 
-void sharpen::AsyncReadWriteLock::Unlock() noexcept()
+void sharpen::AsyncReadWriteLock::Unlock() noexcept
 {
     assert(this->state_ != sharpen::ReadWriteLockState::Free);
     if(this->state_ == sharpen::ReadWriteLockState::UniquedWriting)
