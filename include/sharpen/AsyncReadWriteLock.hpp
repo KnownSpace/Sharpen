@@ -28,13 +28,9 @@ namespace sharpen
         sharpen::SpinLock lock_;
         sharpen::Uint32 readers_;
 
-        void WriteUnlock();
+        void WriteUnlock() noexcept;
 
-        void ReadUnlock();
-
-        void NoticeAllReaders(List &newList);
-        
-        void NoticeOneWriter(MyFuturePtr futurePtr);
+        void ReadUnlock() noexcept;
     public:
         AsyncReadWriteLock();
 
