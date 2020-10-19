@@ -3,9 +3,8 @@
 #define _SHARPEN_ASYNCMUTEX_HPP
 
 #include <list>
-#include <functional>
 
-#include "Future.hpp"
+#include "AwaitableFuture.hpp"
 
 namespace sharpen
 {
@@ -13,8 +12,8 @@ namespace sharpen
     {
         
     private:
-        using Function = std::function<void()>;
-        using List = std::list<Function>;
+        using MyFuture = sharpen::AwaitableFuture<void>;
+        using List = std::list<MyFuture>;
 
         bool locked_;
         List waiters_;
@@ -22,13 +21,11 @@ namespace sharpen
     public:
         AsyncMutex();
 
-        void Lock(Function &&callback);
+        void LockAsync();
 
-        sharpen::SharedFuturePtr<void> LockAsync();
+        void Unlock() noexcept;
 
-        void Unlock();
-
-        ~AsyncMutex() = default;
+        ~AsyncMutex() noexcept = default;
     };
     
 }
