@@ -118,7 +118,7 @@ std::unique_ptr<sharpen::ExecuteContext> sharpen::ExecuteContext::InternalMakeCo
 #else
     ::getcontext(&(ctx->handle_));
     constexpr sharpen::Size stackSize = 1024*1024;
-    ctx->handle_.uc_stack.ss_sp = std::malloc(stackSize);
+    ctx->handle_.uc_stack.ss_sp = std::calloc(stackSize,sizeof(char));
     assert(ctx->handle_.uc_stack.ss_sp != nullptr);
     if(!ctx->handle_.uc_stack.ss_sp)
     {
