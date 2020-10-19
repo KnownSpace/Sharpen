@@ -6,31 +6,22 @@ sharpen::AsyncMutex::AsyncMutex()
     ,lock_()
 {}
 
-void sharpen::AsyncMutex::Lock(sharpen::AsyncMutex::Function &&callback)
+void sharpen::AsyncMutex::LockAsync()
 {
+    sharpen::AsyncMutex::MyFuture future;
     {
         std::unique_lock<sharpen::SpinLock> lock(this->lock_);
-        if (this->locked_)
+        if (!this->locked_)
         {
-            this->waiters_.push_back(std::move(callback));
+            this->locked_ = true;
             return;
         }
-        this->locked_ = true;
+        this->waiters_.push_back(&future);
     }
-    callback();
+    future.Await();
 }
 
-sharpen::SharedFuturePtr<void> sharpen::AsyncMutex::LockAsync()
-{
-    sharpen::SharedFuturePtr<void> future = sharpen::MakeSharedFuturePtr<void>();
-    this->Lock([future]()
-    {
-        future->Complete();
-    });
-    return future;
-}
-
-void sharpen::AsyncMutex::Unlock()
+void sharpen::AsyncMutex::Unlock() noexcept
 {
     std::unique_lock<sharpen::SpinLock> lock(this->lock_);
     if (this->waiters_.empty())
@@ -38,8 +29,8 @@ void sharpen::AsyncMutex::Unlock()
         this->locked_ = false;
         return;
     }
-    sharpen::AsyncMutex::Function callback = std::move(this->waiters_.front());
+    sharpen::AsyncMutex::MyFuturePtr futurePtr = this->waiters_.front();
     this->waiters_.pop_front();
     lock.unlock();
-    callback();
+    futurePtr->Complete();
 }
