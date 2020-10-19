@@ -12,11 +12,11 @@ sharpen::AsyncReadWriteLock::AsyncReadWriteLock()
 void sharpen::AsyncReadWriteLock::LockReadAsync()
 {
     sharpen::AsyncReadWriteLock::MyFuture future;
-	{
-		std::unique_lock<sharpen::SpinLock> lock(this->lock_);
-		if (this->state_ != sharpen::ReadWriteLockState::UniquedWriting)
-		{
-			this->readers_ += 1;
+    {
+        std::unique_lock<sharpen::SpinLock> lock(this->lock_);
+        if (this->state_ != sharpen::ReadWriteLockState::UniquedWriting)
+        {
+            this->readers_ += 1;
             this->state_ = sharpen::ReadWriteLockState::SharedReading;
 			return;
 		}
@@ -28,16 +28,16 @@ void sharpen::AsyncReadWriteLock::LockReadAsync()
 void sharpen::AsyncReadWriteLock::LockWriteAsync()
 {
     sharpen::AsyncReadWriteLock::MyFuture future;
-	{
-		std::unique_lock<sharpen::SpinLock> lock(this->lock_);
-		if (this->state_ == sharpen::ReadWriteLockState::Free)
-		{
-			this->state_ = sharpen::ReadWriteLockState::UniquedWriting;
-			return;
+    {
+        std::unique_lock<sharpen::SpinLock> lock(this->lock_);
+        if (this->state_ == sharpen::ReadWriteLockState::Free)
+        {
+            this->state_ = sharpen::ReadWriteLockState::UniquedWriting;
+            return;
 		}
-		this->writeWaiters_.push_back(&future);
-	}
-	future.Await();
+        this->writeWaiters_.push_back(&future);	
+    }
+    future.Await();
 }
 
 void sharpen::AsyncReadWriteLock::WriteUnlock()
