@@ -20,9 +20,9 @@ void sharpen::AsyncReadWriteLock::LockReadAsync()
             this->state_ = sharpen::ReadWriteLockState::SharedReading;
             return;
         }
-            this->readWaiters_.push_back(&future);
-        }
-        future.Await();
+        this->readWaiters_.push_back(&future);
+    }
+    future.Await();
 }
 
 void sharpen::AsyncReadWriteLock::LockWriteAsync()
