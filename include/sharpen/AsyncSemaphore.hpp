@@ -3,9 +3,8 @@
 #define _SHARPEN_ASYNCSEMAPHORE_HPP
 
 #include <list>
-#include <functional>
 
-#include "Future.hpp"
+#include "AwaitableFuture.hpp"
 #include "TypeDef.hpp"
 
 namespace sharpen
@@ -14,8 +13,9 @@ namespace sharpen
     class AsyncSemaphore:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
-        using Function = std::function<void()>;
-        using List = std::list<Function>;
+        using MyFuture = sharpen::AwaitableFuture<void>;
+        using MyFuturePtr = MyFuture*;
+        using List = std::list<MyFuturePtr>;
 
         List waiters_;
         sharpen::SpinLock lock_;
@@ -25,13 +25,11 @@ namespace sharpen
     public:
         AsyncSemaphore(sharpen::Uint32 count);
 
-        void Lock(Function &&callback);
+        void LockAsync();
 
-        sharpen::SharedFuturePtr<void> LockAsync();
+        void Unlock() noexcept;
 
-        void Unlock();
-
-        ~AsyncSemaphore() = default;
+        ~AsyncSemaphore() noexcept = default;
     };
     
 }
