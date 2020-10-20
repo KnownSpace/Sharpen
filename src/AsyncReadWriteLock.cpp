@@ -46,7 +46,7 @@ void sharpen::AsyncReadWriteLock::WriteUnlock() noexcept
     if (!this->writeWaiters_.empty())
     {
         sharpen::AsyncReadWriteLock::MyFuturePtr futurePtr = thus->writeWaiters_.front();
-        this->writeWaiters_.pop();
+        this->writeWaiters_.pop_front();
         this->state_ = sharpen::ReadWriteLockState::UniquedWriting;
         lock.unlock();
         futurePtr->Complete();
@@ -79,7 +79,7 @@ void sharpen::AsyncReadWriteLock::ReadUnlock() noexcept
     if (!this->writeWaiters_.empty())
     {
         sharpen::AsyncReadWriteLock::MyFuturePtr futurePtr = this->writeWaiters_.front();
-        this->writeWaiters_.pop();
+        this->writeWaiters_.pop_front();
         this->state_ = sharpen::ReadWriteLockState::UniquedWriting;
         lock.unlock();
         futurePtr->Complete();
