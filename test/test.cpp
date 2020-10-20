@@ -60,6 +60,6 @@ int main(int argc, char const *argv[])
     begin = std::clock();
     LaunchTest();
     end = std::clock();
-    std::printf("using %d sec\n",(end - begin)/CLOCKS_PER_SEC);
+    std::printf("using %f sec\n",(end - begin)/CLOCKS_PER_SEC);
     return 0;
 }
