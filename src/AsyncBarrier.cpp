@@ -33,7 +33,7 @@ void sharpen::AsyncBarrier::Notice() noexcept
         std::unique_lock<sharpen::SpinLock> lock(this->lock_);
         assert(this->counter_ != 0);
         this->counter_ -= 1;
-        if(this->counter_ != 0 || this->waiters_.size() == 0)
+        if(this->counter_ != 0 || this->waiters_.empty())
         {
             return;
         }
