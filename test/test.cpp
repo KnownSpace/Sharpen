@@ -56,6 +56,16 @@ void AwaitTest()
     }
 }
 
+void MultithreadAwaitTest()
+{
+    std::clock_t begin,end,time;
+    begin = std::clock();
+    AwaitTest();
+    end = std::clock();
+    time = (end-begin)/CLOCKS_PRE_SEC;
+    std::printf("AwaitTest using %d sec in thread %d\n",time,sharpen::GetCurrentThreadId());
+}
+
 int main(int argc, char const *argv[])
 {
     std::printf("running in machine with %d cores\n",std::thread::hardware_concurrency());
@@ -67,13 +77,9 @@ int main(int argc, char const *argv[])
     std::clock_t time = (end - begin)/CLOCKS_PER_SEC;
     std::printf("AwaitTest using %d sec\n",time);
     //multithreaded await test
-    begin = std::clock();
-    std::thread t1(std::bind(&AwaitTest)),t2(std::bind(&AwaitTest));
+    std::thread t1(std::bind(&MultithreadAwaitTest)),t2(std::bind(&MultithreadAwaitTest));
     t1.join();
     t2.join();
-    end = std::clock();
-    time = (end - begin)/CLOCKS_PER_SEC;
-    std::printf("MultithreadedAwaitTest using %d sec\n",time);
     //launch test
     begin = std::clock();
     LaunchTest();
