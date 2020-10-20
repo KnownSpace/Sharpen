@@ -33,20 +33,11 @@ namespace sharpen
 
 int main(int argc, char const *argv[])
 {
-    sharpen::AwaitableFuture<int> future;
-    std::thread t([&future]() mutable
+    for(size_t i = 0;i < 100000;++i)
     {
-        std::printf("i am %d and waiting for future\n",sharpen::GetCurrentThreadId());
-        int r = future.Await();
-        std::printf("result is %d\n",r);
-    });
-    sharpen::Launch([&future]() mutable
-    {
-        std::printf("i am %d and please input result:\n",sharpen::GetCurrentThreadId());
-        int r;
-        std::cin >> r;
-        future.Complete(r);
-    });
-    t.join();
+        sharpen::Launch([](){
+            std::printf("hello world\n");
+        });
+    }
     return 0;
 }
