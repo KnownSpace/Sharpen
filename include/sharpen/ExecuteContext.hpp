@@ -2,6 +2,12 @@
 #ifndef _SHARPEN_EXECUTECONTEXT_HPP
 #define _SHARPEN_EXECUTECONTEXT_HPP
 
+//the stack size of execute context
+#ifndef SHARPEN_CONTEXT_STACK_SIZE
+//32kb by default
+#define SHARPEN_CONTEXT_STACK_SIZE 32*1024
+#endif
+
 #include <type_traits>
 #include <functional>
 #include <memory>
