@@ -63,6 +63,6 @@ int main(int argc, char const *argv[])
     LaunchTest();
     end = std::clock();
     std::clock_t time = (end - begin)/CLOCKS_PER_SEC;
-    std::printf("using %f sec\n",time);
+    std::printf("using %d sec\n",time);
     return 0;
 }
