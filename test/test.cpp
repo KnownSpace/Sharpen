@@ -62,7 +62,7 @@ void MultithreadAwaitTest()
     begin = std::clock();
     AwaitTest();
     end = std::clock();
-    time = (end-begin)/CLOCKS_PRE_SEC;
+    time = (end-begin)/CLOCKS_PER_SEC;
     std::printf("AwaitTest using %d sec in thread %d\n",time,sharpen::GetCurrentThreadId());
 }
 
