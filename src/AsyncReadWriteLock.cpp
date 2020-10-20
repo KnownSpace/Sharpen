@@ -45,7 +45,7 @@ void sharpen::AsyncReadWriteLock::WriteUnlock() noexcept
     std::unique_lock<sharpen::SpinLock> lock(this->lock_);
     if (!this->writeWaiters_.empty())
     {
-        sharpen::AsyncReadWriteLock::MyFuturePtr futurePtr = thus->writeWaiters_.front();
+        sharpen::AsyncReadWriteLock::MyFuturePtr futurePtr = this->writeWaiters_.front();
         this->writeWaiters_.pop_front();
         this->state_ = sharpen::ReadWriteLockState::UniquedWriting;
         lock.unlock();
@@ -95,7 +95,7 @@ void sharpen::AsyncReadWriteLock::Unlock() noexcept
     {
         this->WriteUnlock();
     }
-    else if(this->state_ == sharpen::ReadWriteLockState::SharedRead)
+    else if(this->state_ == sharpen::ReadWriteLockState::SharedReading)
     {
         this->ReadUnlock();
     }
