@@ -32,9 +32,11 @@ namespace sharpen
 
 #endif
 
+#define TEST_COUNT 1000000
+
 void LaunchTest()
 {
-    for(size_t i = 0;i < 100000;++i)
+    for(size_t i = 0;i < TEST_COUNT;++i)
     {
         sharpen::Launch([](){
             //do nothing
@@ -44,7 +46,7 @@ void LaunchTest()
 
 void AwaitTest()
 {
-    for(size_t i = 0;i < 100000;i++)
+    for(size_t i = 0;i < TEST_COUNT;i++)
     {
         sharpen::AwaitableFuture<void> future;
         sharpen::Launch([&future](){
@@ -60,7 +62,7 @@ int main(int argc, char const *argv[])
     begin = std::clock();
     LaunchTest();
     end = std::clock();
-    double time = (end - begin)/CLOCKS_PER_SEC;
+    std::clock_t time = (end - begin)/CLOCKS_PER_SEC;
     std::printf("using %f sec\n",time);
     return 0;
 }
