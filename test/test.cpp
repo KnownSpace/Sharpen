@@ -70,7 +70,7 @@ int main(int argc, char const *argv[])
     begin = std::clock();
     LaunchTest();
     end = std::clock();
-    std::clock_t time = (end - begin)/CLOCKS_PER_SEC;
+    time = (end - begin)/CLOCKS_PER_SEC;
     std::printf("LaunchTest using %d sec\n",time);
     //multithreaded await test
     
