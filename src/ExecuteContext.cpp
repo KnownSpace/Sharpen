@@ -118,19 +118,18 @@ std::unique_ptr<sharpen::ExecuteContext> sharpen::ExecuteContext::InternalMakeCo
     }
 #ifdef SHARPEN_HAS_FIBER
     sharpen::NativeExecuteContextHandle handle = nullptr;
-    handle = CreateFiberEx(0,0,FIBER_FLAG_FLOAT_SWITCH,(LPFIBER_START_ROUTINE)&sharpen::ExecuteContext::InternalContextEntry,entry);
+    handle = CreateFiberEx(SHARPEN_CONTEXT_STACK_SIZE,0,FIBER_FLAG_FLOAT_SWITCH,(LPFIBER_START_ROUTINE)&sharpen::ExecuteContext::InternalContextEntry,entry);
     ctx->handle_ = handle;
 #else
     ::getcontext(&(ctx->handle_));
-    constexpr sharpen::Size stackSize = 1024*1024;
     //use mmap to allocate statck
-    ctx->handle_.uc_stack.ss_sp = ::mmap(nullptr,stackSize,PROT_READ|PROT_WRITE,MAP_PRIVATE | MAP_ANONYMOUS,-1,0);
+    ctx->handle_.uc_stack.ss_sp = ::mmap(nullptr,SHARPEN_CONTEXT_STACK_SIZE,PROT_READ|PROT_WRITE,MAP_PRIVATE | MAP_ANONYMOUS,-1,0);
     assert(ctx->handle_.uc_stack.ss_sp != nullptr);
     if(!ctx->handle_.uc_stack.ss_sp)
     {
         throw std::bad_alloc();
     }
-    ctx->handle_.uc_stack.ss_size = stackSize;
+    ctx->handle_.uc_stack.ss_size = SHARPEN_CONTEXT_STACK_SIZE;
     ctx->handle_.uc_link = nullptr;
     ::makecontext(&(ctx->handle_),(void(*)())&sharpen::ExecuteContext::InternalContextEntry,1,entry);
 #endif
