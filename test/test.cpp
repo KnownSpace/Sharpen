@@ -66,13 +66,19 @@ int main(int argc, char const *argv[])
     end = std::clock();
     std::clock_t time = (end - begin)/CLOCKS_PER_SEC;
     std::printf("AwaitTest using %d sec\n",time);
+    //multithreaded await test
+    begin = std::clock();
+    std::thread t1(std::bind(&AwaitTest)),t2(std::bind(&AwaitTest));
+    t1.join();
+    t2.join();
+    end = std::clock();
+    time = (end - begin)/CLOCKS_PER_SEC;
+    std::printf("MultithreadedAwaitTest using %d sec\n",time);
     //launch test
     begin = std::clock();
     LaunchTest();
     end = std::clock();
     time = (end - begin)/CLOCKS_PER_SEC;
     std::printf("LaunchTest using %d sec\n",time);
-    //multithreaded await test
-    
     return 0;
 }
