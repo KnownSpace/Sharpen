@@ -1,9 +1,13 @@
-#include <cstdlib>
+#include <cstring>
 #include <cassert>
 #include <stdexcept>
 
 #include <sharpen/ExecuteContext.hpp>
 #include <sharpen/TypeDef.hpp>
+
+#ifdef SHARPEN_HAS_UCONTEXT
+#include <sys/mman.h>
+#endif
 
 thread_local bool sharpen::LocalEnableContextSwitch(false);
 
@@ -48,7 +52,8 @@ sharpen::ExecuteContext::~ExecuteContext()
 #else
     if(this->enableAutoRelease_ && this->handle_.uc_stack.ss_sp != nullptr)
     {
-      std::free(this->handle_.uc_stack.ss_sp);
+        //use munmap to release memory
+        ::munmap(this->handle_.uc_stack.ss_sp,this->handle_.uc_stack.ss_size);
     }
 #endif
 }
@@ -118,7 +123,8 @@ std::unique_ptr<sharpen::ExecuteContext> sharpen::ExecuteContext::InternalMakeCo
 #else
     ::getcontext(&(ctx->handle_));
     constexpr sharpen::Size stackSize = 1024*1024;
-    ctx->handle_.uc_stack.ss_sp = std::calloc(stackSize,sizeof(char));
+    //use mmap to allocate statck
+    ctx->handle_.uc_stack.ss_sp = ::mmap(nullptr,stackSize,PROT_READ|PROT_WRITE,MAP_PRIVATE | MAP_ANONYMOUS,-1,0);
     assert(ctx->handle_.uc_stack.ss_sp != nullptr);
     if(!ctx->handle_.uc_stack.ss_sp)
     {
