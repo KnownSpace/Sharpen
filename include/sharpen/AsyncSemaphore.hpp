@@ -6,11 +6,12 @@
 
 #include "AwaitableFuture.hpp"
 #include "TypeDef.hpp"
+#include "IAsyncLockable.hpp"
 
 namespace sharpen
 {
 
-    class AsyncSemaphore:public sharpen::Noncopyable,public sharpen::Nonmovable
+    class AsyncSemaphore:public sharpen::Noncopyable,public sharpen::Nonmovable,public sharpen::IAsyncLockable
     {
     private:
         using MyFuture = sharpen::AwaitableFuture<void>;
@@ -25,9 +26,9 @@ namespace sharpen
     public:
         AsyncSemaphore(sharpen::Uint32 count);
 
-        void LockAsync();
+        virtual void LockAsync() override;
 
-        void Unlock() noexcept;
+        virtual void Unlock() noexcept override;
 
         ~AsyncSemaphore() noexcept = default;
     };
