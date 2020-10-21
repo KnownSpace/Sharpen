@@ -87,31 +87,14 @@ namespace sharpen
         
         _T Pop() noexcept
         {
+            std::unique_lock lock(this->lock_);
+            while(this->list_.empty())
             {
-                std::unique_lock<sharpen::SpinLock> lock(this->subLock_);
-                if(!this->list_.empty())
-                {
-                    _T obj(std::move(this->list_.front()));
-                    this->list_.pop_front();
-                    return std::move(obj);
-                }
+                this->cond_.wait(lock);
             }
-            {
-                std::unique_lock<std::mutex> lock(this->lock_);
-                while(true)
-                {
-                    this->cond_.wait(lock);
-                    {
-                        std::unique_lock<sharpen::SpinLock> subLock(this->subLock_);
-                        if(!this->list_.empty())
-                        {
-                            _T obj(std::move(this->list_.front()));
-                            this->list_.pop_front();
-                            return std::move(obj);
-                        }
-                    }
-                }
-            }
+            _T obj(std::move(this->list_.front()));
+            this->list_.pop_front();
+            return std::move(obj); 
         }
     };
 }
