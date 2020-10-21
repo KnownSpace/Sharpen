@@ -87,7 +87,7 @@ namespace sharpen
         
         _T Pop() noexcept
         {
-            std::unique_lock lock(this->lock_);
+            std::unique_lock<std::mutex> lock(this->lock_);
             while(this->list_.empty())
             {
                 this->cond_.wait(lock);
