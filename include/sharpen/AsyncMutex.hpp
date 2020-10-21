@@ -5,10 +5,11 @@
 #include <list>
 
 #include "AwaitableFuture.hpp"
+#include "IAsyncLockable.hpp"
 
 namespace sharpen
 {
-    class AsyncMutex:public sharpen::Noncopyable,public sharpen::Nonmovable
+    class AsyncMutex:public sharpen::Noncopyable,public sharpen::Nonmovable,public sharpen::IAsyncLockable
     {
         
     private:
@@ -22,9 +23,9 @@ namespace sharpen
     public:
         AsyncMutex();
 
-        void LockAsync();
+        virtual void LockAsync() override;
 
-        void Unlock() noexcept;
+        virtual void Unlock() noexcept override;
 
         ~AsyncMutex() noexcept = default;
     };
