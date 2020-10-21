@@ -101,12 +101,14 @@ namespace sharpen
                 while(true)
                 {
                     this->cond_.wait(lock);
-                    std::unique_lock<sharpen::SpinLock> subLock(this->subLock_);
-                    if(!this->list_.empty())
                     {
-                        _T obj(std::move(this->list_.front()));
-                        this->list_.pop_front();
-                        return std::move(obj);
+                        std::unique_lock<sharpen::SpinLock> subLock(this->subLock_);
+                        if(!this->list_.empty())
+                        {
+                            _T obj(std::move(this->list_.front()));
+                            this->list_.pop_front();
+                            return std::move(obj);
+                        }
                     }
                 }
             }
