@@ -57,11 +57,9 @@ namespace sharpen
         void Push(_T object) noexcept
         {
             //we push the object into pending list if cannot get the sub lock
-            bool getSubLock(false);
             {
                 std::unique_lock<sharpen::SpinLock> lock(this->subLock_);
-                getSubLock = this->LockSub();
-                if(!getSubLock)
+                if(!this->LockSub())
                 {
                     this->pendingList_.push_back(std::move(object));
                     return;
