@@ -104,7 +104,7 @@ void sharpen::ExecuteContext::InternalContextEntry(void *lpFn)
 {
     auto *p = (sharpen::ExecuteContext::Function*)lpFn;
     std::unique_ptr<sharpen::ExecuteContext::Function> fn(p);
-    (*p)();
+    (*fn)();
 }
 
 std::unique_ptr<sharpen::ExecuteContext> sharpen::ExecuteContext::InternalMakeContext(sharpen::ExecuteContext::Function *entry)
