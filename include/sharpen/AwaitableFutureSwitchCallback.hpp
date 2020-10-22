@@ -41,7 +41,7 @@ namespace sharpen
 
         Self &operator=(Self &&other) noexcept
         {
-            this->awaiter_ = std::move(other.awaiter_);
+            this->awaiterPtr_ = other.awaiterPtr_;
             this->futureRef_ = other.futureRef_;
             return *this;
         }
