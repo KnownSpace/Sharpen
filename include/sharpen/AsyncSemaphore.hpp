@@ -24,7 +24,7 @@ namespace sharpen
 
         bool NeedWait() const;
     public:
-        AsyncSemaphore(sharpen::Uint32 count);
+        explicit AsyncSemaphore(sharpen::Uint32 count);
 
         virtual void LockAsync() override;
 
