@@ -21,7 +21,7 @@ namespace sharpen
         sharpen::Uint32 beginCounter_;
         sharpen::SpinLock lock_;
     public:
-        AsyncBarrier(sharpen::Uint32 count);
+        explicit AsyncBarrier(sharpen::Uint32 count);
 
         void WaitAsync();
         
