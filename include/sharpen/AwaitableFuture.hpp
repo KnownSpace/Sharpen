@@ -11,7 +11,19 @@ namespace sharpen
     template<typename _Result>
     class AwaitableFuture:public sharpen::Future<_Result>
     {
+        using MyBase = sharpen::Future<_Result>;
+        using Self = sharpen::AwaitableFuture<_Result>;
     public:
+
+        AwaitableFuture()
+            :MyBase()
+        {}
+        
+        AwaitableFuture(Self &&other) noexcept
+            :MyBase(std::move(other))
+        {}
+        
+        ~AwaitableFuture() = default;
 
         auto Await() -> decltype(this->Get())
         {
@@ -29,6 +41,12 @@ namespace sharpen
                 sharpen::LocalEngineContext->Switch(context);
             }
             return this->Get();
+        }
+        
+        Self &operator=(Self &&other) noexcept
+        {
+            MyBase::operator=(std::move(other));
+            return *this;
         }
     };
   
