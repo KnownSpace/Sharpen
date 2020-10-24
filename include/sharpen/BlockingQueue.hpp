@@ -6,6 +6,7 @@
 #include <condition_variable>
 #include <list>
 #include <memory>
+#include <thread>
 
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
@@ -86,8 +87,15 @@ namespace sharpen
         _T Pop() noexcept
         {
             std::unique_lock<std::mutex> lock(this->lock_);
+            sharpen::Uint16 tryCount = 0;
             while(this->list_.empty())
             {
+                if(tryCount < 200)
+                {
+                    tryCount++;
+                    std::this_thread::yield();
+                    continue;
+                }
                 this->cond_.wait(lock);
             }
             _T obj(std::move(this->list_.front()));
