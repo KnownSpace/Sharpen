@@ -27,7 +27,7 @@ namespace sharpen
         sharpen::SpinLock subLock_;
         bool subLocked_;
         List pendingList_;
-        sharpen::Uint32 waiters_
+        sharpen::Uint32 waiters_;
         
         bool LockSub()
         {
