@@ -32,7 +32,7 @@ namespace sharpen
 
 #endif
 
-#define TEST_COUNT 100000
+#define TEST_COUNT 1000000
 
 void LaunchTest()
 {
@@ -97,8 +97,8 @@ int main(int argc, char const *argv[])
     time = (end - begin)/CLOCKS_PER_SEC;
     std::printf("LaunchTest using %d sec\n",time);
     //multithreaded launch test
-    std::thread t3(std::bind(&MultithreadLaunchTest)),t4(std::bind(&MultithreadLaunchTest));
+    /*std::thread t3(std::bind(&MultithreadLaunchTest)),t4(std::bind(&MultithreadLaunchTest));
     t3.join();
-    t4.join();
+    t4.join();*/
     return 0;
 }
