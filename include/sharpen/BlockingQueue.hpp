@@ -11,6 +11,7 @@
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "SpinLock.hpp"
+#include "TypeDef.hpp"
 
 namespace sharpen
 {
@@ -26,6 +27,7 @@ namespace sharpen
         sharpen::SpinLock subLock_;
         bool subLocked_;
         List pendingList_;
+        sharpen::Uint32 waiters_
         
         bool LockSub()
         {
@@ -53,6 +55,7 @@ namespace sharpen
         ,subLock_()
         ,subLocked_(false)
         ,pendingList_()
+        ,waiters_(0)
         {}
 
         void Push(_T object) noexcept
@@ -79,9 +82,12 @@ namespace sharpen
                         this->list_.push_back(std::move(*begin));
                     }
                     this->UnlockSub();
+                    if(this->waiters_ > 0)
+                    {
+                        //notify all threads
+                        this->cond_.notify_all();
+                    }
             }
-            //notice all threads
-            this->cond_.notify_all();
         }
         
         _T Pop() noexcept
@@ -96,7 +102,9 @@ namespace sharpen
                     std::this_thread::yield();
                     continue;
                 }
+                this->waiters_ += 1;
                 this->cond_.wait(lock);
+                this->waiters_ -= 1;
             }
             _T obj(std::move(this->list_.front()));
             this->list_.pop_front();
