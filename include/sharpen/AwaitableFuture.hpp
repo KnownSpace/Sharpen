@@ -23,7 +23,7 @@ namespace sharpen
             :MyBase(std::move(other))
         {}
         
-        ~AwaitableFuture() = default;
+        virtual ~AwaitableFuture() = default;
 
         auto Await() -> decltype(this->Get())
         {
