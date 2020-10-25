@@ -37,7 +37,7 @@ namespace sharpen
             });
         }
 
-        ~AwaitableFutureSwitchCallback() noexcept = default;
+        virtual ~AwaitableFutureSwitchCallback() noexcept = default;
 
         Self &operator=(Self &&other) noexcept
         {
