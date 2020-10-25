@@ -13,7 +13,7 @@ namespace sharpen
 
         Nonmovable(Self &&) noexcept = delete;
 
-        virtual ~Nonmovable() noexcept = default;
+        ~Nonmovable() noexcept = default;
     };
     
 }
