@@ -57,11 +57,7 @@ namespace sharpen
     inline sharpen::SharedAwaitableFuturePtr<_T> MakeSharedAwaitableFuture()
     {
         sharpen::SharedAwaitableFuturePtr<_T> future = std::make_shared<sharpen::AwaitableFuture<_T>>();
-        if (!future)
-        {
-            throw std::bad_alloc();
-        }
-        return future;
+        return std::move(future);
     }
 }
 
