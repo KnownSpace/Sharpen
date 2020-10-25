@@ -15,7 +15,7 @@ namespace sharpen
 
         IContextSwitchCallback(Self &&other) noexcept = default;
 
-        ~IContextSwitchCallback() noexcept = default;
+        virtual ~IContextSwitchCallback() noexcept = default;
 
         Self &operator=(const Self &other) noexcept
         {
