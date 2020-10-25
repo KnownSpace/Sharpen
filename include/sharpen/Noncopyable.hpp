@@ -14,7 +14,7 @@ namespace sharpen
 
         Noncopyable(Self &&) noexcept = default;
 
-        virtual ~Noncopyable() noexcept = default;
+        ~Noncopyable() noexcept = default;
     };
 } 
 
