@@ -347,11 +347,7 @@ namespace sharpen
     inline sharpen::SharedFuturePtr<_Value> MakeSharedFuturePtr()
     {
         auto p = std::make_shared<sharpen::Future<_Value>>();
-        if (!p)
-        {
-            throw std::bad_alloc();
-        }
-        return p;
+        return std::move(p);
     }
 } 
 
