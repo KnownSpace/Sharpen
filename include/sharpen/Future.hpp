@@ -236,7 +236,7 @@ namespace sharpen
             ,waiters_(other.waiters_)
         {}
 
-        ~Future() = default;
+        virtual ~Future() = default;
 
         Self &operator=(Self &&other) noexcept
         {
@@ -344,7 +344,7 @@ namespace sharpen
     using SharedFuturePtr = std::shared_ptr<sharpen::Future<_Value>>;
 
     template<typename _Value>
-    sharpen::SharedFuturePtr<_Value> MakeSharedFuturePtr()
+    inline sharpen::SharedFuturePtr<_Value> MakeSharedFuturePtr()
     {
         auto p = std::make_shared<sharpen::Future<_Value>>();
         if (!p)
