@@ -54,7 +54,7 @@ namespace sharpen
     using SharedAwaitableFuturePtr = std::shared_ptr<sharpen::AwaitableFuture<_T>>;
 
     template<typename _T>
-    sharpen::SharedAwaitableFuturePtr<_T> MakeSharedAwaitableFuture()
+    inline sharpen::SharedAwaitableFuturePtr<_T> MakeSharedAwaitableFuture()
     {
         sharpen::SharedAwaitableFuturePtr<_T> future = std::make_shared<sharpen::AwaitableFuture<_T>>();
         if (!future)
