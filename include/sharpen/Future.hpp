@@ -70,7 +70,7 @@ namespace sharpen
             ,waiters_(other.waiters_)
         {}
 
-        ~Future() = default;
+        virtual ~Future() = default;
 
         Self &operator=(Self &&other) noexcept
         {
