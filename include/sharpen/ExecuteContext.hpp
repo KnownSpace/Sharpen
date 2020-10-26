@@ -62,9 +62,9 @@ namespace sharpen
         //free the stack memory or delete fiber if necessary
         ~ExecuteContext() noexcept;
         
-        void Switch();
+        void Switch() noexcept;
         
-        void Switch(Self &oldContext);
+        void Switch(Self &oldContext) noexcept;
         
         //should not be used directly
         //lpFn is a pointer of std::function<void()>
@@ -85,7 +85,7 @@ namespace sharpen
         //it call ConvertFiberToThread in windows and set sharpen::LocalEnableContextSwitch to false
         static void InternalDisableContextSwitch() noexcept;
         
-        void SetAutoRelease(bool flag);
+        void SetAutoRelease(bool flag) noexcept;
   };
 }
 
