@@ -29,21 +29,21 @@ namespace sharpen
         List pendingList_;
         sharpen::Uint32 waiters_;
         
-        bool LockSub()
+        bool LockSub() noexcept
         {
             bool state = true;
             std::swap(this->subLocked_,state);
             return !state;
         }
         
-        List GetPending()
+        List GetPending() noexcept
         {
             List pending;
             std::swap(pending,this->pendingList_);
             return pending;
         }
         
-        void UnlockSub()
+        void UnlockSub() noexcept
         {
             this->subLocked_ = false;
         }
@@ -58,7 +58,7 @@ namespace sharpen
         ,waiters_(0)
         {}
 
-        void Push(_T object) noexcept
+        void Push(_T object)
         {
             //we push the object into pending list if cannot get the sub lock
             {
