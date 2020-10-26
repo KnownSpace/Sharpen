@@ -52,7 +52,7 @@ sharpen::CoroutineEngine::ContextPtr sharpen::CoroutineEngine::WaitContext()
     return std::move(this->contexts_.Pop());
 }
 
-void sharpen::CoroutineEngine::PushContext(sharpen::CoroutineEngine::ContextPtr context) noexcept
+void sharpen::CoroutineEngine::PushContext(sharpen::CoroutineEngine::ContextPtr context)
 {
     this->contexts_.Push(std::move(context));
 }
