@@ -61,12 +61,11 @@ bool sharpen::CoroutineEngine::IsAlive() const
 void sharpen::CoroutineEngine::InternalPushTask(std::function<void()> &&fn)
 {
     std::function<void()> tmp (std::move(fn));
-    std::function<void()> apply = [tmp](){
+    std::function<void()> apply = [tmp]()mutable {
         tmp();
         sharpen::LocalEngineContext->Switch();
     };
     std::unique_ptr<sharpen::ExecuteContext> context = sharpen::ExecuteContext::MakeContext(std::move(apply));
-    assert(context != nullptr);
     context->SetAutoRelease(true);
     this->PushContext(std::move(context));
 }
