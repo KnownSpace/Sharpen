@@ -4,6 +4,7 @@
 
 #include <sharpen/ExecuteContext.hpp>
 #include <sharpen/TypeDef.hpp>
+#include <sharpen/SystemError.hpp>
 
 #ifdef SHARPEN_HAS_UCONTEXT
 #include <sys/mman.h>
@@ -25,7 +26,12 @@ void sharpen::ExecuteContext::InternalEnableContextSwitch()
     if(!sharpen::LocalEnableContextSwitch)
     {
 #ifdef SHARPEN_HAS_FIBER
-      ::ConvertThreadToFiberEx(NULL,FIBER_FLAG_FLOAT_SWITCH);
+      LPVOID result = ::ConvertThreadToFiberEx(NULL,FIBER_FLAG_FLOAT_SWITCH);
+      if(result == nullptr)
+      {
+          //throw a exception and stop program if we fail
+          sharpen::ThrowLastError();
+      }
 #endif
       sharpen::LocalEnableContextSwitch = true;
     }
@@ -86,7 +92,6 @@ void sharpen::ExecuteContext::SetAutoRelease(bool flag)
 std::unique_ptr<sharpen::ExecuteContext> sharpen::ExecuteContext::GetCurrentContext()
 {
     std::unique_ptr<sharpen::ExecuteContext> ctx(new sharpen::ExecuteContext());
-    assert(ctx != nullptr);
     if(!ctx)
     {
         throw std::bad_alloc();
@@ -111,20 +116,22 @@ std::unique_ptr<sharpen::ExecuteContext> sharpen::ExecuteContext::InternalMakeCo
 {
     assert(entry != nullptr);
     std::unique_ptr<sharpen::ExecuteContext> ctx(new sharpen::ExecuteContext());
-    assert(ctx != nullptr);
     if(!ctx)
     {
         throw std::bad_alloc();
     }
 #ifdef SHARPEN_HAS_FIBER
     sharpen::NativeExecuteContextHandle handle = nullptr;
-    handle = CreateFiberEx(SHARPEN_CONTEXT_STACK_SIZE,0,FIBER_FLAG_FLOAT_SWITCH,(LPFIBER_START_ROUTINE)&sharpen::ExecuteContext::InternalContextEntry,entry);
+    handle = ::CreateFiberEx(SHARPEN_CONTEXT_STACK_SIZE,0,FIBER_FLAG_FLOAT_SWITCH,(LPFIBER_START_ROUTINE)&sharpen::ExecuteContext::InternalContextEntry,entry);
+    if(handle == nullptr)
+    {
+        throw sharpen::ThrowLastError();
+    }
     ctx->handle_ = handle;
 #else
     ::getcontext(&(ctx->handle_));
     //use mmap to allocate statck
     ctx->handle_.uc_stack.ss_sp = ::mmap(nullptr,SHARPEN_CONTEXT_STACK_SIZE,PROT_READ|PROT_WRITE,MAP_PRIVATE | MAP_ANONYMOUS,-1,0);
-    assert(ctx->handle_.uc_stack.ss_sp != nullptr);
     if(!ctx->handle_.uc_stack.ss_sp)
     {
         throw std::bad_alloc();
