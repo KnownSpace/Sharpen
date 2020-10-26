@@ -34,7 +34,7 @@ namespace sharpen
         
         std::atomic_bool alive_;
 
-        void InternalPushTask(std::function<void()> &&fn);
+        void InternalPushTask(std::function<void()> fn);
     
     public:
         
