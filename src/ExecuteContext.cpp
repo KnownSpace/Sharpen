@@ -108,6 +108,7 @@ std::unique_ptr<sharpen::ExecuteContext> sharpen::ExecuteContext::GetCurrentCont
 
 void sharpen::ExecuteContext::InternalContextEntry(void *lpFn)
 {
+    assert(lpFn != nullptr);
     auto *p = (sharpen::ExecuteContext::Function*)lpFn;
     std::unique_ptr<sharpen::ExecuteContext::Function> fn(p);
     (*fn)();
@@ -133,7 +134,7 @@ std::unique_ptr<sharpen::ExecuteContext> sharpen::ExecuteContext::InternalMakeCo
     ::getcontext(&(ctx->handle_));
     //use mmap to allocate statck
     ctx->handle_.uc_stack.ss_sp = ::mmap(nullptr,SHARPEN_CONTEXT_STACK_SIZE,PROT_READ|PROT_WRITE,MAP_PRIVATE | MAP_ANONYMOUS,-1,0);
-    if(!ctx->handle_.uc_stack.ss_sp)
+    if(ctx->handle_.uc_stack.ss_sp == nullptr)
     {
         throw std::bad_alloc();
     }
