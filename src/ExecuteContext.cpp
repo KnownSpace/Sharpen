@@ -37,7 +37,8 @@ void sharpen::ExecuteContext::InternalEnableContextSwitch()
     }
 }
 
-void sharpen::ExecuteContext::InternalDisableContextSwitch()
+//error will be ignored
+void sharpen::ExecuteContext::InternalDisableContextSwitch() noexcept
 {
     if(sharpen::LocalEnableContextSwitch)
     {
@@ -48,7 +49,7 @@ void sharpen::ExecuteContext::InternalDisableContextSwitch()
     }
 }
 
-sharpen::ExecuteContext::~ExecuteContext()
+sharpen::ExecuteContext::~ExecuteContext() noexcept
 {
 #ifdef SHARPEN_HAS_FIBER
     if(this->enableAutoRelease_ && this->handle_ != nullptr)
