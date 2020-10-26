@@ -44,7 +44,7 @@ namespace sharpen
         
         //if there are no any context in the queue
         //we will block the thread
-        ContextPtr WaitContext();
+        ContextPtr WaitContext() noexcept;
         
         //push a context to the queue
         void PushContext(ContextPtr context);
