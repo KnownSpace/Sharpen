@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_SYSTEMERROR_HPP
 #define _SHARPEN_SYSTEMERROR_HPP
 
-#include <stdexcept>
+#include <system_error>
 
 #include "SystemMacro.hpp"
 
