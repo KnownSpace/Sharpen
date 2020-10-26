@@ -47,7 +47,7 @@ namespace sharpen
         ContextPtr WaitContext();
         
         //push a context to the queue
-        void PushContext(ContextPtr context) noexcept;
+        void PushContext(ContextPtr context);
         
         template<typename _Fn,typename ..._Args,typename = decltype(std::declval<_Fn>()(std::declval<_Args>()...))>
         void PushTask(_Fn &&fn,_Args &&...args)
