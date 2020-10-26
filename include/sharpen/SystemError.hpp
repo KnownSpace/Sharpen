@@ -31,12 +31,12 @@ namespace sharpen
 
     inline void ThrowLastError()
     {
-        throw std::system_error(sharpen::GetLastError(),std::system_category())
+        throw std::system_error(sharpen::GetLastError(),std::system_category());
     }
     
     inline std::exception_ptr MakeLastErrorPtr()
     {
-       return std::make_exception_ptr(std::system_error(sharpen::GetLastError(),std::system_category()));
+       return std::move(std::make_exception_ptr(std::system_error(sharpen::GetLastError(),std::system_category())));
     }
 }
 
