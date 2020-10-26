@@ -47,7 +47,7 @@ sharpen::CoroutineEngine::~CoroutineEngine() noexcept
     this->alive_ = false;
 }
 
-sharpen::CoroutineEngine::ContextPtr sharpen::CoroutineEngine::WaitContext()
+sharpen::CoroutineEngine::ContextPtr sharpen::CoroutineEngine::WaitContext() noexcept
 {
     return std::move(this->contexts_.Pop());
 }
