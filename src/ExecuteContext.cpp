@@ -65,7 +65,7 @@ sharpen::ExecuteContext::~ExecuteContext() noexcept
 #endif
 }
 
-void sharpen::ExecuteContext::Switch()
+void sharpen::ExecuteContext::Switch() noexcept
 {
 #ifdef SHARPEN_HAS_FIBER
     assert(this->handle_ != nullptr);
@@ -75,7 +75,7 @@ void sharpen::ExecuteContext::Switch()
 #endif
 }
 
-void sharpen::ExecuteContext::Switch(sharpen::ExecuteContext &oldContext)
+void sharpen::ExecuteContext::Switch(sharpen::ExecuteContext &oldContext) noexcept
 {
 #ifdef SHARPEN_HAS_FIBER
     oldContext.handle_ = GetCurrentFiber();
@@ -85,7 +85,7 @@ void sharpen::ExecuteContext::Switch(sharpen::ExecuteContext &oldContext)
 #endif
 }
 
-void sharpen::ExecuteContext::SetAutoRelease(bool flag)
+void sharpen::ExecuteContext::SetAutoRelease(bool flag) noexcept
 {
     this->enableAutoRelease_ = flag;
 }
