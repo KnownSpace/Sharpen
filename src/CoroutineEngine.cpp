@@ -14,7 +14,10 @@ void sharpen::InitThisThreadForCentralEngine()
     {
         sharpen::ExecuteContext::InternalEnableContextSwitch();
         sharpen::LocalEngineContext = std::move(sharpen::ExecuteContext::MakeContext(std::bind(&sharpen::CentralEngineLoopEntry)));
-        assert(sharpen::LocalEngineContext != nullptr);
+        if(sharpen::LocalEngineContext == nullptr)
+        {
+            throw std::bad_alloc();
+        }
         sharpen::LocalEngineContext->SetAutoRelease(true);
     }
 }
@@ -29,6 +32,7 @@ void sharpen::CentralEngineLoopEntry()
             sharpen::LocalContextSwitchCallback.release();
         }
         std::unique_ptr<sharpen::ExecuteContext> ctx = std::move(sharpen::CentralEngine.WaitContext());
+        assert(sharpen::LocalEngineContext != nullptr);
         ctx->Switch(*sharpen::LocalEngineContext);
     }
 }
