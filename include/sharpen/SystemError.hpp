@@ -4,7 +4,7 @@
 
 #include <stdexcept>
 
-#include "SystemMarco.hpp"
+#include "SystemMacro.hpp"
 
 #ifdef SHARPEN_IS_WIN
 #include <Windows.h>
@@ -20,9 +20,24 @@ namespace sharpen
     using ErrorCode = decltype(errno);
 #endif
 
-    sharpen::ErrorCode GetLastError() noexcept;
+    inline sharpen::ErrorCode GetLastError() noexcept
+    {
+#ifdef SHARPEN_IS_WIN
+        return ::GetLastError();
+#else
+        return errno;
+#endif
+    }
 
-    void ThrowLastError();
+    inline void ThrowLastError()
+    {
+        throw std::system_error(sharpen::GetLastError(),std::system_category())
+    }
+    
+    inline std::exception_ptr MakeLastErrorPtr()
+    {
+       return std::make_exception_ptr(std::system_error(sharpen::GetLastError(),std::system_category()));
+    }
 }
 
 #endif
