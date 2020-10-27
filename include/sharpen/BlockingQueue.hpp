@@ -27,7 +27,6 @@ namespace sharpen
         sharpen::SpinLock subLock_;
         bool subLocked_;
         List pendingList_;
-        sharpen::Uint32 waiters_;
         
         bool LockSub() noexcept
         {
@@ -55,7 +54,6 @@ namespace sharpen
         ,subLock_()
         ,subLocked_(false)
         ,pendingList_()
-        ,waiters_(0)
         {}
 
         void Push(_T object)
@@ -77,17 +75,14 @@ namespace sharpen
                     std::unique_lock<sharpen::SpinLock> subLock(this->subLock_);
                     List &&pending = this->GetPending();
                     //handle pending list
-                    for(auto begin = std::begin(pending),end = std::end(pending);begin != end;begin++)
+                    for(auto begin = std::begin(pending),end = std::end(pending);begin != end;++begin)
                     {
                         this->list_.push_back(std::move(*begin));
                     }
                     this->UnlockSub();
-                    if(this->waiters_ > 0)
-                    {
-                        //notify all threads
-                        this->cond_.notify_all();
-                    }
             }
+            //notify all threads
+            this->cond_.notify_all();
         }
         
         _T Pop() noexcept
@@ -102,9 +97,7 @@ namespace sharpen
                     std::this_thread::yield();
                     continue;
                 }
-                this->waiters_ += 1;
                 this->cond_.wait(lock);
-                this->waiters_ -= 1;
             }
             _T obj(std::move(this->list_.front()));
             this->list_.pop_front();
