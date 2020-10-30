@@ -18,7 +18,7 @@ namespace sharpen
         
         IAsyncReadable(Self &&) noexcept = default;
         
-        virtual ~IAsyncReadable() = default;
+        virtual ~IAsyncReadable() noexcept = default;
         
         virtual sharpen::Size ReadAsync(sharpen::Char *buf,sharpen::Size bufSize) = 0;
         
