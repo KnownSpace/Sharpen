@@ -25,7 +25,7 @@ namespace sharpen
         
         IChannel(Self &&) noexcept = default;
         
-        virtual ~IChannel() = default;
+        virtual ~IChannel() noexcept = default;
         
         //it will be called when a io operation was completed
         virtual void OnComplete(EventCode code) = 0;
