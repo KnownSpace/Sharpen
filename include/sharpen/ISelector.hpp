@@ -32,10 +32,11 @@ namespace sharpen
         virtual void Select(EventVector &events) = 0;
         
         //find a channel by file handle
-        virtual IChannel *FindChannel(sharpen::FileHandle handle) = 0;
+        virtual sharpen::IChannel *FindChannel(sharpen::FileHandle handle) = 0;
         
         //queue task to selector
         virtual void QueueInLoop(std::function<void()> fn) = 0;
+        
     }
 }
 
