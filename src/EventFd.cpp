@@ -56,4 +56,12 @@ sharpen::FileHandle sharpen::EventFd::GetHandle() noexcept
 {
     return this->handle_;
 }
+
+sharpen::EventFd &sharpen::EventFd::operator=(sharpen::EventFd &&other) noexcept
+{
+    this->handle_ = other.handle_;
+    other.handle_ = -1;
+    return *this;
+}
+
 #endif
