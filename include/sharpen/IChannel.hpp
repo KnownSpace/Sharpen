@@ -38,7 +38,7 @@ namespace sharpen
         void Close() noexcept
         {
             this->Unregister();
-            this->Close();
+            this->DoClose();
         }
     };
 }
