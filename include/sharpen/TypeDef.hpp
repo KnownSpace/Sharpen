@@ -3,6 +3,7 @@
 #define _SHARPEN_TYPEDEF_HPP
 
 #include <cstdint>
+#include <cstddef>
 namespace sharpen
 {
     //int types
@@ -20,7 +21,7 @@ namespace sharpen
     using Byte = unsigned char;
 
     //other types
-    using Size = size_t;
+    using Size = std::size_t;
 }
 
 #endif
