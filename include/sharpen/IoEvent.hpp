@@ -20,7 +20,7 @@ namespace sharpen
         
         virtual ~IoEvent() = default;
         
-        virtual void Handle(ISelector &selector) = 0;
+        virtual void Handle(sharpen::ISelector &selector) = 0;
     };
 }
 
