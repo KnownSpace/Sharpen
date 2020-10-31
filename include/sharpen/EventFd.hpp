@@ -1,11 +1,13 @@
 #pragma once
 #ifndef _SHARPEN_EVENTFD_HPP
 #define _SHARPEN_EVENTFD_HPP
-//event fd only supported by linux
-#ifdef SHARPEN_IS_LINUX
 
 #include "TypeDef.hpp"
 #include "Noncopyable.hpp"
+#include "FileTypeDef.hpp"
+
+//event fd only supported by linux
+#ifdef SHARPEN_IS_LINUX
 
 namespace sharpen
 {
@@ -14,6 +16,8 @@ namespace sharpen
     private:
         using EventFdValue = sharpen::Uint64;
         using Self = sharpen::EventFd;
+
+        sharpen::FileHandle handle_;
     public:
         EventFd(sharpen::Uint32 initVal,int flags);
         
@@ -26,6 +30,8 @@ namespace sharpen
         EventFdValue Read();
         
         void Write(EventFdValue value);
+        
+        sharpen::FileHandle GetHandle() noexcept;
     };
 }
 
