@@ -9,6 +9,8 @@
 //event fd only supported by linux
 #ifdef SHARPEN_IS_LINUX
 
+#define SHARPEN_HAS_EVENTFD
+
 namespace sharpen
 {
     class EventFd:public sharpen::Noncopyable
