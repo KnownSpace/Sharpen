@@ -36,7 +36,7 @@ namespace sharpen
         
         ~IoReadyEvent() = default;
         
-        virtual void Handle(ISelector &selector) override;
+        virtual void Handle(sharpen::ISelector &selector) override;
     };
 }
 
