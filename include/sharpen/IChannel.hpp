@@ -46,6 +46,8 @@ namespace sharpen
         }
         
         virtual sharpen::FileHandle GetHandle() = 0;
+
+        virtual sharpen::ISelector *GetRegisteredSelector() = 0;
     };
 }
 
