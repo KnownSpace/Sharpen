@@ -38,7 +38,9 @@ namespace sharpen
         //close channel
         void Close() noexcept
         {
-            this->Unregister();
+            //await unregister
+            this->UnregisterAsync();
+            //close channel
             this->DoClose();
         }
         
