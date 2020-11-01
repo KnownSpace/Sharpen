@@ -47,11 +47,16 @@ void sharpen::IoCompletionPort::Bind(sharpen::FileHandle handle)
 void sharpen::IoCompletionPort::Post(sharpen::IoCompletionPort::Overlapped *overlapped,sharpen::Uint32 bytesTransferred,void *completionKey)
 {
     assert(this->handle_ != NULL);
-    BOOL r = ::PostQueuedCompletionStatus(this->handle_,bytesTransferred,completionKey);
+    BOOL r = ::PostQueuedCompletionStatus(this->handle_,bytesTransferred,completionKey,overlapped);
     if(r == 0)
     {
         sharpen::ThrowLastError();
     }
+}
+
+void sharpen::IoCompletionPort::Notify()
+{
+    this->Post(nullptr,0,nullptr);
 }
 
 #endif
