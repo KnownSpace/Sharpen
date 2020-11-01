@@ -3,6 +3,7 @@
 #define _SHARPEN_ICHANNEL_HPP
 
 #include "TypeDef.hpp"
+#include "FileTypeDef.hpp"
 
 namespace sharpen
 {
@@ -30,9 +31,9 @@ namespace sharpen
         //it will be called when a io operation was completed
         virtual void OnComplete(EventCode code) = 0;
         
-        virtual void Register(ISelector &selector) = 0;
+        virtual void RegisterAsync(ISelector &selector) = 0;
         
-        virtual void Unregister() noexcept = 0;
+        virtual void UnregisterAsync() noexcept = 0;
         
         //close channel
         void Close() noexcept
@@ -40,6 +41,8 @@ namespace sharpen
             this->Unregister();
             this->DoClose();
         }
+        
+        virtual sharpen::FileHandle GetHandle() = 0;
     };
 }
 
