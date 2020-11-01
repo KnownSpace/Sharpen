@@ -28,7 +28,7 @@ namespace sharpen
         
         virtual ~ISelector() noexcept = default;
         
-        //select events and save event to events
+        //select events and save to events
         virtual void Select(EventVector &events) = 0;
         
         //queue task to selector
@@ -45,7 +45,6 @@ namespace sharpen
         
         //disable writing listen
         virtual void DisableWritelisten(sharpen::IChannel *channel) = 0;
-        
     }
 }
 
