@@ -37,6 +37,18 @@ namespace sharpen
         //queue task to selector
         virtual void QueueInLoop(std::function<void()> fn) = 0;
         
+        //register file handle
+        virtual void Resister(sharpen::IChannel *channel) = 0;
+        
+        //unregister file handle
+        virtual void Unregister(sharpen::IChannel *channel) = 0;
+        
+        //enable writing listen
+        virtual void EnableWriteListen(sharpen::IChannel *channel) = 0;
+        
+        //disable writing listen
+        virtual void DisableWritelisten(sharpen::IChannel *channel) = 0;
+        
     }
 }
 
