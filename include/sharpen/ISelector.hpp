@@ -17,7 +17,8 @@ namespace sharpen
     private:
         using Self = sharpen::ISelector;
         using Event = sharpen::IoEvent;
-        using EventVector = std::vector<Event>;
+        using EventPtr = Event*;
+        using EventVector = std::vector<EventPtr>;
     public:
     
         ISelector() = default;
