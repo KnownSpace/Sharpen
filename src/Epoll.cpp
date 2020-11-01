@@ -1,4 +1,4 @@
-#include <sharpen/Epoll.h>
+#include <sharpen/Epoll.hpp>
 #ifdef SHARPEN_HAS_EPOLL
 
 #include <cassert>
