@@ -8,6 +8,8 @@
 namespace sharpen
 {
     class ISelector;
+
+    class IoEvent;
     
     class IChannel
     {
@@ -18,7 +20,6 @@ namespace sharpen
         virtual void DoClose() noexcept = 0;
         
     public:
-        using EventCode = sharpen::Uint32;
         
         IChannel() = default;
         
@@ -29,7 +30,7 @@ namespace sharpen
         virtual ~IChannel() noexcept = default;
         
         //it will be called when a io operation was completed
-        virtual void OnComplete(EventCode code) = 0;
+        virtual void OnComplete(sharpen::IoEvent *event) = 0;
         
         virtual void RegisterAsync(ISelector &selector) = 0;
         
