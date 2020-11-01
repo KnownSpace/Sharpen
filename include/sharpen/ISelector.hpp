@@ -31,8 +31,8 @@ namespace sharpen
         //select events and save to events
         virtual void Select(EventVector &events) = 0;
         
-        //queue task to selector
-        virtual void QueueInLoop(std::function<void()> fn) = 0;
+        //notify io thread
+        virtual void Notify() = 0;
         
         //register file handle
         virtual void Resister(sharpen::IChannel *channel) = 0;
