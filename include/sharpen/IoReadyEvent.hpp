@@ -14,42 +14,19 @@ namespace sharpen
     private:
         using Self = sharpen::IoReadyEvent;
         using Base = sharpen::IoEvent;
-        using MyType = typename Base::EventType;
         
-        sharpen::FileHandle handle_;
-        MyType type_;
     protected:
-        virtual void HandleReadEvent(sharpen::ISelector &selector) = 0;
         
-        virtual void HandleWriteEvent(sharpen::ISelector &selector) = 0;
-        
-        virtual void HandleCloseEvent(sharpen::ISelector &selector) = 0;
-        
-        virtual void HandleErrorEvent(sharpen::ISelector &selector) = 0;
+        //file handle
+        sharpen::FileHandle handle_;
     public:
-        IoReadyEvent(sharpen::FileHandle handle,MyType type);
+        IoReadyEvent(Base::EventType type,sharpen::FileHandle handle)
+            :Base(type)
+            ,handle_(handle)
+        {}
         
         ~IoReadyEvent() = default;
         
-        virtual void Handle(sharpen::ISelector &selector) override
-        {
-            if(this->type_ & MyType::Read)
-            {
-                this->HandleRead(selector);
-            }
-            if(this->type_ & MyType::Write)
-            {
-                this->HandleWrite(selector);
-            }
-            if(this->type_ & MyType::Close)
-            {
-                this->HandleClose(selector);
-            }
-            if(this->type_ & MyType::Error)
-            {
-                this->HandleError(selector);
-            }
-        }
     };
 }
 
