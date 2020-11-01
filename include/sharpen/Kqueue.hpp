@@ -6,6 +6,8 @@
 
 #ifdef SHARPEN_IS_UNIX
 
+#define SHARPEN_HAS_KQUEUE
+
 #include <sys/event.h>
 
 #include "Noncopyable.hpp"
