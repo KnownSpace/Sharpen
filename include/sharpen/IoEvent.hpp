@@ -4,12 +4,15 @@
 
 #include "TypeDef.hpp"
 #include "Noncopyable.hpp"
+#include "Nonmovable.hpp"
 
 namespace sharpen
 {
     class ISelector;
+    
+    class IChannel;
 
-    class IoEvent:public sharpen::Noncopyable
+    class IoEvent:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     public:
         //event type   
@@ -36,24 +39,13 @@ namespace sharpen
         
     protected:    
         EventType type_;
+        sharpen::IChannel *channel_;
     public:
     
-        explicit IoEvent(EventType type)
+        IoEvent(EventType type,sharpen::IChannel *channel)
             :type_(type)
+            ,channel_(channel)
         {}
-        
-        IoEvent(Self &&other) noexcept
-            :type_(other.type_)
-        {
-            other.type_ = EventTypeEnum::None;
-        }
-        
-        Self &operator=(Self &&other) noexcept
-        {
-            this->type_ = other.type_;
-            other.type_ = EventTypeEnum::None;
-            return *this;
-        }
         
         virtual ~IoEvent() = default;
         
@@ -80,6 +72,11 @@ namespace sharpen
         bool IsErrorEvent() const
         {
             return this->type_ & EventType::Error;
+        }
+        
+        sharpen::IChannel *GetChannel() noexcept
+        {
+            return this->channel_;
         }
     };
 }
