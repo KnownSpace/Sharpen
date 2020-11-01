@@ -38,7 +38,7 @@ namespace sharpen
         EventType type_;
     public:
     
-        IoEvent(EventType type)
+        explicit IoEvent(EventType type)
             :type_(type)
         {}
         
