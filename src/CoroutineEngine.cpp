@@ -32,6 +32,7 @@ void sharpen::CentralEngineLoopEntry()
             sharpen::LocalContextSwitchCallback.release();
         }
         std::unique_ptr<sharpen::ExecuteContext> ctx = std::move(sharpen::CentralEngine.WaitContext());
+        assert(ctx != nullptr);
         assert(sharpen::LocalEngineContext != nullptr);
         ctx->Switch(*sharpen::LocalEngineContext);
     }
@@ -64,7 +65,7 @@ bool sharpen::CoroutineEngine::IsAlive() const
 
 void sharpen::CoroutineEngine::InternalPushTask(std::function<void()> fn)
 {
-    std::function<void()> apply = [fn]()mutable {
+    std::function<void()> apply = [fn](){
         fn();
         sharpen::LocalEngineContext->Switch();
     };
