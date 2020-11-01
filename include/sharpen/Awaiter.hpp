@@ -34,7 +34,7 @@ namespace sharpen
     public:
         Awaiter() = default;
 
-        Awaiter(std::unique_ptr<sharpen::ExecuteContext> &&context) noexcept
+        explicit Awaiter(std::unique_ptr<sharpen::ExecuteContext> &&context) noexcept
             :context_(std::move(context))
         {
             assert(this->context_ != nullptr);
