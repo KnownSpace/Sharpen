@@ -33,6 +33,8 @@ namespace sharpen
         void Bind(sharpen::FileHandle handle);
         
         void Post(Overlapped *overlapped,sharpen::Uint32 bytesTransferred,void *completionKey);
+        
+        void Notify();
     };
 }
 
