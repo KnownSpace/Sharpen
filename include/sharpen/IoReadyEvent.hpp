@@ -10,24 +10,11 @@
 namespace sharpen
 {
     class IoReadyEvent:public sharpen::Noncopyable,public sharpen::Nonmovable,public sharpen::IoEvent
-    {
-    
-    //event type
-    public:
-        struct EventType
-        {
-            enum 
-            {
-                Read = 1,
-                Write = 2,
-                Close = 4,
-                Error = 8
-            };
-        };
-    
+    { 
     private:
         using Self = sharpen::IoReadyEvent;
-        using MyType = typename Self::EventType;
+        using Base = sharpen::IoEvent;
+        using MyType = typename Base::EventType;
         
         sharpen::FileHandle handle_;
         MyType type_;
