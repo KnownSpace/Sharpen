@@ -47,12 +47,7 @@ namespace sharpen
             ,channel_(channel)
         {}
         
-        virtual ~IoEvent() = default;
-        
-        //do some works if necessary
-        //do nothing by default
-        virtual void Handle(sharpen::ISelector &selector)
-        {}
+        ~IoEvent() = default;
         
         bool IsReadEvent() const
         {
