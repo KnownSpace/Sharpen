@@ -12,7 +12,7 @@ namespace sharpen
     
     class IChannel;
 
-    class IoEvent:public sharpen::Noncopyable,public sharpen::Nonmovable
+    class IoEvent
     {
     public:
         //event type   
@@ -36,42 +36,83 @@ namespace sharpen
         using EventType = sharpen::Uint32;
     private:
         using Self = sharpen::IoEvent;
-        
-    protected:    
+           
         EventType type_;
         sharpen::IChannel *channel_;
+        void *data_;
     public:
     
-        IoEvent(EventType type,sharpen::IChannel *channel)
+        IoEvent(EventType type,sharpen::IChannel *channel,void *data)
             :type_(type)
             ,channel_(channel)
+            ,data_(data)
         {}
         
-        ~IoEvent() = default;
+        IoEvent(const Self &other)
+            :type_(other.type_)
+            ,channel_(other.channel_)
+            ,data_(other.data_)
+        {}
         
-        bool IsReadEvent() const
+        IoEvent(Self &&other) noexcept
+            :type_(other.type_)
+            ,channel_(other.channel_)
+            ,data_(other.data_)
+        {
+            other.type_ = EventTypeEnum::None;
+            other.channel_ = nullptr;
+            other.data_ = nullptr;
+        }
+        
+        Self &operator=(const Self &other)
+        {
+            this->type_ = other.type_;
+            this->channel_ = other.channel_;
+            this->data_ = other.data_;
+            return *this;
+        }
+        
+        Self &operator=(Self &&other) noexcept
+        {
+            this->type_ = other.type_;
+            this->channel_ = other.channel_;
+            this->data_ = other.data_;
+            other.type_ = EventTypeEnum::None;
+            other.channel_ = nullptr;
+            other.data_ = nullptr;
+            return *this;
+        }
+        
+        ~IoEvent() noexcept = default;
+        
+        bool IsReadEvent() const noexcept
         {
             return this->type_ & EventTypeEnum::Read;
         }
         
-        bool IsWriteEvent() const
+        bool IsWriteEvent() const noexcept
         {
             return this->type_ & EventTypeEnum::Write;
         }
         
-        bool IsCloseEvent() const
+        bool IsCloseEvent() const noexcept
         {
             return this->type_ & EventTypeEnum::Close;
         }
         
-        bool IsErrorEvent() const
+        bool IsErrorEvent() const noexcept
         {
             return this->type_ & EventType::Error;
         }
         
-        sharpen::IChannel *GetChannel() noexcept
+        sharpen::IChannel *GetChannel() const noexcept
         {
             return this->channel_;
+        }
+        
+        void *GetData() const noexcept
+        {
+            return this->data_;
         }
     };
 }
