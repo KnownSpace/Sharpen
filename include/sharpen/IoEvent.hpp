@@ -8,7 +8,6 @@
 
 namespace sharpen
 {
-    class ISelector;
     
     class IChannel;
 
