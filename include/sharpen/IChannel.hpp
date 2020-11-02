@@ -7,7 +7,7 @@
 
 namespace sharpen
 {
-    class ISelector;
+    class IEventLoop;
 
     class IoEvent;
     
@@ -32,7 +32,7 @@ namespace sharpen
         //it will be called when a io operation was completed
         virtual void OnComplete(sharpen::IoEvent *event) = 0;
         
-        virtual void RegisterAsync(ISelector &selector) = 0;
+        virtual void RegisterAsync(sharpen::IEventLoop &loop) = 0;
         
         virtual void UnregisterAsync() noexcept = 0;
         
@@ -47,7 +47,7 @@ namespace sharpen
         
         virtual sharpen::FileHandle GetHandle() = 0;
 
-        virtual sharpen::ISelector *GetRegisteredSelector() = 0;
+        virtual sharpen::IEventLoop *GetLoop() = 0;
     };
 }
 
