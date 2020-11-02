@@ -21,13 +21,13 @@ namespace sharpen
         
         virtual ~IEventLoop() noexcept = default;
               
-        virtual void Register(IChannel *channel) = 0;
+        virtual void Bind(sharpen::IChannel *channel) = 0;
         
-        virtual void Unregister(IChannel *channel) noexcept = 0;
+        virtual void Unbind(sharpen::IChannel *channel) noexcept = 0;
         
-        virtual void EnableWriteListen(IChannel *channel) = 0;
+        virtual void EnableWriteListen(sharpen::IChannel *channel) = 0;
         
-        virtual void DisableWriteListen(IChannel *channel) = 0;
+        virtual void DisableWriteListen(sharpen::IChannel *channel) = 0;
         
         virtual void QueueInLoop(Task task) = 0;
         
