@@ -29,8 +29,8 @@ namespace sharpen
         SelectorPtr selector_;
         TaskVectorPtr tasks_;
         bool exectingTask_;
-        bool running_;
         LockPtr lock_;
+        bool running_;
 
         //one loop per thread
         static thread_local EventLoop *LocalLoop;
