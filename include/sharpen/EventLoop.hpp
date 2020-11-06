@@ -25,6 +25,7 @@ namespace sharpen
         
         sharpen::ISelector *selector_;
         TaskVector tasks_;
+        bool exectingTask_;
         Lock lock_;
     public:
         EventLoop() = default;
