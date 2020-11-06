@@ -27,6 +27,9 @@ namespace sharpen
         TaskVector tasks_;
         bool exectingTask_;
         Lock lock_;
+
+        //one loop per thread
+        static thread_local EventLoop *LocalLoop;
     public:
         EventLoop() = default;
         
@@ -45,9 +48,9 @@ namespace sharpen
         void Run();
         
         void Stop();
+
+        static sharpen::EventLoop *GetLocalLoop() noexcept;
     };
-    
-    extern thread_local EventLoop *LocalEventLoop;
 }
 
 #endif
