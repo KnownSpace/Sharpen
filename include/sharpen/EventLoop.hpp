@@ -31,9 +31,9 @@ namespace sharpen
         //one loop per thread
         static thread_local EventLoop *LocalLoop;
     public:
-        EventLoop() = default;
+        EventLoop(sharpen::ISelector *selector);
         
-        ~EventLoop() noexcept = default;
+        ~EventLoop() noexcept;
               
         void Bind(sharpen::IChannel *channel);
         
