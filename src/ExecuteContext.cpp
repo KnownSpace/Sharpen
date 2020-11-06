@@ -127,7 +127,7 @@ std::unique_ptr<sharpen::ExecuteContext> sharpen::ExecuteContext::InternalMakeCo
     handle = ::CreateFiberEx(SHARPEN_CONTEXT_STACK_SIZE,0,FIBER_FLAG_FLOAT_SWITCH,(LPFIBER_START_ROUTINE)&sharpen::ExecuteContext::InternalContextEntry,entry);
     if(handle == nullptr)
     {
-        throw sharpen::ThrowLastError();
+        sharpen::ThrowLastError();
     }
     ctx->handle_ = handle;
 #else
