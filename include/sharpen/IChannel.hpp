@@ -7,7 +7,7 @@
 
 namespace sharpen
 {
-    class IEventLoop;
+    class EventLoop;
 
     class IoEvent;
     
@@ -47,7 +47,7 @@ namespace sharpen
         
         virtual sharpen::FileHandle GetHandle() = 0;
 
-        virtual sharpen::IEventLoop *GetLoop() = 0;
+        virtual sharpen::EventLoop *GetLoop() = 0;
     };
 }
 
