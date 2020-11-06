@@ -3,9 +3,11 @@
 #define _SHARPEN_IEVENTLOOP_HPP
 
 #include <functional>
+#include <vector>
 
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
+#include "SpinLock.hpp"
 
 namespace sharpen
 {
@@ -18,8 +20,12 @@ namespace sharpen
     {
     private:
         using Task = std::function<void()>;
+        using Lock = sharpen::SpinLock;
+        using TaskVector = std::vector<Task>;
         
         sharpen::ISelector *selector_;
+        TaskVector tasks_;
+        Lock lock_;
     public:
         EventLoop() = default;
         
