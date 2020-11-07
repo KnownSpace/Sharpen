@@ -22,7 +22,7 @@ namespace sharpen
         using WorkerVector = std::vector<WorkerPtr>;
         
         WorkerVector workers_;
-        ThreadVector threads_;
+        //ThreadVector threads_;
     public:
         explicit CoroutineWorkerPool(sharpen::Size poolSize);
         
