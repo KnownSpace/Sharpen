@@ -28,7 +28,7 @@ namespace sharpen
         
         ~CoroutineWorkerPool() noexcept;
         
-        void Stop();
+        void Stop() noexcept;
     };
 }
 
