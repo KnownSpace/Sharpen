@@ -18,6 +18,8 @@ namespace sharpen
     private:
         using ContextPtr = std::unique_ptr<sharpen::ExecuteContext>;
         
+        //save current execute context
+        ContextPtr current_;
     public:
         CoroutineWorker() = default;
         
@@ -25,6 +27,9 @@ namespace sharpen
         
         //block the thread and wait contexts to exceute
         void Run();
+        
+        //stop worker
+        void Stop();
     };
 }
 
