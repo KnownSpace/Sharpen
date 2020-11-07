@@ -8,6 +8,7 @@
 #include "Nonmovable.hpp"
 #include "ExecuteContext.hpp"
 #include "CoroutineEngine.hpp"
+#include "SpinLock.hpp"
 
 namespace sharpen
 {
@@ -16,9 +17,12 @@ namespace sharpen
     {
     private:
         using ContextPtr = std::unique_ptr<sharpen::ExecuteContext>;
+        using Lock = sharpen::SpinLock;
         
         //save current execute context
         ContextPtr current_;
+        bool running_;
+        Lock lock_;
     public:
         CoroutineWorker();
         
