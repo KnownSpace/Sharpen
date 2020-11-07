@@ -13,7 +13,7 @@
 
 namespace sharpen
 {
-    class CoroutineWorkerPool
+    class CoroutineWorkerPool:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
         using ThreadPtr = std::unique_ptr<std::thread>;
