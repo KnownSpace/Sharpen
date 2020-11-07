@@ -8,11 +8,12 @@
 #include "Future.hpp"
 #include "ExecuteContext.hpp"
 #include "IContextSwitchCallback.hpp"
+#include "Nonmovable.hpp"
 
 namespace sharpen
 {
     template<typename _T>
-    class AwaitableFutureSwitchCallback:public sharpen::Noncopyable,public sharpen::IContextSwitchCallback
+    class AwaitableFutureSwitchCallback:public sharpen::Noncopyable,public sharpen::IContextSwitchCallback,public sharpen::Nonmovable
     {
     private:
         using MyAwaiter = sharpen::Awaiter<_T>;
@@ -37,14 +38,7 @@ namespace sharpen
             });
         }
 
-        virtual ~AwaitableFutureSwitchCallback() noexcept = default;
-
-        Self &operator=(Self &&other) noexcept
-        {
-            this->awaiterPtr_ = other.awaiterPtr_;
-            this->futureRef_ = other.futureRef_;
-            return *this;
-        }
+        virtual ~AwaitableFutureSwitchCallback() noexcept = default;      
     };
 }
 
