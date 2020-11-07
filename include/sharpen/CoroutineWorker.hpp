@@ -21,15 +21,15 @@ namespace sharpen
         //save current execute context
         ContextPtr current_;
     public:
-        CoroutineWorker() = default;
+        CoroutineWorker();
         
-        ~CoroutineWorker() noexcept = default;
+        ~CoroutineWorker() noexcept;
         
         //block the thread and wait contexts to exceute
         void Run();
         
         //stop worker
-        void Stop();
+        void Stop() noexcept;
     };
 }
 
