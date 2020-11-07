@@ -17,7 +17,7 @@ namespace sharpen
         
         Function fn_;
     public:
-        LambdaSwitchCallback(Function &&fn)
+        explicit LambdaSwitchCallback(Function &&fn)
             :fn_(std::move(fn))
         {}
         
