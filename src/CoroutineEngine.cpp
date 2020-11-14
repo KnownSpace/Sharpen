@@ -1,6 +1,7 @@
 #include <cassert>
 
 #include <sharpen/CoroutineEngine.hpp>
+#include <sharpen/ExitWatchDog.hpp>
 
 thread_local std::unique_ptr<sharpen::ExecuteContext> sharpen::LocalEngineContext(nullptr);
 
