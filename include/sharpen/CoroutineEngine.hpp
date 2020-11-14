@@ -31,8 +31,6 @@ namespace sharpen
         using List = sharpen::BlockingQueue<ContextPtr>;
         
         List contexts_;
-        
-        std::atomic_bool alive_;
 
         void InternalPushTask(std::function<void()> fn);
     
@@ -40,7 +38,7 @@ namespace sharpen
         
         CoroutineEngine();
         
-        ~CoroutineEngine() noexcept;
+        ~CoroutineEngine() noexcept = default;
         
         //if there are no any context in the queue
         //we will block the thread
@@ -55,8 +53,7 @@ namespace sharpen
             std::function<void()> func = std::bind(std::move(fn),args...);
             this->InternalPushTask(std::move(func));
         }
-        
-        bool IsAlive() const;
+   
     };
   
     extern sharpen::CoroutineEngine CentralEngine;
