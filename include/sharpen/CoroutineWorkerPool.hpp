@@ -20,15 +20,19 @@ namespace sharpen
         using WorkerPtr = std::unique_ptr<sharpen::CoroutineWorker>;
         using ThreadVector = std::vector<ThreadPtr>;
         using WorkerVector = std::vector<WorkerPtr>;
+        using Lock = sharpen::SpinLock;
         
-        WorkerVector workers_;
+        //WorkerVector workers_;
         //ThreadVector threads_;
+        sharpen::Size size_;
+        Lock lock_;
+        bool running_;
     public:
         explicit CoroutineWorkerPool(sharpen::Size poolSize);
         
-        ~CoroutineWorkerPool() noexcept;
+        ~CoroutineWorkerPool() noexcept = default;
         
-        void Stop() noexcept;
+        void Run();
     };
 }
 
