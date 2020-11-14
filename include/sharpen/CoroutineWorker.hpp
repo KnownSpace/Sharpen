@@ -30,9 +30,7 @@ namespace sharpen
         
         //block the thread and wait contexts to exceute
         void Run();
-        
-        //stop worker
-        void Stop() noexcept;
+
     };
 }
 
