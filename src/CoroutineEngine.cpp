@@ -24,7 +24,7 @@ void sharpen::InitThisThreadForCentralEngine()
 
 void sharpen::CentralEngineLoopEntry()
 {
-    while(sharpen::CentralEngine.IsAlive())
+    while(true)
     {
         if(sharpen::LocalContextSwitchCallback)
         {
@@ -40,13 +40,7 @@ void sharpen::CentralEngineLoopEntry()
 
 sharpen::CoroutineEngine::CoroutineEngine()
     :contexts_()
-    ,alive_(true)
 {}
-
-sharpen::CoroutineEngine::~CoroutineEngine() noexcept
-{
-    this->alive_ = false;
-}
 
 sharpen::CoroutineEngine::ContextPtr sharpen::CoroutineEngine::WaitContext() noexcept
 {
@@ -56,11 +50,6 @@ sharpen::CoroutineEngine::ContextPtr sharpen::CoroutineEngine::WaitContext() noe
 void sharpen::CoroutineEngine::PushContext(sharpen::CoroutineEngine::ContextPtr context)
 {
     this->contexts_.Push(std::move(context));
-}
-
-bool sharpen::CoroutineEngine::IsAlive() const
-{
-    return this->alive_;
 }
 
 void sharpen::CoroutineEngine::InternalPushTask(std::function<void()> fn)
