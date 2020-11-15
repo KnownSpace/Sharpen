@@ -45,7 +45,7 @@ namespace sharpen
             this->DoClose();
         }
         
-        virtual sharpen::FileHandle GetHandle() = 0;
+        virtual sharpen::FileHandle GetHandle() noexcept = 0;
 
         virtual sharpen::EventLoop *GetLoop() = 0;
     };
