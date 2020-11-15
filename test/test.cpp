@@ -90,15 +90,5 @@ int main(int argc, char const *argv[])
     std::thread t1(std::bind(&MultithreadAwaitTest)),t2(std::bind(&MultithreadAwaitTest));
     t1.join();
     t2.join();
-    //launch test
-    begin = std::clock();
-    LaunchTest();
-    end = std::clock();
-    time = (end - begin)/CLOCKS_PER_SEC;
-    std::printf("LaunchTest using %d sec\n",time);
-    //multithreaded launch test
-    /*std::thread t3(std::bind(&MultithreadLaunchTest)),t4(std::bind(&MultithreadLaunchTest));
-    t3.join();
-    t4.join();*/
     return 0;
 }
