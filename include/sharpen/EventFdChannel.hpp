@@ -10,13 +10,13 @@
 
 namespace sharpen
 {
-    class EventFdChannel:public sharpen::IChannel,public sharpen::Noncopyable,public sharpen::Nonmovable
+    class EventFdChannel:public sharpen::IChannel,public sharpen::Noncopyable
     {
     private:
 
         sharpen::EventFd eventFd_;
-
-        sharpen::EventLoop loop_;
+ 
+        sharpen::EventLoop *loop_;
     public:
 
     };
