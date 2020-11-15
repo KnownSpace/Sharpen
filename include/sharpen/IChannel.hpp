@@ -37,7 +37,7 @@ namespace sharpen
         virtual void UnregisterAsync() noexcept = 0;
         
         //close channel
-        void Close() noexcept
+        void CloseAsync() noexcept
         {
             //await unregister
             this->UnregisterAsync();
@@ -47,7 +47,7 @@ namespace sharpen
         
         virtual sharpen::FileHandle GetHandle() noexcept = 0;
 
-        virtual sharpen::EventLoop *GetLoop() = 0;
+        virtual sharpen::EventLoop *GetLoop() noexcept = 0;
     };
 }
 
