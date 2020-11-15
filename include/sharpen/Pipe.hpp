@@ -10,9 +10,11 @@
 
 namespace sharpen
 {
-    class Pipe:public sharpen::Noncopyable,public sharpen::Nonmovable
+    class Pipe:public sharpen::Noncopyable
     {
     private:
+       
+        sharpen::FileHandle handle_;
     public:
     };
 }
