@@ -79,13 +79,6 @@ void MultithreadLaunchTest()
 int main(int argc, char const *argv[])
 {
     std::printf("running in machine with %d cores\n",std::thread::hardware_concurrency());
-    std::clock_t begin,end;
-    //await test
-    begin = std::clock();
-    AwaitTest();
-    end = std::clock();
-    std::clock_t time = (end - begin)/CLOCKS_PER_SEC;
-    std::printf("AwaitTest using %d sec\n",time);
     //multithreaded await test
     std::thread t1(std::bind(&MultithreadAwaitTest)),t2(std::bind(&MultithreadAwaitTest));
     t1.join();
