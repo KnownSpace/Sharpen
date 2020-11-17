@@ -23,7 +23,7 @@ sharpen::Uint32 sharpen::Kqueue::Wait(sharpen::Kqueue::Event *events,sharpen::In
     timespec timeoutSpec;
     if(timeout != -1)
     {
-        time_t sec = timeout / 1000);
+        time_t sec = timeout / 1000;
         timeout %= 1000;
         timeoutSpec.tv_sec = sec;
         timeoutSpec.tv_nsec = timeout * 1000 * 1000;
