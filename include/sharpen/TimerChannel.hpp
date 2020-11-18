@@ -15,6 +15,7 @@ namespace sharpen
     
         sharpen::FileHandle handle_;
         
+        sharpen::EventLoop *loop_;
     public:
     };
 }
