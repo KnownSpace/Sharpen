@@ -31,8 +31,6 @@ namespace sharpen
         bool exectingTask_;
         LockPtr lock_;
         bool running_;
-        //be used by windows
-        sharpen::FileHandle nativeTimerQueue_;
 
 
         //one loop per thread
