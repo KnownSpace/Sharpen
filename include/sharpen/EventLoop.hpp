@@ -31,6 +31,9 @@ namespace sharpen
         bool exectingTask_;
         LockPtr lock_;
         bool running_;
+        //be used by windows
+        sharpen::FileHandle nativeTimerQueue_;
+
 
         //one loop per thread
         static thread_local EventLoop *LocalLoop;
@@ -73,6 +76,9 @@ namespace sharpen
 
         //get thread local event loop
         static sharpen::EventLoop *GetLocalLoop() noexcept;
+
+        //create timer
+        sharpen::FileHandle CreateTimerHandle(int timeMs,bool oneshort);
     };
 }
 
