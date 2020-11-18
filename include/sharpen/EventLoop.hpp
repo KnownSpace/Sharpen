@@ -75,8 +75,6 @@ namespace sharpen
         //get thread local event loop
         static sharpen::EventLoop *GetLocalLoop() noexcept;
 
-        //create timer
-        sharpen::FileHandle CreateTimerHandle(int timeMs,bool oneshort);
     };
 }
 
