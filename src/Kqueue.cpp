@@ -37,12 +37,12 @@ sharpen::Uint32 sharpen::Kqueue::Wait(sharpen::Kqueue::Event *events,sharpen::In
     return r;
 }
 
-void sharpen::Kqueue::Add(sharpen::FileHandle handle,sharpen::Int16 eventType,void *data)
+void sharpen::Kqueue::Add(sharpen::FileHandle handle,sharpen::Int16 eventType,sharpen::Uint32 fflags,sharpen::Int64 data,void *udata)
 {}
 
 void sharpen::Kqueue::Remove(sharpen::FileHandle handle)
 {}
 
-void sharpen::Kqueue::Update(sharpen::FileHandle handle,sharpen::Int16 eventType,void *data)
+void sharpen::Kqueue::Update(sharpen::FileHandle handle,sharpen::Int16 eventType,sharpen::Uint32 fflags,sharpen::Int64 data,void *udata)
 {}
 #endif
