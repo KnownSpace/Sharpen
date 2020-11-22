@@ -25,7 +25,7 @@ namespace sharpen
         
         ISocketChannel(Self &&) noexcept = default;
 
-        virtual void SendFileAsync(sharpen::IFileChannel &file);
+        virtual void SendFileAsync(sharpen::IFileChannel &file,sharpen::Size size,sharpen::Uint64 offset);
     };
 }
 
