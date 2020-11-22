@@ -4,6 +4,8 @@
 
 #include "IChannel.hpp"
 #include "Noncopyable.hpp"
+#include "IAsyncReadable.hpp"
+#include "IAsyncWritable.hpp"
 
 namespace sharpen
 {
@@ -15,11 +17,11 @@ namespace sharpen
         
         ISocketChannel() = default;
         
-        ~ISocketChannel() = default;
+        virtual ~ISocketChannel() = default;
         
-        ISocketChannel(const Self &other) = default;
+        ISocketChannel(const Self &) = default;
         
-        ISocketChannel(Self &&other) noexcept = default;
+        ISocketChannel(Self &&) noexcept = default;
     };
 }
 
