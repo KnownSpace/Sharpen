@@ -9,6 +9,8 @@
 
 namespace sharpen
 {
+    class IFileChannel;
+
     class ISocketChannel:public sharpen::IChannel,public sharpen::IAsyncWritable,public sharpen::IAsyncReadable
     {
     private:
@@ -22,6 +24,8 @@ namespace sharpen
         ISocketChannel(const Self &) = default;
         
         ISocketChannel(Self &&) noexcept = default;
+
+        virtual void SendFileAsync(sharpen::IFileChannel &file);
     };
 }
 
