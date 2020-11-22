@@ -1,6 +1,6 @@
 #pragma once
-#ifndef _SHARPEN_SOCKETCHANNEL_HPP
-#define _SHARPEN_SOCKETCHANNEL_HPP
+#ifndef _SHARPEN_ISOCKETCHANNEL_HPP
+#define _SHARPEN_ISOCKETCHANNEL_HPP
 
 #include "IChannel.hpp"
 #include "Noncopyable.hpp"
