@@ -2,6 +2,7 @@
 #ifdef SHARPEN_HAS_KQUEUE
 
 #include <sharpen/SystemError.hpp>
+#include <cassert>
 
 sharpen::Kqueue::Kqueue()
     :handle_(::kqueue())
@@ -19,6 +20,7 @@ sharpen::Kqueue::Kqueue()
 
 sharpen::Uint32 sharpen::Kqueue::Wait(sharpen::Kqueue::Event *events,sharpen::Int32 maxEvent,int timeout)
 {
+    assert(this->handle_ != -1);
     timespec *timeoutPtr = nullptr;
     timespec timeoutSpec;
     if(timeout != -1)
@@ -38,11 +40,17 @@ sharpen::Uint32 sharpen::Kqueue::Wait(sharpen::Kqueue::Event *events,sharpen::In
 }
 
 void sharpen::Kqueue::Add(sharpen::FileHandle handle,sharpen::Int16 eventType,sharpen::Uint32 fflags,sharpen::Int64 data,void *udata)
-{}
+{
+    assert(this->handle_ != -1);
+}
 
 void sharpen::Kqueue::Remove(sharpen::FileHandle handle)
-{}
+{
+    assert(this->handle_ != -1);
+}
 
 void sharpen::Kqueue::Update(sharpen::FileHandle handle,sharpen::Int16 eventType,sharpen::Uint32 fflags,sharpen::Int64 data,void *udata)
-{}
+{
+    assert(this->handle_ != -1);
+}
 #endif
