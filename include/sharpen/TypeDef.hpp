@@ -22,6 +22,7 @@ namespace sharpen
 
     //other types
     using Size = std::size_t;
+    using Port = Uint16;
 }
 
 #endif
