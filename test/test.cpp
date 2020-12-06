@@ -98,6 +98,7 @@ int main(int argc, char const *argv[])
             return;
         }));
         ctx->Switch();
+        std::printf("never see\n");
     });
     t.join();
     sharpen::CentralEngine.WaitContext()->Switch();
