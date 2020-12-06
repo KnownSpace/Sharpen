@@ -30,11 +30,11 @@ namespace sharpen
         
         sharpen::Uint32 Wait(Event *events,sharpen::Int32 maxEvent,int timeout);
         
-        void Add(sharpen::FileHandle handle,sharpen::Int16 eventType,sharpen::Uint32 fflags,sharpen::Int64 data,void *udata);
+        void Add(sharpen::FileHandle handle,sharpen::Int16 eventType,sharpen::Uint32 fflags,sharpen::Int64 data,void *udata,bool oneShort);
         
         void Remove(sharpen::FileHandle handle);
         
-        void Update(sharpen::FileHandle handle,sharpen::Int16 eventType,sharpen::Uint32 fflags,sharpen::Int64 data,void *udata);
+        void Update(sharpen::FileHandle handle,sharpen::Int16 eventType,sharpen::Uint32 fflags,sharpen::Int64 data,void *udata,bool oneShort);
     };
 }
 
