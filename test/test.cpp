@@ -86,9 +86,9 @@ int main(int argc, char const *argv[])
     t2.join();
     */
     std::printf("test begin\n");
-    std::unique_ptr<sharpen::ExecuteContext> ctx,octx(new sharpen::ExecuteContext());
+    std::unique_ptr<sharpen::ExecuteContext> octx(new sharpen::ExecuteContext());
     std::thread t([&ctx,&octx]() mutable {
-        ctx = std::move(sharpen::ExecuteContext::MakeContext([](){
+        auto ctx = std::move(sharpen::ExecuteContext::MakeContext([](){
             std::printf("do nothing\n");
             return;
         }));
@@ -99,7 +99,8 @@ int main(int argc, char const *argv[])
     std::thread t1([&octx]() mutable
     {
         std::printf("switch\n");
-        octx->Switch();
+        std::unique_ptr<sharpen::ExecuteContext> ctx(new sharpen::ExecuteContext());
+        octx->Switch(*ctx);
         std::printf("never see\n");
     });
     t1.join();
