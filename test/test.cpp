@@ -88,7 +88,7 @@ int main(int argc, char const *argv[])
     std::printf("test begin\n");
     bool flag = false;
     std::unique_ptr<sharpen::ExecuteContext> ctx,octx(new sharpen::ExecuteContext());
-    std::thread t([&flag,&ctx]() {
+    std::thread t([&flag,&ctx,&octx]() {
         ctx = std::move(sharpen::ExecuteContext::MakeContext([](){
             return;
         }));
