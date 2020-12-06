@@ -87,7 +87,7 @@ int main(int argc, char const *argv[])
     */
     std::printf("test begin\n");
     std::unique_ptr<sharpen::ExecuteContext> octx(new sharpen::ExecuteContext());
-    std::thread t([&ctx,&octx]() mutable {
+    std::thread t([&octx]() mutable {
         auto ctx = std::move(sharpen::ExecuteContext::MakeContext([](){
             std::printf("do nothing\n");
             return;
