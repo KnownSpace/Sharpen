@@ -80,9 +80,11 @@ int main(int argc, char const *argv[])
 {
     std::printf("running in machine with %d cores\n",std::thread::hardware_concurrency());
     //multithreaded await test
+    /*
     std::thread t1(std::bind(&MultithreadAwaitTest)),t2(std::bind(&MultithreadAwaitTest));
     t1.join();
     t2.join();
+    */
     std::printf("test begin\n");
     bool flag = false;
     std::thread t([&flag]() {
