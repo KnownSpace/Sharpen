@@ -83,5 +83,23 @@ int main(int argc, char const *argv[])
     std::thread t1(std::bind(&MultithreadAwaitTest)),t2(std::bind(&MultithreadAwaitTest));
     t1.join();
     t2.join();
+    std::printf("test begin\n");
+    bool flag;
+    std::thread t([&flag]() {
+        auto ctx = std::move(sharpen::ExecuteContext::GetCurrentContext());
+        if(flag)
+        {
+            std::printf("success\n");
+            return;
+        }
+        flag = true;
+        sharpen::CentralEngine.PushContext(std::move(ctx));
+        ctx = std::move(sharpen::ExecuteContext::MakeContext([](){
+            return;
+        });
+        ctx->Switch();
+    });
+    t.join();
+    sharpen::CentralEngine.WaitContext()->Switch();
     return 0;
 }
