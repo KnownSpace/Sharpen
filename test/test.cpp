@@ -84,7 +84,7 @@ int main(int argc, char const *argv[])
     t1.join();
     t2.join();
     std::printf("test begin\n");
-    bool flag;
+    bool flag = false;
     std::thread t([&flag]() {
         auto ctx = std::move(sharpen::ExecuteContext::GetCurrentContext());
         if(flag)
@@ -96,7 +96,7 @@ int main(int argc, char const *argv[])
         sharpen::CentralEngine.PushContext(std::move(ctx));
         ctx = std::move(sharpen::ExecuteContext::MakeContext([](){
             return;
-        });
+        }));
         ctx->Switch();
     });
     t.join();
