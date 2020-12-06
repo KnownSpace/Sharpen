@@ -105,6 +105,7 @@ int main(int argc, char const *argv[])
         octx->Switch(*ctx);
         std::printf("never see\n");
     });
+    usleep(1000*1000);
     t.join();
     t1.join();
     return 0;
