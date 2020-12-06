@@ -87,23 +87,16 @@ int main(int argc, char const *argv[])
     */
     std::printf("test begin\n");
     bool flag = false;
-    std::thread t([&flag]() {
-        auto ctx = std::move(sharpen::ExecuteContext::GetCurrentContext());
-        if(flag)
-        {
-            std::printf("success\n");
-            return;
-        }
-        flag = true;
-        sharpen::CentralEngine.PushContext(std::move(ctx));
+    std::unique_ptr<sharpen::ExecuteContext> ctx,octx(new sharpen::ExecuteContext());
+    std::thread t([&flag,&ctx]() {
         ctx = std::move(sharpen::ExecuteContext::MakeContext([](){
             return;
         }));
-        ctx->Switch();
-        std::printf("never see\n");
+        ctx->Switch(*octx);
+        std::printf("success\n");
     });
     t.join();
-    sharpen::CentralEngine.WaitContext()->Switch();
-    std::printf("OK\n");
+    octx->Switch();
+    std::printf("never see\n");
     return 0;
 }
