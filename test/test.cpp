@@ -96,7 +96,6 @@ int main(int argc, char const *argv[])
         std::printf("success\n");
     });
     std::printf("join thread\n");
-    t.join();
     std::printf("begin switch\n");
     std::thread t1([&octx]() mutable
     {
@@ -105,6 +104,7 @@ int main(int argc, char const *argv[])
         octx->Switch(*ctx);
         std::printf("never see\n");
     });
+    t.join();
     t1.join();
     return 0;
 }
