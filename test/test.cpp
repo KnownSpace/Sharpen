@@ -95,8 +95,8 @@ int main(int argc, char const *argv[])
         ctx->Switch(*octx);
         std::printf("success\n");
     });
-    t.detach();
-    usleep(1000*1000);
+    std::printf("join thread\n");
+    t.join();
     std::printf("begin switch\n");
     std::thread t1([&octx]() mutable
     {
