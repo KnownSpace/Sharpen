@@ -86,10 +86,10 @@ int main(int argc, char const *argv[])
     t2.join();
     */
     std::printf("test begin\n");
-    bool flag = false;
     std::unique_ptr<sharpen::ExecuteContext> ctx,octx(new sharpen::ExecuteContext());
-    std::thread t([&flag,&ctx,&octx]() mutable {
+    std::thread t([&ctx,&octx]() mutable {
         ctx = std::move(sharpen::ExecuteContext::MakeContext([](){
+            std::printf("do nothing\n");
             return;
         }));
         ctx->Switch(*octx);
