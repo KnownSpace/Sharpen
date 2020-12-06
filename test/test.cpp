@@ -101,5 +101,6 @@ int main(int argc, char const *argv[])
     });
     t.join();
     sharpen::CentralEngine.WaitContext()->Switch();
+    std::printf("OK\n");
     return 0;
 }
