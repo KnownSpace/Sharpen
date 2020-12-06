@@ -97,6 +97,7 @@ int main(int argc, char const *argv[])
     });
     std::printf("join thread\n");
     std::printf("begin switch\n");
+    usleep(1000*1000);
     std::thread t1([&octx]() mutable
     {
         std::printf("switch\n");
