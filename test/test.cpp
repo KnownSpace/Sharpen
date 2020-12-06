@@ -88,7 +88,7 @@ int main(int argc, char const *argv[])
     std::printf("test begin\n");
     bool flag = false;
     std::unique_ptr<sharpen::ExecuteContext> ctx,octx(new sharpen::ExecuteContext());
-    std::thread t([&flag,&ctx,&octx]() {
+    std::thread t([&flag,&ctx,&octx]() mutable {
         ctx = std::move(sharpen::ExecuteContext::MakeContext([](){
             return;
         }));
@@ -96,7 +96,11 @@ int main(int argc, char const *argv[])
         std::printf("success\n");
     });
     t.join();
-    octx->Switch();
-    std::printf("never see\n");
+    std::thread t1([&octx]() mutable
+    {
+        octx->Switch();
+        std::printf("never see\n");
+    });
+    t1.join();
     return 0;
 }
