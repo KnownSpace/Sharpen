@@ -98,6 +98,7 @@ int main(int argc, char const *argv[])
     t.join();
     std::thread t1([&octx]() mutable
     {
+        std::printf("switch\n");
         octx->Switch();
         std::printf("never see\n");
     });
