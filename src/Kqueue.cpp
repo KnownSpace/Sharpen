@@ -39,18 +39,37 @@ sharpen::Uint32 sharpen::Kqueue::Wait(sharpen::Kqueue::Event *events,sharpen::In
     return r;
 }
 
-void sharpen::Kqueue::Add(sharpen::FileHandle handle,sharpen::Int16 eventType,sharpen::Uint32 fflags,sharpen::Int64 data,void *udata)
+void sharpen::Kqueue::Add(sharpen::FileHandle handle,sharpen::Int16 eventType,sharpen::Uint32 fflags,sharpen::Int64 data,void *udata,bool oneShort)
 {
     assert(this->handle_ != -1);
+    struct kevent ev;
+    sharpen::Uint16 extFlags = 0;
+    if(oneShort)
+    {
+        extFlags = EV_ONESHOT;
+    }
+    EV_SET(ev,handle,eventType, EV_ADD | EV_ENABLE | extFlags, fflags, data, udata);
+    ::kevent(this->handle_,&ev,1,nullptr,0,nullptr);
 }
 
 void sharpen::Kqueue::Remove(sharpen::FileHandle handle)
 {
     assert(this->handle_ != -1);
+    struct kevent ev;
+    EV_SET(ev,handle,eventType, EV_DELETE, 0, 0, nullptr);
+    ::kevent(this->handle_,&ev,1,nullptr,0,nullptr);
 }
 
-void sharpen::Kqueue::Update(sharpen::FileHandle handle,sharpen::Int16 eventType,sharpen::Uint32 fflags,sharpen::Int64 data,void *udata)
+void sharpen::Kqueue::Update(sharpen::FileHandle handle,sharpen::Int16 eventType,sharpen::Uint32 fflags,sharpen::Int64 data,void *udata，bool oneShort)
 {
     assert(this->handle_ != -1);
+    struct kevent ev;
+    sharpen::Uint16 extFlags = 0;
+    if(oneShort)
+    {
+        extFlags = EV_ONESHOT;
+    }
+    EV_SET(ev,handle,eventType, EV_ADD | EV_ENABLE | extFlags, fflags, data, udata);
+    ::kevent(this->handle_,&ev,1,nullptr,0,nullptr);
 }
 #endif
