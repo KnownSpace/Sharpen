@@ -83,6 +83,6 @@ int main(int argc, char const *argv[])
     std::thread t1(std::bind(&MultithreadAwaitTest)),t2(std::bind(&MultithreadAwaitTest));
     t1.join();
     t2.join();
-    
+    std::printf("test complete\n");
     return 0;
 }
