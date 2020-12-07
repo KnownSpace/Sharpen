@@ -80,33 +80,9 @@ int main(int argc, char const *argv[])
 {
     std::printf("running in machine with %d cores\n",std::thread::hardware_concurrency());
     //multithreaded await test
-    /*
     std::thread t1(std::bind(&MultithreadAwaitTest)),t2(std::bind(&MultithreadAwaitTest));
     t1.join();
     t2.join();
-    */
-    std::printf("test begin\n");
-    std::unique_ptr<sharpen::ExecuteContext> octx(new sharpen::ExecuteContext());
-    std::thread t([&octx]() mutable {
-        auto ctx = std::move(sharpen::ExecuteContext::MakeContext([](){
-            std::printf("do nothing\n");
-            return;
-        }));
-        ctx->Switch(*octx);
-        std::printf("success\n");
-    });
-    std::printf("join thread\n");
-    std::printf("begin switch\n");
-    usleep(1000*1000);
-    std::thread t1([&octx]() mutable
-    {
-        std::printf("switch\n");
-        std::unique_ptr<sharpen::ExecuteContext> ctx(new sharpen::ExecuteContext());
-        octx->Switch(*ctx);
-        std::printf("never see\n");
-    });
-    usleep(1000*1000);
-    t.join();
-    t1.join();
+    
     return 0;
 }
