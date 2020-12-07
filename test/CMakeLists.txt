@@ -7,3 +7,4 @@ target_link_libraries(mytest sharpen)
 #test
 enable_testing()
 add_test(NAME basic COMMAND mytest)
+add_test(NAME mutex COMMAND mytest mutex)
