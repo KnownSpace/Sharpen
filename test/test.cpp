@@ -83,7 +83,7 @@ void MutexTest(sharpen::AsyncMutex &lock,int &count)
 {
     std::unique_lock<sharpen::AsyncMutex> _lock(lock);
     count++;
-    std::printf("count is %d\n");
+    std::printf("count is %d\n",count);
 }
 
 int main(int argc, char const *argv[])
