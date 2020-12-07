@@ -105,7 +105,7 @@ int main(int argc, char const *argv[])
     {
         int count = 0;
         sharpen::AsyncMutex lock;
-        std::thread t1(std::bind(&MutexTest,lock,count)),t2(std::bind(&MutexTest,lock,count));
+        std::thread t1(std::bind(&MutexTest,std::ref(lock),std::ref(count))),t2(std::bind(&MutexTest,std::ref(lock),std::ref(count)));
         t1.join();
         t2.join();
     }
