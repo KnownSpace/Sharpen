@@ -29,6 +29,8 @@ namespace sharpen
         virtual void LockAsync() override;
 
         virtual void Unlock() noexcept override;
+        
+        void Unlock(sharpen::Uint32 count);
 
         ~AsyncSemaphore() noexcept = default;
     };
