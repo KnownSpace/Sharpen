@@ -30,7 +30,7 @@ namespace sharpen
 
         virtual void Unlock() noexcept override;
         
-        void Unlock(sharpen::Uint32 count);
+        void Unlock(sharpen::Uint32 count) noexcept;
 
         ~AsyncSemaphore() noexcept = default;
     };
