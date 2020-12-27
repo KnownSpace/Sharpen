@@ -21,6 +21,8 @@ namespace sharpen
         sharpen::AsyncBarrier stopFlag_;
         //thread flag
         sharpen::AsyncSemaphore threadFlag_;
+        
+        void Entry() noexcept;
     public:
     
         explicit WorkerPool(sharpen::Size count);
