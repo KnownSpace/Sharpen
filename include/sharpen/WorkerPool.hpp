@@ -23,7 +23,7 @@ namespace sharpen
         sharpen::AsyncSemaphore threadFlag_;
     public:
     
-        WorkerPool(sharpen::Size count);
+        explicit WorkerPool(sharpen::Size count);
         
         ~WorkerPool() noexcept;
         
