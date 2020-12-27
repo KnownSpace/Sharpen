@@ -20,7 +20,7 @@ namespace sharpen
         //stop flag
         sharpen::AsyncBarrier stopFlag_;
         //thread flag
-        sharpen::AsyncSemaphore threadFlag_;
+        sharpen::AsyncSemaphore *threadFlag_;
         
         void Entry() noexcept;
     public:
