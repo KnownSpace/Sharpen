@@ -39,3 +39,42 @@ void sharpen::AsyncSemaphore::Unlock() noexcept
     lock.unlock();
     futurePtr->Complete();
 }
+
+void sharpen::AsyncSemaphore::Unlock(sharpen::Uint32 count) noexcept
+{
+    std::unique_lock<sharpen::SpinLock> lock(this->lock_);
+    if (this->waiters_.empty())
+    {
+        this->counter_ += count;
+        return;
+    }
+    if(count >= this->waiters_.size())
+    {
+        sharpen::AsyncSemaphore::List futures;
+        this->waiters_.swap(futures);
+        this->count_ += (count - this->waiters_.size());
+        lock.unlock();
+        for(auto begin = futures.begin,end = futures.end();begin != end; ++begin)
+        {
+            (*begin)->Complete();
+        }
+    }
+    else
+    {
+        auto begin = this->waiters_.begin();
+        auto end = begin;
+        for(;count != 0;--count)
+        {
+            ++end;
+        }
+        sharpen::AsyncSemaphore::List futures(std::make_move_iterator(begin),std::make_move_iterator(end));
+        lock.unlock();
+        begin = futures.begin();
+        end = futures.end();
+        while(begin != end)
+        {
+            (*begin)->Complete();
+            ++begin;
+        }
+    }
+}
