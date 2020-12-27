@@ -52,7 +52,7 @@ void sharpen::AsyncSemaphore::Unlock(sharpen::Uint32 count) noexcept
     {
         sharpen::AsyncSemaphore::List futures;
         this->waiters_.swap(futures);
-        this->count_ += (count - this->waiters_.size());
+        this->counter_ += (count - this->waiters_.size());
         lock.unlock();
         for(auto begin = futures.begin(),end = futures.end();begin != end; ++begin)
         {
