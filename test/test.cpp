@@ -35,7 +35,7 @@ namespace sharpen
 
 #endif
 
-#define TEST_COUNT 1000000
+#define TEST_COUNT 1000*1000
 
 void LaunchTest()
 {
@@ -49,9 +49,10 @@ void LaunchTest()
 
 void AwaitTest()
 {
-    for(size_t i = 0;i < TEST_COUNT;i++)
+    for(sharpen::Uint32 i = 0;i < TEST_COUNT;i++)
     {
         sharpen::AwaitableFuture<void> future;
+        //std::printf("id: %u %u %p\n",sharpen::GetCurrentThreadId(),i,&future);
         sharpen::Launch([&future](){
             future.Complete();
         });
@@ -97,6 +98,7 @@ int main(int argc, char const *argv[])
     }
     if(arg == "basic")
     {
+        std::printf("test count is %d\n",TEST_COUNT);
         std::thread t1(std::bind(&MultithreadAwaitTest)),t2(std::bind(&MultithreadAwaitTest));
         t1.join();
         t2.join();

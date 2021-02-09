@@ -4,6 +4,7 @@
 
 #include <type_traits>
 #include <cassert>
+#include <vector>
 
 #include "Future.hpp"
 #include "CoroutineEngine.hpp"
@@ -24,47 +25,28 @@ namespace sharpen
         using ConstResult = void;
     };
     
-    template<typename _T>
     class Awaiter:public sharpen::Noncopyable
     {
     private:
-        using Self = sharpen::Awaiter<_T>;
-    
-        std::unique_ptr<sharpen::ExecuteContext> context_;
+        using Self = sharpen::Awaiter;
+        using Lock = sharpen::SpinLock;
+        using LockPtr = std::unique_ptr<Lock>;
+
+        sharpen::ExecuteContextPtr waiter_;
     public:
-        Awaiter() = default;
+        Awaiter();
 
-        explicit Awaiter(std::unique_ptr<sharpen::ExecuteContext> &&context) noexcept
-            :context_(std::move(context))
-        {
-            assert(this->context_ != nullptr);
-        }
-        
-        Awaiter(Self &&other) noexcept
-            :context_(std::move(other.context_))
-        {
-            assert(this->context_ != nullptr);
-        }
-        
+        Awaiter(Self &&other) noexcept;
+
         ~Awaiter() noexcept = default;
-        
-        void operator()(sharpen::Future<_T> &future) noexcept
-        {
-            this->context_->SetAutoRelease(true);
-            sharpen::CentralEngine.PushContext(std::move(this->context_));
-        }
-        
-        sharpen::ExecuteContext &GetContext() noexcept
-        {
-            return *(this->context_);
-        }
 
-        Self &operator=(Self &&other) noexcept
-        {
-            this->context_ = std::move(other.context_);
-            return *this;
-        }
+        Self &operator=(Self &&other) noexcept;
+
+        void Notify();
+
+        void Wait(sharpen::ExecuteContextPtr context);
     };
+    
 }
 
 #endif

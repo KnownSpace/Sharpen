@@ -56,7 +56,7 @@ void sharpen::AsyncReadWriteLock::WriteUnlock() noexcept
     {
         sharpen::AsyncReadWriteLock::List list;
         std::swap(list,this->readWaiters_);
-        this->readers_ = list.size();
+        this->readers_ = static_cast<sharpen::Uint32>(list.size());
         this->state_ = sharpen::ReadWriteLockState::SharedReading;
         lock.unlock();
         for (auto begin = std::begin(list),end = std::end(list);begin != end;++begin)

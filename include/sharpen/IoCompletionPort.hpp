@@ -12,6 +12,7 @@
 #include "FileTypeDef.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
+#include "TypeDef.hpp"
 
 namespace sharpen
 {

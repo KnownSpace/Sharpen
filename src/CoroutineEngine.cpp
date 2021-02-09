@@ -3,9 +3,9 @@
 #include <sharpen/CoroutineEngine.hpp>
 #include <sharpen/ExitWatchDog.hpp>
 
-thread_local std::unique_ptr<sharpen::ExecuteContext> sharpen::LocalEngineContext(nullptr);
+thread_local sharpen::ExecuteContextPtr sharpen::LocalEngineContext(nullptr);
 
-thread_local std::unique_ptr<sharpen::IContextSwitchCallback> sharpen::LocalContextSwitchCallback;
+thread_local std::function<void()> sharpen::LocalContextSwitchCallback;
 
 sharpen::CoroutineEngine sharpen::CentralEngine;
 
@@ -19,7 +19,6 @@ void sharpen::InitThisThreadForCentralEngine()
         {
             throw std::bad_alloc();
         }
-        sharpen::LocalEngineContext->SetAutoRelease(true);
     }
 }
 
@@ -29,13 +28,21 @@ void sharpen::CentralEngineLoopEntry()
     {
         if(sharpen::LocalContextSwitchCallback)
         {
-            sharpen::LocalContextSwitchCallback->Run();
-            sharpen::LocalContextSwitchCallback.release();
+            try
+            {
+                sharpen::LocalContextSwitchCallback();
+            }
+            catch(const std::exception& ignore)
+            {
+                assert(ignore.what());
+                (void)ignore;
+            }
+            sharpen::LocalContextSwitchCallback = std::function<void()>();
         }
-        std::unique_ptr<sharpen::ExecuteContext> ctx = std::move(sharpen::CentralEngine.WaitContext());
+        sharpen::ExecuteContextPtr ctx = std::move(sharpen::CentralEngine.WaitContext());
         assert(ctx != nullptr);
         assert(sharpen::LocalEngineContext != nullptr);
-        ctx->Switch(*sharpen::LocalEngineContext);
+        ctx->Switch();
     }
 }
 
@@ -55,11 +62,17 @@ void sharpen::CoroutineEngine::PushContext(sharpen::CoroutineEngine::ContextPtr 
 
 void sharpen::CoroutineEngine::InternalPushTask(std::function<void()> fn)
 {
-    std::function<void()> apply = [fn](){
-        fn();
+    sharpen::ExecuteContextPtr context = sharpen::ExecuteContext::MakeContext([fn]() mutable {
+        try
+        {
+            fn();
+        }
+        catch(const std::exception& ignore)
+        {
+            assert(ignore.what());
+            (void)ignore;
+        }
         sharpen::LocalEngineContext->Switch();
-    };
-    std::unique_ptr<sharpen::ExecuteContext> context = sharpen::ExecuteContext::MakeContext(std::move(apply));
-    context->SetAutoRelease(true);
+    });
     this->PushContext(std::move(context));
 }

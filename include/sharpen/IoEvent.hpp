@@ -20,7 +20,7 @@ namespace sharpen
             enum 
             {
                 //empty event
-                None = 0
+                None = 0,
                 //read event
                 Read = 1,
                 //write event
@@ -101,7 +101,7 @@ namespace sharpen
         
         bool IsErrorEvent() const noexcept
         {
-            return this->type_ & EventType::Error;
+            return this->type_ & EventTypeEnum::Error;
         }
         
         sharpen::IChannel *GetChannel() const noexcept

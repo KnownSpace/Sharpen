@@ -24,79 +24,28 @@ namespace sharpen
         std::mutex lock_;
         std::condition_variable cond_;
         List list_;
-        sharpen::SpinLock subLock_;
-        bool subLocked_;
-        List pendingList_;
         
-        bool LockSub() noexcept
-        {
-            bool state = true;
-            std::swap(this->subLocked_,state);
-            return !state;
-        }
-        
-        List GetPending() noexcept
-        {
-            List pending;
-            std::swap(pending,this->pendingList_);
-            return pending;
-        }
-        
-        void UnlockSub() noexcept
-        {
-            this->subLocked_ = false;
-        }
     public:
         BlockingQueue()
         :lock_()
         ,cond_()
         ,list_()
-        ,subLock_()
-        ,subLocked_(false)
-        ,pendingList_()
         {}
 
         void Push(_T object)
         {
-            //we push the object into pending list if cannot get the sub lock
             {
-                std::unique_lock<sharpen::SpinLock> lock(this->subLock_);
-                if(!this->LockSub())
-                {
-                    this->pendingList_.push_back(std::move(object));
-                    return;
-                }
+                std::unique_lock<std::mutex> lock(this->lock_);
+                this->list_.push_back(std::move(object));
             }
-            //if we got the sub lock
-            {
-                    std::unique_lock<std::mutex> lock(this->lock_);
-                    this->list_.push_back(std::move(object));
-                    //get the lock again
-                    std::unique_lock<sharpen::SpinLock> subLock(this->subLock_);
-                    List &&pending = this->GetPending();
-                    //handle pending list
-                    for(auto begin = std::begin(pending),end = std::end(pending);begin != end;++begin)
-                    {
-                        this->list_.push_back(std::move(*begin));
-                    }
-                    this->UnlockSub();
-            }
-            //notify all threads
-            this->cond_.notify_all();
+            this->cond_.notify_one();
         }
         
         _T Pop() noexcept
         {
             std::unique_lock<std::mutex> lock(this->lock_);
-            sharpen::Uint16 tryCount = 0;
             while(this->list_.empty())
             {
-                if(tryCount < 200)
-                {
-                    tryCount++;
-                    std::this_thread::yield();
-                    continue;
-                }
                 this->cond_.wait(lock);
             }
             _T obj(std::move(this->list_.front()));

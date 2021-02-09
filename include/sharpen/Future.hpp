@@ -108,11 +108,7 @@ namespace sharpen
                 this->state_ = sharpen::FutureState::Completed;
                 this->value_.reset(new _Value(args...));
             }
-            this->NoticeIfNeed();
-            if (this->callback_)
-            {
-                this->callback_(*this);
-            }
+            this->ExecuteCallback();
         }
 
         void Fail(std::exception_ptr &&err)
@@ -122,18 +118,14 @@ namespace sharpen
                 this->state_ = sharpen::FutureState::Error;
                 this->error_ = std::move(err);
             }
-            this->NoticeIfNeed();
-            if (this->callback_)
-            {
-                this->callback_(*this);
-            }
+            this->ExecuteCallback();
         }
 
         void Wait()
         {
+            std::unique_lock<sharpen::SpinLock> lock(*this->lock_);
             while (this->IsPending())
             {
-                std::unique_lock<sharpen::SpinLock> lock(*this->lock_);
                 this->waiters_ += 1;
                 this->cond_->wait(lock);
             }
@@ -187,6 +179,21 @@ namespace sharpen
             }
             callback(*this);
         }
+
+    protected:
+        sharpen::SpinLock &GetLock() noexcept
+        {
+            return *this->lock_;
+        }
+
+        virtual void ExecuteCallback()
+        {
+            this->NoticeIfNeed();
+            if (this->callback_)
+            {
+                this->callback_(*this);
+            }
+        }
     };
     
     template<>
@@ -211,6 +218,7 @@ namespace sharpen
                 this->cond_->notify_all();
             }
         }
+
     public:
 
         Future()
@@ -237,6 +245,7 @@ namespace sharpen
         {}
 
         virtual ~Future() = default;
+
 
         Self &operator=(Self &&other) noexcept
         {
@@ -270,11 +279,7 @@ namespace sharpen
                 std::unique_lock<sharpen::SpinLock> lock(*this->lock_);
                 this->state_ = sharpen::FutureState::Completed;
             }
-            this->NoticeIfNeed();
-            if (this->callback_)
-            {
-                this->callback_(*this);
-            }
+            this->ExecuteCallback();
         }
 
         void Fail(std::exception_ptr &&err)
@@ -284,18 +289,14 @@ namespace sharpen
                 this->state_ = sharpen::FutureState::Error;
                 this->error_ = std::move(err);
             }
-            this->NoticeIfNeed();
-            if (this->callback_)
-            {
-                this->callback_(*this);
-            }
+            this->ExecuteCallback();
         }
 
         void Wait()
         {
+            std::unique_lock<sharpen::SpinLock> lock(*this->lock_);
             while (this->IsPending())
             {
-                std::unique_lock<sharpen::SpinLock> lock(*this->lock_);
                 this->waiters_ += 1;
                 this->cond_->wait(lock);
             }
@@ -338,13 +339,28 @@ namespace sharpen
             }
             callback(*this);
         }
+
+    protected:
+        sharpen::SpinLock &GetLock() noexcept
+        {
+            return *this->lock_;
+        }
+
+        virtual void ExecuteCallback()
+        {
+            this->NoticeIfNeed();
+            if (this->callback_)
+            {
+                this->callback_(*this);
+            }
+        }
     };
 
     template<typename _Value>
-    using SharedFuturePtr = std::shared_ptr<sharpen::Future<_Value>>;
+    using FuturePtr = std::shared_ptr<sharpen::Future<_Value>>;
 
     template<typename _Value>
-    inline sharpen::SharedFuturePtr<_Value> MakeSharedFuturePtr()
+    inline sharpen::FuturePtr<_Value> MakeFuturePtr()
     {
         auto p = std::make_shared<sharpen::Future<_Value>>();
         return std::move(p);

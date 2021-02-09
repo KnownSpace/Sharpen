@@ -2,6 +2,8 @@
 #ifndef _SHARPEN_SOCKETCHANNEL_HPP
 #define _SHARPEN_SOCKETCHANNEL_HPP
 
+#include <memory>
+
 #include "WinSocketChannel.hpp"
 #include "PosixSocketChannel.hpp"
 

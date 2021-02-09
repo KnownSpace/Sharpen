@@ -12,9 +12,11 @@
 
 thread_local bool sharpen::LocalEnableContextSwitch(false);
 
+thread_local sharpen::ExecuteContextPtr sharpen::ExecuteContext::CurrentContext;
+
 sharpen::ExecuteContext::ExecuteContext()
     :handle_()
-    ,enableAutoRelease_(false)
+    ,func_()
 {
 #ifdef SHARPEN_HAS_FIBER
     this->handle_ = nullptr;
@@ -52,79 +54,65 @@ void sharpen::ExecuteContext::InternalDisableContextSwitch() noexcept
 sharpen::ExecuteContext::~ExecuteContext() noexcept
 {
 #ifdef SHARPEN_HAS_FIBER
-    if(this->enableAutoRelease_ && this->handle_ != nullptr)
+    if(this->handle_ != nullptr)
     {
       ::DeleteFiber(this->handle_);
     }
 #else
-    if(this->enableAutoRelease_ && this->handle_.uc_stack.ss_sp != nullptr)
+    if(this->handle_.uc_stack.ss_sp != nullptr)
     {
-        //use munmap to release memory
-        ::munmap(this->handle_.uc_stack.ss_sp,this->handle_.uc_stack.ss_size);
+        std::free(this->handle_.uc_stack.ss_sp);
+        //::munmap(this->handle_.uc_stack.ss_sp,this->handle_.uc_stack.ss_size);
     }
 #endif
 }
 
 void sharpen::ExecuteContext::Switch() noexcept
 {
+    assert(this != sharpen::ExecuteContext::GetCurrentContext().get());
 #ifdef SHARPEN_HAS_FIBER
     assert(this->handle_ != nullptr);
+    sharpen::ExecuteContext::CurrentContext = this->shared_from_this();
     ::SwitchToFiber(this->handle_);
 #else
-    ::setcontext(&(this->handle_));
+    sharpen::ExecuteContext *old = sharpen::ExecuteContext::GetCurrentContext().get();
+    sharpen::ExecuteContext::CurrentContext = this->shared_from_this();
+    ::swapcontext(&(old->handle_),&(this->handle_));
 #endif
 }
 
-void sharpen::ExecuteContext::Switch(sharpen::ExecuteContext &oldContext) noexcept
+sharpen::ExecuteContextPtr sharpen::ExecuteContext::GetCurrentContext()
 {
-#ifdef SHARPEN_HAS_FIBER
-    oldContext.handle_ = GetCurrentFiber();
-    this->Switch();
-#else
-    ::swapcontext(&(oldContext.handle_),&(this->handle_));
-#endif
-}
-
-void sharpen::ExecuteContext::SetAutoRelease(bool flag) noexcept
-{
-    this->enableAutoRelease_ = flag;
-}
-
-std::unique_ptr<sharpen::ExecuteContext> sharpen::ExecuteContext::GetCurrentContext()
-{
-    std::unique_ptr<sharpen::ExecuteContext> ctx(new sharpen::ExecuteContext());
-    if(!ctx)
+    if (sharpen::ExecuteContext::CurrentContext)
     {
-        throw std::bad_alloc();
+        return sharpen::ExecuteContext::CurrentContext;
     }
+    sharpen::ExecuteContextPtr ctx = std::make_shared<sharpen::ExecuteContext>();
 #ifdef SHARPEN_HAS_FIBER
     sharpen::NativeExecuteContextHandle handle = GetCurrentFiber();
     ctx->handle_ = handle;
 #else
     ::getcontext(&(ctx->handle_));
 #endif
-    return std::move(ctx);
+    sharpen::ExecuteContext::CurrentContext = ctx;
+    return ctx;
 }
 
-void sharpen::ExecuteContext::InternalContextEntry(void *lpFn)
+void sharpen::ExecuteContext::InternalContextEntry(void *lpCtx)
 {
-    assert(lpFn != nullptr);
-    auto *p = (sharpen::ExecuteContext::Function*)lpFn;
-    std::unique_ptr<sharpen::ExecuteContext::Function> fn(p);
-    (*fn)();
+    assert(lpCtx != nullptr);
+    sharpen::ExecuteContext* ctx = (sharpen::ExecuteContext*)lpCtx;
+    ctx->func_();
 }
 
-std::unique_ptr<sharpen::ExecuteContext> sharpen::ExecuteContext::InternalMakeContext(sharpen::ExecuteContext::Function *entry)
+sharpen::ExecuteContextPtr sharpen::ExecuteContext::InternalMakeContext(sharpen::ExecuteContext::Function entry)
 {
     assert(entry != nullptr);
-    std::unique_ptr<sharpen::ExecuteContext> ctx(new sharpen::ExecuteContext());
-    if(!ctx)
-    {
-        throw std::bad_alloc();
-    }
+    sharpen::ExecuteContextPtr ctx = std::make_shared<sharpen::ExecuteContext>();
+    ctx->func_ = std::move(entry);
 #ifdef SHARPEN_HAS_FIBER
     sharpen::NativeExecuteContextHandle handle = nullptr;
-    handle = ::CreateFiberEx(SHARPEN_CONTEXT_STACK_SIZE,0,FIBER_FLAG_FLOAT_SWITCH,(LPFIBER_START_ROUTINE)&sharpen::ExecuteContext::InternalContextEntry,entry);
+    handle = ::CreateFiberEx(SHARPEN_CONTEXT_STACK_SIZE,0,FIBER_FLAG_FLOAT_SWITCH,(LPFIBER_START_ROUTINE)&sharpen::ExecuteContext::InternalContextEntry,ctx.get());
     if(handle == nullptr)
     {
         sharpen::ThrowLastError();
@@ -132,15 +120,15 @@ std::unique_ptr<sharpen::ExecuteContext> sharpen::ExecuteContext::InternalMakeCo
     ctx->handle_ = handle;
 #else
     ::getcontext(&(ctx->handle_));
-    //use mmap to allocate statck
-    ctx->handle_.uc_stack.ss_sp = ::mmap(nullptr,SHARPEN_CONTEXT_STACK_SIZE,PROT_READ|PROT_WRITE,MAP_PRIVATE | MAP_ANONYMOUS,-1,0);
+    //ctx->handle_.uc_stack.ss_sp = ::mmap(nullptr,SHARPEN_CONTEXT_STACK_SIZE,PROT_READ|PROT_WRITE,MAP_PRIVATE | MAP_ANONYMOUS,-1,0);
+    ctx->handle_.uc_stack.ss_sp = std::calloc(SHARPEN_CONTEXT_STACK_SIZE,sizeof(char));
     if(ctx->handle_.uc_stack.ss_sp == nullptr)
     {
         throw std::bad_alloc();
     }
     ctx->handle_.uc_stack.ss_size = SHARPEN_CONTEXT_STACK_SIZE;
     ctx->handle_.uc_link = nullptr;
-    ::makecontext(&(ctx->handle_),(void(*)())&sharpen::ExecuteContext::InternalContextEntry,1,entry);
+    ::makecontext(&(ctx->handle_),(void(*)())&sharpen::ExecuteContext::InternalContextEntry,1, ctx.get());
 #endif
-    return std::move(ctx);
+    return ctx;
 }

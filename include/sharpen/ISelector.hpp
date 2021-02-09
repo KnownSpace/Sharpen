@@ -46,7 +46,7 @@ namespace sharpen
         
         //disable writing listen
         virtual void DisableWritelisten(sharpen::IChannel *channel) = 0;
-    }
+    };
 }
 
 #endif

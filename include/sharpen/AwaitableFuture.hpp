@@ -4,7 +4,7 @@
 
 #include "Future.hpp"
 #include "CoroutineEngine.hpp"
-#include "AwaitableFutureSwitchCallback.hpp"
+#include "Awaiter.hpp"
 
 namespace sharpen
 {
@@ -17,28 +17,32 @@ namespace sharpen
 
         AwaitableFuture()
             :MyBase()
+            ,awaiter_()
         {}
         
         AwaitableFuture(Self &&other) noexcept
             :MyBase(std::move(other))
+            ,awaiter_(std::move(other.awaiter_))
         {}
         
-        virtual ~AwaitableFuture() = default;
+        virtual ~AwaitableFuture() noexcept = default;
 
         auto Await() -> decltype(this->Get())
         {
             //enable coroutine function
             sharpen::InitThisThreadForCentralEngine();
-            //not complete yet
-            if (!this->CompletedOrError())
             {
-                //load current context
-                std::unique_ptr<sharpen::ExecuteContext> contextPtr(std::move(sharpen::ExecuteContext::GetCurrentContext()));
-                auto &context = *contextPtr;
-                //set switch callback
-                sharpen::LocalContextSwitchCallback.reset(new sharpen::AwaitableFutureSwitchCallback<_Result>(std::move(contextPtr),*this));
-                //switch context
-                sharpen::LocalEngineContext->Switch(context);
+                std::unique_lock<sharpen::SpinLock> lock(this->GetLock());
+                if (!this->CompletedOrError())
+                {
+                    //load current context
+                    sharpen::ExecuteContextPtr contextPtr(std::move(sharpen::ExecuteContext::GetCurrentContext()));
+                    sharpen::LocalContextSwitchCallback = [this,&lock](){
+                        lock.unlock();
+                    };
+                    this->awaiter_.Wait(std::move(contextPtr));
+                    sharpen::LocalEngineContext->Switch();
+                }
             }
             return this->Get();
         }
@@ -46,17 +50,30 @@ namespace sharpen
         Self &operator=(Self &&other) noexcept
         {
             MyBase::operator=(std::move(other));
+            this->awaiter_ = std::move(other.awaiter_);
             return *this;
         }
+
+    protected:
+
+        virtual void ExecuteCallback() override
+        {
+            MyBase::ExecuteCallback();
+            this->awaiter_.Notify();
+        }
+
+    private:
+
+        sharpen::Awaiter awaiter_;
     };
   
     template<typename _T>
-    using SharedAwaitableFuturePtr = std::shared_ptr<sharpen::AwaitableFuture<_T>>;
+    using AwaitableFuturePtr = std::shared_ptr<sharpen::AwaitableFuture<_T>>;
 
     template<typename _T>
-    inline sharpen::SharedAwaitableFuturePtr<_T> MakeSharedAwaitableFuture()
+    inline sharpen::AwaitableFuturePtr<_T> MakeAwaitableFuture()
     {
-        sharpen::SharedAwaitableFuturePtr<_T> future = std::make_shared<sharpen::AwaitableFuture<_T>>();
+        sharpen::AwaitableFuturePtr<_T> future = std::make_shared<sharpen::AwaitableFuture<_T>>();
         return std::move(future);
     }
 }

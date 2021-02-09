@@ -99,7 +99,7 @@ const sharpen::Char *sharpen::ByteBuffer::Data() const
 
 sharpen::Char *sharpen::ByteBuffer::Data()
 {
-    return reinterpret_cast<sharpen::Char*>(this->Data());
+    return reinterpret_cast<sharpen::Char*>(this->vector_.data());
 }
 
 void sharpen::ByteBuffer::Reserve(sharpen::Size size)

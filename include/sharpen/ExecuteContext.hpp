@@ -18,7 +18,6 @@
 #include "Nonmovable.hpp"
 
 #ifdef SHARPEN_IS_WIN
-
 #define SHARPEN_HAS_FIBER 
 //use fiber
 #include <Windows.h>
@@ -40,7 +39,13 @@ namespace sharpen
     //it is true if current thread enable context switch function
     extern thread_local bool LocalEnableContextSwitch;
 
-    class ExecuteContext:public sharpen::Noncopyable,public sharpen::Nonmovable
+    class ExecuteContext;
+
+    using ExecuteContextPtr = std::shared_ptr<sharpen::ExecuteContext>;
+
+    //should never be used by directly
+    //use sharpen::AwaitableFuture
+    class ExecuteContext:public sharpen::Noncopyable,public sharpen::Nonmovable,public std::enable_shared_from_this<sharpen::ExecuteContext>
     {
     private:
         using Self = sharpen::ExecuteContext;
@@ -50,42 +55,40 @@ namespace sharpen
         //it is a fiber(LPVOID) in windows
         //and a ucontext_t in *nix
         sharpen::NativeExecuteContextHandle handle_;
-        
-        //it is true if enable resource release
-        bool enableAutoRelease_;
-        
-        static std::unique_ptr<Self> InternalMakeContext(Function *entry);
+
+        Function func_;
+         
+        static sharpen::ExecuteContextPtr InternalMakeContext(Function entry);
+
+        static thread_local sharpen::ExecuteContextPtr CurrentContext;
         
     public:
         ExecuteContext();
         
-        //free the stack memory or delete fiber if necessary
+        //free the stack memory or delete fiber
         ~ExecuteContext() noexcept;
         
+        //before invoking it please save current context by yourself
         void Switch() noexcept;
         
-        void Switch(Self &oldContext) noexcept;
-        
         //should not be used directly
-        //lpFn is a pointer of std::function<void()>
-        static void InternalContextEntry(void *lpFn);
+        //lpFn is a pointer to sharpen::ExecuteContext
+        static void InternalContextEntry(void *lpCtx);
       
         template<typename _Fn,typename ..._Args,typename = decltype(std::declval<_Fn>()(std::declval<_Args>()...))>
-        static std::unique_ptr<Self> MakeContext(_Fn &&fn,_Args &&...args)
+        static sharpen::ExecuteContextPtr MakeContext(_Fn &&fn,_Args &&...args)
         {
-            Function *func = new Function(std::bind(std::move(fn),args...));
-            return Self::InternalMakeContext(func);
+            auto&& ctx = Self::InternalMakeContext(std::bind(std::forward<_Fn>(fn), std::forward<_Args>(args)...));
+            return std::move(ctx);
         }
         
-        static std::unique_ptr<Self> GetCurrentContext();
+        static sharpen::ExecuteContextPtr GetCurrentContext();
         
         //it call ConvertThreadToFiberEx in windows and set sharpen::LocalEnableContextSwitch to true
         static void InternalEnableContextSwitch();
         
         //it call ConvertFiberToThread in windows and set sharpen::LocalEnableContextSwitch to false
         static void InternalDisableContextSwitch() noexcept;
-        
-        void SetAutoRelease(bool flag) noexcept;
   };
 }
 

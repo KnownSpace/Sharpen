@@ -9,7 +9,6 @@
 #include "ExecuteContext.hpp"
 #include "Nonmovable.hpp"
 #include "BlockingQueue.hpp"
-#include "IContextSwitchCallback.hpp"
 
 namespace sharpen
 {
@@ -18,15 +17,15 @@ namespace sharpen
     //if you use a coroutine function like Await()
     //we will make some initializational operations
     //it will call ConvertThreadToFiberEx and CreateFiberEx in windows or call getcontext and makecontext in *nix
-    extern thread_local std::unique_ptr<sharpen::ExecuteContext> LocalEngineContext;
+    extern thread_local sharpen::ExecuteContextPtr LocalEngineContext;
 
-    extern thread_local std::unique_ptr<sharpen::IContextSwitchCallback> LocalContextSwitchCallback;
+    extern thread_local std::function<void()> LocalContextSwitchCallback;
   
     //it is a internal class and you should never use it directly
     class CoroutineEngine:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
-        using ContextPtr = std::unique_ptr<sharpen::ExecuteContext>;
+        using ContextPtr = sharpen::ExecuteContextPtr;
         
         using List = sharpen::BlockingQueue<ContextPtr>;
         
@@ -50,7 +49,7 @@ namespace sharpen
         template<typename _Fn,typename ..._Args,typename = decltype(std::declval<_Fn>()(std::declval<_Args>()...))>
         void PushTask(_Fn &&fn,_Args &&...args)
         {
-            std::function<void()> func = std::bind(std::move(fn),args...);
+            std::function<void()> func = std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...);
             this->InternalPushTask(std::move(func));
         }
    

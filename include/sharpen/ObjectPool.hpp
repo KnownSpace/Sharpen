@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_OBJECTPOOL_HPP
 #define _SHARPEN_OBJECTPOOL_HPP
 
-#define <list>
+#include <list>
 #include <functional>
 
 #include "Noncopyable.hpp"

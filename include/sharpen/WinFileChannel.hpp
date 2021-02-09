@@ -12,7 +12,7 @@
 
 namespace sharpen
 {
-    class WinFileChannel:public sharpen::IFileChannel,public sharpen:Noncopyable
+    class WinFileChannel:public sharpen::IFileChannel,public sharpen::Noncopyable
     {
     private:
         sharpen::EventLoop *loop_;

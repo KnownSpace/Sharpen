@@ -60,7 +60,7 @@ void sharpen::Kqueue::Remove(sharpen::FileHandle handle)
     ::kevent(this->handle_,&ev,1,nullptr,0,nullptr);
 }
 
-void sharpen::Kqueue::Update(sharpen::FileHandle handle,sharpen::Int16 eventType,sharpen::Uint32 fflags,sharpen::Int64 data,void *udata，bool oneShort)
+void sharpen::Kqueue::Update(sharpen::FileHandle handle,sharpen::Int16 eventType,sharpen::Uint32 fflags,sharpen::Int64 data,void *udata,bool oneShort)
 {
     assert(this->handle_ != -1);
     struct kevent ev;
