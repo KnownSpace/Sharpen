@@ -9,9 +9,7 @@ sharpen::SpinLock::SpinLock()
 void sharpen::SpinLock::lock()
 {
     while (this->flag_.test_and_set(std::memory_order::memory_order_acquire))
-    {
-        std::this_thread::yield();
-    }
+    {}
 }
 
 void sharpen::SpinLock::unlock() noexcept
