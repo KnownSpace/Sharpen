@@ -13,7 +13,7 @@ namespace sharpen
     class SpinLock:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
-        using Flag = std::atomic_bool;
+        using Flag = std::atomic_flag;
 
         Flag flag_;
     public:
