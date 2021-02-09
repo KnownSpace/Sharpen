@@ -11,20 +11,6 @@
 
 namespace sharpen
 {
-    template<typename _T>
-    struct AwaitResult
-    {
-        using Result = _T&;
-        using ConstResult = const _T&;
-    };
-    
-    template<>
-    struct AwaitResult<void>
-    {
-        using Result = void;
-        using ConstResult = void;
-    };
-    
     class Awaiter:public sharpen::Noncopyable
     {
     private:

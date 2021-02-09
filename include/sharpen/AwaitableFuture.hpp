@@ -33,11 +33,11 @@ namespace sharpen
             sharpen::InitThisThreadForCentralEngine();
             {
                 std::unique_lock<sharpen::SpinLock> lock(this->GetLock());
-                if (!this->CompletedOrError())
+                if (this->IsPending())
                 {
                     //load current context
                     sharpen::ExecuteContextPtr contextPtr(std::move(sharpen::ExecuteContext::GetCurrentContext()));
-                    sharpen::LocalContextSwitchCallback = [this,&lock](){
+                    sharpen::LocalContextSwitchCallback = [&lock](){
                         lock.unlock();
                     };
                     this->awaiter_.Wait(std::move(contextPtr));

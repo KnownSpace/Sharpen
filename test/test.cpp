@@ -35,7 +35,7 @@ namespace sharpen
 
 #endif
 
-#define TEST_COUNT 1000*1000
+#define TEST_COUNT 1000*1000*1
 
 void LaunchTest()
 {
