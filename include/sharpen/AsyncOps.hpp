@@ -60,6 +60,8 @@ namespace sharpen
         });
         return future;
     }
+
+    extern void YieldTimeslice();
 }
 
 #endif
