@@ -32,16 +32,26 @@ namespace sharpen
             //enable coroutine function
             sharpen::InitThisThreadForCentralEngine();
             {
-                std::unique_lock<sharpen::SpinLock> lock(this->GetLock());
+                sharpen::SpinLock &lock = this->GetLock();
+                std::unique_lock<sharpen::SpinLock> _lock(lock);
                 if (this->IsPending())
                 {
                     //load current context
-                    sharpen::ExecuteContextPtr contextPtr(std::move(sharpen::ExecuteContext::GetCurrentContext()));
-                    sharpen::LocalContextSwitchCallback = [&lock](){
-                        lock.unlock();
+                    sharpen::ExecuteContextPtr *ctx = new sharpen::ExecuteContextPtr(std::move(sharpen::ExecuteContext::GetCurrentContext()));
+                    sharpen::Awaiter &awaiter = this->awaiter_;
+                    sharpen::LocalContextSwitchCallback = [this,&awaiter,&lock,ctx](){
+                        std::unique_ptr<sharpen::ExecuteContextPtr> contextPtr(ctx);
+                        std::unique_lock<sharpen::SpinLock> _lock(lock);
+                        awaiter.Wait(std::move(*contextPtr));
+                        bool completed = this->CompletedOrError();
+                        _lock.unlock();
+                        if (completed)
+                        {
+                            awaiter.Notify();
+                        }
                     };
-                    this->awaiter_.Wait(std::move(contextPtr));
-                    sharpen::LocalEngineContext->Switch();
+                    _lock.unlock();
+                    sharpen::LocalSchedulerContext->Switch();
                 }
             }
             return this->Get();
