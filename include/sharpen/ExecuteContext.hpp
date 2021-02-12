@@ -5,7 +5,7 @@
 //the stack size of execute context
 #ifndef SHARPEN_CONTEXT_STACK_SIZE
 //64kb by default
-#define SHARPEN_CONTEXT_STACK_SIZE 64*1024
+#define SHARPEN_CONTEXT_STACK_SIZE 32*1024
 #endif
 
 #include <type_traits>

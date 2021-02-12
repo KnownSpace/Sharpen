@@ -1,28 +1,30 @@
 #include <cassert>
 
 #include <sharpen/CoroutineEngine.hpp>
-#include <sharpen/ExitWatchDog.hpp>
+#include <sharpen/ThreadGuard.hpp>
 
-thread_local sharpen::ExecuteContextPtr sharpen::LocalEngineContext(nullptr);
+thread_local sharpen::ExecuteContextPtr sharpen::LocalSchedulerContext(nullptr);
 
 thread_local std::function<void()> sharpen::LocalContextSwitchCallback;
 
 sharpen::CoroutineEngine sharpen::CentralEngine;
 
+//thread_local sharpen::ThreadGuard sharpen::LocalThreadGuard;
+
 void sharpen::InitThisThreadForCentralEngine()
 {
-    if(!sharpen::LocalEngineContext)
+    if(!sharpen::LocalSchedulerContext)
     {
         sharpen::ExecuteContext::InternalEnableContextSwitch();
-        sharpen::LocalEngineContext = std::move(sharpen::ExecuteContext::MakeContext(std::bind(&sharpen::CentralEngineLoopEntry)));
-        if(sharpen::LocalEngineContext == nullptr)
+        sharpen::LocalSchedulerContext = std::move(sharpen::ExecuteContext::MakeContext(std::bind(&sharpen::ScheduleLoop)));
+        if(sharpen::LocalSchedulerContext == nullptr)
         {
             throw std::bad_alloc();
         }
     }
 }
 
-void sharpen::CentralEngineLoopEntry()
+void sharpen::ScheduleLoop()
 {
     while(true)
     {
@@ -40,8 +42,10 @@ void sharpen::CentralEngineLoopEntry()
             sharpen::LocalContextSwitchCallback = std::function<void()>();
         }
         sharpen::ExecuteContextPtr ctx = std::move(sharpen::CentralEngine.WaitContext());
-        assert(ctx != nullptr);
-        assert(sharpen::LocalEngineContext != nullptr);
+        if (!ctx)
+        {
+            continue;
+        }
         ctx->Switch();
     }
 }
@@ -72,7 +76,7 @@ void sharpen::CoroutineEngine::InternalPushTask(std::function<void()> fn)
             assert(ignore.what());
             (void)ignore;
         }
-        sharpen::LocalEngineContext->Switch();
+        sharpen::LocalSchedulerContext->Switch();
     });
     this->PushContext(std::move(context));
 }

@@ -112,7 +112,7 @@ sharpen::ExecuteContextPtr sharpen::ExecuteContext::InternalMakeContext(sharpen:
     ctx->func_ = std::move(entry);
 #ifdef SHARPEN_HAS_FIBER
     sharpen::NativeExecuteContextHandle handle = nullptr;
-    handle = ::CreateFiberEx(SHARPEN_CONTEXT_STACK_SIZE,0,FIBER_FLAG_FLOAT_SWITCH,(LPFIBER_START_ROUTINE)&sharpen::ExecuteContext::InternalContextEntry,ctx.get());
+    handle = ::CreateFiberEx(4*1024,SHARPEN_CONTEXT_STACK_SIZE - 4*1024,FIBER_FLAG_FLOAT_SWITCH,(LPFIBER_START_ROUTINE)&sharpen::ExecuteContext::InternalContextEntry,ctx.get());
     if(handle == nullptr)
     {
         sharpen::ThrowLastError();

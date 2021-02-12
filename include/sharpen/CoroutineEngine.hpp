@@ -17,7 +17,7 @@ namespace sharpen
     //if you use a coroutine function like Await()
     //we will make some initializational operations
     //it will call ConvertThreadToFiberEx and CreateFiberEx in windows or call getcontext and makecontext in *nix
-    extern thread_local sharpen::ExecuteContextPtr LocalEngineContext;
+    extern thread_local sharpen::ExecuteContextPtr LocalSchedulerContext;
 
     extern thread_local std::function<void()> LocalContextSwitchCallback;
   
@@ -59,7 +59,7 @@ namespace sharpen
   
     //it is a internal function and you should not use it directly
     //equal to while(true) WaitContext();
-    extern void CentralEngineLoopEntry();
+    extern void ScheduleLoop();
     
     extern void InitThisThreadForCentralEngine();
 }

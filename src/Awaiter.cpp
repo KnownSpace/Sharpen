@@ -17,11 +17,9 @@ sharpen::Awaiter::Self &sharpen::Awaiter::operator=(sharpen::Awaiter::Self &&oth
 
 void sharpen::Awaiter::Notify()
 {
+    if (this->waiter_)
     {
-        if (this->waiter_)
-        {
-            sharpen::CentralEngine.PushContext(std::move(this->waiter_));
-        }
+        sharpen::CentralEngine.PushContext(std::move(this->waiter_));
     }
 }
 

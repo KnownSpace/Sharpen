@@ -16,16 +16,16 @@ namespace sharpen
         //running
         bool running_;
         //worker count
-        sharpen::Size count_;
+        sharpen::Uint32 count_;
         //stop flag
         sharpen::AsyncBarrier stopFlag_;
         //thread flag
-        sharpen::AsyncSemaphore *threadFlag_;
+        sharpen::AsyncSemaphore threadFlag_;
         
         void Entry() noexcept;
     public:
     
-        explicit WorkerPool(sharpen::Size count);
+        explicit WorkerPool(sharpen::Uint32 count);
         
         ~WorkerPool() noexcept;
         
@@ -37,9 +37,6 @@ namespace sharpen
         
         //get worker count
         sharpen::Size GetWorkerCount() const noexcept;
-        
-        //set worker count
-        void SetWorkerCount(sharpen::Size count);
     };
 }
 

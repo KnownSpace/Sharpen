@@ -8,21 +8,21 @@
 namespace sharpen
 {
     //it is a internal class and you should not use it directly
-    class ExitWatchDog:public sharpen::Noncopyable,public sharpen::Nonmovable
+    class ThreadGuard:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
     public:
-        ExitWatchDog() = default;
+        ThreadGuard() = default;
         
         //we will free resource in here
-        ~ExitWatchDog() noexcept;
+        ~ThreadGuard() noexcept;
 
         void ReleaseResource() noexcept;
     };
     
     //it release coroutine resource when thread exit
-    //we will do nothing if sharpen::LocalEngineContext is nullptr
-    extern thread_local ExitWatchDog LocalWatchDog;
+    //we will do nothing if sharpen::LocalSchedulerContext is nullptr
+    extern thread_local ThreadGuard LocalThreadGuard;
 }
 
 #endif

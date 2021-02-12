@@ -10,5 +10,5 @@ void sharpen::YieldTimeslice()
         sharpen::ExecuteContextPtr ctx = *p;
         sharpen::CentralEngine.PushContext(std::move(ctx));
     };
-    sharpen::LocalEngineContext->Switch();
+    sharpen::LocalSchedulerContext->Switch();
 }

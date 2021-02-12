@@ -7,6 +7,7 @@
 #include <ctime>
 #include <mutex>
 #include <string>
+#include <sharpen/WorkerPool.hpp>
 
 #ifdef SHARPEN_IS_WIN
 
@@ -53,8 +54,11 @@ void AwaitTest()
     {
         sharpen::AwaitableFuture<void> future;
         //std::printf("id: %u %u %p\n",sharpen::GetCurrentThreadId(),i,&future);
-        sharpen::Launch([&future](){
+        sharpen::Launch([&future]()
+        {
+            
             future.Complete();
+            //std::printf("id: %u future %p\n", sharpen::GetCurrentThreadId(), &future);
         });
         future.Await();
     }
@@ -87,6 +91,22 @@ void MutexTest(sharpen::AsyncMutex &lock,int &count)
     std::printf("count is %d\n",count);
 }
 
+void WorkerPoolTest()
+{
+    sharpen::WorkerPool pool(std::thread::hardware_concurrency());
+    sharpen::AsyncBarrier barrier(TEST_COUNT);
+    pool.Start();
+    for (sharpen::Int32 i = 0; i < TEST_COUNT; ++i)
+    {
+        sharpen::Launch([i,&barrier]() {
+            std::printf("Worker number %d count %d\n",sharpen::GetCurrentThreadId(),i);
+            barrier.Notice();
+        });
+    }
+    barrier.WaitAsync();
+    pool.Stop();
+}
+
 int main(int argc, char const *argv[])
 {
     std::printf("running in machine with %d cores\n",std::thread::hardware_concurrency());
@@ -99,9 +119,15 @@ int main(int argc, char const *argv[])
     if(arg == "basic")
     {
         std::printf("test count is %d\n",TEST_COUNT);
-        std::thread t1(std::bind(&MultithreadAwaitTest)),t2(std::bind(&MultithreadAwaitTest));
-        t1.join();
-        t2.join();
+        std::vector<std::thread> vec;
+        for (size_t i = 0; i < std::thread::hardware_concurrency(); i++)
+        {
+            vec.push_back(std::move(std::thread(std::bind(&MultithreadAwaitTest))));
+        }
+        for (size_t i = 0; i < vec.size(); i++)
+        {
+            vec[i].join();
+        }
     }
     if(arg == "mutex")
     {
@@ -110,6 +136,10 @@ int main(int argc, char const *argv[])
         std::thread t1(std::bind(&MutexTest,std::ref(lock),std::ref(count))),t2(std::bind(&MutexTest,std::ref(lock),std::ref(count)));
         t1.join();
         t2.join();
+    }
+    if (arg == "workerpool")
+    {
+        WorkerPoolTest();
     }
     std::printf("test complete\n");
     return 0;
