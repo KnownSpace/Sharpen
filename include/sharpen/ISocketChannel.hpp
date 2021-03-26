@@ -6,10 +6,14 @@
 #include "Noncopyable.hpp"
 #include "IAsyncReadable.hpp"
 #include "IAsyncWritable.hpp"
+#include "IFileChannel.hpp"
 
 namespace sharpen
 {
-    class IFileChannel;
+
+    class ISocketChannel;
+
+    using SocketChannelPtr = std::shared_ptr<sharpen::ISocketChannel>;
 
     class ISocketChannel:public sharpen::IChannel,public sharpen::IAsyncWritable,public sharpen::IAsyncReadable
     {
@@ -19,15 +23,27 @@ namespace sharpen
         
         ISocketChannel() = default;
         
-        virtual ~ISocketChannel() = default;
+        virtual ~ISocketChannel() noexcept = default;
         
         ISocketChannel(const Self &) = default;
         
         ISocketChannel(Self &&) noexcept = default;
 
-        virtual void SendFileAsync(sharpen::IFileChannel &file,sharpen::Size size,sharpen::Uint64 offset) = 0;
+        virtual void SendFileAsync(sharpen::FileChannelPtr file,sharpen::Uint64 size,sharpen::Uint64 offset,sharpen::Future<void> &future) = 0;
         
-        virtual void SendFileAsync(sharpen::IFileChannel &file) = 0;
+        virtual void SendFileAsync(sharpen::FileChannelPtr file,sharpen::Future<void> &future) = 0;
+
+        void SendFileAsync(sharpen::FileChannelPtr file,sharpen::Uint64 size,sharpen::Uint64 offset);
+
+        void SendFileAsync(sharpen::FileChannelPtr file);
+
+        virtual void AcceptAsync(sharpen::Future<sharpen::SocketChannelPtr> &future) = 0;
+
+        sharpen::SocketChannelPtr AcceptAsync();
+
+        virtual void ConnectAsync(sharpen::Future<void> &future) = 0;
+
+        void ConnectAsync();
     };
 }
 

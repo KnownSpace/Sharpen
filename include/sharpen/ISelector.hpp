@@ -7,18 +7,20 @@
 
 #include "IoEvent.hpp"
 #include "FileTypeDef.hpp"
+#include "IChannel.hpp"
 
 namespace sharpen
 {
-    class IChannel;
-
     class ISelector
     {
     private:
         using Self = sharpen::ISelector;
+        
+    protected:
         using Event = sharpen::IoEvent;
-        using EventPtr = Event*;
-        using EventVector = std::vector<EventPtr>;
+        using EventVector = std::vector<Event*>;
+        using WeakChannelPtr = std::weak_ptr<sharpen::IChannel>;
+
     public:
     
         ISelector() = default;
@@ -36,17 +38,18 @@ namespace sharpen
         virtual void Notify() = 0;
         
         //register file handle
-        virtual void Resister(sharpen::IChannel *channel) = 0;
-        
-        //unregister file handle
-        virtual void Unregister(sharpen::IChannel *channel) = 0;
+        virtual void Resister(WeakChannelPtr channel) = 0;
         
         //enable writing listen
-        virtual void EnableWriteListen(sharpen::IChannel *channel) = 0;
+        virtual void EnableWriteListen(sharpen::ChannelPtr channel) = 0;
         
         //disable writing listen
-        virtual void DisableWritelisten(sharpen::IChannel *channel) = 0;
+        virtual void DisableWritelisten(sharpen::ChannelPtr channel) = 0;
     };
+
+    using SelectorPtr = std::shared_ptr<sharpen::ISelector>;
+
+    sharpen::SelectorPtr MakeDefaultSelector();
 }
 
 #endif

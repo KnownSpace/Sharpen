@@ -6,22 +6,43 @@
 
 #ifdef SHARPEN_IS_WIN
 
-#define SHARPEN_USE_WINFILE
+#define SHARPEN_HAS_WINFILE
 
 #include "IFileChannel.hpp"
+#include "AwaitableFuture.hpp"
+#include "IocpSelector.hpp"
 
 namespace sharpen
 {
-    class WinFileChannel:public sharpen::IFileChannel,public sharpen::Noncopyable
+    class WinFileChannel:public sharpen::IFileChannel,public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
-        sharpen::EventLoop *loop_;
+        using MyFuture = sharpen::AwaitableFuture<sharpen::Size>;
+        using MyFuturePtr = MyFuture*;
+        using Mybase = sharpen::IFileChannel;
+        
+        static void InitOverlapped(OVERLAPPED &ol,sharpen::Uint64 offset);
 
-        sharpen::FileHandle handle_;
+        void InitOverlappedStruct(sharpen::IocpOverlappedStruct &event,sharpen::Uint64 offset);
+
     public:
+
+        WinFileChannel(sharpen::FileHandle handle);
+
+        ~WinFileChannel() noexcept = default;
+
+        virtual void WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future) override;
+        
+        virtual void WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future) override;
+
+        virtual void ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future) override;
+        
+        virtual void ReadAsync(sharpen::ByteBuffer &buf,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future) override;
+
+        virtual void OnEvent(sharpen::IoEvent *event) override;
+
+        virtual sharpen::Uint64 GetFileSize() const override;
     };
-    
-    using NativeFileChannel = sharpen::WinFileChannel;
 }
 
 #endif

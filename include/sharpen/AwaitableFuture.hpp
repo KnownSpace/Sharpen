@@ -3,8 +3,8 @@
 #define _SHARPEN_AWAITABLEFUTURE_HPP
 
 #include "Future.hpp"
-#include "CoroutineEngine.hpp"
 #include "Awaiter.hpp"
+#include "FiberScheduler.hpp"
 
 namespace sharpen
 {
@@ -30,28 +30,39 @@ namespace sharpen
         auto Await() -> decltype(this->Get())
         {
             //enable coroutine function
-            sharpen::InitThisThreadForCentralEngine();
             {
+                //auto &scheduler = sharpen::Scheduler::GetScheduler();
                 sharpen::SpinLock &lock = this->GetLock();
+                sharpen::FiberScheduler &scheduler = sharpen::FiberScheduler::GetScheduler();
                 std::unique_lock<sharpen::SpinLock> _lock(lock);
-                if (this->IsPending())
+                if (!sharpen::FiberScheduler::IsProcesser())
                 {
-                    //load current context
-                    sharpen::ExecuteContextPtr *ctx = new sharpen::ExecuteContextPtr(std::move(sharpen::ExecuteContext::GetCurrentContext()));
-                    sharpen::Awaiter &awaiter = this->awaiter_;
-                    sharpen::LocalContextSwitchCallback = [this,&awaiter,&lock,ctx](){
-                        std::unique_ptr<sharpen::ExecuteContextPtr> contextPtr(ctx);
-                        std::unique_lock<sharpen::SpinLock> _lock(lock);
-                        awaiter.Wait(std::move(*contextPtr));
-                        bool completed = this->CompletedOrError();
+                    while (this->IsPending())
+                    {
                         _lock.unlock();
-                        if (completed)
+                        scheduler.ProcessOnce(std::chrono::milliseconds(100));
+                        _lock.lock();
+                    }
+                }
+                else
+                {
+                    if (this->IsPending())
+                    {
+                        _lock.unlock();
+                        sharpen::Awaiter &awaiter = this->awaiter_;
+                        sharpen::FiberPtr current = sharpen::Fiber::GetCurrentFiber();
+                        scheduler.SwitchToProcesser([this,&lock,&current,&awaiter]() mutable
                         {
-                            awaiter.Notify();
-                        }
-                    };
-                    _lock.unlock();
-                    sharpen::LocalSchedulerContext->Switch();
+                            std::unique_lock<sharpen::SpinLock> _lock(lock);
+                            bool completed = this->CompletedOrError();
+                            awaiter.Wait(std::move(current));
+                            _lock.unlock();
+                            if (completed)
+                            {
+                                awaiter.Notify();
+                            }
+                        });
+                    }
                 }
             }
             return this->Get();

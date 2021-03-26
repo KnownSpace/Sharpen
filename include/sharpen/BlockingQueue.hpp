@@ -19,11 +19,13 @@ namespace sharpen
     class BlockingQueue:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
-        using List = std::list<_T>;
+        using Storage = std::list<_T>;
+        using Lock = std::mutex;
+        using CondVar = std::condition_variable;
 
-        std::mutex lock_;
-        std::condition_variable cond_;
-        List list_;
+        Lock lock_;
+        CondVar cond_;
+        Storage list_;
         
     public:
         BlockingQueue()
@@ -35,7 +37,7 @@ namespace sharpen
         void Push(_T object)
         {
             {
-                std::unique_lock<std::mutex> lock(this->lock_);
+                std::unique_lock<Lock> lock(this->lock_);
                 this->list_.push_back(std::move(object));
             }
             this->cond_.notify_one();
@@ -43,7 +45,7 @@ namespace sharpen
         
         _T Pop() noexcept
         {
-            std::unique_lock<std::mutex> lock(this->lock_);
+            std::unique_lock<Lock> lock(this->lock_);
             while(this->list_.empty())
             {
                 this->cond_.wait(lock);
@@ -51,6 +53,23 @@ namespace sharpen
             _T obj(std::move(this->list_.front()));
             this->list_.pop_front();
             return std::move(obj); 
+        }
+
+        template <class _Rep, class _Period>
+        bool Pop(_T &obj,const std::chrono::duration<_Rep, _Period> &timeout) noexcept
+        {
+            std::unique_lock<Lock> lock(this->lock_);
+            while(this->list_.empty())
+            {
+                std::cv_status status = this->cond_.wait_for(lock,timeout);
+                if (status == std::cv_status::timeout)
+                {
+                    return false;
+                }
+            }
+            obj = std::move(this->list_.front());
+            this->list_.pop_front();
+            return true;
         }
     };
 }

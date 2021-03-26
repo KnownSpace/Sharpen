@@ -6,6 +6,11 @@ void sharpen::ByteBuffer::swap(sharpen::ByteBuffer &other) noexcept
     mark_ = other.mark_;
 }
 
+sharpen::ByteBuffer::ByteBuffer()
+    :vector_()
+    ,mark_(0)
+{}
+
 sharpen::ByteBuffer::ByteBuffer(sharpen::Size size)
     :vector_(size)
     ,mark_(0)
@@ -17,7 +22,7 @@ sharpen::ByteBuffer::ByteBuffer(Vector &&vector) noexcept
 {}
 
 sharpen::ByteBuffer::ByteBuffer(const sharpen::Char *p,sharpen::Size size)
-    :vector_(size)
+    :vector_()
     ,mark_(0)
 {
     for (size_t i = 0; i < size; i++)

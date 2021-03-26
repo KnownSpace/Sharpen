@@ -13,7 +13,7 @@ namespace sharpen
     {
     private:
         using Self = sharpen::IFileChannel;
-        
+
     public:
         
         IFileChannel() = default;
@@ -23,7 +23,13 @@ namespace sharpen
         IFileChannel(const Self &) = default;
         
         IFileChannel(Self &&other) noexcept = default;
+
+        virtual sharpen::Uint64 GetFileSize() const = 0;
     };
+
+    using FileChannelPtr = std::shared_ptr<sharpen::IFileChannel>;
+
+    sharpen::FileChannelPtr MakeFileChannel(const char *filename,sharpen::FileAccessModel access,sharpen::FileOpenModel open);
 };
 
 #endif

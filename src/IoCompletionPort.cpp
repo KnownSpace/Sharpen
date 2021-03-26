@@ -29,7 +29,11 @@ sharpen::Uint32 sharpen::IoCompletionPort::Wait(sharpen::IoCompletionPort::Event
     BOOL r = ::GetQueuedCompletionStatusEx(this->handle_,events,maxEvent,&count,timeout,FALSE);
     if(r == FALSE)
     {
-        sharpen::ThrowLastError();
+        sharpen::ErrorCode err = sharpen::GetLastError();
+        if (err != WAIT_TIMEOUT)
+        {
+            sharpen::ThrowLastError();
+        }
     }
     return count;
 }
@@ -38,7 +42,7 @@ void sharpen::IoCompletionPort::Bind(sharpen::FileHandle handle)
 {
     assert(this->handle_ != NULL);
     HANDLE r = ::CreateIoCompletionPort(handle,this->handle_,(ULONG_PTR)handle,0);
-    if(r == NULL)
+    if(r != this->handle_)
     {
         sharpen::ThrowLastError();
     }

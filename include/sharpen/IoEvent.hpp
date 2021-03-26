@@ -5,11 +5,11 @@
 #include "TypeDef.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
+#include "SystemError.hpp"
+#include "IChannel.hpp"
 
 namespace sharpen
 {
-    
-    class IChannel;
 
     class IoEvent
     {
@@ -28,39 +28,50 @@ namespace sharpen
                 //close by peer
                 Close = 4,
                 //error
-                Error = 8
+                Error = 8,
+                //io completed
+                Completed = 16,
+                //io request
+                Request = 32
             };
         };
         
         using EventType = sharpen::Uint32;
     private:
         using Self = sharpen::IoEvent;
-           
+        using WeakChannel = std::weak_ptr<sharpen::IChannel>;
+
         EventType type_;
-        sharpen::IChannel *channel_;
+        WeakChannel channel_;
         void *data_;
+        sharpen::ErrorCode errorCode_;
     public:
+        IoEvent() = default;
     
-        IoEvent(EventType type,sharpen::IChannel *channel,void *data)
+        IoEvent(EventType type,sharpen::ChannelPtr channel,void *data,sharpen::ErrorCode error)
             :type_(type)
             ,channel_(channel)
             ,data_(data)
+            ,errorCode_(error)
         {}
         
         IoEvent(const Self &other)
             :type_(other.type_)
             ,channel_(other.channel_)
             ,data_(other.data_)
+            ,errorCode_(other.errorCode_)
         {}
         
         IoEvent(Self &&other) noexcept
             :type_(other.type_)
             ,channel_(other.channel_)
             ,data_(other.data_)
+            ,errorCode_(other.errorCode_)
         {
             other.type_ = EventTypeEnum::None;
-            other.channel_ = nullptr;
+            other.channel_.reset();
             other.data_ = nullptr;
+            other.errorCode_ = 0;
         }
         
         Self &operator=(const Self &other)
@@ -68,6 +79,7 @@ namespace sharpen
             this->type_ = other.type_;
             this->channel_ = other.channel_;
             this->data_ = other.data_;
+            this->errorCode_ = other.errorCode_;
             return *this;
         }
         
@@ -76,9 +88,11 @@ namespace sharpen
             this->type_ = other.type_;
             this->channel_ = other.channel_;
             this->data_ = other.data_;
+            this->errorCode_ = other.errorCode_;
             other.type_ = EventTypeEnum::None;
-            other.channel_ = nullptr;
+            other.channel_.reset();
             other.data_ = nullptr;
+            other.errorCode_ = 0;
             return *this;
         }
         
@@ -103,15 +117,60 @@ namespace sharpen
         {
             return this->type_ & EventTypeEnum::Error;
         }
-        
-        sharpen::IChannel *GetChannel() const noexcept
+
+        bool IsCompletedEvent() const noexcept
         {
-            return this->channel_;
+            return this->type_ & EventTypeEnum::Completed;
+        }
+
+        bool IsRequestEvent() const noexcept
+        {
+            return this->type_ & EventTypeEnum::Request;
+        }
+        
+        sharpen::ChannelPtr GetChannel() const noexcept
+        {
+            return this->channel_.lock();
+        }
+
+        bool ValidateChannel() const noexcept
+        {
+            return !this->channel_.expired();
         }
         
         void *GetData() const noexcept
         {
             return this->data_;
+        }
+
+        void SetData(void *data)
+        {
+            this->data_ = data;
+        }
+
+        sharpen::ErrorCode GetErrorCode() const noexcept
+        {
+            return this->errorCode_;
+        }
+
+        void SetErrorCode(sharpen::ErrorCode error)
+        {
+            this->errorCode_ = error;
+        }
+
+        void SetChannel(const sharpen::ChannelPtr &channel)
+        {
+            this->channel_ = channel;
+        }
+
+        void SetEvent(EventType ev)
+        {
+            this->type_ = ev;
+        }
+
+        EventType GetEventType() const noexcept
+        {
+            return this->type_;
         }
     };
 }

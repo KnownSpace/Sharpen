@@ -11,6 +11,20 @@ namespace sharpen
 #else
     using FileHandle = int;
 #endif
+
+    enum class FileOpenModel
+    {
+        Open,
+        CreateNew,
+        CreateOrOpen
+    };
+
+    enum class FileAccessModel
+    {
+        Read,
+        Write,
+        All
+    };
 }
 
 #endif

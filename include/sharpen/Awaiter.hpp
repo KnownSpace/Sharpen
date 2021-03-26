@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "Future.hpp"
-#include "CoroutineEngine.hpp"
+#include "FiberScheduler.hpp"
 
 namespace sharpen
 {
@@ -18,7 +18,7 @@ namespace sharpen
         using Lock = sharpen::SpinLock;
         using LockPtr = std::unique_ptr<Lock>;
 
-        sharpen::ExecuteContextPtr waiter_;
+        sharpen::FiberPtr fiber_;
     public:
         Awaiter();
 
@@ -30,7 +30,7 @@ namespace sharpen
 
         void Notify();
 
-        void Wait(sharpen::ExecuteContextPtr context);
+        void Wait(sharpen::FiberPtr fiber);
     };
     
 }

@@ -2,20 +2,23 @@
 #ifndef _SHARPEN_ASYNCOPS_HPP
 
 #include <type_traits>
+#include <thread>
 
-#include "CoroutineEngine.hpp"
 #include "AwaitableFuture.hpp"
+#include "FiberScheduler.hpp"
 
 namespace sharpen
 {
     template<typename _Fn,typename ..._Args>
     inline void Launch(_Fn &&fn,_Args &&...args)
     {
-        sharpen::CentralEngine.PushTask(std::forward<_Fn>(fn),std::forward<_Args>(args)...);
+        sharpen::FiberScheduler &scheduler = sharpen::FiberScheduler::GetScheduler();
+        sharpen::FiberPtr fiber = sharpen::Fiber::MakeFiber(16*1024,std::forward<_Fn>(fn),std::forward<_Args>(args)...);
+        scheduler.Schedule(std::move(fiber));
     }
 
     template<typename _Fn,typename _Result>
-    struct AsyncOpsHelper
+    struct AsyncHelper
     {
         static void RunAndSetFuture(_Fn &fn,sharpen::Future<_Result> &future)
         {
@@ -32,7 +35,7 @@ namespace sharpen
     };
 
     template<typename _Fn>
-    struct AsyncOpsHelper<_Fn,void>
+    struct AsyncHelper<_Fn,void>
     {
         static void RunAndSetFuture(_Fn &fn,sharpen::Future<void> &future)
         {
@@ -56,12 +59,19 @@ namespace sharpen
         std::function<_Result()> func = std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...);
         sharpen::Launch([func,future]() mutable
         {
-            sharpen::AsyncOpsHelper<std::function<_Result()>,_Result>::RunAndSetFuture(func,*future);
+            sharpen::AsyncHelper<std::function<_Result()>,_Result>::RunAndSetFuture(func,*future);
         });
         return future;
     }
 
-    extern void YieldTimeslice();
+    extern void Delay();
+
+     template <class _Rep, class _Period>
+    void Delay(std::chrono::duration<_Rep,_Period> &time)
+    {
+        sharpen::FiberScheduler &scheduler = sharpen::FiberScheduler::GetScheduler();
+        scheduler.ProcessOnce(time);
+    }
 }
 
 #endif

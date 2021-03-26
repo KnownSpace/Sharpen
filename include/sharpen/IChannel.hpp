@@ -1,6 +1,9 @@
-#prgama once
+#pragma once
 #ifndef _SHARPEN_ICHANNEL_HPP
 #define _SHARPEN_ICHANNEL_HPP
+
+#include <memory>
+#include <functional>
 
 #include "TypeDef.hpp"
 #include "FileTypeDef.hpp"
@@ -10,15 +13,21 @@ namespace sharpen
     class EventLoop;
 
     class IoEvent;
+
+    class EventEngine;
     
-    class IChannel
+    class IChannel:public std::enable_shared_from_this<sharpen::IChannel>
     {
     private:
         using Self = sharpen::IChannel;
+        using Closer = std::function<void(sharpen::FileHandle)>;
         
     protected:
-        virtual void DoClose() noexcept = 0;
-        
+        sharpen::EventLoop *loop_;
+
+        sharpen::FileHandle handle_;
+
+        Closer closer_;
     public:
         
         IChannel() = default;
@@ -27,28 +36,34 @@ namespace sharpen
         
         IChannel(Self &&) noexcept = default;
         
-        virtual ~IChannel() noexcept = default;
+        virtual ~IChannel() noexcept;
         
-        //it will be called when a io operation was completed
-        virtual void OnComplete(sharpen::IoEvent *event) = 0;
+        virtual void OnEvent(sharpen::IoEvent *event) = 0;
         
-        virtual void RegisterAsync(sharpen::IEventLoop &loop) = 0;
-        
-        virtual void UnregisterAsync() noexcept = 0;
+        void Register(sharpen::EventLoop *loop);
+
+        void Register(sharpen::EventEngine &engine);
         
         //close channel
-        void CloseAsync() noexcept
-        {
-            //await unregister
-            this->UnregisterAsync();
-            //close channel
-            this->DoClose();
-        }
+        void Close() noexcept;
         
-        virtual sharpen::FileHandle GetHandle() noexcept = 0;
+        sharpen::FileHandle GetHandle() noexcept
+        {
+            return this->handle_;
+        }
 
-        virtual sharpen::EventLoop *GetLoop() noexcept = 0;
+        sharpen::EventLoop *GetLoop() noexcept
+        {
+            return this->loop_;
+        }
+
+        bool IsRegistered() const noexcept
+        {
+            return this->loop_ != nullptr;
+        }
     };
+
+    using ChannelPtr = std::shared_ptr<sharpen::IChannel>;
 }
 
 #endif

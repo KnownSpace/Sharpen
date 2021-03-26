@@ -4,17 +4,17 @@
 
 #include <functional>
 #include <vector>
+#include <memory>
 
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "SpinLock.hpp"
+#include "ISelector.hpp"
+#include "IChannel.hpp"
+#include "IoEvent.hpp"
 
 namespace sharpen
 {
-    
-    class IChannel;
-    
-    class ISelector;
     
     class EventLoop:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
@@ -22,9 +22,11 @@ namespace sharpen
         using Task = std::function<void()>;
         using Lock = sharpen::SpinLock;
         using TaskVector = std::vector<Task>;
-        using TaskVectorPrr = std::shared_ptr<TaskVector>;
+        using TaskVectorPtr = std::shared_ptr<TaskVector>;
         using LockPtr = std::shared_ptr<Lock>;
-        using SelectorPtr = std::shared_ptr<shared::ISelector>;
+        using SelectorPtr = std::shared_ptr<sharpen::ISelector>;
+        using EventVector = std::vector<sharpen::IoEvent*>;
+        using WeakChannelPtr = std::weak_ptr<sharpen::IChannel>;
         
         SelectorPtr selector_;
         TaskVectorPtr tasks_;
@@ -34,7 +36,7 @@ namespace sharpen
 
 
         //one loop per thread
-        static thread_local EventLoop *LocalLoop;
+        thread_local static EventLoop *localLoop_;
 
         //execute pending tasks
         void ExecuteTask();
@@ -49,18 +51,15 @@ namespace sharpen
            
         //bind a channel to event loop
         //the channel must be supported by selector
-        void Bind(sharpen::IChannel *channel);
-        
-        //unbind a channel
-        void Unbind(sharpen::IChannel *channel) noexcept;
+        void Bind(WeakChannelPtr channel);
         
         //start listen write event on channel
         //it will be ignored if IOCP is available
-        void EnableWriteListen(sharpen::IChannel *channel);
+        void EnableWriteListen(sharpen::ChannelPtr channel);
         
         //stop listen write event on channel
         //it will be ignored if IOCP is available
-        void DisableWriteListen(sharpen::IChannel *channel);
+        void DisableWriteListen(sharpen::ChannelPtr channel);
         
         //queue a task to event loop
         //the task will be executed in next loop
@@ -70,11 +69,12 @@ namespace sharpen
         void Run();
         
         //stop event loop
-        void Stop();
+        void Stop() noexcept;
 
         //get thread local event loop
         static sharpen::EventLoop *GetLocalLoop() noexcept;
 
+        static bool IsInLoop() noexcept;
     };
 }
 

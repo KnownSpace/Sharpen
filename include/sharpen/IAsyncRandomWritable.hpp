@@ -4,9 +4,11 @@
 
 #include "TypeDef.hpp"
 #include "ByteBuffer.hpp"
+#include "Future.hpp"
 
 namespace sharpen
 {
+
     class IAsyncRandomWritable
     {
     private:
@@ -22,10 +24,14 @@ namespace sharpen
         
         virtual ~IAsyncRandomWritable() noexcept = default;
         
-        virtual sharpen::Size WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset) = 0;
+        virtual void WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future) = 0;
         
-        virtual sharpen::Size WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Uint64 offset) = 0;
+        virtual void WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future) = 0;
+
+        sharpen::Size WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset);
+
+        sharpen::Size WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Uint64 offset);
     };
 }
 
-#endif _SHARPEN_IASYNCRANDOMWRITABLE_HPP
+#endif

@@ -1,14 +1,7 @@
 #include <sharpen/AsyncOps.hpp>
 
-void sharpen::YieldTimeslice()
+void sharpen::Delay()
 {
-    sharpen::InitThisThreadForCentralEngine();
-    sharpen::ExecuteContextPtr *current = new sharpen::ExecuteContextPtr(std::move(sharpen::ExecuteContext::GetCurrentContext()));
-    sharpen::LocalContextSwitchCallback = [current]()
-    {
-        std::unique_ptr<sharpen::ExecuteContextPtr> p(current);
-        sharpen::ExecuteContextPtr ctx = *p;
-        sharpen::CentralEngine.PushContext(std::move(ctx));
-    };
-    sharpen::LocalSchedulerContext->Switch();
+    sharpen::FiberScheduler &scheduler = sharpen::FiberScheduler::GetScheduler();
+    scheduler.ProcessOnce(std::chrono::milliseconds(100));
 }

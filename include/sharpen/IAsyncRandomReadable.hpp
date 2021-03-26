@@ -4,9 +4,11 @@
 
 #include "TypeDef.hpp"
 #include "ByteBuffer.hpp"
+#include "Future.hpp"
 
 namespace sharpen
 {
+
     class IAsyncRandomReadable
     {
     private:
@@ -22,9 +24,13 @@ namespace sharpen
         
         virtual ~IAsyncRandomReadable() noexcept = default;
         
-        virtual sharpen::Size ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset) = 0;
+        virtual void ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future) = 0;
         
-        virtual sharpen::Size ReadAsync(sharpen::ByteBuffer &buf,sharpen::Uint64 offset) = 0;
+        virtual void ReadAsync(sharpen::ByteBuffer &buf,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future) = 0;
+
+        sharpen::Size ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset);
+
+        sharpen::Size ReadAsync(sharpen::ByteBuffer &buf,sharpen::Uint64 offset);
     };
 }
 

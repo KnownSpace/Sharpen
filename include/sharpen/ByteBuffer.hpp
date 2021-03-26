@@ -23,6 +23,8 @@ namespace sharpen
         void CheckAndMoveMark();
 
     public:
+        ByteBuffer();
+
         explicit ByteBuffer(sharpen::Size size);
 
         explicit ByteBuffer(Vector &&vector) noexcept;
@@ -43,34 +45,34 @@ namespace sharpen
             this->swap(other);
         }
 
-        void PushBack(Char val);
+        void PushBack(sharpen::Char val);
 
         sharpen::Size GetSize() const;
 
         void PopBack();
 
-        Char Front() const;
+        sharpen::Char Front() const;
 
-        Char &Front();
+        sharpen::Char &Front();
 
-        Char Back() const;
+        sharpen::Char Back() const;
 
-        Char &Back();
+        sharpen::Char &Back();
 
-        Char &Get(sharpen::Size index);
+        sharpen::Char &Get(sharpen::Size index);
 
-        Char Get(sharpen::Size index) const;
+        sharpen::Char Get(sharpen::Size index) const;
 
-        Char *Data();
+        sharpen::Char *Data();
 
-        const Char* Data() const;
+        const sharpen::Char* Data() const;
 
-        inline Char &operator[](sharpen::Size index)
+        inline sharpen::Char &operator[](sharpen::Size index)
         {
             return this->Get(index);
         }
 
-        inline Char operator[](sharpen::Size index) const
+        inline sharpen::Char operator[](sharpen::Size index) const
         {
             return this->Get(index);
         }

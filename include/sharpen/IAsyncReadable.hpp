@@ -4,9 +4,11 @@
 
 #include "ByteBuffer.hpp"
 #include "TypeDef.hpp"
+#include "Future.hpp"
 
 namespace sharpen
 {
+
     class IAsyncReadable
     {
     private:
@@ -20,9 +22,13 @@ namespace sharpen
         
         virtual ~IAsyncReadable() noexcept = default;
         
-        virtual sharpen::Size ReadAsync(sharpen::Char *buf,sharpen::Size bufSize) = 0;
+        virtual void ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future) = 0;
         
-        virtual sharpen::Size ReadAsync(sharpen::ByteBuffer &buf) = 0;
+        virtual void ReadAsync(sharpen::ByteBuffer &buf,sharpen::Future<sharpen::Size> &future) = 0;
+
+        sharpen::Size ReadAsync(sharpen::Char *buf,sharpen::Size bufSize);
+
+        sharpen::Size ReadAsync(sharpen::ByteBuffer &buf);
     };
 }
 

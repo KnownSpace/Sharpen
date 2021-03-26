@@ -7,46 +7,14 @@
 #include <ctime>
 #include <mutex>
 #include <string>
-#include <sharpen/WorkerPool.hpp>
+#include <sharpen/ThreadInfo.hpp>
+#include <sharpen/FiberProcesserPool.hpp>
+#include <sharpen/AsyncBarrier.hpp>
+#include <sharpen/IFileChannel.hpp>
+#include <sharpen/EventLoop.hpp>
+#include <sharpen/Resumer.hpp>
 
-#ifdef SHARPEN_IS_WIN
-
-namespace sharpen
-{
-    DWORD GetCurrentThreadId()
-    {
-        return ::GetCurrentThreadId();
-    }
-}
-
-#else
-
-#include <unistd.h>
-#include <sys/syscall.h>
-
-#define gettid() syscall(__NR_gettid)
-
-namespace sharpen
-{
-    int GetCurrentThreadId()
-    {
-        return gettid();
-    }
-}
-
-#endif
-
-#define TEST_COUNT 1000*1000*1
-
-void LaunchTest()
-{
-    for(size_t i = 0;i < TEST_COUNT;++i)
-    {
-        sharpen::Launch([](){
-            //do nothing
-        });
-    }
-}
+#define TEST_COUNT 10000*100
 
 void AwaitTest()
 {
@@ -74,16 +42,6 @@ void MultithreadAwaitTest()
     std::printf("AwaitTest using %d sec in thread %d\n",time,sharpen::GetCurrentThreadId());
 }
 
-void MultithreadLaunchTest()
-{
-    std::clock_t begin,end,time;
-    begin = std::clock();
-    LaunchTest();
-    end = std::clock();
-    time = (end-begin)/CLOCKS_PER_SEC;
-    std::printf("LaunchTest using %d sec in thread %d\n",time,sharpen::GetCurrentThreadId());
-}
-
 void MutexTest(sharpen::AsyncMutex &lock,int &count)
 {
     std::unique_lock<sharpen::AsyncMutex> _lock(lock);
@@ -91,11 +49,10 @@ void MutexTest(sharpen::AsyncMutex &lock,int &count)
     std::printf("count is %d\n",count);
 }
 
-void WorkerPoolTest()
+void ProcesserPoolTest()
 {
-    sharpen::WorkerPool pool(std::thread::hardware_concurrency());
-    sharpen::AsyncBarrier barrier(TEST_COUNT);
-    pool.Start();
+    sharpen::FiberProcesserPool pool;
+    sharpen::AsyncBarrier barrier(TEST_COUNT - 1);
     for (sharpen::Int32 i = 0; i < TEST_COUNT; ++i)
     {
         sharpen::Launch([i,&barrier]() {
@@ -103,43 +60,85 @@ void WorkerPoolTest()
             barrier.Notice();
         });
     }
+    
     barrier.WaitAsync();
     pool.Stop();
 }
 
+void FileTest()
+{
+    sharpen::EventLoop loop(sharpen::MakeDefaultSelector());
+    sharpen::FiberProcesser process([&loop]() mutable
+    {
+        sharpen::FileChannelPtr channel = sharpen::MakeFileChannel("./temp.txt",sharpen::FileAccessModel::All,sharpen::FileOpenModel::CreateOrOpen);
+        channel->Register(&loop);
+        const char *content = "hello world\n";
+        sharpen::ByteBuffer buf(content,strlen(content));
+        sharpen::Launch([]()
+        {
+            std::printf("writing\n");
+        });
+        sharpen::Size size = channel->WriteAsync(buf,0);
+        std::printf("write %zd bytes complete\n",size);
+        sharpen::Launch([](){
+            std::printf("reading\n");
+        });
+        size = channel->ReadAsync(buf,0);
+        std::string str(buf.Data(),size);
+        std::printf("file content is:\n%s\n",str.c_str());
+        loop.Stop();
+    });
+    loop.Run();
+    process.Join();
+}
+
+struct test
+{
+
+};
+
+
 int main(int argc, char const *argv[])
 {
     std::printf("running in machine with %d cores\n",std::thread::hardware_concurrency());
-    //multithreaded await test
     std::string arg("basic");
     if(argc > 1)
     {
         arg = argv[1];
     }
+    //multithreaded await test
     if(arg == "basic")
     {
-        std::printf("test count is %d\n",TEST_COUNT);
-        std::vector<std::thread> vec;
-        for (size_t i = 0; i < std::thread::hardware_concurrency(); i++)
+        sharpen::Size count = std::thread::hardware_concurrency();
+        std::printf("test count is %zd\n",TEST_COUNT * count);
+        std::vector<sharpen::FiberProcesser> vec;
+        for (size_t i = 0; i < count; i++)
         {
-            vec.push_back(std::move(std::thread(std::bind(&MultithreadAwaitTest))));
+            vec.push_back(std::move(sharpen::FiberProcesser(std::bind(&MultithreadAwaitTest))));
         }
         for (size_t i = 0; i < vec.size(); i++)
         {
-            vec[i].join();
+            vec[i].Join();
         }
     }
+    //mutex test
     if(arg == "mutex")
     {
         int count = 0;
         sharpen::AsyncMutex lock;
-        std::thread t1(std::bind(&MutexTest,std::ref(lock),std::ref(count))),t2(std::bind(&MutexTest,std::ref(lock),std::ref(count)));
-        t1.join();
-        t2.join();
+        sharpen::FiberProcesser t1(std::bind(&MutexTest,std::ref(lock),std::ref(count)));
+        sharpen::FiberProcesser t2(std::bind(&MutexTest,std::ref(lock),std::ref(count)));
+        t1.Join();
+        t2.Join();
     }
+    //workerpool test
     if (arg == "workerpool")
     {
-        WorkerPoolTest();
+        ProcesserPoolTest();
+    }
+    if (arg == "file")
+    {
+        FileTest();
     }
     std::printf("test complete\n");
     return 0;

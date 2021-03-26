@@ -34,9 +34,14 @@ namespace sharpen
         throw std::system_error(sharpen::GetLastError(),std::system_category());
     }
     
+    inline std::exception_ptr MakeSystemErrorPtr(sharpen::ErrorCode err)
+    {
+        return std::move(std::make_exception_ptr(std::system_error(err,std::system_category())));
+    }
+
     inline std::exception_ptr MakeLastErrorPtr()
     {
-       return std::move(std::make_exception_ptr(std::system_error(sharpen::GetLastError(),std::system_category())));
+       return std::move(sharpen::MakeSystemErrorPtr(sharpen::GetLastError()));
     }
 }
 

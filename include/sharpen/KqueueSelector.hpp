@@ -20,6 +20,18 @@ namespace sharpen
         
         sharpen::Pipe pipe_;
     public:
+
+        virtual void Select(EventVector &events) override;
+        
+        virtual void Notify() override;
+        
+        virtual void Resister(WeakChannelPtr channel) override;
+        
+        virtual void EnableWriteListen(sharpen::ChannelPtr channel) override;
+        
+        virtual void DisableWritelisten(sharpen::ChannelPtr channel) override;
+
+        virtual void Stop() noexcept override;
     };
 }
 
