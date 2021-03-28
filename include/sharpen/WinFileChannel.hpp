@@ -27,7 +27,7 @@ namespace sharpen
 
     public:
 
-        WinFileChannel(sharpen::FileHandle handle);
+        explicit WinFileChannel(sharpen::FileHandle handle);
 
         ~WinFileChannel() noexcept = default;
 

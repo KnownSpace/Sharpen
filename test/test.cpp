@@ -72,8 +72,8 @@ void FileTest()
     {
         sharpen::FileChannelPtr channel = sharpen::MakeFileChannel("./temp.txt",sharpen::FileAccessModel::All,sharpen::FileOpenModel::CreateOrOpen);
         channel->Register(&loop);
-        const char *content = "hello world\n";
-        sharpen::ByteBuffer buf(content,strlen(content));
+        const char content[] = "hello world\n";
+        sharpen::ByteBuffer buf(content,sizeof(content));
         sharpen::Launch([]()
         {
             std::printf("writing\n");
@@ -91,11 +91,6 @@ void FileTest()
     loop.Run();
     process.Join();
 }
-
-struct test
-{
-
-};
 
 
 int main(int argc, char const *argv[])

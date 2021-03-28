@@ -21,6 +21,10 @@ namespace sharpen
         sharpen::Pipe pipe_;
     public:
 
+        KqueueSelector();
+
+        ~KqueueSelector() = default;
+
         virtual void Select(EventVector &events) override;
         
         virtual void Notify() override;
@@ -30,8 +34,6 @@ namespace sharpen
         virtual void EnableWriteListen(sharpen::ChannelPtr channel) override;
         
         virtual void DisableWritelisten(sharpen::ChannelPtr channel) override;
-
-        virtual void Stop() noexcept override;
     };
 }
 

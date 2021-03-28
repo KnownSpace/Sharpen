@@ -19,7 +19,7 @@ namespace sharpen
     public:
         FiberProcesserPool();
 
-        FiberProcesserPool(sharpen::Size size);
+        explicit FiberProcesserPool(sharpen::Size size);
 
         ~FiberProcesserPool() noexcept;
 

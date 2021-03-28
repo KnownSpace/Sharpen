@@ -117,9 +117,24 @@ void sharpen::ByteBuffer::Expand(sharpen::Size size)
     this->Reserve(size + this->GetSize());
 }
 
+void sharpen::ByteBuffer::Extend(sharpen::Size size)
+{
+    for (size_t i = 0; i < size; i++)
+    {
+        this->vector_.push_back(static_cast<sharpen::Char>(0));
+    }
+}
+
+void sharpen::ByteBuffer::Reset(sharpen::Size size)
+{
+    this->vector_.clear();
+    this->Reserve(size);
+}
+
 void sharpen::ByteBuffer::Shrink()
 {
     this->vector_.shrink_to_fit();
+    this->CheckAndMoveMark();
 }
 
 void sharpen::ByteBuffer::Append(const sharpen::Char *p,sharpen::Size size)
@@ -128,7 +143,6 @@ void sharpen::ByteBuffer::Append(const sharpen::Char *p,sharpen::Size size)
     {
         return;
     }
-    this->Expand(size);
     for (size_t i = 0; i < size; i++)
     {
         this->PushBack(p[i]);

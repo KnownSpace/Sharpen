@@ -19,7 +19,7 @@ namespace sharpen
 
         void InitOverlappedStruct(sharpen::IocpOverlappedStruct &event,sharpen::Uint64 offset);
     public:
-        WinSocketChannel(sharpen::FileHandle handle);
+        explicit WinSocketChannel(sharpen::FileHandle handle);
 
         ~WinSocketChannel() noexcept = default;
 
