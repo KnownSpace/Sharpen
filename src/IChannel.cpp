@@ -3,6 +3,10 @@
 
 #include <sharpen/SystemMacro.hpp>
 
+#ifdef SHARPEN_IS_NIX
+#include <unistd.h>
+#endif
+
 sharpen::IChannel::~IChannel() noexcept
 {
     this->Close();
