@@ -6,7 +6,7 @@
 
 #ifdef SHARPEN_HAS_EPOLL
 
-#include <unordered_map>
+#include <map>
 
 #include "ISelector.hpp"
 #include "EventFd.hpp"
@@ -20,7 +20,7 @@ namespace sharpen
     {
     private:
         using Event = sharpen::EpollEventStruct;
-        using Map = std::unordered_map<sharpen::FileHandle,Event>;
+        using Map = std::map<sharpen::FileHandle,Event>;
         using Lock = sharpen::SpinLock;
     
         sharpen::Epoll epoll_;
@@ -45,10 +45,6 @@ namespace sharpen
         virtual void Notify() override;
         
         virtual void Resister(WeakChannelPtr channel) override;
-        
-        virtual void EnableWriteListen(sharpen::ChannelPtr channel) override;
-        
-        virtual void DisableWritelisten(sharpen::ChannelPtr channel) override;
     };
 }
 

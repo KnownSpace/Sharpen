@@ -35,16 +35,6 @@ void sharpen::EventLoop::Bind(WeakChannelPtr channel)
     this->selector_->Resister(channel);
 }
 
-void sharpen::EventLoop::EnableWriteListen(sharpen::ChannelPtr channel)
-{
-    this->selector_->EnableWriteListen(channel);
-}
-
-void sharpen::EventLoop::DisableWriteListen(sharpen::ChannelPtr channel)
-{
-    this->selector_->DisableWritelisten(channel);
-}
-
 void sharpen::EventLoop::QueueInLoop(Task task)
 {
     if (this->GetLocalLoop() == this)

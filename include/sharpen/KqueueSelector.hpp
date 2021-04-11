@@ -30,10 +30,6 @@ namespace sharpen
         virtual void Notify() override;
         
         virtual void Resister(WeakChannelPtr channel) override;
-        
-        virtual void EnableWriteListen(sharpen::ChannelPtr channel) override;
-        
-        virtual void DisableWritelisten(sharpen::ChannelPtr channel) override;
     };
 }
 

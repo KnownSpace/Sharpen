@@ -1,6 +1,6 @@
 #pragma once
-#ifndef _SHARPEN_ISOCKETCHANNEL_HPP
-#define _SHARPEN_ISOCKETCHANNEL_HPP
+#ifndef _SHARPEN_INETSTREAMCHANNEL_HPP
+#define _SHARPEN_INETSTREAMCHANNEL_HPP
 
 #include "IChannel.hpp"
 #include "Noncopyable.hpp"
@@ -11,23 +11,23 @@
 namespace sharpen
 {
 
-    class ISocketChannel;
+    class INetStreamChannel;
 
-    using SocketChannelPtr = std::shared_ptr<sharpen::ISocketChannel>;
+    using NetStreamChannelPtr = std::shared_ptr<sharpen::INetStreamChannel>;
 
-    class ISocketChannel:public sharpen::IChannel,public sharpen::IAsyncWritable,public sharpen::IAsyncReadable
+    class INetStreamChannel:public sharpen::IChannel,public sharpen::IAsyncWritable,public sharpen::IAsyncReadable
     {
     private:
-        using Self = sharpen::ISocketChannel;
+        using Self = sharpen::INetStreamChannel;
     public:
         
-        ISocketChannel() = default;
+        INetStreamChannel() = default;
         
-        virtual ~ISocketChannel() noexcept = default;
+        virtual ~INetStreamChannel() noexcept = default;
         
-        ISocketChannel(const Self &) = default;
+        INetStreamChannel(const Self &) = default;
         
-        ISocketChannel(Self &&) noexcept = default;
+        INetStreamChannel(Self &&) noexcept = default;
 
         virtual void SendFileAsync(sharpen::FileChannelPtr file,sharpen::Uint64 size,sharpen::Uint64 offset,sharpen::Future<void> &future) = 0;
         
@@ -37,9 +37,9 @@ namespace sharpen
 
         void SendFileAsync(sharpen::FileChannelPtr file);
 
-        virtual void AcceptAsync(sharpen::Future<sharpen::SocketChannelPtr> &future) = 0;
+        virtual void AcceptAsync(sharpen::Future<sharpen::NetStreamChannelPtr> &future) = 0;
 
-        sharpen::SocketChannelPtr AcceptAsync();
+        sharpen::NetStreamChannelPtr AcceptAsync();
 
         virtual void ConnectAsync(sharpen::Future<void> &future) = 0;
 

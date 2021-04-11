@@ -12,7 +12,7 @@ sharpen::EpollSelector::EpollSelector()
     //register event fd
     Event &event = (this->map[this->eventfd.GetHandle()] = std::move(Event()));
     event.epollEvent.data.ptr = &event;
-    event.epollEvent.events = EPOLLIN;
+    event.epollEvent.events = EPOLLIN | EPOLLET;
     event.internalEventfd = true;
     this->epoll.Add(this->eventfd.GetHandle(),&(event.epollEvent));
 
@@ -34,7 +34,23 @@ void sharpen::EpollSelector::Select(EventVector &events)
     }
     for (size_t i = 0; i < count; i++)
     {
-        
+        auto &e = ev[i];
+        auto *event = e.data.ptr;
+        if (!event->internalEventfd)
+        {
+            sharpen::Uint32 eventMask = e.events;
+            sharpen::Uint32 eventType = 0;
+            if (eventMas & EPOLL_IN)
+            {
+                eventType |= sharpen::IoEvent::EventTypeEnum::Read;
+            }
+            if (eventMask & EPOLL_OUT)
+            {
+                eventType |= sharpen::IoEvent::EventTypeEnum::Write;
+            }
+            event->ioEvent_.SetEvent(eventType);
+            events.push_back(&(event->ioEvent_));
+        }
     }
 }
         
@@ -56,35 +72,9 @@ void sharpen::EpollSelector::Resister(WeakChannelPtr channel)
     lock.unlock();
     event.ioEvent_.SetChannel(ch);
     event.epollEvent.data.ptr = &event;
-    event.epollEvent.events = EPOLLIN;
+    event.epollEvent.events = EPOLLIN | EPOLLOUT | EPOLLET;
     event.internalEventfd = false;
     this->epoll.Add(ch->GetHandle(),&(event.epollEvent));
-}
-        
-void sharpen::EpollSelector::EnableWriteListen(sharpen::ChannelPtr channel)
-{
-    if (channel.expires())
-    {
-        return;
-    }
-
-    sharpen::ChannelPtr ch = channel.lock();
-    Event &event = this->map[ch->GetHandle()];
-    event.epollEvent.events |= EPOLLOUT;
-    this->epoll.Update(ch.GetHandle(),&(event.epollEvent));
-}
-        
-void sharpen::EpollSelector::DisableWritelisten(sharpen::ChannelPtr channel)
-{
-    if (channel.expires())
-    {
-        return;
-    }
-
-    sharpen::ChannelPtr ch = channel.lock();
-    Event &event = this->map[ch->GetHandle()];
-    event.epollEvent.events &= ~EPOLLOUT;
-    this->epoll.Update(ch.GetHandle(),&(event.epollEvent));
 }
 
 #endif

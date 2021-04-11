@@ -39,12 +39,6 @@ namespace sharpen
         
         //register file handle
         virtual void Resister(WeakChannelPtr channel) = 0;
-        
-        //enable writing listen
-        virtual void EnableWriteListen(sharpen::ChannelPtr channel) = 0;
-        
-        //disable writing listen
-        virtual void DisableWritelisten(sharpen::ChannelPtr channel) = 0;
     };
 
     using SelectorPtr = std::shared_ptr<sharpen::ISelector>;

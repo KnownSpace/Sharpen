@@ -9,12 +9,6 @@ sharpen::IocpSelector::IocpSelector()
     ,count_(8)
 {}
 
-void sharpen::IocpSelector::EnableWriteListen(sharpen::ChannelPtr channel)
-{}
-
-void sharpen::IocpSelector::DisableWritelisten(sharpen::ChannelPtr channel)
-{}
-
 bool sharpen::IocpSelector::CheckChannel(sharpen::ChannelPtr &channel) noexcept
 {
     return channel && channel->GetHandle() != INVALID_HANDLE_VALUE && channel->GetHandle() != nullptr;

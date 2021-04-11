@@ -24,7 +24,9 @@ namespace sharpen
 
     //other types
     using Size = std::size_t;
-    using Port = sharpen::Uint16;
+    using UintPort = sharpen::Uint16;
+    using UintIpAddr = sharpen::Uint32;
+    using UintIpv6Addr = sharpen::Uint64;
 }
 
 #endif

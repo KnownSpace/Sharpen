@@ -53,13 +53,10 @@ namespace sharpen
         //the channel must be supported by selector
         void Bind(WeakChannelPtr channel);
         
-        //start listen write event on channel
-        //it will be ignored if IOCP is available
-        void EnableWriteListen(sharpen::ChannelPtr channel);
-        
-        //stop listen write event on channel
-        //it will be ignored if IOCP is available
-        void DisableWriteListen(sharpen::ChannelPtr channel);
+        sharpen::ISelector &GetSelector() const noexcept
+        {
+            return *this->selector_;
+        }
         
         //queue a task to event loop
         //the task will be executed in next loop

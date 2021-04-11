@@ -1,6 +1,6 @@
 #pragma once
-#ifndef _SHARPEN_POSIXSOCKETCHANNEL_HPP
-#define _SHARPEN_POSIXSOCKETCHANNEL_HPP
+#ifndef _SHARPEN_POSIXNETSTREAMCHANNEL_HPP
+#define _SHARPEN_POSIXNETSTREAMCHANNEL_HPP
 
 #include "SystemMacro.hpp"
 
@@ -8,11 +8,11 @@
 
 #define SHARPEN_HAS_POSIXSOCKET
 
-#include "ISocketChannel.hpp"
+#include "INetStreamChannel.hpp"
 
 namespace sharpen
 {
-    class PosixSocketChannel:public sharpen::ISocketChannel,public sharpen::Noncopyable
+    class PosixNetStreamChannel:public sharpen::INetStreamChannel,public sharpen::Noncopyable
     {
     private:
 

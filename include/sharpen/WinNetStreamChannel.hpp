@@ -1,27 +1,27 @@
 #pragma once
-#ifndef _SHARPEN_WINSOCKETCHANNEL_HPP
-#define _SHARPEN_WINSOCKETCHANNEL_HPP
+#ifndef _SHARPEN_WINNETSTREAMCHANNEL_HPP
+#define _SHARPEN_WINNETSTREAMCHANNEL_HPP
 
 #include "SystemMacro.hpp"
 
 #ifdef SHARPEN_IS_WIN
 #define SHARPEN_HAS_WINSOCKET
 
-#include "ISocketChannel.hpp"
+#include "INetStreamChannel.hpp"
 #include "IocpOverlappedStruct.hpp"
 
 namespace sharpen
 {
-    class WinSocketChannel:public sharpen::ISocketChannel,public sharpen::Noncopyable
+    class WinNetStreamChannel:public sharpen::INetStreamChannel,public sharpen::Noncopyable
     {
     private:
         static void InitOverlapped(OVERLAPPED &ol);
 
         void InitOverlappedStruct(sharpen::IocpOverlappedStruct &event,sharpen::Uint64 offset);
     public:
-        explicit WinSocketChannel(sharpen::FileHandle handle);
+        explicit WinNetStreamChannel(sharpen::FileHandle handle);
 
-        ~WinSocketChannel() noexcept = default;
+        ~WinNetStreamChannel() noexcept = default;
 
         virtual void WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future) override;
         
@@ -37,7 +37,7 @@ namespace sharpen
         
         virtual void SendFileAsync(sharpen::FileChannelPtr file,sharpen::Future<void> &future) override;
 
-        virtual void AcceptAsync(sharpen::Future<sharpen::SocketChannelPtr> &future) override;
+        virtual void AcceptAsync(sharpen::Future<sharpen::NetStreamChannelPtr> &future) override;
 
         virtual void ConnectAsync(sharpen::Future<void> &future) override;
     };
