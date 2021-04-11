@@ -9,7 +9,7 @@
 #endif
 
 //Linux
-#if (defined (_linux)) || (defined (_linux_))
+#if (defined (_linux)) || (defined (_linux_)) || (defined (__linux__))
 #define SHARPEN_IS_LINUX
 #endif
 
