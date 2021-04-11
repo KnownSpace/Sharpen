@@ -40,7 +40,7 @@ namespace sharpen
         
         virtual void OnEvent(sharpen::IoEvent *event) = 0;
         
-        void Register(sharpen::EventLoop *loop);
+        virtual void Register(sharpen::EventLoop *loop);
 
         void Register(sharpen::EventEngine &engine);
         

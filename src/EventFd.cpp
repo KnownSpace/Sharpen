@@ -2,6 +2,7 @@
 
 #ifdef SHARPEN_HAS_EVENTFD
 
+#include <unistd.h>
 #include <sys/eventfd.h>
 #include <cassert>
 
@@ -33,7 +34,7 @@ sharpen::EventFd::~EventFd() noexcept
 sharpen::EventFd::EventFdValue sharpen::EventFd::Read()
 {
     assert(this->handle_ != -1);
-    sharpen::EventFdValue val;
+    sharpen::EventFd::EventFdValue val;
     int r = ::read(this->handle_,&val,sizeof(val));
     if(r == -1)
     {

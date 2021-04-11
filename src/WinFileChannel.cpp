@@ -1,7 +1,8 @@
 #include <sharpen/WinFileChannel.hpp>
-#include <Windows.h>
 
 #ifdef SHARPEN_HAS_WINFILE
+
+#include <Windows.h>
 
 sharpen::WinFileChannel::WinFileChannel(sharpen::FileHandle handle)
     :Mybase()

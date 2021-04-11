@@ -16,6 +16,10 @@ namespace sharpen
         using WeakChannelPtr = std::weak_ptr<sharpen::IChannel>;
         using EpollEvent = ::epoll_event;
 
+        EpollEventStruct() = default;
+
+        ~EpollEventStruct() noexcept = default;
+
         WeakChannelPtr channel_;
 
         EpollEvent epollEvent_;

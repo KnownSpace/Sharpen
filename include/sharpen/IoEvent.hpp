@@ -46,7 +46,12 @@ namespace sharpen
         void *data_;
         sharpen::ErrorCode errorCode_;
     public:
-        IoEvent() = default;
+        IoEvent()
+            :type_(EventTypeEnum::None)
+            ,channel_()
+            ,data_(nullptr)
+            ,errorCode_(0)
+        {}
     
         IoEvent(EventType type,sharpen::ChannelPtr channel,void *data,sharpen::ErrorCode error)
             :type_(type)

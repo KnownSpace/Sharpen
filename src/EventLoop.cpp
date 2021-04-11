@@ -67,11 +67,11 @@ void sharpen::EventLoop::ExecuteTask()
     TaskVector tasks;
     {
         std::unique_lock<Lock> lock(*this->lock_);
+        this->exectingTask_ = false;
         if (this->tasks_->empty())
         {
             return;
         }
-        this->exectingTask_ = false;
         std::swap(*this->tasks_,tasks);
     }
     for (auto begin = tasks.begin(),end = tasks.end();begin != end;++begin)

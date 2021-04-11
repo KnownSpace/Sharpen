@@ -15,12 +15,13 @@ namespace sharpen
     class PosixFileChannel:public sharpen::IFileChannel,public sharpen::Noncopyable
     {
     private:
-        using Mybase = sharpen::IFileChannel;
+        using MyBase = sharpen::IFileChannel;
+
+    public:
 
         explicit PosixFileChannel(sharpen::FileHandle handle);
 
         ~PosixFileChannel() noexcept = default;
-    public:
 
         virtual void WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future) override;
         
@@ -31,6 +32,8 @@ namespace sharpen
         virtual void ReadAsync(sharpen::ByteBuffer &buf,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future) override;
 
         virtual void OnEvent(sharpen::IoEvent *event) override;
+
+        virtual void Register(sharpen::EventLoop *loop) override;
 
         virtual sharpen::Uint64 GetFileSize() const override;
     };

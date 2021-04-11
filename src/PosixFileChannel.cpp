@@ -3,10 +3,13 @@
 #ifdef SHARPEN_HAS_POSIXFILE
 
 #include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #include <cassert>
 
 #include <sharpen/SystemError.hpp>
+#include <sharpen/EventLoop.hpp>
 
 sharpen::PosixFileChannel::PosixFileChannel(sharpen::FileHandle handle)
     :MyBase()
@@ -22,7 +25,7 @@ void sharpen::PosixFileChannel::WriteAsync(const sharpen::Char *buf,sharpen::Siz
         throw std::logic_error("should register to a loop first");
     }
     sharpen::FileHandle fd = this->handle_;
-    this->loop_.QueueInLoop([buf,bufSize,offset,&future,fd]() mutable
+    this->loop_->QueueInLoop([buf,bufSize,offset,&future,fd]() mutable
     {
         ssize_t r = ::pwrite(fd,buf,bufSize,offset);
         if (r < 0)
@@ -46,7 +49,7 @@ void sharpen::PosixFileChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSi
         throw std::logic_error("should register to a loop first");
     }
     sharpen::FileHandle fd = this->handle_;
-    this->loop_.QueueInLoop([buf,bufSize,offset,&future,fd]() mutable
+    this->loop_->QueueInLoop([buf,bufSize,offset,&future,fd]() mutable
     {
         ssize_t r = ::pread(fd,buf,bufSize,offset);
         if (r < 0)
@@ -77,6 +80,11 @@ sharpen::Uint64 sharpen::PosixFileChannel::GetFileSize() const
         sharpen::ThrowLastError();
     }
     return buf.st_size;
+}
+
+void sharpen::PosixFileChannel::Register(sharpen::EventLoop *loop)
+{
+    this->loop_ = loop;
 }
 
 #endif

@@ -12,7 +12,6 @@
 #include <sharpen/AsyncBarrier.hpp>
 #include <sharpen/IFileChannel.hpp>
 #include <sharpen/EventLoop.hpp>
-#include <sharpen/Resumer.hpp>
 
 #define TEST_COUNT 10000*100
 
@@ -73,7 +72,7 @@ void FileTest()
         sharpen::FileChannelPtr channel = sharpen::MakeFileChannel("./temp.txt",sharpen::FileAccessModel::All,sharpen::FileOpenModel::CreateOrOpen);
         channel->Register(&loop);
         const char content[] = "hello world\n";
-        sharpen::ByteBuffer buf(content,sizeof(content));
+        sharpen::ByteBuffer buf(content,sizeof(content) - 1);
         sharpen::Launch([]()
         {
             std::printf("writing\n");

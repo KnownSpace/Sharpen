@@ -2,6 +2,7 @@
 #ifndef _SHARPEN_SYSTEMERROR_HPP
 #define _SHARPEN_SYSTEMERROR_HPP
 
+#include <type_traits>
 #include <system_error>
 
 #include "SystemMacro.hpp"
@@ -17,7 +18,7 @@ namespace sharpen
 #ifdef SHARPEN_IS_WIN
     using ErrorCode = decltype(::GetLastError());
 #else
-    using ErrorCode = decltype(errno);
+    using ErrorCode = std::remove_reference<decltype(errno)>::type;
 #endif
 
     inline sharpen::ErrorCode GetLastError() noexcept

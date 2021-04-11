@@ -14,7 +14,7 @@
 #endif
 
 //Unix
-#if (defined (_unix)) || (defined (_unix_)) || (defined (__unix__))
+#if (defined (_unix)) || (defined (_unix_))
 #define SHARPEN_IS_UNIX
 #endif
 

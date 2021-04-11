@@ -5,6 +5,11 @@
 
 #include <sharpen/EventLoop.hpp>
 
+#ifdef SHARPEN_IS_NIX
+#include <unistd.h>
+#include <fcntl.h>
+#endif
+
 sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::FileAccessModel access,sharpen::FileOpenModel open)
 {
     sharpen::FileChannelPtr channel;
@@ -68,10 +73,10 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
         openModel = 0;
         break;
     case sharpen::FileOpenModel::CreateNew:
-        openModel = O_CREATE | O_TRUNC;
+        openModel = O_CREAT | O_TRUNC;
         break;
     case sharpen::FileOpenModel::CreateOrOpen:
-        openModel = O_CREATE;
+        openModel = O_CREAT;
         break;
     }
     sharpen::FileHandle handle = ::open(filename,accessModel | openModel);
