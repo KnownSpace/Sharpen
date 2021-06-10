@@ -172,17 +172,26 @@ void sharpen::WinNetStreamChannel::AcceptAsync(sharpen::Future<sharpen::NetStrea
     {
         throw std::logic_error("should register to a loop first");
     }
-    WSAOverlappedStruct *olStruct = new WSAOverlappedStruct();
-    if (!olStruct)
-    {
-        future.Fail(std::make_exception_ptr(std::bad_alloc()));
-        return;
-    }
     //get acceptex
     {
         GUID acceptexId = WSAID_ACCEPTEX;
         DWORD dwBytes;
         int iResult = WSAIoctl(reinterpret_cast<SOCKET>(this->handle_), SIO_GET_EXTENSION_FUNCTION_POINTER,&acceptexId, sizeof (acceptexId), &WSAAcceptEx, sizeof (WSAAcceptEx), &dwBytes, NULL, NULL);
+        if (iResult != 0)
+        {
+            sharpen::ErrorCode err = sharpen::GetLastError();
+            if (err != ERROR_IO_PENDING)
+            {
+                future.Fail(sharpen::MakeLastErrorPtr());
+                return;
+            }
+        }
+    }
+    WSAOverlappedStruct *olStruct = new WSAOverlappedStruct();
+    if (!olStruct)
+    {
+        future.Fail(std::make_exception_ptr(std::bad_alloc()));
+        return;
     }
     //init iocp olStruct
     this->InitOverlappedStruct(*olStruct);
@@ -214,17 +223,26 @@ void sharpen::WinNetStreamChannel::ConnectAsync(const sharpen::IEndPoint &endpoi
     {
         throw std::logic_error("should register to a loop first");
     }
-    WSAOverlappedStruct *olStruct = new WSAOverlappedStruct();
-    if (!olStruct)
-    {
-        future.Fail(std::make_exception_ptr(std::bad_alloc()));
-        return;
-    }
     //get acceptex
     {
         GUID connectexId = WSAID_CONNECTEX;
         DWORD dwBytes;
         int iResult = WSAIoctl(reinterpret_cast<SOCKET>(this->handle_), SIO_GET_EXTENSION_FUNCTION_POINTER,&connectexId, sizeof (connectexId), &WSAConnectEx, sizeof (WSAConnectEx), &dwBytes, NULL, NULL);
+        if (iResult != 0)
+        {
+            sharpen::ErrorCode err = sharpen::GetLastError();
+            if (err != ERROR_IO_PENDING)
+            {
+                future.Fail(sharpen::MakeLastErrorPtr());
+                return;
+            }
+        }
+    }
+    WSAOverlappedStruct *olStruct = new WSAOverlappedStruct();
+    if (!olStruct)
+    {
+        future.Fail(std::make_exception_ptr(std::bad_alloc()));
+        return;
     }
     //init iocp olStruct
     this->InitOverlappedStruct(*olStruct);
