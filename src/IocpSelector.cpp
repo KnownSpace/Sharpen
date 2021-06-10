@@ -44,7 +44,7 @@ void sharpen::IocpSelector::Select(EventVector &events)
     for (size_t i = 0; i < count; i++)
     {
         sharpen::IoCompletionPort::Event &e = ev[i];
-        if (e.dwNumberOfBytesTransferred != 0 && e.lpOverlapped != nullptr && e.lpCompletionKey != NULL)
+        if (e.lpOverlapped != nullptr && e.lpCompletionKey != NULL)
         {
             //get overlapped struct
             sharpen::IocpOverlappedStruct *olStructPtr = CONTAINING_RECORD(e.lpOverlapped,sharpen::IocpOverlappedStruct,ol_);

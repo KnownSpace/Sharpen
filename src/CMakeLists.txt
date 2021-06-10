@@ -55,3 +55,7 @@ if(UNIX)
     find_package(Threads REQUIRED)
     target_link_libraries(sharpen PUBLIC Threads::Threads)
 endif()
+
+if(WIN32)
+    target_link_libraries(sharpen Ws2_32 Mswsock)
+endif()

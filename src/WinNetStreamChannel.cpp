@@ -63,7 +63,7 @@ void sharpen::WinNetStreamChannel::WriteAsync(const sharpen::Char *buf,sharpen::
     if (r != TRUE)
     {
         sharpen::ErrorCode err = sharpen::GetLastError();
-        if (err != ERROR_IO_PENDING)
+        if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
         {
             delete olStruct;
             future.Fail(sharpen::MakeLastErrorPtr());
@@ -99,11 +99,12 @@ void sharpen::WinNetStreamChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bu
     olStruct->buf_.buf = buf;
     olStruct->buf_.len = static_cast<ULONG>(bufSize);
     //request
-    BOOL r = ::WSARecv(reinterpret_cast<SOCKET>(this->handle_),&(olStruct->buf_),1,nullptr,0,reinterpret_cast<LPWSAOVERLAPPED>(&(olStruct->ol_)),nullptr);
+    static DWORD recvFlag = 0;
+    BOOL r = ::WSARecv(reinterpret_cast<SOCKET>(this->handle_),&(olStruct->buf_),1,nullptr,&recvFlag,reinterpret_cast<LPWSAOVERLAPPED>(&(olStruct->ol_)),nullptr);
     if (r != TRUE)
     {
         sharpen::ErrorCode err = sharpen::GetLastError();
-        if (err != ERROR_IO_PENDING)
+        if (err != ERROR_IO_PENDING&& err != ERROR_SUCCESS)
         {
             delete olStruct;
             future.Fail(sharpen::MakeLastErrorPtr());
@@ -167,7 +168,7 @@ void sharpen::WinNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,sh
     if (r != TRUE)
     {
         sharpen::ErrorCode err = sharpen::GetLastError();
-        if (err != ERROR_IO_PENDING)
+        if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
         {
             delete olStruct;
             future.Fail(sharpen::MakeLastErrorPtr());
@@ -197,11 +198,8 @@ void sharpen::WinNetStreamChannel::AcceptAsync(sharpen::Future<sharpen::NetStrea
         if (iResult != 0)
         {
             sharpen::ErrorCode err = sharpen::GetLastError();
-            if (err != ERROR_IO_PENDING)
-            {
-                future.Fail(sharpen::MakeLastErrorPtr());
-                return;
-            }
+            future.Fail(sharpen::MakeLastErrorPtr());
+            return;
         }
     }
     WSAOverlappedStruct *olStruct = new WSAOverlappedStruct();
@@ -221,20 +219,25 @@ void sharpen::WinNetStreamChannel::AcceptAsync(sharpen::Future<sharpen::NetStrea
     if (s == INVALID_SOCKET)
     {
         sharpen::ErrorCode err = sharpen::GetLastError();
-        if (err != ERROR_IO_PENDING)
-        {
-            delete olStruct;
-            future.Fail(sharpen::MakeLastErrorPtr());
-            return;
-        }
+        delete olStruct;
+        future.Fail(sharpen::MakeLastErrorPtr());
+        return;
     }
     olStruct->accepted_ = reinterpret_cast<sharpen::FileHandle>(s);
+    //alloc buf
+    olStruct->buf_.buf = reinterpret_cast<char*>(std::calloc(1024,sizeof(char)));
+    if (olStruct->buf_.buf == nullptr)
+    {
+        delete olStruct;
+        future.Fail(std::make_exception_ptr(std::bad_alloc()));
+        return;
+    }
     //request
-    BOOL r = WSAAcceptEx(reinterpret_cast<SOCKET>(this->handle_),reinterpret_cast<SOCKET>(olStruct->accepted_),nullptr,0,0,0,nullptr,&(olStruct->ol_));
+    BOOL r = WSAAcceptEx(reinterpret_cast<SOCKET>(this->handle_),reinterpret_cast<SOCKET>(olStruct->accepted_),olStruct->buf_.buf,0,sizeof(SOCKADDR_IN) + 16,sizeof(SOCKADDR_IN) + 16,nullptr,&(olStruct->ol_));
     if (r != TRUE)
     {
         sharpen::ErrorCode err = sharpen::GetLastError();
-        if (err != ERROR_IO_PENDING)
+        if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
         {
             delete olStruct;
             future.Fail(sharpen::MakeLastErrorPtr());
@@ -259,11 +262,8 @@ void sharpen::WinNetStreamChannel::ConnectAsync(const sharpen::IEndPoint &endpoi
         if (iResult != 0)
         {
             sharpen::ErrorCode err = sharpen::GetLastError();
-            if (err != ERROR_IO_PENDING)
-            {
-                future.Fail(sharpen::MakeLastErrorPtr());
-                return;
-            }
+            future.Fail(sharpen::MakeLastErrorPtr());
+            return;
         }
     }
     WSAOverlappedStruct *olStruct = new WSAOverlappedStruct();
@@ -283,7 +283,7 @@ void sharpen::WinNetStreamChannel::ConnectAsync(const sharpen::IEndPoint &endpoi
     if (r != TRUE)
     {
         sharpen::ErrorCode err = sharpen::GetLastError();
-        if (err != ERROR_IO_PENDING)
+        if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
         {
             delete olStruct;
             future.Fail(sharpen::MakeLastErrorPtr());
@@ -324,11 +324,13 @@ void sharpen::WinNetStreamChannel::HandleReadAndWrite(WSAOverlappedStruct &olStr
 void sharpen::WinNetStreamChannel::HandleAccept(WSAOverlappedStruct &olStruct)
 {
     sharpen::Future<sharpen::NetStreamChannelPtr> *future = reinterpret_cast<sharpen::Future<sharpen::NetStreamChannelPtr>*>(olStruct.data_);
+    std::free(olStruct.buf_.buf);
     if (olStruct.event_.IsErrorEvent())
     {
         future->Fail(sharpen::MakeSystemErrorPtr(olStruct.event_.GetErrorCode()));
         return;
     }
+    ::setsockopt(reinterpret_cast<SOCKET>(olStruct.accepted_),SOL_SOCKET,SO_UPDATE_ACCEPT_CONTEXT,reinterpret_cast<char*>(&this->handle_),sizeof(SOCKET));
     sharpen::NetStreamChannelPtr channel = std::make_shared<sharpen::WinNetStreamChannel>(olStruct.accepted_,this->af_);
     future->Complete(channel);
 }
@@ -352,6 +354,7 @@ void sharpen::WinNetStreamChannel::HandleConnect(WSAOverlappedStruct &olStruct)
         future->Fail(sharpen::MakeSystemErrorPtr(olStruct.event_.GetErrorCode()));
         return;
     }
+    ::setsockopt(reinterpret_cast<SOCKET>(this->handle_),SOL_SOCKET,SO_UPDATE_CONNECT_CONTEXT,nullptr,0);
     future->Complete();
 }
 

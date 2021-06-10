@@ -148,7 +148,7 @@ namespace sharpen
 
         bool ValidateChannel() const noexcept
         {
-            return !this->channel_.expired();
+            return  !this->channel_.expired();
         }
         
         void *GetData() const noexcept

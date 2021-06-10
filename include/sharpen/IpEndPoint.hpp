@@ -16,11 +16,11 @@ namespace sharpen
 
         MyAddr addr_;
     public:
+        IpEndPoint() noexcept;
+
         IpEndPoint(sharpen::UintIpAddr addr,sharpen::UintPort port);
 
         IpEndPoint(const Self &other);
-
-        IpEndPoint(Self &&other) noexcept;
 
         ~IpEndPoint() noexcept = default;
 

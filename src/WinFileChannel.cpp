@@ -54,7 +54,7 @@ void sharpen::WinFileChannel::WriteAsync(const sharpen::Char *buf,sharpen::Size 
     if (r != TRUE)
     {
         sharpen::ErrorCode err = sharpen::GetLastError();
-        if (err != ERROR_IO_PENDING)
+        if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
         {
             delete olStruct;
             future.Fail(sharpen::MakeLastErrorPtr());
@@ -88,7 +88,7 @@ void sharpen::WinFileChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSize
     if (r != TRUE)
     {
         sharpen::ErrorCode err = sharpen::GetLastError();
-        if (err != ERROR_IO_PENDING)
+        if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
         {
             delete olStruct;
             future.Fail(sharpen::MakeLastErrorPtr());

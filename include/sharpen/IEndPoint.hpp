@@ -3,6 +3,7 @@
 #define _SHARPEN_IENDPOINT_HPP
 
 #include "SystemMacro.hpp"
+#include "TypeDef.hpp"
 
 #ifdef SHARPEN_IS_WIN
 #include <WinSock2.h>

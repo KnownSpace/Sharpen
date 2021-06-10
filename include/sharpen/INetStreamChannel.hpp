@@ -46,9 +46,9 @@ namespace sharpen
 
         void ConnectAsync(const sharpen::IEndPoint &endpoint);
 
-        virtual void Bind(const sharpen::IEndPoint &endpoint);
+        virtual void Bind(const sharpen::IEndPoint &endpoint) = 0;
 
-        virtual void Listen(sharpen::Uint16 queueLength);
+        virtual void Listen(sharpen::Uint16 queueLength) = 0;
     };
 
     enum class AddressFamily
@@ -58,6 +58,10 @@ namespace sharpen
     };
 
     sharpen::NetStreamChannelPtr MakeTcpStreamChannel(sharpen::AddressFamily af);
+
+    void StartupNetSupport();
+
+    void CleanNetSupport();
 }
 
 #endif

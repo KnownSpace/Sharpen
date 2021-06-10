@@ -1,3 +1,6 @@
+// #pragma comment(lib,"Ws2_32.lib")
+// #pragma comment(lib, "Mswsock.lib")
+
 #include <cstdio>
 #include <iostream>
 #include <sharpen/AwaitableFuture.hpp>
@@ -12,6 +15,10 @@
 #include <sharpen/AsyncBarrier.hpp>
 #include <sharpen/IFileChannel.hpp>
 #include <sharpen/EventLoop.hpp>
+#include <sharpen/INetStreamChannel.hpp>
+#include <sharpen/IpEndPoint.hpp>
+
+
 
 #define TEST_COUNT 10000*100
 
@@ -92,6 +99,64 @@ void FileTest()
 }
 
 
+void NetTest()
+{
+    sharpen::StartupNetSupport();
+    sharpen::EventLoop loop(sharpen::MakeDefaultSelector());
+    sharpen::FiberProcesser processer([&loop]() mutable
+    {
+        ::printf("open channel\n");
+        sharpen::IpEndPoint addr(0,25565);
+        addr.SetAddr("127.0.0.1");
+        sharpen::NetStreamChannelPtr ser = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
+        ser->Bind(addr);
+        ser->Register(&loop);
+        ::printf("binding\n");
+        ::printf("listening\n");
+        ser->Listen(65535);
+        sharpen::NetStreamChannelPtr clt = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
+        addr.SetPort(0);
+        clt->Bind(addr);
+        clt->Register(&loop);
+        sharpen::Launch([&ser,&loop]() mutable
+        {
+            try
+            {
+                std::printf("accepting\n");
+                sharpen::NetStreamChannelPtr clt = ser->AcceptAsync();
+                clt->Register(&loop);
+                char str[] = "Hello World\n";
+                std::printf("writing\n");
+                clt->WriteAsync(str,sizeof(str));
+            }
+            catch(const std::exception& e)
+            {
+                std::cerr << e.what() << '\n';
+            }
+            
+        });
+        try
+        {
+            addr.SetPort(25565);
+            std::printf("conecting\n");
+            clt->ConnectAsync(addr);
+            sharpen::ByteBuffer buf(64);
+            std::printf("reading\n");
+            clt->ReadAsync(buf);
+            std::cout << buf.Data() << "\n";
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
+        
+        loop.Stop();
+    });
+    loop.Run();
+    processer.Join();
+    //sharpen::CleanNetSupport();
+}
+
 int main(int argc, char const *argv[])
 {
     std::printf("running in machine with %d cores\n",std::thread::hardware_concurrency());
@@ -134,6 +199,11 @@ int main(int argc, char const *argv[])
     {
         FileTest();
     }
+    if (arg == "net")
+    {
+        NetTest();
+    }
+    
     std::printf("test complete\n");
     return 0;
 }
