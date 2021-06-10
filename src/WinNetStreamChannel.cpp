@@ -119,7 +119,24 @@ void sharpen::WinNetStreamChannel::ReadAsync(sharpen::ByteBuffer &buf,sharpen::F
 
 void sharpen::WinNetStreamChannel::OnEvent(sharpen::IoEvent *event)
 {
-     event->GetData();
+     std::unique_ptr<WSAOverlappedStruct> olStruct(reinterpret_cast<WSAOverlappedStruct*>(event->GetData()));
+     sharpen::IoEvent::EventType ev = olStruct->event_.GetEventType();
+     if (ev & sharpen::IoEvent::EventTypeEnum::Accept)
+     {
+         HandleAccept(*olStruct);
+     }
+     else if (ev & (sharpen::IoEvent::EventTypeEnum::Read | sharpen::IoEvent::EventTypeEnum::Write))
+     {
+         HandleReadAndWrite(*olStruct);
+     }
+     else if (ev & sharpen::IoEvent::EventTypeEnum::Connect)
+     {
+         HandleConnect(*olStruct);
+     }
+     else if (ev & sharpen::IoEvent::EventTypeEnum::Sendfile)
+     {
+         HandleSendFile(*olStruct);
+     }
 }
 
 void sharpen::WinNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,sharpen::Uint64 size,sharpen::Uint64 offset,sharpen::Future<void> &future)
@@ -280,6 +297,51 @@ void sharpen::WinNetStreamChannel::Listen(sharpen::Uint16 queueLength)
     {
         sharpen::ThrowLastError();
     }
+}
+
+void sharpen::WinNetStreamChannel::HandleReadAndWrite(WSAOverlappedStruct &olStruct)
+{
+    sharpen::Future<sharpen::Size> *future = reinterpret_cast<sharpen::Future<sharpen::Size>*>(olStruct.data_);
+    if (olStruct.event_.IsErrorEvent())
+    {
+        future->Fail(sharpen::MakeSystemErrorPtr(olStruct.event_.GetErrorCode()));
+        return;
+    }
+    future->Complete(olStruct.length_);
+}
+
+void sharpen::WinNetStreamChannel::HandleAccept(WSAOverlappedStruct &olStruct)
+{
+    sharpen::Future<sharpen::NetStreamChannelPtr> *future = reinterpret_cast<sharpen::Future<sharpen::NetStreamChannelPtr>*>(olStruct.data_);
+    if (olStruct.event_.IsErrorEvent())
+    {
+        future->Fail(sharpen::MakeSystemErrorPtr(olStruct.event_.GetErrorCode()));
+        return;
+    }
+    sharpen::NetStreamChannelPtr channel = std::make_shared<sharpen::WinNetStreamChannel>(reinterpret_cast<SOCKET>(olStruct.accepted_),this->af_);
+    future->Complete(channel);
+}
+
+void sharpen::WinNetStreamChannel::HandleSendFile(WSAOverlappedStruct &olStruct)
+{
+    sharpen::Future<void> *future = reinterpret_cast<sharpen::Future<void>*>(olStruct.data_);
+    if (olStruct.event_.IsErrorEvent())
+    {
+        future->Fail(sharpen::MakeSystemErrorPtr(olStruct.event_.GetErrorCode()));
+        return;
+    }
+    future->Complete();
+}
+
+void sharpen::WinNetStreamChannel::HandleConnect(WSAOverlappedStruct &olStruct)
+{
+    sharpen::Future<void> *future = reinterpret_cast<sharpen::Future<void>*>(olStruct.data_);
+    if (olStruct.event_.IsErrorEvent())
+    {
+        future->Fail(sharpen::MakeSystemErrorPtr(olStruct.event_.GetErrorCode()));
+        return;
+    }
+    future->Complete();
 }
 
 #endif

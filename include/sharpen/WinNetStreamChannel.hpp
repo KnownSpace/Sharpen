@@ -21,6 +21,14 @@ namespace sharpen
 
         void InitOverlappedStruct(sharpen::WSAOverlappedStruct &olStruct);
 
+        void HandleReadAndWrite(WSAOverlappedStruct &olStruct);
+
+        void HandleAccept(WSAOverlappedStruct &olStruct);
+
+        void HandleSendFile(WSAOverlappedStruct &olStruct);
+
+        void HandleConnect(WSAOverlappedStruct &olStruct);
+
         int af_;
     public:
         explicit WinNetStreamChannel(sharpen::FileHandle handle,int af);
