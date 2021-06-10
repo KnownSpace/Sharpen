@@ -50,6 +50,14 @@ namespace sharpen
 
         virtual void Listen(sharpen::Uint16 queueLength);
     };
+
+    enum class AddressFamily
+    {
+        Ip,
+        Ipv6
+    };
+
+    sharpen::NetStreamChannelPtr MakeTcpStreamChannel(sharpen::AddressFamily af);
 }
 
 #endif

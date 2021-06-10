@@ -31,7 +31,7 @@ namespace sharpen
             ,maxReserved_(maxReserved)
         {}
         
-        ObjectPool(Creator creator,Deletor deletor，sharpen::Size maxReserved)
+        ObjectPool(Creator creator,Deletor deletor,sharpen::Size maxReserved)
             :objects_()
             ,creator_(std::move(creator))
             ,deletor_(std::move(deletor))

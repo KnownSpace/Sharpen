@@ -33,7 +33,7 @@ sharpen::WinNetStreamChannel::WinNetStreamChannel(sharpen::FileHandle handle,int
     :Mybase()
     ,af_(af)
 {
-    assert(handle != INVALID_SOCKET);
+    assert(handle != reinterpret_cast<sharpen::FileHandle>(INVALID_SOCKET));
     this->handle_ = handle;
 }
 
@@ -97,7 +97,7 @@ void sharpen::WinNetStreamChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bu
     olStruct->data_ = &future;
     //set buf
     olStruct->buf_.buf = buf;
-    olStruct->buf_.len = bufSize;
+    olStruct->buf_.len = static_cast<ULONG>(bufSize);
     //request
     BOOL r = ::WSARecv(reinterpret_cast<SOCKET>(this->handle_),&(olStruct->buf_),1,nullptr,0,reinterpret_cast<LPWSAOVERLAPPED>(&(olStruct->ol_)),nullptr);
     if (r != TRUE)
@@ -163,7 +163,7 @@ void sharpen::WinNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,sh
     olStruct->ol_.Offset = li.LowPart;
     olStruct->ol_.OffsetHigh = li.HighPart;
     //request
-    BOOL r = ::TransmitFile(reinterpret_cast<SOCKET>(this->handle_),file->GetHandle(),size,0,&(olStruct->ol_),nullptr,0);
+    BOOL r = ::TransmitFile(reinterpret_cast<SOCKET>(this->handle_),file->GetHandle(),static_cast<DWORD>(size),0,&(olStruct->ol_),nullptr,0);
     if (r != TRUE)
     {
         sharpen::ErrorCode err = sharpen::GetLastError();
@@ -217,7 +217,18 @@ void sharpen::WinNetStreamChannel::AcceptAsync(sharpen::Future<sharpen::NetStrea
     //record future
     olStruct->data_ = &future;
     //open client socket
-    olStruct->accepted_ = reinterpret_cast<sharpen::FileHandle>(::socket(this->af_, SOCK_STREAM, IPPROTO_TCP));
+    SOCKET s = ::socket(this->af_, SOCK_STREAM, IPPROTO_TCP);
+    if (s == INVALID_SOCKET)
+    {
+        sharpen::ErrorCode err = sharpen::GetLastError();
+        if (err != ERROR_IO_PENDING)
+        {
+            delete olStruct;
+            future.Fail(sharpen::MakeLastErrorPtr());
+            return;
+        }
+    }
+    olStruct->accepted_ = reinterpret_cast<sharpen::FileHandle>(s);
     //request
     BOOL r = WSAAcceptEx(reinterpret_cast<SOCKET>(this->handle_),reinterpret_cast<SOCKET>(olStruct->accepted_),nullptr,0,0,0,nullptr,&(olStruct->ol_));
     if (r != TRUE)
@@ -318,7 +329,7 @@ void sharpen::WinNetStreamChannel::HandleAccept(WSAOverlappedStruct &olStruct)
         future->Fail(sharpen::MakeSystemErrorPtr(olStruct.event_.GetErrorCode()));
         return;
     }
-    sharpen::NetStreamChannelPtr channel = std::make_shared<sharpen::WinNetStreamChannel>(reinterpret_cast<SOCKET>(olStruct.accepted_),this->af_);
+    sharpen::NetStreamChannelPtr channel = std::make_shared<sharpen::WinNetStreamChannel>(olStruct.accepted_,this->af_);
     future->Complete(channel);
 }
 
