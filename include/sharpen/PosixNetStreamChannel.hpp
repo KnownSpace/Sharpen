@@ -18,8 +18,6 @@ namespace sharpen
 
     protected:
 
-        virtual void DoClose() noexcept override;
-
     public:
 
         virtual void WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future) override;
@@ -31,6 +29,18 @@ namespace sharpen
         virtual void ReadAsync(sharpen::ByteBuffer &buf,sharpen::Future<sharpen::Size> &future) override;
 
         virtual void OnEvent(sharpen::IoEvent *event) override;
+
+        virtual void SendFileAsync(sharpen::FileChannelPtr file,sharpen::Uint64 size,sharpen::Uint64 offset,sharpen::Future<void> &future) override;
+        
+        virtual void SendFileAsync(sharpen::FileChannelPtr file,sharpen::Future<void> &future) override;
+
+        virtual void AcceptAsync(sharpen::Future<sharpen::NetStreamChannelPtr> &future) override;
+
+        virtual void ConnectAsync(const sharpen::IEndPoint &endpoint,sharpen::Future<void> &future) override;
+
+        virtual void Bind(const sharpen::IEndPoint &endpoint) override;
+
+        virtual void Listen(sharpen::Uint16 queueLength) override;
     };
 };
 
