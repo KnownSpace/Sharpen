@@ -7,6 +7,7 @@
 #ifdef SHARPEN_IS_WIN
 #include <WinSock2.h>
 #else
+#include <sys/socket.h>
 #endif
 
 namespace sharpen
@@ -31,7 +32,7 @@ namespace sharpen
 
         virtual const NativeAddr *GetAddrPtr() const noexcept = 0;
 
-        virtual sharpen::Size GetAddrLen() const = 0;
+        virtual sharpen::Uint32 GetAddrLen() const = 0;
     };
 }
 

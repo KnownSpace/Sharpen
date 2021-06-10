@@ -40,7 +40,7 @@ namespace sharpen
 
         void SetAddr(const char *addrStr);
 
-        virtual sharpen::Size GetAddrLen() const override
+        virtual sharpen::Uint32 GetAddrLen() const override
         {
             return sizeof(this->addr_);
         }
