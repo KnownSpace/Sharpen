@@ -30,6 +30,8 @@ namespace sharpen
         virtual NativeAddr *GetAddrPtr() noexcept = 0;
 
         virtual const NativeAddr *GetAddrPtr() const noexcept = 0;
+
+        virtual sharpen::Size GetAddrLen() const = 0;
     };
 }
 

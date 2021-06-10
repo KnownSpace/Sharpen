@@ -66,8 +66,8 @@ namespace sharpen
 
     extern void Delay();
 
-     template <class _Rep, class _Period>
-    void Delay(std::chrono::duration<_Rep,_Period> &time)
+    template <class _Rep, class _Period>
+    inline void Delay(std::chrono::duration<_Rep,_Period> &time)
     {
         sharpen::FiberScheduler &scheduler = sharpen::FiberScheduler::GetScheduler();
         scheduler.ProcessOnce(time);

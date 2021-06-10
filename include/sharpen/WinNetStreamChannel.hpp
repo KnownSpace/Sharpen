@@ -8,18 +8,22 @@
 #define SHARPEN_HAS_WINSOCKET
 
 #include "INetStreamChannel.hpp"
-#include "IocpOverlappedStruct.hpp"
+#include "WSAOverlappedStruct.hpp"
 
 namespace sharpen
 {
     class WinNetStreamChannel:public sharpen::INetStreamChannel,public sharpen::Noncopyable
     {
     private:
+        using Mybase = sharpen::INetStreamChannel;
+
         static void InitOverlapped(OVERLAPPED &ol);
 
-        void InitOverlappedStruct(sharpen::IocpOverlappedStruct &event,sharpen::Uint64 offset);
+        void InitOverlappedStruct(sharpen::WSAOverlappedStruct &olStruct);
+
+        int af_;
     public:
-        explicit WinNetStreamChannel(sharpen::FileHandle handle);
+        explicit WinNetStreamChannel(sharpen::FileHandle handle,int af);
 
         ~WinNetStreamChannel() noexcept = default;
 
@@ -39,7 +43,11 @@ namespace sharpen
 
         virtual void AcceptAsync(sharpen::Future<sharpen::NetStreamChannelPtr> &future) override;
 
-        virtual void ConnectAsync(sharpen::Future<void> &future) override;
+        virtual void ConnectAsync(const sharpen::IEndPoint &endpoint,sharpen::Future<void> &future) override;
+
+        virtual void Bind(const sharpen::IEndPoint &endpoint) override;
+
+        virtual void Listen(sharpen::Uint16 queueLength) override;
     };
 };
 

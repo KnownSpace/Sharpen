@@ -7,6 +7,7 @@
 #include "IAsyncReadable.hpp"
 #include "IAsyncWritable.hpp"
 #include "IFileChannel.hpp"
+#include "IEndPoint.hpp"
 
 namespace sharpen
 {
@@ -41,9 +42,13 @@ namespace sharpen
 
         sharpen::NetStreamChannelPtr AcceptAsync();
 
-        virtual void ConnectAsync(sharpen::Future<void> &future) = 0;
+        virtual void ConnectAsync(const sharpen::IEndPoint &endpoint,sharpen::Future<void> &future) = 0;
 
-        void ConnectAsync();
+        void ConnectAsync(const sharpen::IEndPoint &endpoint);
+
+        virtual void Bind(const sharpen::IEndPoint &endpoint);
+
+        virtual void Listen(sharpen::Uint16 queueLength);
     };
 }
 

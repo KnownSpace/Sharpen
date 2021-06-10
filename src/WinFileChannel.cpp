@@ -50,7 +50,7 @@ void sharpen::WinFileChannel::WriteAsync(const sharpen::Char *buf,sharpen::Size 
     //record future
     olStruct->data_ = &future;
     //request
-    BOOL r = ::WriteFile(this->handle_,buf,static_cast<DWORD>(bufSize),reinterpret_cast<LPDWORD>(&(olStruct->length_)),&olStruct->ol_);
+    BOOL r = ::WriteFile(this->handle_,buf,static_cast<DWORD>(bufSize),nullptr,&olStruct->ol_);
     if (r != TRUE)
     {
         sharpen::ErrorCode err = sharpen::GetLastError();
@@ -84,7 +84,7 @@ void sharpen::WinFileChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSize
     olStruct->event_.SetData(olStruct);
     //record future
     olStruct->data_ = &future;
-    BOOL r = ::ReadFile(this->handle_,buf,static_cast<DWORD>(bufSize),reinterpret_cast<LPDWORD>(&(olStruct->length_)),&olStruct->ol_);
+    BOOL r = ::ReadFile(this->handle_,buf,static_cast<DWORD>(bufSize),nullptr,&olStruct->ol_);
     if (r != TRUE)
     {
         sharpen::ErrorCode err = sharpen::GetLastError();

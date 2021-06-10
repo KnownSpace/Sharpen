@@ -39,6 +39,11 @@ namespace sharpen
         void GetAddr(char *addrStr,sharpen::Size size) const;
 
         void SetAddr(const char *addrStr);
+
+        virtual sharpen::Size GetAddrLen() const override
+        {
+            return sizeof(this->addr_);
+        }
     };
 }
 

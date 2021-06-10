@@ -29,10 +29,18 @@ namespace sharpen
                 Close = 4,
                 //error
                 Error = 8,
+
+                //iocp only
                 //io completed
                 Completed = 16,
                 //io request
-                Request = 32
+                Request = 32,
+                //accept handle
+                Accept = 64,
+                //connect
+                Connect = 128,
+                //send file
+                Sendfile = 256
             };
         };
         
@@ -176,6 +184,16 @@ namespace sharpen
         EventType GetEventType() const noexcept
         {
             return this->type_;
+        }
+
+        void AddEvent(EventType ev)
+        {
+            this->type_ |= ev;
+        }
+
+        void RemoveEvent(EventType ev)
+        {
+            this->type_ ^= ev;
         }
     };
 }

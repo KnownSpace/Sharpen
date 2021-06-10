@@ -11,6 +11,7 @@
 #include "IFileChannel.hpp"
 #include "AwaitableFuture.hpp"
 #include "IocpSelector.hpp"
+#include "ObjectPool.hpp"
 
 namespace sharpen
 {
@@ -20,6 +21,9 @@ namespace sharpen
         using MyFuture = sharpen::AwaitableFuture<sharpen::Size>;
         using MyFuturePtr = MyFuture*;
         using Mybase = sharpen::IFileChannel;
+        using OverlappedPool = sharpen::ObjectPool<sharpen::IocpOverlappedStruct*>;
+
+        //OverlappedPool pool_;
         
         static void InitOverlapped(OVERLAPPED &ol,sharpen::Uint64 offset);
 
