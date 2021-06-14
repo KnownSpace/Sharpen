@@ -3,6 +3,7 @@
 
 #include <cstdio>
 #include <iostream>
+#include <stdint.h>
 #include <sharpen/AwaitableFuture.hpp>
 #include <sharpen/AsyncOps.hpp>
 #include <sharpen/AsyncMutex.hpp>
@@ -124,6 +125,11 @@ void NetTest()
             {
                 std::printf("accepting\n");
                 sharpen::NetStreamChannelPtr clt = ser->AcceptAsync();
+                sharpen::IpEndPoint addr;
+                clt->GetRemoteEndPoint(addr);
+                std::string ip(20,0);
+                addr.GetAddr(const_cast<char*>(ip.data()),20);
+                std::printf("new connection: ip %s port %d \n",ip.c_str(),addr.GetPort());
                 clt->Register(&loop);
                 char str[] = "Hello World\n";
                 std::printf("writing\n");

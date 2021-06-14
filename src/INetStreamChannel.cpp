@@ -76,3 +76,60 @@ void sharpen::INetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file)
     this->SendFileAsync(file,future);
     future.Await();
 }
+
+void sharpen::INetStreamChannel::Bind(const sharpen::IEndPoint &endpoint)
+{
+#ifdef SHARPEN_HAS_WINSOCKET
+    int r = ::bind(reinterpret_cast<SOCKET>(this->handle_),endpoint.GetAddrPtr(),endpoint.GetAddrLen());
+#else
+    int r = ::bind(this->handle_,endpoint.GetAddrPtr(),endpoint.GetAddrLen());
+#endif
+    if (r != 0)
+    {
+        sharpen::ThrowLastError();
+    }
+}
+
+void sharpen::INetStreamChannel::Listen(sharpen::Uint16 queueLength)
+{
+#ifdef SHARPEN_HAS_WINSOCKET
+    int r = ::listen(reinterpret_cast<SOCKET>(this->handle_),queueLength);
+#else
+    int r = ::listen(this->handle_,queueLength);
+#endif
+    if (r != 0)
+    {
+        sharpen::ThrowLastError();
+    }
+}
+
+void sharpen::INetStreamChannel::GetLocalEndPoint(sharpen::IEndPoint &endPoint) const
+{
+#ifdef SHARPEN_HAS_WINSOCKET
+    int len = endPoint.GetAddrLen();
+    int r = ::getsockname(reinterpret_cast<SOCKET>(this->handle_),endPoint.GetAddrPtr(),&len);
+#else
+    socklen_t len = endPoint.GetAddrLen();
+    int r = ::getsockname(this->handle_,endPoint.GetAddrPtr(),&len);
+#endif
+    if (r != 0)
+    {
+        sharpen::ThrowLastError();
+    }
+    
+}
+
+void sharpen::INetStreamChannel::GetRemoteEndPoint(sharpen::IEndPoint &endPoint) const
+{
+#ifdef SHARPEN_HAS_WINSOCKET
+    int len = endPoint.GetAddrLen();
+    int r = ::getpeername(reinterpret_cast<SOCKET>(this->handle_),endPoint.GetAddrPtr(),&len);
+#else
+    socklen_t len = endPoint.GetAddrLen();
+    int r = ::getpeername(this->handle_,endPoint.GetAddrPtr(),&len);
+#endif
+    if (r != 0)
+    {
+        sharpen::ThrowLastError();
+    }
+}

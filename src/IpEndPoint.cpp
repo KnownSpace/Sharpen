@@ -68,7 +68,7 @@ void sharpen::IpEndPoint::SetAddr(sharpen::UintIpAddr addr) noexcept
 
 void sharpen::IpEndPoint::GetAddr(char *addrStr,sharpen::Size size) const
 {
-    ::inet_ntop(AF_INET,&(this->addr_),addrStr,size);
+    ::inet_ntop(AF_INET,&(this->addr_.sin_addr),addrStr,size);
 }
 
 void sharpen::IpEndPoint::SetAddr(const char *addrStr)

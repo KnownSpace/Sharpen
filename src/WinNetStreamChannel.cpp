@@ -292,24 +292,6 @@ void sharpen::WinNetStreamChannel::ConnectAsync(const sharpen::IEndPoint &endpoi
     }
 }
 
-void sharpen::WinNetStreamChannel::Bind(const sharpen::IEndPoint &endpoint)
-{
-    int r = ::bind(reinterpret_cast<SOCKET>(this->handle_),endpoint.GetAddrPtr(),endpoint.GetAddrLen());
-    if (r != 0)
-    {
-        sharpen::ThrowLastError();
-    }
-}
-
-void sharpen::WinNetStreamChannel::Listen(sharpen::Uint16 queueLength)
-{
-    int r = ::listen(reinterpret_cast<SOCKET>(this->handle_),queueLength);
-    if (r != 0)
-    {
-        sharpen::ThrowLastError();
-    }
-}
-
 void sharpen::WinNetStreamChannel::HandleReadAndWrite(WSAOverlappedStruct &olStruct)
 {
     sharpen::Future<sharpen::Size> *future = reinterpret_cast<sharpen::Future<sharpen::Size>*>(olStruct.data_);

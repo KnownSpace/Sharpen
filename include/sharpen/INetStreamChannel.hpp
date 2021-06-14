@@ -46,9 +46,13 @@ namespace sharpen
 
         void ConnectAsync(const sharpen::IEndPoint &endpoint);
 
-        virtual void Bind(const sharpen::IEndPoint &endpoint) = 0;
+        void Bind(const sharpen::IEndPoint &endpoint);
 
-        virtual void Listen(sharpen::Uint16 queueLength) = 0;
+        void Listen(sharpen::Uint16 queueLength);
+
+        void GetLocalEndPoint(sharpen::IEndPoint &endPoint) const;
+
+        void GetRemoteEndPoint(sharpen::IEndPoint &endPoint) const;
     };
 
     enum class AddressFamily

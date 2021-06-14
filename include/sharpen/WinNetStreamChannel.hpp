@@ -52,10 +52,6 @@ namespace sharpen
         virtual void AcceptAsync(sharpen::Future<sharpen::NetStreamChannelPtr> &future) override;
 
         virtual void ConnectAsync(const sharpen::IEndPoint &endpoint,sharpen::Future<void> &future) override;
-
-        virtual void Bind(const sharpen::IEndPoint &endpoint) override;
-
-        virtual void Listen(sharpen::Uint16 queueLength) override;
     };
 };
 
