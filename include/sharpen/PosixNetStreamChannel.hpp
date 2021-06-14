@@ -15,10 +15,15 @@ namespace sharpen
     class PosixNetStreamChannel:public sharpen::INetStreamChannel,public sharpen::Noncopyable
     {
     private:
+        using Mybase = sharpen::INetStreamChannel;
 
     protected:
 
     public:
+
+        explicit PosixNetStreamChannel(sharpen::FileHandle handle);
+
+        ~PosixNetStreamChannel() noexcept = default;
 
         virtual void WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future) override;
         
@@ -37,10 +42,6 @@ namespace sharpen
         virtual void AcceptAsync(sharpen::Future<sharpen::NetStreamChannelPtr> &future) override;
 
         virtual void ConnectAsync(const sharpen::IEndPoint &endpoint,sharpen::Future<void> &future) override;
-
-        virtual void Bind(const sharpen::IEndPoint &endpoint) override;
-
-        virtual void Listen(sharpen::Uint16 queueLength) override;
     };
 };
 

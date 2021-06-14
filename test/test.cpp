@@ -160,7 +160,7 @@ void NetTest()
     });
     loop.Run();
     processer.Join();
-    //sharpen::CleanNetSupport();
+    sharpen::CleanupNetSupport();
 }
 
 int main(int argc, char const *argv[])

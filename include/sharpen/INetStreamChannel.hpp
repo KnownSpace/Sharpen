@@ -65,7 +65,7 @@ namespace sharpen
 
     void StartupNetSupport();
 
-    void CleanNetSupport();
+    void CleanupNetSupport();
 }
 
 #endif

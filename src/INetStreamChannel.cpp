@@ -42,7 +42,7 @@ void sharpen::StartupNetSupport()
 #endif
 }
 
-void sharpen::CleanNetSupport()
+void sharpen::CleanupNetSupport()
 {
 #ifdef SHARPEN_HAS_WINSOCKET
     WSACleanup();

@@ -29,12 +29,19 @@ void sharpen::WinNetStreamChannel::InitOverlappedStruct(sharpen::WSAOverlappedSt
     olStruct.event_.SetErrorCode(ERROR_SUCCESS);
 }
 
+void sharpen::WinNetStreamChannel::Closer(sharpen::FileHandle handle)
+{
+    SOCKET sock = reinterpret_cast<SOCKET>(handle);
+    ::closesocket(sock);
+}
+
 sharpen::WinNetStreamChannel::WinNetStreamChannel(sharpen::FileHandle handle,int af)
     :Mybase()
     ,af_(af)
 {
     assert(handle != reinterpret_cast<sharpen::FileHandle>(INVALID_SOCKET));
     this->handle_ = handle;
+    this->closer_ = std::move(std::bind<void>(&(sharpen::WinNetStreamChannel::Closer)));
 }
 
 void sharpen::WinNetStreamChannel::WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future)

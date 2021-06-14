@@ -75,3 +75,9 @@ void sharpen::IpEndPoint::SetAddr(const char *addrStr)
 {
     ::inet_pton(AF_INET,addrStr,&(this->addr_.sin_addr));
 }
+
+sharpen::IpEndPoint &sharpen::IpEndPoint::operator=(const sharpen::IpEndPoint &other)
+{
+    this->addr_ = other.addr_;
+    return *this;
+}

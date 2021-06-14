@@ -44,6 +44,8 @@ namespace sharpen
         {
             return sizeof(this->addr_);
         }
+
+        Self &operator=(const Self &other);
     };
 }
 
