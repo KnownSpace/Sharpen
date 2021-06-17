@@ -3,6 +3,7 @@
 #ifdef SHARPEN_HAS_WINSOCKET
 
 #include <cassert>
+#include <type_traits>
 
 #include <WinSock2.h>
 #include <MSWSock.h>
@@ -41,7 +42,7 @@ sharpen::WinNetStreamChannel::WinNetStreamChannel(sharpen::FileHandle handle,int
 {
     assert(handle != reinterpret_cast<sharpen::FileHandle>(INVALID_SOCKET));
     this->handle_ = handle;
-    this->closer_ = std::move(std::bind<void>(&(sharpen::WinNetStreamChannel::Closer)));
+    this->closer_  = std::move(std::bind((void (*) (void))&sharpen::WinNetStreamChannel::Closer));
 }
 
 void sharpen::WinNetStreamChannel::WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future)

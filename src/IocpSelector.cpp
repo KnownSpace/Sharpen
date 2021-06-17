@@ -1,4 +1,6 @@
 #include <sharpen/IocpSelector.hpp>
+#include <algorithm>
+#include<sharpen/TypeDef.hpp>
 
 #ifdef SHARPEN_HAS_IOCP
 
