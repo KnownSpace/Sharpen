@@ -1,6 +1,3 @@
-// #pragma comment(lib,"Ws2_32.lib")
-// #pragma comment(lib, "Mswsock.lib")
-
 #include <cstdio>
 #include <iostream>
 #include <stdint.h>
