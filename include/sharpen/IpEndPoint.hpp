@@ -2,8 +2,15 @@
 #ifndef _SHARPEN_IPENDPOINT_HPP
 #define _SHARPEN_IPENDPOINT_HPP
 
+#include "SystemMacro.hpp"
+
+#ifdef SHARPEN_IS_NIX
+#include <netinet/in.h>
+#endif
+
 #include "IEndPoint.hpp"
 #include "TypeDef.hpp"
+
 
 namespace sharpen
 {

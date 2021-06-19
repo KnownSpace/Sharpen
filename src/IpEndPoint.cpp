@@ -4,6 +4,8 @@
 
 #ifdef SHARPEN_IS_WIN
 #include <WS2tcpip.h>
+#else
+#include <arpa/inet.h>
 #endif
 
 sharpen::IpEndPoint::IpEndPoint() noexcept

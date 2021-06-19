@@ -48,7 +48,7 @@ namespace sharpen
 
         void Bind(const sharpen::IEndPoint &endpoint);
 
-        void Listen(sharpen::Uint16 queueLength);
+        virtual void Listen(sharpen::Uint16 queueLength);
 
         void GetLocalEndPoint(sharpen::IEndPoint &endPoint) const;
 

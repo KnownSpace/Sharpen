@@ -3,6 +3,12 @@
 #include <sharpen/WinNetStreamChannel.hpp>
 #include <sharpen/PosixNetStreamChannel.hpp>
 #include <sharpen/AwaitableFuture.hpp>
+#include <sharpen/SystemError.hpp>
+
+#ifdef SHARPEN_IS_NIX
+#include <netinet/tcp.h>
+#include <netinet/in.h>
+#endif
 
 sharpen::NetStreamChannelPtr sharpen::MakeTcpStreamChannel(sharpen::AddressFamily af)
 {
@@ -25,7 +31,13 @@ sharpen::NetStreamChannelPtr sharpen::MakeTcpStreamChannel(sharpen::AddressFamil
     channel = std::make_shared<sharpen::WinNetStreamChannel>(reinterpret_cast<sharpen::FileHandle>(s),afValue);
     return std::move(channel);
 #else
-
+    sharpen::FileHandle s = ::socket(afValue,SOCK_STREAM,IPPROTO_TCP);
+    if (s == -1)
+    {
+        sharpen::ThrowLastError();
+    }
+    channel = std::make_shared<sharpen::PosixNetStreamChannel>(s);
+    return std::move(channel);
 #endif
 }
 

@@ -42,7 +42,7 @@ namespace sharpen
             }
             sharpen::FiberPtr fiber;
             bool success = fibers_.Pop(fiber,timeout);
-            if (success && this->running_)
+            if (success && this->running_ && fiber)
             {
                 sharpen::FiberPtr current = sharpen::Fiber::GetCurrentFiber();
                 fiber->Switch(current);

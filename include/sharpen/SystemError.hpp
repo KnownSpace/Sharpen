@@ -30,9 +30,14 @@ namespace sharpen
 #endif
     }
 
+    inline void ThrowSystemError(sharpen::ErrorCode err)
+    {
+        throw std::system_error(err,std::system_category());
+    }
+
     inline void ThrowLastError()
     {
-        throw std::system_error(sharpen::GetLastError(),std::system_category());
+        sharpen::ThrowSystemError(sharpen::GetLastError());
     }
     
     inline std::exception_ptr MakeSystemErrorPtr(sharpen::ErrorCode err)
