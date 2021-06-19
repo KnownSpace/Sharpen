@@ -275,12 +275,6 @@ void sharpen::PosixNetStreamChannel::HandleRead()
     }
     else
     {
-        if (size == 0 && lastSize == 0)
-        {
-            //disconnected
-            this->HandleClose();
-            return;
-        }
         for (size_t i = 1; i < size; i++)
         {
             sharpen::Size bufSize = this->readBuffers_.front().iov_len;
