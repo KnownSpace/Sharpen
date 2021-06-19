@@ -14,6 +14,14 @@ namespace sharpen
         using Vector = std::vector<sharpen::Char>;
 
         using Self = ByteBuffer;
+
+        using Iterator = typename Vector::iterator;
+
+        using ConstIterator = typename Vector::const_iterator;
+
+        using ReverseIterator = typename Vector::reverse_iterator;
+
+        using ConstReverseIterator = typename Vector::const_reverse_iterator;
     protected:
         Vector vector_;
 
@@ -100,6 +108,46 @@ namespace sharpen
         sharpen::Size Remaining() const;
 
         sharpen::Size GetMark() const;
+
+        inline Iterator Begin()
+        {
+            return this->vector_.begin();
+        }
+
+        inline ConstIterator Begin() const
+        {
+            return this->vector_.cbegin();
+        }
+
+        inline ReverseIterator ReverseBegin()
+        {
+            return this->vector_.rbegin();
+        }
+
+        inline ConstReverseIterator ReverseBegin() const
+        {
+            return this->vector_.crbegin();
+        }
+
+        inline Iterator End()
+        {
+            return this->vector_.end();
+        }
+
+        inline ConstIterator End() const
+        {
+            return this->vector_.cend();
+        }
+
+        inline ReverseIterator ReverseEnd()
+        {
+            return this->vector_.rend();
+        }
+
+        inline ConstReverseIterator ReverseEnd() const
+        {
+            return this->vector_.crend();
+        }
     };
     
 } 
