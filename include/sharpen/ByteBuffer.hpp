@@ -148,6 +148,16 @@ namespace sharpen
         {
             return this->vector_.crend();
         }
+
+        inline Vector &GetContainer()
+        {
+            return this->vector_;
+        }
+
+        inline const Vector &GetContainer() const
+        {
+            return this->vector_;
+        }
     };
     
 } 
