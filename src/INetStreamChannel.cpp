@@ -10,6 +10,11 @@
 #include <netinet/in.h>
 #endif
 
+#ifdef SHARPEN_IS_WIN
+#include <WinSock2.h>
+#include <mstcpip.h>
+#endif
+
 sharpen::NetStreamChannelPtr sharpen::MakeTcpStreamChannel(sharpen::AddressFamily af)
 {
     sharpen::NetStreamChannelPtr channel;
@@ -144,4 +149,35 @@ void sharpen::INetStreamChannel::GetRemoteEndPoint(sharpen::IEndPoint &endPoint)
     {
         sharpen::ThrowLastError();
     }
+}
+
+void sharpen::INetStreamChannel::SetKeepAlive(bool val)
+{
+#ifdef SHARPEN_IS_WIN
+	tcp_keepalive keepin;
+	tcp_keepalive keepout;
+	keepin.keepaliveinterval = 75000;
+	keepin.keepalivetime = 7200*1000;
+	keepin.onoff = val ? 1:0;
+	DWORD ret = 0;
+	::WSAIoctl(reinterpret_cast<SOCKET>(this->handle_), SIO_KEEPALIVE_VALS, &keepin, sizeof(keepin), &keepout, sizeof(keepout), &ret, NULL, NULL);
+#else
+	int opt = val ? 1 : 0;
+	int r = ::setsockopt(this->handle_, SOL_SOCKET, SO_KEEPALIVE, &opt, sizeof(opt));
+	if (r == -1)
+	{
+		sharpen::ThrowLastError();
+	}
+#endif
+}
+
+void sharpen::INetStreamChannel::SetReuseAddress(bool val)
+{
+#ifdef SHARPEN_IS_WIN
+    BOOL opt = val ? TRUE:FALSE;
+    ::setsockopt(reinterpret_cast<SOCKET>(this->handle_),SOL_SOCKET,SO_REUSEADDR,reinterpret_cast<char*>(&opt),sizeof(opt));
+#else
+    int opt = val ? 1:0;
+	::setsockopt(this->handle_, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+#endif
 }

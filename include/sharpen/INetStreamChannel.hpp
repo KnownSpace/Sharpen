@@ -53,6 +53,10 @@ namespace sharpen
         void GetLocalEndPoint(sharpen::IEndPoint &endPoint) const;
 
         void GetRemoteEndPoint(sharpen::IEndPoint &endPoint) const;
+
+        void SetKeepAlive(bool val);
+
+        void SetReuseAddress(bool val);
     };
 
     enum class AddressFamily

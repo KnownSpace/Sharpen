@@ -202,7 +202,10 @@ void sharpen::PosixNetStreamChannel::HandleClose() noexcept
     for (auto begin = cbs.begin(),end = cbs.end();begin != end;++begin)
     {
         errno = ECONNABORTED;
-        (*begin)(0);
+        if (*begin)
+        {
+            (*begin)(0);
+        }
     }
     cbs.clear();
     if (acb)
@@ -221,7 +224,10 @@ void sharpen::PosixNetStreamChannel::HandleClose() noexcept
     for (auto begin = cbs.begin(),end = cbs.end();begin != end;++begin)
     {
         errno = ECONNABORTED;
-        (*begin)(0);
+        if (*begin)
+        {
+            (*begin)(0);
+        }
     }
     if (ccb)
     {
@@ -275,7 +281,7 @@ void sharpen::PosixNetStreamChannel::HandleRead()
             this->HandleClose();
             return;
         }
-        for (size_t i = 0, count = size - 1; i < count; i++)
+        for (size_t i = 1; i < size; i++)
         {
             sharpen::Size bufSize = this->readBuffers_.front().iov_len;
             this->readBuffers_.pop_front();
@@ -285,6 +291,7 @@ void sharpen::PosixNetStreamChannel::HandleRead()
         sharpen::Size lastBufSize = this->readBuffers_.front().iov_len;
         this->readBuffers_.pop_front();
         this->readCbs_.front()(lastSize);
+        this->readCbs_.pop_front();
         {
             std::unique_lock<Lock> lock(this->readLock_);
             this->readable_ = lastSize == lastBufSize;
@@ -332,7 +339,7 @@ void sharpen::PosixNetStreamChannel::HandleWrite()
     }
     sharpen::Size lastSize;
     sharpen::Size complete = sharpen::PosixNetStreamChannel::DoWrite(lastSize);
-    for (size_t i = 0,count = complete -1; i < count; i++)
+    for (size_t i = 1; i < complete; i++)
     {
         sharpen::Size bufSize = this->writeBuffers_.front().iov_len;
         this->writeBuffers_.pop_front();
@@ -388,7 +395,7 @@ void sharpen::PosixNetStreamChannel::RequestWrite(const char *buf,sharpen::Size 
         std::unique_lock<Lock> lock(this->writeLock_);
         std::swap(writeable,this->writeable_);
         this->pendingWriteBuffers_.push_back(std::move(vec));
-        this->pendingReadCbs_.push_back(std::move(cb));
+        this->pendingWriteCbs_.push_back(std::move(cb));
     }
     if (writeable)
     {

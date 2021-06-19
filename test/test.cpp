@@ -107,6 +107,7 @@ void NetTest()
         sharpen::IpEndPoint addr(0,25565);
         addr.SetAddr("127.0.0.1");
         sharpen::NetStreamChannelPtr ser = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
+        ser->SetReuseAddress(true);
         ser->Bind(addr);
         ser->Register(&loop);
         ::printf("binding\n");
@@ -131,6 +132,7 @@ void NetTest()
                 char str[] = "Hello World\n";
                 std::printf("writing\n");
                 clt->WriteAsync(str,sizeof(str));
+                std::printf("write completely\n");
             }
             catch(const std::exception& e)
             {
