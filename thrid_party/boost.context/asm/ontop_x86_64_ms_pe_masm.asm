@@ -84,7 +84,7 @@
 
 .code
 
-ontop_fcontext PROC FRAME BOOST_CONTEXT_EXPORT
+ontop_fcontext PROC BOOST_CONTEXT_EXPORT FRAME
     .endprolog
 
     ; prepare stack

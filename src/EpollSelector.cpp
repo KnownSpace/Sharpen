@@ -30,11 +30,11 @@ bool sharpen::EpollSelector::CheckChannel(sharpen::ChannelPtr channel) noexcept
 
 void sharpen::EpollSelector::Select(EventVector &events)
 {
-    std::vector<sharpen::Epoll::Event> ev(std::min<sharpen::Size>(this->count_,128));
+    std::vector<sharpen::Epoll::Event> ev(this->count_);
     sharpen::Uint32 count = this->epoll_.Wait(ev.data(),ev.size(),-1);
-    if (count == this->count_)
+    if (count == this->count_ && this->count_ < 128)
     {
-        this->count_ <<= 1;
+        this->count_ *= 2;
     }
     for (size_t i = 0; i < count; i++)
     {

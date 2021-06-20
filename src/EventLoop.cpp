@@ -78,7 +78,11 @@ void sharpen::EventLoop::ExecuteTask()
     {
         try
         {
-            (*begin)();
+            if (*begin)
+            {
+                (*begin)();
+            }
+            
         }
         catch(const std::exception& ignore)
         {
@@ -96,9 +100,11 @@ void sharpen::EventLoop::Run()
     }
     sharpen::EventLoop::localLoop_ = this;
     EventVector events;
+    events.reserve(32);
     this->running_ = true;
     while (this->running_)
     {
+        //select events
         this->selector_->Select(events);
         for (auto begin = events.begin(),end = events.end();begin != end;++begin)
         {
@@ -109,6 +115,7 @@ void sharpen::EventLoop::Run()
             }
         }
         events.clear();
+        //execute tasks
         this->ExecuteTask();
     }
     sharpen::EventLoop::localLoop_ = nullptr;

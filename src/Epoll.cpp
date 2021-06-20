@@ -28,6 +28,10 @@ sharpen::Uint32 sharpen::Epoll::Wait(sharpen::Epoll::Event *events,sharpen::Int3
     int r = ::epoll_wait(this->handle_,events,maxEvent,timeout);
     if(r < 0)
     {
+        if (sharpen::GetLastError() == EINTR)
+        {
+            return 0;
+        }
         sharpen::ThrowLastError();
     }
     return static_cast<sharpen::Uint32>(r);

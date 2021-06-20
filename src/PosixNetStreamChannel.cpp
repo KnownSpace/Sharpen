@@ -6,6 +6,7 @@
 #include <sharpen/EventLoop.hpp>
 #include <sys/mman.h>
 #include <algorithm>
+#include <cassert>
 
 sharpen::PosixNetStreamChannel::PosixNetStreamChannel(sharpen::FileHandle handle)
     : Mybase()
@@ -117,6 +118,7 @@ void sharpen::PosixNetStreamChannel::FillBuffer(Buffers &buf, Buffers &pending)
     else if (size < 2)
     {
         std::move(pending.begin(), pending.end(), std::back_inserter(buf));
+        pending.clear();
     }
 }
 
@@ -127,6 +129,7 @@ void sharpen::PosixNetStreamChannel::FillCallback(Callbacks &cbs,Callbacks &pend
         return;
     }
     std::move(pending.begin(),pending.end(),std::back_inserter(cbs));
+    pending.clear();
 }
 
 sharpen::FileHandle sharpen::PosixNetStreamChannel::DoAccept()
@@ -146,15 +149,18 @@ bool sharpen::PosixNetStreamChannel::ErrorBlocking()
 
 void sharpen::PosixNetStreamChannel::HandleAccept()
 {
-    if (!this->acceptCb_)
+    AcceptCallback cb;
     {
-        this->acceptCount_ += 1;
+        std::unique_lock<Lock> lock(this->readLock_);
+        if (!this->acceptCb_)
         {
-            std::unique_lock<Lock> lock(this->readLock_);
+            this->acceptCount_ += 1;
             this->readable_ = true;
             return;
         }
+        std::swap(cb,this->acceptCb_);
     }
+    
     sharpen::FileHandle s = sharpen::PosixNetStreamChannel::DoAccept();
     if (this->error_)
     {
@@ -166,23 +172,17 @@ void sharpen::PosixNetStreamChannel::HandleAccept()
             return;
         }
         //error
-        this->acceptCb_(-1);
+        cb(-1);
         this->error_ = false;
-        //reset callback
-        AcceptCallback emptyCb;
-        this->acceptCb_ = std::move(emptyCb);
         return;
     }
     this->acceptCount_ -= 1;
-    this->acceptCb_(s);
+    cb(s);
     if (this->acceptCount_ != 0)
     {
         std::unique_lock<Lock> lock(this->readLock_);
         this->readable_ = true;
     }
-    //reset callback
-    AcceptCallback emptyCb;
-    this->acceptCb_ = std::move(emptyCb);
 }
 
 void sharpen::PosixNetStreamChannel::HandleClose() noexcept
@@ -266,42 +266,46 @@ void sharpen::PosixNetStreamChannel::HandleRead()
             return;
         }
         //error
+        sharpen::Size bufNumber = this->readBuffers_.size();
         this->readBuffers_.clear();
-        for (auto begin = this->readCbs_.begin(), end = this->readCbs_.end(); begin != end; ++begin)
+        for (size_t i = 0; i < bufNumber; i++)
         {
-            (*begin)(0);
-        }
-        this->error_ = false;
-    }
-    else
-    {
-        for (size_t i = 1; i < size; i++)
-        {
-            sharpen::Size bufSize = this->readBuffers_.front().iov_len;
-            this->readBuffers_.pop_front();
-            this->readCbs_.front()(bufSize);
+            this->readCbs_.front()(0);
             this->readCbs_.pop_front();
         }
-        sharpen::Size lastBufSize = this->readBuffers_.front().iov_len;
+        this->error_ = false;
+        return;
+    }
+    for (size_t i = 1; i < size; i++)
+    {
+        sharpen::Size bufSize = this->readBuffers_.front().iov_len;
         this->readBuffers_.pop_front();
-        this->readCbs_.front()(lastSize);
+        this->readCbs_.front()(bufSize);
         this->readCbs_.pop_front();
-        {
-            std::unique_lock<Lock> lock(this->readLock_);
-            this->readable_ = lastSize == lastBufSize;
-        }
+    }
+    sharpen::Size lastBufSize = this->readBuffers_.front().iov_len;
+    this->readBuffers_.pop_front();
+    this->readCbs_.front()(lastSize);
+    this->readCbs_.pop_front();
+    {
+        std::unique_lock<Lock> lock(this->readLock_);
+        this->readable_ = lastSize == lastBufSize;
     }
 }
 
 bool sharpen::PosixNetStreamChannel::HandleConnect()
 {   
     bool continuable = false;
-    if (this->connectCb_)
+    ConnectCallback cb;
     {
+        std::unique_lock<Lock> lock(this->writeLock_);
+        std::swap(cb,this->connectCb_);
+    }
+    if (cb)
+    {
+
         this->status_ = sharpen::PosixNetStreamChannel::IoStatus::Io;
-        this->connectCb_();
-        ConnectCallback emptyCb;
-        this->connectCb_ = std::move(emptyCb);
+        cb();
         continuable = true;
     }
     return continuable;
@@ -333,6 +337,25 @@ void sharpen::PosixNetStreamChannel::HandleWrite()
     }
     sharpen::Size lastSize;
     sharpen::Size complete = sharpen::PosixNetStreamChannel::DoWrite(lastSize);
+    if (this->error_)
+    {
+        //blocking
+        if (sharpen::PosixNetStreamChannel::ErrorBlocking())
+        {
+            this->error_ = false;
+            return;
+        }
+        //error
+        sharpen::Size bufNumber = this->writeBuffers_.size();
+        this->writeBuffers_.clear();
+        for (size_t i = 0; i < bufNumber; i++)
+        {
+            this->writeCbs_.front()(0);
+            this->writeCbs_.pop_front();
+        }
+        this->error_ = false;
+        return;
+    }
     for (size_t i = 1; i < complete; i++)
     {
         sharpen::Size bufSize = this->writeBuffers_.front().iov_len;

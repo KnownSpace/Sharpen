@@ -216,7 +216,7 @@ void NetTest()
 int main(int argc, char const *argv[])
 {
     std::printf("running in machine with %d cores\n", std::thread::hardware_concurrency());
-    std::string arg("basic");
+    std::string arg("web");
     if (argc > 1)
     {
         arg = argv[1];
