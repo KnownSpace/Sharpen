@@ -37,11 +37,11 @@ void sharpen::IocpSelector::Notify()
 
 void sharpen::IocpSelector::Select(EventVector &events)
 {
-    std::vector<sharpen::IoCompletionPort::Event> ev(std::min<sharpen::Size>(this->count_,128));
-    sharpen::Uint32 count = this->iocp_.Wait(ev.data(),static_cast<Uint32>(ev.size()),-1);
-    if (count == this->count_)
+    std::vector<sharpen::IoCompletionPort::Event> ev(this->count_);
+    sharpen::Uint32 count = this->iocp_.Wait(ev.data(),static_cast<Uint32>(ev.size()),INFINITE);
+    if (count == this->count_ && this->count_ <128)
     {
-        this->count_ <<= 1;
+        this->count_ *= 2;
     }
     for (size_t i = 0; i < count; i++)
     {
