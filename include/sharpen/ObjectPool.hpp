@@ -47,7 +47,7 @@ namespace sharpen
         
         ~ObjectPool() noexcept
         {
-            for(auto begin = std::begin(this->objects_),end = std::end(this->objects_),begin != end;++begin)
+            for(auto begin = std::begin(this->objects_),end = std::end(this->objects_);begin != end;++begin)
             {
                 this->deletor_(*begin);
             }

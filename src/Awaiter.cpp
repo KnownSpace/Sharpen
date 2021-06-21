@@ -1,32 +1,29 @@
 #include <cassert>
-
+#include <mutex>
 #include <sharpen/Awaiter.hpp>
 
 sharpen::Awaiter::Awaiter()
     :fiber_()
+    ,lock_()
 {}
-
-sharpen::Awaiter::Awaiter(sharpen::Awaiter::Self &&other) noexcept
-    :fiber_(std::move(other.fiber_))
-{}
-
-sharpen::Awaiter::Self &sharpen::Awaiter::operator=(sharpen::Awaiter::Self &&other) noexcept
-{
-    this->fiber_ = std::move(other.fiber_);
-    return *this;
-}
 
 void sharpen::Awaiter::Notify()
 {
-    if (this->fiber_)
+    sharpen::FiberPtr fiber;
     {
-        sharpen::FiberScheduler::GetScheduler().Schedule(std::move(this->fiber_));
+        std::unique_lock<Lock> lock(this->lock_);
+        std::swap(fiber,this->fiber_);
+    }
+    if (fiber)
+    {
+        sharpen::FiberScheduler::GetScheduler().Schedule(std::move(fiber));
     }
 }
 
 void sharpen::Awaiter::Wait(sharpen::FiberPtr fiber)
 {
     {
+        std::unique_lock<Lock> lock(this->lock_);
         assert(this->fiber_ == nullptr);
         this->fiber_ = std::move(fiber);
     }

@@ -33,21 +33,24 @@ void sharpen::FiberScheduler::AsProcesser()
     sharpen::FiberScheduler::processer_ = sharpen::Fiber::GetCurrentFiber();
     while (this->running_)
     {
-        if (this->switchCallback_)
+        Func cb;
+        std::swap(cb,this->switchCallback_);
+        try
         {
-            try
+            if (cb)
             {
-                this->switchCallback_();
+                cb();
             }
-            catch(const std::exception& ignore)
-            {
-                assert(ignore.what());
-                (void)ignore;
-            }
-            this->switchCallback_ = Func();
+                
+        }
+        catch(const std::exception& ignore)
+        {
+            assert(ignore.what() == nullptr);
+            (void)ignore;
         }
         this->ProcessOnce(std::chrono::seconds(10));
     }
+    sharpen::FiberScheduler::processer_.reset();
 }
 
 void sharpen::FiberScheduler::Schedule(sharpen::FiberPtr &&fiber)

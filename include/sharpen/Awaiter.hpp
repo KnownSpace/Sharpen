@@ -11,22 +11,18 @@
 
 namespace sharpen
 {
-    class Awaiter:public sharpen::Noncopyable
+    class Awaiter:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
         using Self = sharpen::Awaiter;
         using Lock = sharpen::SpinLock;
-        using LockPtr = std::unique_ptr<Lock>;
 
         sharpen::FiberPtr fiber_;
+        Lock lock_;
     public:
         Awaiter();
 
-        Awaiter(Self &&other) noexcept;
-
         ~Awaiter() noexcept = default;
-
-        Self &operator=(Self &&other) noexcept;
 
         void Notify();
 

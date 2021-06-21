@@ -90,11 +90,12 @@ void FileTest()
     process.Join();
 }
 
-void HandleClient(sharpen::NetStreamChannelPtr client, std::string &close)
+void HandleClient(sharpen::NetStreamChannelPtr client)
 {
     bool keepalive = true;
     sharpen::ByteBuffer buf(4096);
     thread_local static sharpen::Uint32 count{0};
+    std::string close("close");
     while (keepalive)
     {
         try
@@ -135,14 +136,13 @@ void WebTest()
     server->Bind(addr);
     server->Listen(65535);
     server->Register(engine);
-    std::string close("close");
-    sharpen::Launch([&server, &close, &engine]()
+    sharpen::Launch([&server,&engine]()
     {
         while (true)
         {
             sharpen::NetStreamChannelPtr client = server->AcceptAsync();
             client->Register(engine);
-            sharpen::Launch(&HandleClient, client, close);
+            sharpen::Launch(&HandleClient, client);
         }
     });
     std::cin.get();

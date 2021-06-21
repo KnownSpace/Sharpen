@@ -18,48 +18,60 @@ namespace sharpen
         AwaitableFuture()
             :MyBase()
             ,awaiter_()
+            ,pendingFiber_(nullptr)
         {}
         
         AwaitableFuture(Self &&other) noexcept
             :MyBase(std::move(other))
             ,awaiter_(std::move(other.awaiter_))
+            ,pendingFiber_(std::move(other.pendingFiber_))
         {}
         
         virtual ~AwaitableFuture() noexcept = default;
 
+        void PrepareAwaiter()
+        {
+            this->awaiter_.Wait(std::move(this->pendingFiber_));
+        }
+
+        void NotifyAwaiter()
+        {
+            this->awaiter_.Notify();
+        }
+
         auto Await() -> decltype(this->Get())
         {
-            //enable coroutine function
             {
-                //auto &scheduler = sharpen::Scheduler::GetScheduler();
-                sharpen::SpinLock &lock = this->GetLock();
                 sharpen::FiberScheduler &scheduler = sharpen::FiberScheduler::GetScheduler();
-                std::unique_lock<sharpen::SpinLock> _lock(lock);
+                std::unique_lock<MyBase> lock(*this);
+                //this thread is not a processer
                 if (!sharpen::FiberScheduler::IsProcesser())
                 {
                     while (this->IsPending())
                     {
-                        _lock.unlock();
+                        lock.unlock();
                         scheduler.ProcessOnce(std::chrono::milliseconds(100));
-                        _lock.lock();
+                        lock.lock();
                     }
                 }
+                //this thread is a processer
                 else
                 {
                     if (this->IsPending())
                     {
-                        _lock.unlock();
-                        sharpen::Awaiter &awaiter = this->awaiter_;
-                        sharpen::FiberPtr current = sharpen::Fiber::GetCurrentFiber();
-                        scheduler.SwitchToProcesser([this,&lock,&current,&awaiter]() mutable
+                        lock.unlock();
+                        this->pendingFiber_ = sharpen::Fiber::GetCurrentFiber();
+                        scheduler.SwitchToProcesser([this]() mutable
                         {
-                            std::unique_lock<sharpen::SpinLock> _lock(lock);
-                            bool completed = this->CompletedOrError();
-                            awaiter.Wait(std::move(current));
-                            _lock.unlock();
+                            bool completed;
+                            {
+                                std::unique_lock<sharpen::Future<_Result>> lock(*this);
+                                completed = this->CompletedOrError();
+                                this->PrepareAwaiter();
+                            }
                             if (completed)
                             {
-                                awaiter.Notify();
+                                this->NotifyAwaiter();
                             }
                         });
                     }
@@ -72,6 +84,7 @@ namespace sharpen
         {
             MyBase::operator=(std::move(other));
             this->awaiter_ = std::move(other.awaiter_);
+            this->pendingFiber_ = std::move(other.awaiter_);
             return *this;
         }
 
@@ -80,12 +93,13 @@ namespace sharpen
         virtual void ExecuteCallback() override
         {
             MyBase::ExecuteCallback();
-            this->awaiter_.Notify();
+            this->NotifyAwaiter();
         }
 
     private:
 
         sharpen::Awaiter awaiter_;
+        sharpen::FiberPtr pendingFiber_;
     };
   
     template<typename _T>
