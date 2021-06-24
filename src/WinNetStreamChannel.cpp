@@ -206,7 +206,6 @@ void sharpen::WinNetStreamChannel::AcceptAsync(sharpen::Future<sharpen::NetStrea
         int iResult = WSAIoctl(reinterpret_cast<SOCKET>(this->handle_), SIO_GET_EXTENSION_FUNCTION_POINTER,&acceptexId, sizeof (acceptexId), &WSAAcceptEx, sizeof (WSAAcceptEx), &dwBytes, NULL, NULL);
         if (iResult != 0)
         {
-            sharpen::ErrorCode err = sharpen::GetLastError();
             future.Fail(sharpen::MakeLastErrorPtr());
             return;
         }

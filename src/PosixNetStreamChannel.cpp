@@ -182,7 +182,6 @@ void sharpen::PosixNetStreamChannel::RequestConnect(const sharpen::IEndPoint &en
             future->Fail(sharpen::MakeSystemErrorPtr(err));
             return;
         }
-        bool connected = false;
         using FnPtr = void (*)(sharpen::Future<void> *);
         ConnectCallback cb = std::bind(reinterpret_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompleteConnectCallback),future);
         {

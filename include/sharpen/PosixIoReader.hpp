@@ -19,7 +19,7 @@ namespace sharpen
 
         void CancelCallback() noexcept;
     public:
-        PosixIoReader(sharpen::ErrorCode cancelErr);
+        explicit PosixIoReader(sharpen::ErrorCode cancelErr);
 
         ~PosixIoReader() noexcept;
     };
