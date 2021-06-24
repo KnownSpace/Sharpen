@@ -191,7 +191,7 @@ void sharpen::PosixNetStreamChannel::RequestConnect(const sharpen::IEndPoint &en
                 this->connectCb_ = std::move(cb);
                 return;
             }
-            std::swap(connected,this->connectCompleted_);
+            this->connectCompleted_ = false;
         }
         this->status_ = sharpen::PosixNetStreamChannel::IoStatus::Io;
         cb();
