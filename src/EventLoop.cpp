@@ -82,7 +82,6 @@ void sharpen::EventLoop::ExecuteTask()
             {
                 (*begin)();
             }
-            
         }
         catch(const std::exception& ignore)
         {

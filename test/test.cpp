@@ -100,6 +100,7 @@ void HandleClient(sharpen::NetStreamChannelPtr client)
     {
         try
         {
+            //std::printf("read %d\n",count + 1);
             sharpen::Size size = client->ReadAsync(buf);
             if (size == 0)
             {
@@ -107,6 +108,7 @@ void HandleClient(sharpen::NetStreamChannelPtr client)
                 break;
             }
             const char data[] = "HTTP/1.1 200\r\nConnection: keep-alive\r\nContent-Length: 2\r\n\r\nOK";
+            //std::printf("write %d\n",count + 1);
             client->WriteAsync(data, sizeof(data) - 1);
             if (std::search(buf.Begin(), buf.End(), close.begin(), close.end()) != buf.End())
             {
@@ -130,7 +132,7 @@ void WebTest()
     sharpen::EventEngine engine;
     sharpen::NetStreamChannelPtr server = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
     sharpen::IpEndPoint addr;
-    addr.SetAddr("127.0.0.1");
+    addr.SetAddr("0.0.0.0");
     addr.SetPort(8080);
     server->SetReuseAddress(true);
     server->Bind(addr);
@@ -157,7 +159,7 @@ void NetTest()
     {
         ::printf("open channel\n");
         sharpen::IpEndPoint addr(0, 25565);
-        addr.SetAddr("127.0.0.1");
+        addr.SetAddr("0.0.0.0");
         sharpen::NetStreamChannelPtr ser = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
         ser->SetReuseAddress(true);
         ser->Bind(addr);
@@ -216,7 +218,7 @@ void NetTest()
 int main(int argc, char const *argv[])
 {
     std::printf("running in machine with %d cores\n", std::thread::hardware_concurrency());
-    std::string arg("web");
+    std::string arg("basic");
     if (argc > 1)
     {
         arg = argv[1];

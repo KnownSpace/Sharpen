@@ -9,6 +9,8 @@
 #define SHARPEN_HAS_POSIXSOCKET
 
 #include "INetStreamChannel.hpp"
+#include "PosixIoReader.hpp"
+#include "PosixIoWriter.hpp"
 
 #include <list>
 #include <sys/uio.h>
@@ -21,13 +23,11 @@ namespace sharpen
     {
     private:
         using Mybase = sharpen::INetStreamChannel;
-        using Buffers = std::list<iovec>;
         using Lock = sharpen::SpinLock;
-        using Callback = std::function<void(sharpen::Size)>;
-        using Callbacks = std::list<Callback>;
         using AcceptCallback = std::function<void(sharpen::FileHandle)>;
         using ConnectCallback = std::function<void()>;
         using StatusBit = std::atomic_bool;
+        using Callback = std::function<void(ssize_t)>;
 
         enum class IoStatus
         {
@@ -36,41 +36,21 @@ namespace sharpen
             Connect
         };
 
-        //locks
-        Lock writeLock_;
-        Lock readLock_;
         //status
-        bool readable_;
         bool writeable_;
+        bool readable_;
         IoStatus status_;
-        bool error_;
-        bool closed_;
+        Lock acceptLock_;
         sharpen::Uint16 acceptCount_;
-        //buffers
-        Buffers readBuffers_;
-        Buffers pendingReadBuffers_;
-        Buffers writeBuffers_;
-        Buffers pendingWriteBuffers_;
+        Lock connectLock_;
+        sharpen::ErrorCode connectErr_;
+        bool connectCompleted_;
+        //operator
+        sharpen::PosixIoReader reader_;
+        sharpen::PosixIoWriter writer_;
         //callback
         AcceptCallback acceptCb_;
         ConnectCallback connectCb_;
-        Callbacks readCbs_;
-        Callbacks pendingReadCbs_;
-        Callbacks writeCbs_;
-        Callbacks pendingWriteCbs_;
-        
-
-        static sharpen::Size SetIovecs(iovec *vecs,Buffers &buf);
-
-        static sharpen::Size ConvertBytesToBufferNumber(sharpen::Size bytes,sharpen::Size &lastOffset,Buffers &buf);
-
-        static void FillBuffer(Buffers &buf,Buffers &pending);
-
-        static void FillCallback(Callbacks &cbs,Callbacks &pending);
-
-        sharpen::Size DoWrite(sharpen::Size &lastSize);
-
-        sharpen::Size DoRead(sharpen::Size &lastSize);
 
         sharpen::FileHandle DoAccept();
 
@@ -96,20 +76,38 @@ namespace sharpen
 
         static void CompleteConnectCallback(sharpen::Future<void> *future) noexcept;
 
-        static void CompleteIoCallback(sharpen::Future<sharpen::Size> *future,sharpen::Size size) noexcept;
+        static void CompleteIoCallback(sharpen::Future<sharpen::Size> *future,ssize_t size) noexcept;
 
-        static void CompleteSendFileCallback(sharpen::Future<void> *future,void *mem,sharpen::Size memLen,sharpen::Size) noexcept;
+        static void CompleteSendFileCallback(sharpen::Future<void> *future,void *mem,sharpen::Size memLen,ssize_t) noexcept;
 
         static void CompleteAcceptCallback(sharpen::Future<sharpen::NetStreamChannelPtr> *future,sharpen::FileHandle accept) noexcept;
 
-        static bool ErrorBlocking();
+        void SetReadable()
+        {
+            this->readable_ = true;
+        }
+
+        void SetWriteable()
+        {
+            this->writeable_ = true;
+        }
+
+        void SwapReadable(bool &readable)
+        {
+            std::swap(readable,this->readable_);
+        }
+
+        void SwapWriteable(bool &writeable)
+        {
+            std::swap(writeable,this->writeable_);
+        }
     protected:
 
     public:
 
         explicit PosixNetStreamChannel(sharpen::FileHandle handle);
 
-        ~PosixNetStreamChannel() noexcept;
+        ~PosixNetStreamChannel() noexcept = default;
 
         virtual void WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future) override;
         
