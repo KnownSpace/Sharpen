@@ -12,6 +12,7 @@
 #include "ISelector.hpp"
 #include "IChannel.hpp"
 #include "IoEvent.hpp"
+#include "Fiber.hpp"
 
 namespace sharpen
 {
@@ -37,6 +38,8 @@ namespace sharpen
 
         //one loop per thread
         thread_local static EventLoop *localLoop_;
+
+        thread_local static sharpen::FiberPtr localFiber_;
 
         //execute pending tasks
         void ExecuteTask();
@@ -72,6 +75,8 @@ namespace sharpen
         static sharpen::EventLoop *GetLocalLoop() noexcept;
 
         static bool IsInLoop() noexcept;
+
+        static sharpen::FiberPtr GetLocalFiber() noexcept;
     };
 }
 

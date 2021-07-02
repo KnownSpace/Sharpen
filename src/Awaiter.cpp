@@ -2,8 +2,9 @@
 #include <mutex>
 #include <sharpen/Awaiter.hpp>
 
-sharpen::Awaiter::Awaiter()
-    :fiber_()
+sharpen::Awaiter::Awaiter(sharpen::IFiberScheduler *scheduler)
+    :scheduler_(scheduler)
+    ,fiber_()
     ,lock_()
 {}
 
@@ -16,7 +17,7 @@ void sharpen::Awaiter::Notify()
     }
     if (fiber)
     {
-        sharpen::FiberScheduler::GetScheduler().Schedule(std::move(fiber));
+        this->scheduler_->Schedule(std::move(fiber));
     }
 }
 

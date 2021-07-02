@@ -4,7 +4,7 @@
 
 #include "Future.hpp"
 #include "Awaiter.hpp"
-#include "FiberScheduler.hpp"
+#include "EventEngine.hpp"
 
 namespace sharpen
 {
@@ -17,15 +17,19 @@ namespace sharpen
 
         AwaitableFuture()
             :MyBase()
-            ,awaiter_()
+            ,scheduler_(&sharpen::EventEngine::GetEngine())
+            ,awaiter_(this->scheduler_)
             ,pendingFiber_(nullptr)
         {}
         
         AwaitableFuture(Self &&other) noexcept
             :MyBase(std::move(other))
+            ,scheduler_(other.scheduler_)
             ,awaiter_(std::move(other.awaiter_))
             ,pendingFiber_(std::move(other.pendingFiber_))
-        {}
+        {
+            other.scheduler_ = nullptr;
+        }
         
         virtual ~AwaitableFuture() noexcept = default;
 
@@ -42,17 +46,12 @@ namespace sharpen
         auto Await() -> decltype(this->Get())
         {
             {
-                sharpen::FiberScheduler &scheduler = sharpen::FiberScheduler::GetScheduler();
                 std::unique_lock<MyBase> lock(*this);
                 //this thread is not a processer
-                if (!sharpen::FiberScheduler::IsProcesser())
+                if (!this->scheduler_->IsProcesser())
                 {
-                    while (this->IsPending())
-                    {
-                        lock.unlock();
-                        scheduler.ProcessOnce(std::chrono::milliseconds(100));
-                        lock.lock();
-                    }
+                    lock.unlock();
+                    this->Wait();
                 }
                 //this thread is a processer
                 else
@@ -61,7 +60,7 @@ namespace sharpen
                     {
                         lock.unlock();
                         this->pendingFiber_ = sharpen::Fiber::GetCurrentFiber();
-                        scheduler.SwitchToProcesser([this]() mutable
+                        this->scheduler_->SetSwitchCallback([this]() mutable
                         {
                             bool completed;
                             {
@@ -74,6 +73,7 @@ namespace sharpen
                                 this->NotifyAwaiter();
                             }
                         });
+                        this->scheduler_->SwitchToProcesserFiber();
                     }
                 }
             }
@@ -98,6 +98,7 @@ namespace sharpen
 
     private:
 
+        sharpen::IFiberScheduler *scheduler_;
         sharpen::Awaiter awaiter_;
         sharpen::FiberPtr pendingFiber_;
     };

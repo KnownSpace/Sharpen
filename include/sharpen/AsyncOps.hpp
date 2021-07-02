@@ -5,52 +5,16 @@
 #include <thread>
 
 #include "AwaitableFuture.hpp"
-#include "FiberScheduler.hpp"
+#include "AsyncHelper.hpp"
 
 namespace sharpen
 {
     template<typename _Fn,typename ..._Args>
     inline void Launch(_Fn &&fn,_Args &&...args)
     {
-        sharpen::FiberScheduler &scheduler = sharpen::FiberScheduler::GetScheduler();
-        sharpen::FiberPtr fiber = sharpen::Fiber::MakeFiber(16*1024,std::forward<_Fn>(fn),std::forward<_Args>(args)...);
-        scheduler.Schedule(std::move(fiber));
+        sharpen::EventEngine &engine = sharpen::EventEngine::GetEngine();
+        engine.Launch(std::forward<_Fn>(fn),std::forward<_Args>(args)...);
     }
-
-    template<typename _Fn,typename _Result>
-    struct AsyncHelper
-    {
-        static void RunAndSetFuture(_Fn &fn,sharpen::Future<_Result> &future)
-        {
-            try
-            {
-                auto &&val = fn();
-                future.Complete(std::move(val));
-            }
-            catch(const std::exception&)
-            {
-                future.Fail(std::current_exception());
-            }
-        }
-    };
-
-    template<typename _Fn>
-    struct AsyncHelper<_Fn,void>
-    {
-        static void RunAndSetFuture(_Fn &fn,sharpen::Future<void> &future)
-        {
-            try
-            {
-                fn();
-                future.Complete();
-            }
-            catch(const std::exception&)
-            {
-                future.Fail(std::current_exception());
-            }
-        }
-    };
-    
 
     template<typename _Fn,typename ..._Args,typename _Result = decltype(std::declval<_Fn>()(std::declval<_Args>()...))>
     inline sharpen::AwaitableFuturePtr<_Result> Async(_Fn &&fn,_Args &&...args)
@@ -62,15 +26,6 @@ namespace sharpen
             sharpen::AsyncHelper<std::function<_Result()>,_Result>::RunAndSetFuture(func,*future);
         });
         return future;
-    }
-
-    extern void Delay();
-
-    template <class _Rep, class _Period>
-    inline void Delay(std::chrono::duration<_Rep,_Period> &time)
-    {
-        sharpen::FiberScheduler &scheduler = sharpen::FiberScheduler::GetScheduler();
-        scheduler.ProcessOnce(time);
     }
 }
 

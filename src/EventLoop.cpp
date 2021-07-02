@@ -5,6 +5,8 @@
 
 thread_local sharpen::EventLoop *sharpen::EventLoop::localLoop_(nullptr);
 
+thread_local sharpen::FiberPtr sharpen::EventLoop::localFiber_;
+
 sharpen::EventLoop::EventLoop(SelectorPtr selector)
     :selector_(selector)
     ,tasks_(std::make_shared<TaskVector>())
@@ -98,6 +100,7 @@ void sharpen::EventLoop::Run()
         throw std::logic_error("now is in event loop");
     }
     sharpen::EventLoop::localLoop_ = this;
+    sharpen::EventLoop::localFiber_ = sharpen::Fiber::GetCurrentFiber();
     EventVector events;
     events.reserve(32);
     this->running_ = true;
@@ -118,6 +121,12 @@ void sharpen::EventLoop::Run()
         this->ExecuteTask();
     }
     sharpen::EventLoop::localLoop_ = nullptr;
+    sharpen::EventLoop::localFiber_.reset();
+}
+
+sharpen::FiberPtr sharpen::EventLoop::GetLocalFiber() noexcept
+{
+    return sharpen::EventLoop::localFiber_;
 }
 
 void sharpen::EventLoop::Stop() noexcept

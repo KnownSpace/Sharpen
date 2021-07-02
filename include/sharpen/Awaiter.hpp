@@ -6,8 +6,10 @@
 #include <cassert>
 #include <vector>
 
-#include "Future.hpp"
-#include "FiberScheduler.hpp"
+#include "SpinLock.hpp"
+#include "Noncopyable.hpp"
+#include "Nonmovable.hpp"
+#include "IFiberScheduler.hpp"
 
 namespace sharpen
 {
@@ -17,10 +19,11 @@ namespace sharpen
         using Self = sharpen::Awaiter;
         using Lock = sharpen::SpinLock;
 
+        sharpen::IFiberScheduler *scheduler_;
         sharpen::FiberPtr fiber_;
         Lock lock_;
     public:
-        Awaiter();
+        explicit Awaiter(sharpen::IFiberScheduler *scheduler);
 
         ~Awaiter() noexcept = default;
 

@@ -15,7 +15,7 @@ namespace sharpen
 
         sharpen::ErrorCode cancelErr_;
     protected:
-        virtual void DoExecute(sharpen::FileHandle handle,bool &blocking) override;
+        virtual void DoExecute(sharpen::FileHandle handle,bool &executed,bool &blocking) override;
 
         void CancelCallback() noexcept;
     public:

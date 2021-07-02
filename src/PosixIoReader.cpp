@@ -14,14 +14,16 @@ sharpen::PosixIoReader::~PosixIoReader() noexcept
     this->CancelCallback();
 }
 
-void sharpen::PosixIoReader::DoExecute(sharpen::FileHandle handle,bool &blocking)
+void sharpen::PosixIoReader::DoExecute(sharpen::FileHandle handle,bool &executed,bool &blocking)
 {
     sharpen::Size size = this->GetRemainingSize();
-    if (!size)
+    if (size == 0)
     {
         blocking = false;
+        executed = false;
         return;
     }
+    executed = true;
     blocking = false;
     IoBuffer *bufs = this->GetFirstBuffer();
     Callback *cbs = this->GetFirstCallback();

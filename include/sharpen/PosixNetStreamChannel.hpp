@@ -54,6 +54,10 @@ namespace sharpen
 
         sharpen::FileHandle DoAccept();
 
+        void DoRead();
+
+        void DoWrite();
+
         void HandleRead();
 
         void HandleAccept();
@@ -63,6 +67,10 @@ namespace sharpen
         void HandleClose() noexcept;
 
         bool HandleConnect();
+
+        void TryRead(char *buf,sharpen::Size bufSize,Callback cb);
+
+        void TryWrite(const char *buf,sharpen::Size bufSize,Callback cb);
 
         void RequestRead(char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future);
 
@@ -81,27 +89,6 @@ namespace sharpen
         static void CompleteSendFileCallback(sharpen::Future<void> *future,void *mem,sharpen::Size memLen,ssize_t) noexcept;
 
         static void CompleteAcceptCallback(sharpen::Future<sharpen::NetStreamChannelPtr> *future,sharpen::FileHandle accept) noexcept;
-
-        void SetReadable()
-        {
-            this->readable_ = true;
-        }
-
-        void SetWriteable()
-        {
-            this->writeable_ = true;
-        }
-
-        void SwapReadable(bool &readable)
-        {
-            std::swap(readable,this->readable_);
-        }
-
-        void SwapWriteable(bool &writeable)
-        {
-            std::swap(writeable,this->writeable_);
-        }
-    protected:
 
     public:
 

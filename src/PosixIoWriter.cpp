@@ -14,14 +14,17 @@ sharpen::PosixIoWriter::~PosixIoWriter() noexcept
     this->CancelCallback();
 }
 
-void sharpen::PosixIoWriter::DoExecute(sharpen::FileHandle handle,bool &blocking)
+
+void sharpen::PosixIoWriter::DoExecute(sharpen::FileHandle handle,bool &executed,bool &blocking)
 {
     sharpen::Size size = this->GetRemainingSize();
-    if (!size)
+    if (size == 0)
     {
         blocking = false;
+        executed = false;
         return;
     }
+    executed = true;
     blocking = false;
     IoBuffer *bufs = this->GetFirstBuffer();
     Callback *cbs = this->GetFirstCallback();
@@ -59,7 +62,7 @@ void sharpen::PosixIoWriter::DoExecute(sharpen::FileHandle handle,bool &blocking
     {
         cbs[i](bufs[i].iov_len);
     }
-    if (lastSize != bufs[number].iov_len)
+    if (lastSize < bufs[number].iov_len)
     {
         sharpen::Uintptr p = reinterpret_cast<sharpen::Uintptr>(bufs[number].iov_base);
         p += lastSize;
