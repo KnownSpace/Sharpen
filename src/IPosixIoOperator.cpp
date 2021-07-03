@@ -109,7 +109,7 @@ sharpen::Size sharpen::IPosixIoOperator::GetRemainingSize() const
 {
     assert(this->bufs_.size() == this->cbs_.size());
     assert(this->bufs_.size() >= this->mark_);
-    return this->bufs_.size() - this->mark_;
+    return  this->bufs_.size() - this->mark_;
 }
 
 void sharpen::IPosixIoOperator::Execute(sharpen::FileHandle handle,bool &executed,bool &blocking)

@@ -55,28 +55,30 @@ void sharpen::PosixIoWriter::DoExecute(sharpen::FileHandle handle,bool &executed
         this->MoveMark(size);
         return;
     }
-    sharpen::Size number;
+    sharpen::Size completed;
     sharpen::Size lastSize;
-    this->ConvertByteToBufferNumber(bytes,number,lastSize);
-    for (size_t i = 0; i < number; i++)
+    this->ConvertByteToBufferNumber(bytes,completed,lastSize);
+    for (size_t i = 0; i < completed; i++)
     {
         cbs[i](bufs[i].iov_len);
     }
-    if (lastSize < bufs[number].iov_len)
+    sharpen::Size lastBufSize = bufs[completed].iov_len;
+    if (lastBufSize != lastSize)
     {
-        sharpen::Uintptr p = reinterpret_cast<sharpen::Uintptr>(bufs[number].iov_base);
+        sharpen::Uintptr p = reinterpret_cast<sharpen::Uintptr>(bufs[completed].iov_len);
         p += lastSize;
-        bufs[number].iov_len -= lastSize;
-        bufs[number].iov_base = reinterpret_cast<void*>(p);
+        bufs[completed].iov_base = reinterpret_cast<void*>(p);
+        bufs[completed].iov_len -= lastSize;
     }
     else
-    {   
-        cbs[number](bufs[number].iov_len);
-        number += 1;
+    {
+        cbs[completed](lastSize);
+        completed += 1;
     }
-    number += this->GetMark();
-    this->MoveMark(number);
-    if (this->GetRemainingSize())
+    completed += this->GetMark();
+    this->MoveMark(completed);
+    size = this->GetRemainingSize();
+    if (size != 0)
     {
         blocking = true;
     }

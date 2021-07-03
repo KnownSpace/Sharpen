@@ -110,10 +110,10 @@ void sharpen::EventLoop::Run()
         this->selector_->Select(events);
         for (auto begin = events.begin(),end = events.end();begin != end;++begin)
         {
-            bool validate = (*begin)->ValidateChannel();
-            if (validate)
+            sharpen::ChannelPtr channel = (*begin)->GetChannel();
+            if (channel)
             {
-                (*begin)->GetChannel()->OnEvent(*begin);
+                channel->OnEvent(*begin);
             }
         }
         events.clear();

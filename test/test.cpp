@@ -8,6 +8,7 @@
 #include <sharpen/AsyncOps.hpp>
 #include <algorithm>
 #include <sharpen/CtrlHandler.hpp>
+#include <cinttypes>
 
 #define TEST_COUNT 10000 * 100
 
@@ -15,7 +16,6 @@ void HandleClient(sharpen::NetStreamChannelPtr client)
 {
     bool keepalive = true;
     sharpen::ByteBuffer buf(4096);
-    thread_local static sharpen::Uint32 count{0};
     std::string close("close");
     while (keepalive)
     {
@@ -23,6 +23,7 @@ void HandleClient(sharpen::NetStreamChannelPtr client)
         {
             //std::printf("read %d\n",count + 1);
             sharpen::Size size = client->ReadAsync(buf);
+            //std::printf("new request %zu\n",size);
             if (size == 0)
             {
                 keepalive = false;
@@ -30,26 +31,27 @@ void HandleClient(sharpen::NetStreamChannelPtr client)
             }
             const char data[] = "HTTP/1.1 200\r\nConnection: keep-alive\r\nContent-Length: 2\r\n\r\nOK";
             //std::printf("write %d\n",count + 1);
-            client->WriteAsync(data, sizeof(data) - 1);
+            size = client->WriteAsync(data, sizeof(data) - 1);
+            //std::printf("response completed %zu \n",size);
             if (std::search(buf.Begin(), buf.End(), close.begin(), close.end()) != buf.End())
             {
                 keepalive = false;
             }
-            count++;
-            //std::printf("new data %d\n",count);
         }
         catch (const std::exception &e)
         {
+            std::printf("error %s\n",e.what());
             keepalive = false;
             break;
         }
     }
+    //std::printf("client disconnected\n");
 }
 
 void WebTest()
 {
     sharpen::StartupNetSupport();
-    sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine();
+    sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine(3);
     sharpen::NetStreamChannelPtr server = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
     sharpen::IpEndPoint addr;
     addr.SetAddr("0.0.0.0");
@@ -62,9 +64,18 @@ void WebTest()
     {
         while (true)
         {
-            sharpen::NetStreamChannelPtr client = server->AcceptAsync();
-            client->Register(engine);
-            sharpen::Launch(&HandleClient, client);
+            try
+            {
+                sharpen::NetStreamChannelPtr client = server->AcceptAsync();
+                client->Register(engine);
+                //std::printf("new client connected\n");
+                sharpen::Launch(&HandleClient, client);
+            }
+            catch(const std::exception& e)
+            {
+                std::printf("error %s\n",e.what());
+            }
+            
         }
     });
     sharpen::RegisterCtrlHandler(sharpen::CtrlType::Interrupt,[]()

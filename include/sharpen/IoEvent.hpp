@@ -145,11 +145,6 @@ namespace sharpen
         {
             return this->channel_.lock();
         }
-
-        bool ValidateChannel() const noexcept
-        {
-            return  !this->channel_.expired();
-        }
         
         void *GetData() const noexcept
         {

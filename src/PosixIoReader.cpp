@@ -30,12 +30,14 @@ void sharpen::PosixIoReader::DoExecute(sharpen::FileHandle handle,bool &executed
     ssize_t bytes = ::readv(handle,bufs,size);
     if(bytes == -1)
     {
+        //blocking
         sharpen::ErrorCode err = sharpen::GetLastError();
-        if(sharpen::IPosixIoOperator::IsBlockingError(err))
+        if (sharpen::IPosixIoOperator::IsBlockingError(err))
         {
             blocking = true;
             return;
         }
+        //error
         for (size_t i = 0; i < size; i++)
         {
             cbs[i](-1);
@@ -46,6 +48,7 @@ void sharpen::PosixIoReader::DoExecute(sharpen::FileHandle handle,bool &executed
     }
     else if(bytes == 0)
     {
+        //disconnect
         for (size_t i = 0; i < size; i++)
         {
             cbs[i](0);
@@ -54,18 +57,23 @@ void sharpen::PosixIoReader::DoExecute(sharpen::FileHandle handle,bool &executed
         this->MoveMark(size);
         return;
     }
-    sharpen::Size number;
+    //check completed buffer number
+    sharpen::Size completed;
     sharpen::Size lastSize;
-    this->ConvertByteToBufferNumber(bytes,number,lastSize);
-    for (size_t i = 0; i < number; i++)
+    this->ConvertByteToBufferNumber(bytes,completed,lastSize);
+    //handle callback
+    for (size_t i = 0; i < completed; i++)
     {
         cbs[i](bufs[i].iov_len);
     }
-    cbs[number](lastSize);
-    number += 1;
-    number += this->GetMark();
-    this->MoveMark(number);
-    if (lastSize < bufs[number].iov_len || this->GetRemainingSize())
+    //last buffer
+    sharpen::Size lastBufSize = bufs[completed].iov_len;
+    cbs[completed](lastSize);
+    completed += 1;
+    completed += this->GetMark();
+    this->MoveMark(completed);
+    size = this->GetRemainingSize();
+    if (lastBufSize != lastSize || size != 0)
     {
         blocking = true;
     }

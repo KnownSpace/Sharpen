@@ -8,6 +8,7 @@
 #ifdef SHARPEN_IS_NIX
 #include <netinet/tcp.h>
 #include <netinet/in.h>
+#include <sys/fcntl.h>
 #endif
 
 #ifdef SHARPEN_IS_WIN
@@ -41,6 +42,10 @@ sharpen::NetStreamChannelPtr sharpen::MakeTcpStreamChannel(sharpen::AddressFamil
     {
         sharpen::ThrowLastError();
     }
+    int flag;
+    flag = ::fcntl(s,F_GETFL,0);
+    flag |= O_NONBLOCK;
+    ::fcntl(s,F_SETFL,flag);
     channel = std::make_shared<sharpen::PosixNetStreamChannel>(s);
     return std::move(channel);
 #endif

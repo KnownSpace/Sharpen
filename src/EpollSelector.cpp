@@ -76,7 +76,7 @@ void sharpen::EpollSelector::Resister(WeakChannelPtr channel)
     lock.unlock();
     event.ioEvent_.SetChannel(ch);
     event.epollEvent_.data.ptr = &event;
-    event.epollEvent_.events = EPOLLIN | EPOLLOUT | EPOLLET;
+    event.epollEvent_.events = EPOLLIN | EPOLLOUT | EPOLLET | EPOLLHUP | EPOLLERR;
     event.internalEventfd_ = false;
     this->epoll_.Add(ch->GetHandle(),&(event.epollEvent_));
 }
