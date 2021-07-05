@@ -17,6 +17,7 @@ void HandleClient(sharpen::NetStreamChannelPtr client)
     bool keepalive = true;
     sharpen::ByteBuffer buf(4096);
     std::string close("close");
+    std::atomic_uint count{0};
     while (keepalive)
     {
         try
@@ -51,7 +52,7 @@ void HandleClient(sharpen::NetStreamChannelPtr client)
 void WebTest()
 {
     sharpen::StartupNetSupport();
-    sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine(3);
+    sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine();
     sharpen::NetStreamChannelPtr server = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
     sharpen::IpEndPoint addr;
     addr.SetAddr("0.0.0.0");
