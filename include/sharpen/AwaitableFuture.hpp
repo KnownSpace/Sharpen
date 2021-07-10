@@ -46,7 +46,7 @@ namespace sharpen
         auto Await() -> decltype(this->Get())
         {
             {
-                std::unique_lock<MyBase> lock(*this);
+                std::unique_lock<sharpen::SpinLock> lock(this->GetCompleteLock());
                 //this thread is not a processer
                 if (!this->scheduler_->IsProcesser())
                 {
@@ -64,7 +64,7 @@ namespace sharpen
                         {
                             bool completed;
                             {
-                                std::unique_lock<sharpen::Future<_Result>> lock(*this);
+                                std::unique_lock<sharpen::SpinLock> lock(this->GetCompleteLock());
                                 completed = this->CompletedOrError();
                                 this->PrepareAwaiter();
                             }

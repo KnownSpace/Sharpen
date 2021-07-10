@@ -180,24 +180,9 @@ namespace sharpen
             callback(*this);
         }
 
-        void Lock()
+        sharpen::SpinLock &GetCompleteLock()
         {
-            this->lock_->Lock();
-        }
-
-        void Unlock() noexcept
-        {
-            this->lock_->Unlock();
-        }
-
-        void lock()
-        {
-            this->Lock();
-        }
-
-        void unlock() noexcept
-        {
-            this->Unlock();
+            return *this->lock_;
         }
         
     protected:
@@ -356,24 +341,9 @@ namespace sharpen
             callback(*this);
         }
 
-        void Lock()
+        sharpen::SpinLock &GetCompleteLock()
         {
-            this->lock_->Lock();
-        }
-
-        void Unlock() noexcept
-        {
-            this->lock_->Unlock();
-        }
-
-        void lock()
-        {
-            this->Lock();
-        }
-
-        void unlock() noexcept
-        {
-            this->Unlock();
+            return *this->lock_;
         }
     protected:
 
