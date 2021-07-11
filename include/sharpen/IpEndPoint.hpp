@@ -10,11 +10,13 @@
 
 #include "IEndPoint.hpp"
 #include "TypeDef.hpp"
+#include "Noncopyable.hpp"
+#include "Nonmovable.hpp"
 
 
 namespace sharpen
 {
-    class IpEndPoint:public sharpen::IEndPoint
+    class IpEndPoint:public sharpen::IEndPoint,public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
         using MyAddr = sockaddr_in;
@@ -26,8 +28,6 @@ namespace sharpen
         IpEndPoint() noexcept;
 
         IpEndPoint(sharpen::UintIpAddr addr,sharpen::UintPort port);
-
-        IpEndPoint(const Self &other);
 
         ~IpEndPoint() noexcept = default;
 
@@ -43,16 +43,14 @@ namespace sharpen
 
         void SetAddr(sharpen::UintIpAddr addr) noexcept;
 
-        void GetAddr(char *addrStr,sharpen::Size size) const;
+        void GetAddrSring(char *addrStr,sharpen::Size size) const;
 
-        void SetAddr(const char *addrStr);
+        void SetAddrByString(const char *addrStr);
 
         virtual sharpen::Uint32 GetAddrLen() const override
         {
             return sizeof(this->addr_);
         }
-
-        Self &operator=(const Self &other);
     };
 }
 

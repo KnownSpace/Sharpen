@@ -9,8 +9,9 @@
 #endif
 
 sharpen::IpEndPoint::IpEndPoint() noexcept
+    :addr_()
 {
-    addr_.sin_family = AF_INET;
+    this->addr_.sin_family = AF_INET;
 }
 
 sharpen::IpEndPoint::IpEndPoint(sharpen::UintIpAddr addr,sharpen::UintPort port)
@@ -24,10 +25,6 @@ sharpen::IpEndPoint::IpEndPoint(sharpen::UintIpAddr addr,sharpen::UintPort port)
 #endif
     addr_.sin_port = ::htons(port);
 }
-
-sharpen::IpEndPoint::IpEndPoint(const Self &other)
-    :addr_(other.addr_)
-{}
 
 
 sharpen::IpEndPoint::NativeAddr *sharpen::IpEndPoint::GetAddrPtr() noexcept
@@ -68,18 +65,12 @@ void sharpen::IpEndPoint::SetAddr(sharpen::UintIpAddr addr) noexcept
 #endif
 }
 
-void sharpen::IpEndPoint::GetAddr(char *addrStr,sharpen::Size size) const
+void sharpen::IpEndPoint::GetAddrSring(char *addrStr,sharpen::Size size) const
 {
     ::inet_ntop(AF_INET,&(this->addr_.sin_addr),addrStr,size);
 }
 
-void sharpen::IpEndPoint::SetAddr(const char *addrStr)
+void sharpen::IpEndPoint::SetAddrByString(const char *addrStr)
 {
     ::inet_pton(AF_INET,addrStr,&(this->addr_.sin_addr));
-}
-
-sharpen::IpEndPoint &sharpen::IpEndPoint::operator=(const sharpen::IpEndPoint &other)
-{
-    this->addr_ = other.addr_;
-    return *this;
 }

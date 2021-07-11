@@ -55,7 +55,7 @@ void WebTest()
     sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine();
     sharpen::NetStreamChannelPtr server = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
     sharpen::IpEndPoint addr;
-    addr.SetAddr("0.0.0.0");
+    addr.SetAddrByString("0.0.0.0");
     addr.SetPort(8080);
     server->SetReuseAddress(true);
     server->Bind(addr);
@@ -88,7 +88,7 @@ void WebTest()
         sharpen::CleanupNetSupport();
     });
     char ip[21] = "";
-    addr.GetAddr(ip,sizeof(ip));
+    addr.GetAddrSring(ip,sizeof(ip));
     std::printf("now listen on %s:%d\n",ip,addr.GetPort());
     std::printf("use ctrl + c to stop\n");
     engine.Run();
