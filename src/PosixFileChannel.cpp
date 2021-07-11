@@ -25,7 +25,7 @@ void sharpen::PosixFileChannel::WriteAsync(const sharpen::Char *buf,sharpen::Siz
         throw std::logic_error("should register to a loop first");
     }
     sharpen::FileHandle fd = this->handle_;
-    this->loop_->QueueInLoop([buf,bufSize,offset,&future,fd]() mutable
+    this->loop_->RunInLoop([buf,bufSize,offset,&future,fd]() mutable
     {
         ssize_t r = ::pwrite(fd,buf,bufSize,offset);
         if (r < 0)
@@ -49,7 +49,7 @@ void sharpen::PosixFileChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSi
         throw std::logic_error("should register to a loop first");
     }
     sharpen::FileHandle fd = this->handle_;
-    this->loop_->QueueInLoop([buf,bufSize,offset,&future,fd]() mutable
+    this->loop_->RunInLoop([buf,bufSize,offset,&future,fd]() mutable
     {
         ssize_t r = ::pread(fd,buf,bufSize,offset);
         if (r < 0)

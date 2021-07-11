@@ -94,8 +94,30 @@ void WebTest()
     engine.Run();
 }
 
+void FileTest()
+{
+    sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine(1);
+    sharpen::Launch([&engine]()
+    {
+        sharpen::FileChannelPtr channel = sharpen::MakeFileChannel("./newFile.txt",sharpen::FileAccessModel::All,sharpen::FileOpenModel::CreateOrOpen);
+        channel->Register(engine);
+        sharpen::Launch([]()
+        {
+            std::printf("writing\n");
+        });
+        sharpen::ByteBuffer buf("hello world",11);
+        std::printf("prepare write operation\n");
+        //await in here
+        channel->WriteAsync(buf,0);
+        std::printf("write done\n");
+        engine.Stop();
+    });
+    engine.Run();
+}
+
 int main(int argc, char const *argv[])
 {
     WebTest();
+    //FileTest();
     return 0;
 }

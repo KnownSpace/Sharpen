@@ -77,7 +77,7 @@ void sharpen::EventEngine::Schedule(sharpen::FiberPtr &&fiber)
     using FnPtr = void(*)(sharpen::FiberPtr);
     auto &&fn = std::bind(reinterpret_cast<FnPtr>(&sharpen::EventEngine::ProcessFiber),std::move(fiber));
     sharpen::EventLoop *loop = this->RoundRobinLoop();
-    loop->QueueInLoop(std::move(fn));
+    loop->RunInLoopSoon(std::move(fn));
 }
 
 void sharpen::EventEngine::ProcessFiber(sharpen::FiberPtr fiber)
@@ -127,6 +127,11 @@ sharpen::EventEngine &sharpen::EventEngine::GetEngine()
         throw std::logic_error("event engine isn't set");
     }
     return *sharpen::EventEngine::engine_;
+}
+
+sharpen::EventEngine &sharpen::EventEngine::SetupSingleThreadEngine()
+{
+    return sharpen::EventEngine::SetupEngine(1);
 }
 
 bool sharpen::EventEngine::IsProcesser() const

@@ -63,7 +63,13 @@ namespace sharpen
         
         //queue a task to event loop
         //the task will be executed in next loop
-        void QueueInLoop(Task task);
+        //if this thread own the loop
+        //task will be executed right now
+        void RunInLoop(Task task);
+
+        //queue a task to event loop
+        //the task will be executed in next loop
+        void RunInLoopSoon(Task task);
         
         //run event loop in this thread
         void Run();

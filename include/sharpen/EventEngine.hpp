@@ -42,6 +42,8 @@ namespace sharpen
 
         static Self &SetupEngine(sharpen::Size workerCount);
 
+        static Self &SetupSingleThreadEngine();
+
         static Self &GetEngine();
 
         void Stop() noexcept;
@@ -58,7 +60,6 @@ namespace sharpen
 
         void Run();
     };
-    
 }
 
 #endif

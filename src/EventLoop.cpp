@@ -37,7 +37,7 @@ void sharpen::EventLoop::Bind(WeakChannelPtr channel)
     this->selector_->Resister(channel);
 }
 
-void sharpen::EventLoop::QueueInLoop(Task task)
+void sharpen::EventLoop::RunInLoop(Task task)
 {
     if (this->GetLocalLoop() == this)
     {
@@ -52,6 +52,11 @@ void sharpen::EventLoop::QueueInLoop(Task task)
         }
         return;
     }
+    this->RunInLoopSoon(std::move(task));
+}
+
+void sharpen::EventLoop::RunInLoopSoon(Task task)
+{
     bool execting(true);
     {
         std::unique_lock<Lock> lock(*this->lock_);

@@ -18,11 +18,11 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
     //set access and shared
     switch (access)
     {
-    case sharpen::FileAccessModel::Read:
+    case sharpen::FileAccessModel::Write:
         accessModel = FILE_GENERIC_WRITE;
         sharedModel = FILE_SHARE_WRITE;
         break;
-    case sharpen::FileAccessModel::Write:
+    case sharpen::FileAccessModel::Read:
         accessModel = FILE_GENERIC_READ;
         sharedModel = FILE_SHARE_READ;
         break;
@@ -35,7 +35,7 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
     switch (open)
     {
     case sharpen::FileOpenModel::Open:
-        openModel = OPEN_ALWAYS;
+        openModel = OPEN_EXISTING;
         break;
     case sharpen::FileOpenModel::CreateNew:
         openModel = CREATE_ALWAYS;
