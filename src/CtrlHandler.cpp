@@ -1,8 +1,10 @@
 #include <sharpen/CtrlHandler.hpp>
 
-sharpen::CtrlHelper::Handler sharpen::CtrlHelper::onInterrupt_;
+sharpen::CtrlHelper::Handlers sharpen::CtrlHelper::onInterrupt_;
 
-sharpen::CtrlHelper::Handler sharpen::CtrlHelper::onQuite_;
+sharpen::CtrlHelper::Handlers sharpen::CtrlHelper::onQuite_;
+
+std::once_flag sharpen::CtrlHelper::flag_;
 
 #ifdef SHARPEN_IS_WIN
 
@@ -10,19 +12,17 @@ BOOL sharpen::CtrlHelper::CtrlHandler(DWORD ctrlType)
 {
     if (ctrlType == CTRL_C_EVENT)
     {
-        if (sharpen::CtrlHelper::onInterrupt_)
+        for (auto begin = sharpen::CtrlHelper::onInterrupt_.begin();begin != sharpen::CtrlHelper::onInterrupt_.end();++begin)
         {
-            sharpen::CtrlHelper::onInterrupt_();
-            return TRUE;
+            (*begin)();
         }
     }
     else if (ctrlType == CTRL_CLOSE_EVENT)
     {
-        if (sharpen::CtrlHelper::onQuite_)
+        for (auto begin = sharpen::CtrlHelper::onInterrupt_.begin();begin != sharpen::CtrlHelper::onInterrupt_.end();++begin)
         {
-            sharpen::CtrlHelper::onQuite_();
-            return TRUE;
-        }
+            (*begin)();
+        } 
     }
     return FALSE;
 }
@@ -33,17 +33,17 @@ void sharpen::CtrlHelper::CtrlHandler(int signalType)
 {
     if (signalType == SIGINT)
     {
-        if (sharpen::CtrlHelper::onInterrupt_)
+        for (auto begin = sharpen::CtrlHelper::onInterrupt_.begin();begin != sharpen::CtrlHelper::onInterrupt_.end();++begin)
         {
-            sharpen::CtrlHelper::onInterrupt_();
+            (*begin)();
         }
     }
     else if(signalType == SIGQUIT)
     {
-        if (sharpen::CtrlHelper::onQuite_)
+        for (auto begin = sharpen::CtrlHelper::onInterrupt_.begin();begin != sharpen::CtrlHelper::onInterrupt_.end();++begin)
         {
-            sharpen::CtrlHelper::onQuite_();
-        }
+            (*begin)();
+        } 
     }
 }
 
@@ -51,38 +51,26 @@ void sharpen::CtrlHelper::CtrlHandler(int signalType)
 
 void sharpen::RegisterCtrlHandler(sharpen::CtrlType type,sharpen::CtrlHelper::Handler handler)
 {
-#ifdef SHARPEN_IS_WIN
-    using SignalType = DWORD;
-#else
-    using SignalType = int;
-#endif
-
-#ifdef SHARPEN_IS_NIX
-    SignalType sign;
-#endif
-
     switch (type)
     {
     case sharpen::CtrlType::Interrupt:
-        sharpen::CtrlHelper::onInterrupt_ = std::move(handler);
-#ifdef SHARPEN_IS_NIX
-        sign = SIGINT;
-#endif
+        sharpen::CtrlHelper::onInterrupt_.push_back(std::move(handler));
         break;
     case sharpen::CtrlType::Quite:
-        sharpen::CtrlHelper::onQuite_ = std::move(handler);
-#ifdef SHARPEN_IS_NIX
-        sign = SIGQUIT;
-#endif
+        sharpen::CtrlHelper::onQuite_.push_back(std::move(handler));
         break;
     default:
         break;
     }
+    std::call_once(sharpen::CtrlHelper::flag_,[]()
+    {
 #ifdef SHARPEN_IS_WIN
-    using FnPtr = BOOL(*)(DWORD);
-    ::SetConsoleCtrlHandler(reinterpret_cast<FnPtr>(&sharpen::CtrlHelper::CtrlHandler),TRUE);
+        using FnPtr = BOOL(*)(DWORD);
+        ::SetConsoleCtrlHandler(reinterpret_cast<FnPtr>(&sharpen::CtrlHelper::CtrlHandler),TRUE);
 #else
-    using FnPtr = void(*)(int);
-    ::signal(sign,reinterpret_cast<FnPtr>(&sharpen::CtrlHelper::CtrlHandler));
+        using FnPtr = void(*)(int);
+        ::signal(SIGINT,reinterpret_cast<FnPtr>(&sharpen::CtrlHelper::CtrlHandler));
+        ::signal(SIGQUIT,reinterpret_cast<FnPtr>(&sharpen::CtrlHelper::CtrlHandler));
 #endif
+    });
 }
