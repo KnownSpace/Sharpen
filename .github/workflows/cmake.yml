@@ -46,10 +46,10 @@ jobs:
       run: ctest -C $BUILD_TYPE -VV
 
     - name: Benchmark
-      working-directory: ${{runner.workspace}}/.github/assets
+      working-directory: ${{runner.workspace}}/test/assets
       shell: bash
       env:
-        LD_LIBRARY_PATH: ${{runner.workspace}}/.github/assets
+        LD_LIBRARY_PATH: ${{runner.workspace}}/test/assets
       run: |
         echo "nohup ${{runner.workspace}}/build/build/test/mytest"
         echo "ab -c 100 -k -n 1000000 http://localhost:8080/"
