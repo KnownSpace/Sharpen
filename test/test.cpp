@@ -23,22 +23,14 @@ void HandleClient(sharpen::NetStreamChannelPtr client)
     {
         try
         {
-            //std::printf("read %d\n",count + 1);
             sharpen::Size size = client->ReadAsync(buf);
-            //std::printf("new request %zu\n",size);
             if (size == 0)
             {
                 keepalive = false;
                 break;
             }
             const char data[] = "HTTP/1.1 200\r\nConnection: keep-alive\r\nContent-Length: 2\r\n\r\nOK";
-            //std::printf("write %d\n",count + 1);
             size = client->WriteAsync(data, sizeof(data) - 1);
-            //std::printf("response completed %zu \n",size);
-            // if (std::search(buf.Begin(), buf.End(), keepaliveStr.begin(), keepaliveStr.end()) == buf.End())
-            // {
-            //     keepalive = false;
-            // }
         }
         catch (const std::exception &e)
         {
@@ -64,13 +56,14 @@ void WebTest()
     server->Register(engine);
     sharpen::Launch([&server,&engine]()
     {
+        std::atomic_uint count{0};
         while (true)
         {
             try
             {
                 sharpen::NetStreamChannelPtr client = server->AcceptAsync();
                 client->Register(engine);
-                //std::printf("new client connected\n");
+                std::printf("new connection %u\n",count.fetch_add(1));
                 sharpen::Launch(&HandleClient, client);
             }
             catch(const std::system_error &e)
