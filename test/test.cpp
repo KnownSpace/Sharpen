@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <sharpen/CtrlHandler.hpp>
 #include <cinttypes>
+#include <cstring>
 
 #define TEST_COUNT 10000 * 100
 
