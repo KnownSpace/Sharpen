@@ -40,11 +40,7 @@ namespace sharpen
         bool writeable_;
         bool readable_;
         IoStatus status_;
-        Lock acceptLock_;
         sharpen::Uint16 acceptCount_;
-        Lock connectLock_;
-        sharpen::ErrorCode connectErr_;
-        bool connectCompleted_;
         //operator
         sharpen::PosixIoReader reader_;
         sharpen::PosixIoWriter writer_;
@@ -71,6 +67,10 @@ namespace sharpen
         void TryRead(char *buf,sharpen::Size bufSize,Callback cb);
 
         void TryWrite(const char *buf,sharpen::Size bufSize,Callback cb);
+
+        void TryAccept(AcceptCallback cb);
+
+        void TryConnect(const sharpen::IEndPoint &endPoint,ConnectCallback cb);
 
         void RequestRead(char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future);
 

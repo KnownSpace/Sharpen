@@ -13,11 +13,7 @@ sharpen::PosixNetStreamChannel::PosixNetStreamChannel(sharpen::FileHandle handle
     ,readable_(false)
     ,writeable_(false)
     ,status_(sharpen::PosixNetStreamChannel::IoStatus::Io)
-    ,acceptLock_()
     ,acceptCount_(0)
-    ,connectLock_()
-    ,connectErr_(0)
-    ,connectCompleted_(false)
     ,reader_(ECONNABORTED)
     ,writer_(ECONNABORTED)
     ,acceptCb_()
@@ -53,7 +49,6 @@ void sharpen::PosixNetStreamChannel::HandleAccept()
 {
     AcceptCallback cb;
     {
-        std::unique_lock<Lock> lock(this->acceptLock_);
         if (!this->acceptCb_)
         {
             this->acceptCount_ += 1;
@@ -76,29 +71,16 @@ void sharpen::PosixNetStreamChannel::HandleRead()
 }
 
 bool sharpen::PosixNetStreamChannel::HandleConnect()
-{   
-    this->connectErr_ = 0;
-    int err;
+{
+    int err{0};
     socklen_t errSize = sizeof(err);
     ::getsockopt(this->handle_,SOL_SOCKET,SO_ERROR,&err,&errSize);
     ConnectCallback cb;
-    {
-        std::unique_lock<Lock> lock(this->connectLock_);
-        if(!this->connectCb_)
-        {
-            this->connectCompleted_ = true;
-            if(err != 0)
-            {
-                this->connectErr_ = err;
-                return false;
-            }
-            return true;
-        }
-        std::swap(cb,this->connectCb_);
-    }
+    std::swap(cb,this->connectCb_);
+    assert(cb);
     errno = err;
+    this->status_ = sharpen::PosixNetStreamChannel::IoStatus::Io;
     cb();
-    this->connectCompleted_ = false;
     return err == 0;
 }
 
@@ -133,6 +115,37 @@ void sharpen::PosixNetStreamChannel::TryWrite(const char *buf,sharpen::Size bufS
         this->writeable_ = false;
         this->DoWrite();
     }
+}
+
+void sharpen::PosixNetStreamChannel::TryAccept(AcceptCallback cb)
+{
+    if (this->acceptCount_)
+    {
+        this->acceptCount_ -= 1;
+        sharpen::FileHandle handle = this->DoAccept();
+        cb(handle);
+        return;
+    }
+    this->acceptCb_ = std::move(cb);
+}
+
+void sharpen::PosixNetStreamChannel::TryConnect(const sharpen::IEndPoint &endPoint,ConnectCallback cb)
+{
+    int r = ::connect(this->handle_,endPoint.GetAddrPtr(),endPoint.GetAddrLen());
+    if(r == -1)
+    {
+        sharpen::ErrorCode err = sharpen::GetLastError();
+        if (err != EINPROGRESS)
+        {
+            this->status_ = sharpen::PosixNetStreamChannel::IoStatus::Io;
+            cb();
+            return;
+        }
+        this->connectCb_ = std::move(cb);
+        return;
+    }
+    this->status_ = sharpen::PosixNetStreamChannel::IoStatus::Io;
+    cb();
 }
 
 void sharpen::PosixNetStreamChannel::RequestRead(char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future)
@@ -179,48 +192,16 @@ void sharpen::PosixNetStreamChannel::RequestSendFile(sharpen::FileHandle handle,
 void sharpen::PosixNetStreamChannel::RequestConnect(const sharpen::IEndPoint &endPoint,sharpen::Future<void> *future)
 {
     this->status_ = sharpen::PosixNetStreamChannel::IoStatus::Connect;
-    int r = ::connect(this->handle_,endPoint.GetAddrPtr(),endPoint.GetAddrLen());
-    if (r == -1)
-    {
-        sharpen::ErrorCode err = sharpen::GetLastError();
-        if (err != EINPROGRESS)
-        {
-            future->Fail(sharpen::MakeSystemErrorPtr(err));
-            return;
-        }
-        using FnPtr = void (*)(sharpen::Future<void> *);
-        ConnectCallback cb = std::bind(reinterpret_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompleteConnectCallback),future);
-        {
-            std::unique_lock<Lock> lock(this->connectLock_);
-            if(!this->connectCompleted_)
-            {
-                this->connectCb_ = std::move(cb);
-                return;
-            }
-            this->connectCompleted_ = false;
-        }
-        this->status_ = sharpen::PosixNetStreamChannel::IoStatus::Io;
-        cb();
-        return;
-    }
-    this->status_ = sharpen::PosixNetStreamChannel::IoStatus::Io;
-    future->Complete();
+    using FnPtr = void (*)(sharpen::Future<void> *);
+    ConnectCallback cb = std::bind(reinterpret_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompleteConnectCallback),future);
+    this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::TryConnect,this,std::cref(endPoint),std::move(cb)));
 }
 
 void sharpen::PosixNetStreamChannel::RequestAccept(sharpen::Future<sharpen::NetStreamChannelPtr> *future)
 {
-    bool readable = false;
     using FnPtr = void (*)(sharpen::Future<sharpen::NetStreamChannelPtr> *,sharpen::FileHandle);
     AcceptCallback cb = std::bind(reinterpret_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompleteAcceptCallback),future,std::placeholders::_1);
-    {
-       std::unique_lock<Lock> lock(this->acceptLock_);
-       readable = this->acceptCount_ > 0;
-       this->acceptCb_ = std::move(cb);
-    }
-    if (readable)
-    {
-        this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::HandleAccept,this));
-    }
+    this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::TryAccept,this,std::move(cb)));
 }
 
 void sharpen::PosixNetStreamChannel::CompleteConnectCallback(sharpen::Future<void> *future) noexcept
