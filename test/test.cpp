@@ -17,8 +17,6 @@ void HandleClient(sharpen::NetStreamChannelPtr client)
 {
     bool keepalive = true;
     sharpen::ByteBuffer buf(4096);
-    std::string keepaliveStr("keep-alive");
-    static std::atomic_uint count{0};
     while (keepalive)
     {
         try
@@ -39,7 +37,6 @@ void HandleClient(sharpen::NetStreamChannelPtr client)
             break;
         }
     }
-    std::printf("client %u disconnected\n",count.fetch_add(1));
 }
 
 void WebTest()
@@ -56,14 +53,12 @@ void WebTest()
     server->Register(engine);
     sharpen::Launch([&server,&engine]()
     {
-        std::atomic_uint count{0};
         while (true)
         {
             try
             {
                 sharpen::NetStreamChannelPtr client = server->AcceptAsync();
                 client->Register(engine);
-                std::printf("new connection %u\n",count.fetch_add(1));
                 sharpen::Launch(&HandleClient, client);
             }
             catch(const std::system_error &e)
