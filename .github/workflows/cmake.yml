@@ -44,7 +44,12 @@ jobs:
       # Execute tests defined by the CMake configuration.  
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C $BUILD_TYPE -VV
-
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1.0.0
+      with:
+         name: "dbg"
+          # Directory containing files to upload
+         path: .
     - name: Benchmark
       working-directory: ${{runner.workspace}}/test/assets
       shell: bash
@@ -53,9 +58,3 @@ jobs:
       run: |
         echo "nohup ${{runner.workspace}}/build/build/test/mytest"
         echo "ab -c 100 -k -n 1000000 http://localhost:8080/"
-    - name: Upload artifact
-      uses: actions/upload-artifact@v1.0.0
-      with:
-         name: "dbg"
-          # Directory containing files to upload
-         path: .
