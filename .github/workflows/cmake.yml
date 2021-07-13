@@ -53,3 +53,9 @@ jobs:
       run: |
         nohup ${{runner.workspace}}/build/build/test/mytest
         ab -c 100 -k -n 1000000 http://localhost:8080/
+     - name: Upload artifact
+      uses: actions/upload-artifact@v1.0.0
+      with:
+         name: "dbg"
+          # Directory containing files to upload
+         path: .
