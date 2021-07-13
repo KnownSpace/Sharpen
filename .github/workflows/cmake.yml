@@ -51,8 +51,8 @@ jobs:
       env:
         LD_LIBRARY_PATH: ${{runner.workspace}}/.github/assets
       run: |
-        nohup ${{runner.workspace}}/build/build/test/mytest
-        ab -c 100 -k -n 1000000 http://localhost:8080/
+        echo "nohup ${{runner.workspace}}/build/build/test/mytest"
+        echo "ab -c 100 -k -n 1000000 http://localhost:8080/"
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
       with:
