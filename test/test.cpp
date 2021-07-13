@@ -74,7 +74,7 @@ void WebTest()
             }
             catch(const std::system_error &e)
             {
-                std::printf("accept error code %d msg %s",e.code(),e.what());
+                std::printf("accept error code %d msg %s",e.code().value(),e.what());
             }
             catch(const std::exception& e)
             {
