@@ -40,7 +40,6 @@ namespace sharpen
         bool writeable_;
         bool readable_;
         IoStatus status_;
-        sharpen::Uint16 acceptCount_;
         //operator
         sharpen::PosixIoReader reader_;
         sharpen::PosixIoWriter writer_;

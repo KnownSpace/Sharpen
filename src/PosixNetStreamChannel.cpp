@@ -13,7 +13,6 @@ sharpen::PosixNetStreamChannel::PosixNetStreamChannel(sharpen::FileHandle handle
     ,readable_(false)
     ,writeable_(false)
     ,status_(sharpen::PosixNetStreamChannel::IoStatus::Io)
-    ,acceptCount_(0)
     ,reader_(ECONNABORTED)
     ,writer_(ECONNABORTED)
     ,acceptCb_()
@@ -50,7 +49,7 @@ void sharpen::PosixNetStreamChannel::HandleAccept()
     AcceptCallback cb;
     if (!this->acceptCb_)
     {
-        this->acceptCount_ += 1;
+        this->readable_ = true;
         return;
     }
     std::swap(cb,this->acceptCb_);
@@ -117,10 +116,25 @@ void sharpen::PosixNetStreamChannel::TryWrite(const char *buf,sharpen::Size bufS
 
 void sharpen::PosixNetStreamChannel::TryAccept(AcceptCallback cb)
 {
-    if (this->acceptCount_)
+    if (this->readable_)
     {
-        this->acceptCount_ -= 1;
         sharpen::FileHandle handle = this->DoAccept();
+        if(handle == -1)
+        {
+            sharpen::ErrorCode err = sharpen::GetLastError();
+            
+#ifdef EAGAIN
+            sharpen::ErrorCode blocking = EAGAIN;
+#else
+            sharpen::ErrorCode blocking = EWOULDBLOCK;
+#endif
+            if(err == blocking || err == EINTR || err == EPROTO || err == ECONNABORTED)
+            {
+                this->readable_ = false;
+                this->acceptCb_ = std::move(cb);
+                return;
+            }
+        }
         cb(handle);
         return;
     }
