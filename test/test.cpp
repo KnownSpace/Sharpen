@@ -109,6 +109,7 @@ void FileTest()
 
 int main(int argc, char const *argv[])
 {
+    std::printf("run in %u cores machine\n",std::thread::hardware_concurrency());
     WebTest();
     //FileTest();
     return 0;
