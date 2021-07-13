@@ -63,7 +63,6 @@ void WebTest()
     server->Register(engine);
     sharpen::Launch([&server,&engine]()
     {
-        static std::atomic_uint count{0};
         while (true)
         {
             try
@@ -72,7 +71,10 @@ void WebTest()
                 client->Register(engine);
                 //std::printf("new client connected\n");
                 sharpen::Launch(&HandleClient, client);
-                std::printf("connected %u\n",count.fetch_add(1));
+            }
+            catch(const std::system_error &e)
+            {
+                std::printf("accept error code %d msg %s",e.code(),e.what());
             }
             catch(const std::exception& e)
             {
@@ -87,7 +89,8 @@ void WebTest()
         sharpen::EventEngine::GetEngine().Stop();
         sharpen::CleanupNetSupport();
     });
-    char ip[21] = "";
+    char ip[21];
+    std::memset(ip,0,sizeof(ip));
     addr.GetAddrSring(ip,sizeof(ip));
     std::printf("now listen on %s:%d\n",ip,addr.GetPort());
     std::printf("use ctrl + c to stop\n");

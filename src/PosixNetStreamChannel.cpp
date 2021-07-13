@@ -48,14 +48,12 @@ void sharpen::PosixNetStreamChannel::DoWrite()
 void sharpen::PosixNetStreamChannel::HandleAccept()
 {
     AcceptCallback cb;
+    if (!this->acceptCb_)
     {
-        if (!this->acceptCb_)
-        {
-            this->acceptCount_ += 1;
-            return;
-        }
-        std::swap(cb,this->acceptCb_);
+        this->acceptCount_ += 1;
+        return;
     }
+    std::swap(cb,this->acceptCb_);
     sharpen::FileHandle accept = this->DoAccept();
     cb(accept);
 }
