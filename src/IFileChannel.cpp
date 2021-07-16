@@ -27,7 +27,7 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
         sharedModel = FILE_SHARE_READ;
         break;
     case sharpen::FileAccessModel::All:
-        accessModel = FILE_ALL_ACCESS;
+        accessModel = FILE_GENERIC_READ | FILE_GENERIC_WRITE;
         sharedModel = FILE_SHARE_READ | FILE_SHARE_WRITE;
         break;
     }
