@@ -8,11 +8,25 @@
 #include "MemoryStack.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
-#include "fcontext.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef void *fcontext_t;
+
+typedef struct  {
+    fcontext_t fctx;
+    void *data;
+} transfer_t;
+
+#ifdef __cplusplus
+}
+#endif
 
 namespace sharpen
 {
-    
+
     class Fiber;
 
     using FiberPtr = std::shared_ptr<sharpen::Fiber>;

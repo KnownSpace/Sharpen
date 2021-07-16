@@ -1,6 +1,18 @@
 #include <sharpen/Fiber.hpp>
 #include <cassert>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+fcontext_t make_fcontext(void * sp, size_t size, void(*fn)(transfer_t));
+transfer_t jump_fcontext(fcontext_t const to, void *vp);
+transfer_t ontop_fcontext(fcontext_t const to, void *vp, transfer_t(*fn)(transfer_t));
+
+#ifdef __cplusplus
+}
+#endif
+
 thread_local sharpen::FiberPtr sharpen::Fiber::currentFiber_;
 
 sharpen::Fiber::Fiber() noexcept
