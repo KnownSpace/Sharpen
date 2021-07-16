@@ -9,6 +9,7 @@
 #include <netinet/tcp.h>
 #include <netinet/in.h>
 #include <sys/fcntl.h>
+#include <signal.h>
 #endif
 
 #ifdef SHARPEN_IS_WIN
@@ -57,6 +58,10 @@ void sharpen::StartupNetSupport()
     {
         sharpen::ThrowLastError();
     }
+#else
+    struct sigaction sa;
+    sa.sa_handler = SIG_IGN;
+    sigaction(SIGPIPE,&sa,0);
 #endif
 }
 
@@ -64,6 +69,10 @@ void sharpen::CleanupNetSupport()
 {
 #ifdef SHARPEN_HAS_WINSOCKET
     WSACleanup();
+#else
+    struct sigaction sa;
+    sa.sa_handler = SIG_DFL;
+    sigaction(SIGPIPE,&sa,0);
 #endif
 }
 
