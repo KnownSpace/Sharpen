@@ -37,15 +37,11 @@ sharpen::NetStreamChannelPtr sharpen::MakeTcpStreamChannel(sharpen::AddressFamil
     channel = std::make_shared<sharpen::WinNetStreamChannel>(reinterpret_cast<sharpen::FileHandle>(s),afValue);
     return std::move(channel);
 #else
-    sharpen::FileHandle s = ::socket(afValue,SOCK_STREAM,IPPROTO_TCP);
+    sharpen::FileHandle s = ::socket(afValue,SOCK_STREAM | SOCK_CLOEXEC | SOCK_NONBLOCK,IPPROTO_TCP);
     if (s == -1)
     {
         sharpen::ThrowLastError();
     }
-    int flag;
-    flag = ::fcntl(s,F_GETFL,0);
-    flag |= O_NONBLOCK;
-    ::fcntl(s,F_SETFL,flag);
     channel = std::make_shared<sharpen::PosixNetStreamChannel>(s);
     return std::move(channel);
 #endif

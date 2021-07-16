@@ -79,7 +79,7 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
         openModel = O_CREAT;
         break;
     }
-    sharpen::FileHandle handle = ::open(filename,accessModel | openModel);
+    sharpen::FileHandle handle = ::open(filename,accessModel | openModel | O_CLOEXEC);
     if (handle == -1)
     {
         sharpen::ThrowLastError();
