@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.8.0)
 
-include_directories("${PROJECT_SOURCE_DIR}/include")
+include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/thrid_party/include")
 
 #build fcontext
 
@@ -57,14 +57,16 @@ elseif (WIN32)
     
 endif()
 
-set(asm_src "${PROJECT_SOURCE_DIR}/thrid_party/boost.context/asm/make_${CPU_ARCH}_${ASM_EXT}"
+set(fcontext_src "${PROJECT_SOURCE_DIR}/thrid_party/boost.context/asm/make_${CPU_ARCH}_${ASM_EXT}"
                 "${PROJECT_SOURCE_DIR}/thrid_party/boost.context/asm/jump_${CPU_ARCH}_${ASM_EXT}"
                 "${PROJECT_SOURCE_DIR}/thrid_party/boost.context/asm/ontop_${CPU_ARCH}_${ASM_EXT}")
 
+#build http_parser
+aux_source_directory("${PROJECT_SOURCE_DIR}/thrid_party/http_parser/src" http_parser_src)
 
 #build src
 aux_source_directory("${PROJECT_SOURCE_DIR}/src" src)
-add_library(sharpen ${src} ${asm_src})
+add_library(sharpen ${src} ${fcontext_src} ${http_parser_src})
 if(UNIX)
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
