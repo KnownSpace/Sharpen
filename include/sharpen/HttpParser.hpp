@@ -21,8 +21,8 @@ namespace sharpen
     {
     private:
         using Self = sharpen::HttpParser;
-        using EventCallback = std::function<void()>;
-        using DataCallback = std::function<void(const char *,sharpen::Size)>;
+        using EventCallback = std::function<int()>;
+        using DataCallback = std::function<int(const char *,sharpen::Size)>;
 
         std::unique_ptr<http_parser> parser_;
         EventCallback onMsgBegin_;

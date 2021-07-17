@@ -33,7 +33,7 @@ int sharpen::HttpParser::OnMessageBegin(http_parser *parser)
     sharpen::HttpParser *thiz = reinterpret_cast<sharpen::HttpParser*>(parser->data);
     if (thiz->onMsgBegin_)
     {
-        thiz->onMsgBegin_();
+        return thiz->onMsgBegin_();
     }
     return 0;
 }
@@ -43,7 +43,7 @@ int sharpen::HttpParser::OnUrl(http_parser *parser,const char *str,sharpen::Size
     sharpen::HttpParser *thiz = reinterpret_cast<sharpen::HttpParser*>(parser->data);
     if (thiz->onUrl_)
     {
-        thiz->onUrl_(str,len);
+        return thiz->onUrl_(str,len);
     }
     return 0;
 }
@@ -53,7 +53,7 @@ int sharpen::HttpParser::OnStatusCode(http_parser *parser,const char *str,sharpe
     sharpen::HttpParser *thiz = reinterpret_cast<sharpen::HttpParser*>(parser->data);
     if (thiz->onStatusCode_)
     {
-        thiz->onStatusCode_(str,len);
+        return thiz->onStatusCode_(str,len);
     }
     return 0;
 }
@@ -67,7 +67,7 @@ int sharpen::HttpParser::OnHeadersField(http_parser *parser,const char *str,shar
     sharpen::HttpParser *thiz = reinterpret_cast<sharpen::HttpParser*>(parser->data);
     if (thiz->onHeadersField_)
     {
-        thiz->onHeadersField_(str,len);
+        return thiz->onHeadersField_(str,len);
     }
     return 0;
 }
@@ -77,7 +77,7 @@ int sharpen::HttpParser::OnHeadersValue(http_parser *parser,const char *str,shar
     sharpen::HttpParser *thiz = reinterpret_cast<sharpen::HttpParser*>(parser->data);
     if (thiz->onHeadersValue_)
     {
-        thiz->onHeadersValue_(str,len);
+        return thiz->onHeadersValue_(str,len);
     }
     return 0;
 }
@@ -87,7 +87,7 @@ int sharpen::HttpParser::OnHeadersComplete(http_parser *parser)
     sharpen::HttpParser *thiz = reinterpret_cast<sharpen::HttpParser*>(parser->data);
     if (thiz->onHeadersComplete_)
     {
-        thiz->onHeadersComplete_();
+        return thiz->onHeadersComplete_();
     }
     return 0;
 }
@@ -97,7 +97,7 @@ int sharpen::HttpParser::OnBody(http_parser *parser,const char *str,sharpen::Siz
     sharpen::HttpParser *thiz = reinterpret_cast<sharpen::HttpParser*>(parser->data);
     if (thiz->onBody_)
     {
-        thiz->onBody_(str,len);
+        return thiz->onBody_(str,len);
     }
     return 0;
 }
@@ -107,7 +107,7 @@ int sharpen::HttpParser::OnMessageEnd(http_parser *parser)
     sharpen::HttpParser *thiz = reinterpret_cast<sharpen::HttpParser*>(parser->data);
     if (thiz->onMsgEnd_)
     {
-        thiz->onMsgEnd_();
+        return thiz->onMsgEnd_();
     }
     return 0;
 }
@@ -117,7 +117,7 @@ int sharpen::HttpParser::OnChunkHeader(http_parser *parser)
     sharpen::HttpParser *thiz = reinterpret_cast<sharpen::HttpParser*>(parser->data);
     if (thiz->onChunkHeader_)
     {
-        thiz->onChunkHeader_();
+        return thiz->onChunkHeader_();
     }
     return 0;
 }
@@ -127,7 +127,7 @@ int sharpen::HttpParser::OnChunkComplete(http_parser *parser)
     sharpen::HttpParser *thiz = reinterpret_cast<sharpen::HttpParser*>(parser->data);
     if (thiz->onChunkComplete_)
     {
-        thiz->onChunkComplete_();
+        return thiz->onChunkComplete_();
     }
     return 0;
 }
