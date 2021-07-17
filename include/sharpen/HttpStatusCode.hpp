@@ -2,8 +2,12 @@
 #ifndef _SHARPEN_HTTPSTATUSCODE_HPP
 #define _SHARPEN_HTTPSTATUSCODE_HPP
 
+#include "TypeDef.hpp"
+
 namespace sharpen
 {
+    class ByteBuffer;
+
     enum class HttpStatusCode:int
     {
         CONTINUE = 100,
@@ -67,6 +71,17 @@ namespace sharpen
     };
 
     const char *GetHttpStatusCodeName(sharpen::HttpStatusCode code);
+
+    void InternalCopyHttpStatusCodeNameToMem(sharpen::HttpStatusCode code,char *buf,sharpen::Size size);
+
+    void CopyHttpStatusCodeNameTo(sharpen::HttpStatusCode code,char *buf,sharpen::Size);
+
+    void CopyHttpStatusCodeNameTo(sharpen::HttpStatusCode code,sharpen::ByteBuffer &buf,sharpen::Size offset);
+
+    inline void CopyHttpStatusCodeNameTo(sharpen::HttpStatusCode code,sharpen::ByteBuffer &buf)
+    {
+        sharpen::CopyHttpStatusCodeNameTo(code,buf,0);
+    }
 }
 
 #endif
