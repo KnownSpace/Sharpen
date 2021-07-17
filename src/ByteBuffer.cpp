@@ -112,17 +112,14 @@ void sharpen::ByteBuffer::Reserve(sharpen::Size size)
     this->vector_.reserve(size);
 }
 
-void sharpen::ByteBuffer::Expand(sharpen::Size size)
+void sharpen::ByteBuffer::Extend(sharpen::Size size,sharpen::Char default)
 {
-    this->Reserve(size + this->GetSize());
+    this->vector_.resize(this->GetSize() + size,default);
 }
 
 void sharpen::ByteBuffer::Extend(sharpen::Size size)
 {
-    for (size_t i = 0; i < size; i++)
-    {
-        this->vector_.push_back(static_cast<sharpen::Char>(0));
-    }
+    this->Extend(size,0);
 }
 
 void sharpen::ByteBuffer::Reset(sharpen::Size size)

@@ -87,11 +87,11 @@ namespace sharpen
 
         void Reserve(sharpen::Size size);
 
-        void Expand(sharpen::Size size);
-
         void Reset(sharpen::Size size);
 
         void Extend(sharpen::Size size);
+
+        void Extend(sharpen::Size size,sharpen::Char default);
 
         void Shrink();
 
