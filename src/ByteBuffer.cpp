@@ -179,3 +179,61 @@ sharpen::Size sharpen::ByteBuffer::GetMark() const
 {
     return mark_;
 }
+
+sharpen::ByteBuffer::Iterator sharpen::ByteBuffer::Find(char e)
+{
+    for (auto begin = this->Begin(); begin != this->End(); begin++)
+    {
+        if (*begin == e)
+        {
+            return begin;
+        }
+    }
+    return this->End();
+}
+
+sharpen::ByteBuffer::ConstIterator sharpen::ByteBuffer::Find(char e) const
+{
+    for (auto begin = this->Begin(); begin != this->End(); begin++)
+    {
+        if (*begin == e)
+        {
+            return begin;
+        }
+    }
+    return this->End();
+}
+
+sharpen::ByteBuffer::ReverseIterator sharpen::ByteBuffer::ReverseFind(char e)
+{
+    for (auto begin = this->ReverseBegin(); begin != this->ReverseEnd(); begin++)
+    {
+        if (*begin == e)
+        {
+            return begin;
+        }
+    }
+    return this->ReverseEnd();
+}
+
+sharpen::ByteBuffer::ConstReverseIterator sharpen::ByteBuffer::ReverseFind(char e) const
+{
+    for (auto begin = this->ReverseBegin(); begin != this->ReverseEnd(); begin++)
+    {
+        if (*begin == e)
+        {
+            return begin;
+        }
+    }
+    return this->ReverseEnd();
+}
+
+void sharpen::ByteBuffer::Erase(ConstIterator where)
+{
+    this->vector_.erase(where);
+}
+
+void sharpen::ByteBuffer::Erase(ConstIterator begin,ConstIterator end)
+{
+    this->vector_.erase(begin,end);
+}
