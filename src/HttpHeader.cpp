@@ -75,10 +75,11 @@ sharpen::Size sharpen::HttpHeader::ComputeSize() const
 void sharpen::HttpHeader::CopyToMem(char *buf,sharpen::Size offset) const
 {
     sharpen::Size i = offset;
-    const char *CRLF = "\r\n";
-    const char *div = ": ";
+    const char CRLF[] = "\r\n";
+    const char div[] = ": ";
     for (auto begin = this->headers_.begin(); begin != this->headers_.end() ; begin++)
     {
+        //field: value\r\n
         std::memcpy(buf + i,begin->first.data(),begin->first.size());
         i += begin->first.size();
         std::memcpy(buf + i,div,sizeof(div) - 1);
@@ -89,6 +90,9 @@ void sharpen::HttpHeader::CopyToMem(char *buf,sharpen::Size offset) const
         i += sizeof(CRLF) - 1;
     }
     std::memcpy(buf + i,CRLF,sizeof(CRLF) - 1);
+    //field: value\r\n
+    //...
+    //field: value\r\n\r\n
     assert((i + sizeof(CRLF) - offset) == this->ComputeSize());
 }
 
