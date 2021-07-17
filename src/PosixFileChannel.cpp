@@ -37,9 +37,13 @@ void sharpen::PosixFileChannel::WriteAsync(const sharpen::Char *buf,sharpen::Siz
     });
 }
         
-void sharpen::PosixFileChannel::WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)
+void sharpen::PosixFileChannel::WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)
 {
-    this->WriteAsync(buf.Data(),buf.GetSize(),offset,future);
+    if (buf.GetSize() < bufferOffset)
+    {
+        throw std::length_error("buffer size is wrong");
+    }
+    this->WriteAsync(buf.Data() + bufferOffset,buf.GetSize() - bufferOffset,offset,future);
 }
 
 void sharpen::PosixFileChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)
@@ -61,9 +65,13 @@ void sharpen::PosixFileChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSi
     });
 }
         
-void sharpen::PosixFileChannel::ReadAsync(sharpen::ByteBuffer &buf,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)
+void sharpen::PosixFileChannel::ReadAsync(sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)
 {
-    this->ReadAsync(buf.Data(),buf.GetSize(),offset,future);
+    if (buf.GetSize() < bufferOffset)
+    {
+        throw std::length_error("buffer size is wrong");
+    }
+    this->ReadAsync(buf.Data() + bufferOffset,buf.GetSize() - bufferOffset,offset,future);
 }
 
 void sharpen::PosixFileChannel::OnEvent(sharpen::IoEvent *event)

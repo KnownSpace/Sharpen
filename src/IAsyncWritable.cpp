@@ -8,9 +8,14 @@ sharpen::Size sharpen::IAsyncWritable::WriteAsync(const sharpen::Char *buf,sharp
     return future.Await();
 }
 
-sharpen::Size sharpen::IAsyncWritable::WriteAsync(const sharpen::ByteBuffer &buf)
+sharpen::Size sharpen::IAsyncWritable::WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Size bufferOffset)
 {
     sharpen::AwaitableFuture<sharpen::Size> future;
-    this->WriteAsync(buf,future);
+    this->WriteAsync(buf,bufferOffset,future);
     return future.Await();
+}
+
+sharpen::Size sharpen::IAsyncWritable::WriteAsync(const sharpen::ByteBuffer &buf)
+{
+    this->WriteAsync(buf,0);
 }

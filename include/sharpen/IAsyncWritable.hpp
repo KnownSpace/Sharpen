@@ -12,23 +12,26 @@ namespace sharpen
     class IAsyncWritable
     {
     private:
-         using Self = sharpen::IAsyncWritable;
+        using Self = sharpen::IAsyncWritable;
+
     public:
-          IAsyncWritable() = default;
-         
-          IAsyncWritable(const Self &) = default;
-         
-          IAsyncWritable(Self &&) noexcept = default;
-         
-          virtual ~IAsyncWritable() = default;
-         
-          virtual void WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future) = 0;
-         
-          virtual void WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Future<sharpen::Size> &future) = 0;
+        IAsyncWritable() = default;
 
-          sharpen::Size WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize);
+        IAsyncWritable(const Self &) = default;
 
-          sharpen::Size WriteAsync(const sharpen::ByteBuffer &buf);
+        IAsyncWritable(Self &&) noexcept = default;
+
+        virtual ~IAsyncWritable() = default;
+
+        virtual void WriteAsync(const sharpen::Char *buf, sharpen::Size bufSize, sharpen::Future<sharpen::Size> &future) = 0;
+
+        virtual void WriteAsync(const sharpen::ByteBuffer &buf, sharpen::Size bufferOffset, sharpen::Future<sharpen::Size> &future) = 0;
+
+        sharpen::Size WriteAsync(const sharpen::Char *buf, sharpen::Size bufSize);
+
+        sharpen::Size WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Size bufferOffset);
+
+        sharpen::Size WriteAsync(const sharpen::ByteBuffer &buf);
     };
 }
 

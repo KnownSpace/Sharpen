@@ -268,9 +268,13 @@ void sharpen::PosixNetStreamChannel::WriteAsync(const sharpen::Char *buf, sharpe
     this->RequestWrite(buf,bufSize,&future);
 }
 
-void sharpen::PosixNetStreamChannel::WriteAsync(const sharpen::ByteBuffer &buf, sharpen::Future<sharpen::Size> &future)
+void sharpen::PosixNetStreamChannel::WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Size bufferOffset, sharpen::Future<sharpen::Size> &future)
 {
-    this->WriteAsync(buf.Data(),buf.GetSize(),future);
+    if (buf.GetSize() < bufferOffset)
+    {
+        throw std::length_error("buffer size is wrong");
+    }
+    this->WriteAsync(buf.Data() + bufferOffset,buf.GetSize() - bufferOffset,future);
 }
 
 void sharpen::PosixNetStreamChannel::ReadAsync(sharpen::Char *buf, sharpen::Size bufSize, sharpen::Future<sharpen::Size> &future)
@@ -282,9 +286,13 @@ void sharpen::PosixNetStreamChannel::ReadAsync(sharpen::Char *buf, sharpen::Size
     this->RequestRead(buf,bufSize,&future);
 }
 
-void sharpen::PosixNetStreamChannel::ReadAsync(sharpen::ByteBuffer &buf, sharpen::Future<sharpen::Size> &future)
+void sharpen::PosixNetStreamChannel::ReadAsync(sharpen::ByteBuffer &buf,sharpen::Size bufferOffset, sharpen::Future<sharpen::Size> &future)
 {
-    this->ReadAsync(buf.Data(),buf.GetSize(),future);
+    if (buf.GetSize() < bufferOffset)
+    {
+        throw std::length_error("buffer size is wrong");
+    }
+    this->ReadAsync(buf.Data() + bufferOffset,buf.GetSize() - bufferOffset,future);
 }
 
 void sharpen::PosixNetStreamChannel::OnEvent(sharpen::IoEvent *event)
