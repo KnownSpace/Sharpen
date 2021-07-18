@@ -10,32 +10,47 @@
 #include <sharpen/CtrlHandler.hpp>
 #include <cinttypes>
 #include <cstring>
+#include <sharpen/HttpRequest.hpp>
+#include <sharpen/HttpResponse.hpp>
+#include <sharpen/HttpParser.hpp>
 
 #define TEST_COUNT 10000 * 100
 
 void HandleClient(sharpen::NetStreamChannelPtr client)
 {
     bool keepalive = true;
-    sharpen::ByteBuffer buf(4096);
+    sharpen::ByteBuffer recvBuf(4096);
+    sharpen::ByteBuffer sendBuf;
+    sharpen::HttpRequest req;
+    sharpen::HttpParser parser(sharpen::HttpParser::ParserModel::Request);
+    req.ConfigParser(parser);
+    sharpen::HttpResponse res(sharpen::HttpVersion::Http1_1,sharpen::HttpStatusCode::OK);
+    res.Header()["Content-Length"] = "2";
+    res.Header()["Connection"] = "keep-alive";
+    res.Body().Push('O');
+    res.Body().Push('K');
+    res.CopyTo(sendBuf);
     while (keepalive)
     {
-        try
+        while (!parser.IsCompleted())
         {
-            sharpen::Size size = client->ReadAsync(buf);
-            if (size == 0)
+            sharpen::Size n = client->ReadAsync(recvBuf);
+            if (n == 0)
             {
-                keepalive = false;
-                break;
+                return;
             }
-            const char data[] = "HTTP/1.1 200\r\nConnection: keep-alive\r\nContent-Length: 2\r\n\r\nOK";
-            size = client->WriteAsync(data, sizeof(data) - 1);
+            sharpen::Size np = parser.Parse(recvBuf.Data(),n);
+            if (np != n)
+            {
+                return;
+            }
         }
-        catch (const std::exception &e)
+        if (!parser.ShouldKeepalive())
         {
-            std::printf("handle client error %s\n",e.what());
             keepalive = false;
-            break;
+            res.Header()["Connection"] = "close";
         }
+        client->WriteAsync(sendBuf);
     }
 }
 
