@@ -7,7 +7,7 @@
 
 namespace sharpen
 {
-    extern sharpen::Int32 GetCurrentThreadId() noexcept;
+    extern sharpen::Uint32 GetCurrentThreadId() noexcept;
 }
 
 #endif

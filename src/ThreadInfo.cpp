@@ -3,20 +3,21 @@
 #ifdef SHARPEN_IS_WIN
 
 #include <Windows.h>
-
-#else
-
+#elif defined SHARPEN_IS_LINUX
 #include <unistd.h>
 #include <sys/syscall.h>
-
+#else
+#include <pthread.h>
 #endif
 
 
-sharpen::Int32 sharpen::GetCurrentThreadId() noexcept
+sharpen::Uint32 sharpen::GetCurrentThreadId() noexcept
 {
 #ifdef SHARPEN_IS_WIN
         return ::GetCurrentThreadId();
-#else
+#elif defined SHARPEN_IS_LINUX
         return syscall(__NR_gettid);
+#else
+        return pthread_self();
 #endif   
 }
