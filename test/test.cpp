@@ -45,10 +45,12 @@ void HandleClient(sharpen::NetStreamChannelPtr client)
                 return;
             }
         }
+        parser.SetCompleted(false);
         if (!parser.ShouldKeepalive())
         {
             keepalive = false;
             res.Header()["Connection"] = "close";
+            res.CopyTo(sendBuf);
         }
         client->WriteAsync(sendBuf);
     }
