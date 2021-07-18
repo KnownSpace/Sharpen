@@ -187,8 +187,9 @@ void sharpen::HttpResponse::ConfigParser(sharpen::HttpParser &parser)
         this->StatusCode() = parser.GetStatusCode();
         return 0;
     });
-    parser.SetMessageBeginCallback([&parser]() mutable
+    parser.SetMessageBeginCallback([&parser,this]() mutable
     {
+        this->Clear();
         parser.SetCompleted(false);
         return 0;
     });

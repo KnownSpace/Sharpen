@@ -184,8 +184,9 @@ void sharpen::HttpRequest::ConfigParser(sharpen::HttpParser &parser)
         this->Method() = parser.GetMethod();
         return 0;
     });
-    parser.SetMessageBeginCallback([&parser]() mutable
+    parser.SetMessageBeginCallback([&parser,this]() mutable
     {
+        this->Clear();
         parser.SetCompleted(false);
         return 0;
     });
