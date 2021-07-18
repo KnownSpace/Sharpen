@@ -8,9 +8,9 @@ namespace sharpen
 {
     class ByteBuffer;
 
-    enum class HttpMethod:int
+    enum class HttpMethod : int
     {
-        DELETE,
+        DELETE_,
         GET,
         HEAD,
         POST,
@@ -50,13 +50,13 @@ namespace sharpen
 
     void InternalCopyHttpMethodNameToMem(sharpen::HttpMethod method,char *buf,sharpen::Size offset);
 
-    void CopyHttpMethodNameTo(sharpen::HttpMethod method,char *buf,sharpen::Size size);
+    sharpen::Size CopyHttpMethodNameTo(sharpen::HttpMethod method,char *buf,sharpen::Size size);
 
-    void CopyHttpMethodNameTo(sharpen::HttpMethod method,sharpen::ByteBuffer &buf,sharpen::Size offset);
+    sharpen::Size CopyHttpMethodNameTo(sharpen::HttpMethod method,sharpen::ByteBuffer &buf,sharpen::Size offset);
 
-    inline void CopyHttpMethodNameTo(sharpen::HttpMethod method,sharpen::ByteBuffer &buf)
+    inline sharpen::Size CopyHttpMethodNameTo(sharpen::HttpMethod method,sharpen::ByteBuffer &buf)
     {
-        sharpen::CopyHttpMethodNameTo(method,buf,0);
+        return sharpen::CopyHttpMethodNameTo(method,buf,0);
     }
 }
 

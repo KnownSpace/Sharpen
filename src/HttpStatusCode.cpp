@@ -19,7 +19,7 @@ void sharpen::InternalCopyHttpStatusCodeNameToMem(sharpen::HttpStatusCode code,c
     std::memcpy(buf + offset,name,len);
 }
 
-void sharpen::CopyHttpStatusCodeNameTo(sharpen::HttpStatusCode code,char *buf,sharpen::Size size)
+sharpen::Size sharpen::CopyHttpStatusCodeNameTo(sharpen::HttpStatusCode code,char *buf,sharpen::Size size)
 {
     sharpen::Size len = std::strlen(sharpen::GetHttpStatusCodeName(code));
     if (len > size)
@@ -27,10 +27,15 @@ void sharpen::CopyHttpStatusCodeNameTo(sharpen::HttpStatusCode code,char *buf,sh
         throw std::length_error("buffer size less than needed");
     }
     sharpen::InternalCopyHttpStatusCodeNameToMem(code,buf,0);
+    return len;
 }
 
-void sharpen::CopyHttpStatusCodeNameTo(sharpen::HttpStatusCode code,sharpen::ByteBuffer &buf,sharpen::Size offset)
+sharpen::Size sharpen::CopyHttpStatusCodeNameTo(sharpen::HttpStatusCode code,sharpen::ByteBuffer &buf,sharpen::Size offset)
 {
+    if (offset > buf.GetSize())
+    {
+        throw std::length_error("buffer size is wrong");
+    }
     sharpen::Size len = std::strlen(sharpen::GetHttpStatusCodeName(code));
     sharpen::Size left = buf.GetSize() - offset;
     if (len > left)
@@ -38,4 +43,5 @@ void sharpen::CopyHttpStatusCodeNameTo(sharpen::HttpStatusCode code,sharpen::Byt
         buf.Extend(len - left);
     }
     sharpen::InternalCopyHttpStatusCodeNameToMem(code,buf.Data(),offset);
+    return len;
 }

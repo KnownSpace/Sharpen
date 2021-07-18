@@ -17,15 +17,21 @@ sharpen::HttpParser::HttpParser(sharpen::HttpParser::ParserModel model)
     ,onMsgEnd_()
     ,onChunkHeader_()
     ,onChunkComplete_()
+    ,completed_(false)
 {
     http_parser *parser = reinterpret_cast<http_parser*>(std::malloc(sizeof(http_parser)));
     if (parser == nullptr)
     {
         throw std::bad_alloc();
     }
-    this->parser_.reset(parser);
-    ::http_parser_init(this->parser_.get(),static_cast<http_parser_type>(model));
+    this->parser_ = parser;
+    ::http_parser_init(this->parser_,static_cast<http_parser_type>(model));
     this->parser_->data = this;
+}
+
+sharpen::HttpParser::~HttpParser() noexcept
+{
+    std::free(this->parser_);
 }
 
 int sharpen::HttpParser::OnMessageBegin(http_parser *parser)
@@ -150,11 +156,12 @@ http_parser_settings *sharpen::HttpParser::GetSettings()
         settings.on_chunk_header = reinterpret_cast<http_cb>(&sharpen::HttpParser::OnChunkHeader);
         settings.on_chunk_complete = reinterpret_cast<http_cb>(&sharpen::HttpParser::OnChunkComplete);
     });
+    return &settings;
 }
 
 sharpen::Size sharpen::HttpParser::Parse(const char *data,sharpen::Size size)
 {
-    return ::http_parser_execute(this->parser_.get(),sharpen::HttpParser::GetSettings(),data,size);
+    return ::http_parser_execute(this->parser_,sharpen::HttpParser::GetSettings(),data,size);
 }
 
 bool sharpen::HttpParser::NeedUpgrade() const
@@ -164,7 +171,7 @@ bool sharpen::HttpParser::NeedUpgrade() const
 
 bool sharpen::HttpParser::ShouldKeepalive() const
 {
-    return ::http_should_keep_alive(this->parser_.get());
+    return ::http_should_keep_alive(this->parser_) != 0;
 }
 
 sharpen::HttpMethod sharpen::HttpParser::GetMethod() const
@@ -177,4 +184,29 @@ sharpen::HttpStatusCode sharpen::HttpParser::GetStatusCode() const
 {
     int code = this->parser_->status_code;
     return static_cast<sharpen::HttpStatusCode>(code);
+}
+
+sharpen::HttpVersion sharpen::HttpParser::GetVersion() const
+{
+    return sharpen::GetHttpVersion(this->parser_->http_major,this->parser_->http_minor);
+}
+
+bool sharpen::HttpParser::IsError() const
+{
+    return this->parser_->http_errno == http_errno::HPE_OK;
+}
+
+const char *sharpen::HttpParser::GetErrorMessage() const
+{
+    return http_errno_description(static_cast<http_errno>(this->parser_->http_errno));
+}
+
+bool sharpen::HttpParser::IsCompleted() const
+{
+    return this->completed_;
+}
+
+void sharpen::HttpParser::SetCompleted(bool completed)
+{
+    this->completed_ = completed;
 }

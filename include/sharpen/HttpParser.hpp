@@ -10,6 +10,7 @@
 #include "TypeDef.hpp"
 #include "HttpMethod.hpp"
 #include "HttpStatusCode.hpp"
+#include "HttpVersion.hpp"
 
 struct http_parser;
 
@@ -24,7 +25,7 @@ namespace sharpen
         using EventCallback = std::function<int()>;
         using DataCallback = std::function<int(const char *,sharpen::Size)>;
 
-        std::unique_ptr<http_parser> parser_;
+        http_parser* parser_;
         EventCallback onMsgBegin_;
         DataCallback onUrl_;
         DataCallback onStatusCode_;
@@ -35,6 +36,7 @@ namespace sharpen
         EventCallback onMsgEnd_;
         EventCallback onChunkHeader_;
         EventCallback onChunkComplete_;
+        bool completed_;
 
         static int OnMessageBegin(http_parser *parser);
 
@@ -67,7 +69,7 @@ namespace sharpen
 
         HttpParser(ParserModel model);
 
-        ~HttpParser() noexcept = default;
+        ~HttpParser() noexcept;
 
         void SetMessageBeginCallback(EventCallback cb)
         {
@@ -128,6 +130,16 @@ namespace sharpen
         sharpen::HttpMethod GetMethod() const;
 
         sharpen::HttpStatusCode GetStatusCode() const;
+
+        sharpen::HttpVersion GetVersion() const;
+
+        bool IsError() const;
+
+        const char *GetErrorMessage() const;
+
+        bool IsCompleted() const;
+
+        void SetCompleted(bool completed);
     };
 }
 

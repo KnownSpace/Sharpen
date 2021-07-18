@@ -53,11 +53,14 @@ namespace sharpen
 
         bool ExistHeader(const std::string &field) const;
 
-        void CopyTo(char *buf,sharpen::Size size) const;
+        sharpen::Size CopyTo(char *buf,sharpen::Size size) const;
 
-        void CopyTo(sharpen::ByteBuffer &buf) const;
+        sharpen::Size CopyTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
 
-        void CopyTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
+        inline sharpen::Size CopyTo(sharpen::ByteBuffer &buf) const
+        {
+            return this->CopyTo(buf,0);
+        }
 
         sharpen::Size ComputeSize() const;
 
@@ -67,6 +70,8 @@ namespace sharpen
         {
             this->Swap(other);
         }
+
+        void Clear();
     };
 }
 

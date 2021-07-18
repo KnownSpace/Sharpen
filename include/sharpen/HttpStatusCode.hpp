@@ -74,13 +74,13 @@ namespace sharpen
 
     void InternalCopyHttpStatusCodeNameToMem(sharpen::HttpStatusCode code,char *buf,sharpen::Size size);
 
-    void CopyHttpStatusCodeNameTo(sharpen::HttpStatusCode code,char *buf,sharpen::Size);
+    sharpen::Size CopyHttpStatusCodeNameTo(sharpen::HttpStatusCode code,char *buf,sharpen::Size);
 
-    void CopyHttpStatusCodeNameTo(sharpen::HttpStatusCode code,sharpen::ByteBuffer &buf,sharpen::Size offset);
+    sharpen::Size CopyHttpStatusCodeNameTo(sharpen::HttpStatusCode code,sharpen::ByteBuffer &buf,sharpen::Size offset);
 
-    inline void CopyHttpStatusCodeNameTo(sharpen::HttpStatusCode code,sharpen::ByteBuffer &buf)
+    inline sharpen::Size CopyHttpStatusCodeNameTo(sharpen::HttpStatusCode code,sharpen::ByteBuffer &buf)
     {
-        sharpen::CopyHttpStatusCodeNameTo(code,buf,0);
+        return sharpen::CopyHttpStatusCodeNameTo(code,buf,0);
     }
 }
 
