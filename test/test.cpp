@@ -14,8 +14,6 @@
 #include <sharpen/HttpResponse.hpp>
 #include <sharpen/HttpParser.hpp>
 
-#define TEST_COUNT 10000 * 100
-
 void HandleClient(sharpen::NetStreamChannelPtr client)
 {
     bool keepalive = true;
