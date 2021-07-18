@@ -13,6 +13,7 @@
 #include <sharpen/HttpRequest.hpp>
 #include <sharpen/HttpResponse.hpp>
 #include <sharpen/HttpParser.hpp>
+#include <sharpen/ProcessInfo.hpp>
 
 void HandleClient(sharpen::NetStreamChannelPtr client)
 {
@@ -132,7 +133,7 @@ void FileTest()
 
 int main(int argc, char const *argv[])
 {
-    std::printf("run in %u cores machine\n",std::thread::hardware_concurrency());
+    std::printf("run in %u cores machine\nprocess id: %u\n",std::thread::hardware_concurrency(),sharpen::GetProcessId());
     WebTest();
     //FileTest();
     return 0;
