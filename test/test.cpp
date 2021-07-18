@@ -32,27 +32,35 @@ void HandleClient(sharpen::NetStreamChannelPtr client)
     res.CopyTo(sendBuf);
     while (keepalive)
     {
-        while (!parser.IsCompleted())
-        {
-            sharpen::Size n = client->ReadAsync(recvBuf);
-            if (n == 0)
+       try
+       {
+            while (!parser.IsCompleted())
             {
-                return;
+                sharpen::Size n = client->ReadAsync(recvBuf);
+                if (n == 0)
+                {
+                    return;
+                }
+                sharpen::Size np = parser.Parse(recvBuf.Data(),n);
+                if (np != n)
+                {
+                    return;
+                }
             }
-            sharpen::Size np = parser.Parse(recvBuf.Data(),n);
-            if (np != n)
+            parser.SetCompleted(false);
+            if (!parser.ShouldKeepalive())
             {
-                return;
+                keepalive = false;
+                res.Header()["Connection"] = "close";
+                res.CopyTo(sendBuf);
             }
-        }
-        parser.SetCompleted(false);
-        if (!parser.ShouldKeepalive())
-        {
-            keepalive = false;
-            res.Header()["Connection"] = "close";
-            res.CopyTo(sendBuf);
-        }
-        client->WriteAsync(sendBuf);
+            client->WriteAsync(sendBuf);
+       }
+       catch(const std::exception& e)
+       {
+           std::printf("handle client error: %s\n",e.what());
+           return;
+       }
     }
 }
 
