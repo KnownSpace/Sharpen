@@ -94,7 +94,7 @@ namespace sharpen
 
         void Extend(sharpen::Size size);
 
-        void Extend(sharpen::Size size,sharpen::Char default);
+        void Extend(sharpen::Size size,sharpen::Char defaultValue);
 
         void Shrink();
 
