@@ -34,7 +34,7 @@ namespace sharpen
         bool exectingTask_;
         LockPtr lock_;
         bool running_;
-
+        bool wait_;
 
         //one loop per thread
         thread_local static EventLoop *localLoop_;
@@ -76,6 +76,8 @@ namespace sharpen
         
         //stop event loop
         void Stop() noexcept;
+
+        bool IsWaiting() const noexcept;
 
         //get thread local event loop
         static sharpen::EventLoop *GetLocalLoop() noexcept;

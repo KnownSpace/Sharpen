@@ -23,6 +23,7 @@ sharpen::EventLoop::EventLoop(SelectorPtr selector,TaskVectorPtr tasks,LockPtr l
     ,exectingTask_(false)
     ,lock_(lock)
     ,running_(false)
+    ,wait_(false)
 {
     assert(selector != nullptr);
 }
@@ -111,8 +112,10 @@ void sharpen::EventLoop::Run()
     this->running_ = true;
     while (this->running_)
     {
+        this->wait_ = true;
         //select events
         this->selector_->Select(events);
+        this->wait_ = false;
         for (auto begin = events.begin(),end = events.end();begin != end;++begin)
         {
             sharpen::ChannelPtr channel = (*begin)->GetChannel();
@@ -127,6 +130,11 @@ void sharpen::EventLoop::Run()
     }
     sharpen::EventLoop::localLoop_ = nullptr;
     sharpen::EventLoop::localFiber_.reset();
+}
+
+bool sharpen::EventLoop::IsWaiting() const noexcept
+{
+    return this->wait_;
 }
 
 sharpen::FiberPtr sharpen::EventLoop::GetLocalFiber() noexcept

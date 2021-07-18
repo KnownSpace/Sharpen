@@ -11,6 +11,8 @@
 #endif
 
 #include <functional>
+#include <list>
+#include <mutex>
 
 namespace sharpen
 {
@@ -25,16 +27,19 @@ namespace sharpen
     struct CtrlHelper
     {
         using Handler = std::function<void()>;
+        using Handlers = std::list<Handler>;
 
-        static Handler onInterrupt_;
+        static Handlers onInterrupt_;
 
-        static Handler onQuite_;
+        static Handlers onQuite_;
 
 #ifdef SHARPEN_IS_WIN
         static BOOL CtrlHandler(DWORD ctrlType);
 #else
         static void CtrlHandler(int signalType);
 #endif
+
+        static std::once_flag flag_;
 
     };
     

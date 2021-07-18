@@ -19,28 +19,12 @@ sharpen::EventEngine::EventEngine(sharpen::Size workerCount)
     ,mainLoop_(nullptr)
 {
     assert(workerCount != 0);
-#ifdef SHARPEN_IS_WIN
-    //global selector
-    sharpen::SelectorPtr mainSelector = sharpen::MakeDefaultSelector();
-    auto mainTasks = std::make_shared<std::vector<std::function<void()>>>();
-    auto mainLock = std::make_shared<sharpen::SpinLock>();
-    this->mainLoop_.reset(new sharpen::EventLoop(mainSelector,mainTasks,mainLock));
-#else
     this->mainLoop_.reset(new sharpen::EventLoop(sharpen::MakeDefaultSelector()));
-#endif
     for (size_t i = 0,count = workerCount - 1; i < count; i++)
     {
-#ifdef SHARPEN_IS_WIN
-        auto tasks = std::make_shared<std::vector<std::function<void()>>>();
-        auto lock = std::make_shared<sharpen::SpinLock>();
-        auto selector = sharpen::MakeDefaultSelector();
-        std::unique_ptr<sharpen::EventLoopThread> thread(new sharpen::EventLoopThread(selector,tasks,lock));
-        this->workers_.push_back(std::move(thread));
-#else
         //one selector per thread
         std::unique_ptr<sharpen::EventLoopThread> thread(new sharpen::EventLoopThread(sharpen::MakeDefaultSelector()));
         this->workers_.push_back(std::move(thread));
-#endif
     }
 }
 
@@ -62,6 +46,23 @@ sharpen::EventLoop *sharpen::EventEngine::RoundRobinLoop() noexcept
     return this->mainLoop_.get();
 }
 
+sharpen::EventLoop *sharpen::EventEngine::FreeLoop() noexcept
+{
+    if (this->mainLoop_->IsWaiting())
+    {
+        return this->mainLoop_.get();
+    }
+    for (auto begin = this->workers_.begin();begin != this->workers_.end();++begin)
+    {
+        sharpen::EventLoop *loop = (*begin)->GetLoop();
+        if (loop->IsWaiting())
+        {
+            return loop;
+        }
+    }
+    return nullptr;
+}
+
 void sharpen::EventEngine::Stop() noexcept
 {
     for (auto begin = this->workers_.begin(),end = this->workers_.end();begin != end;++begin)
@@ -76,7 +77,11 @@ void sharpen::EventEngine::Schedule(sharpen::FiberPtr &&fiber)
 {
     using FnPtr = void(*)(sharpen::FiberPtr);
     auto &&fn = std::bind(reinterpret_cast<FnPtr>(&sharpen::EventEngine::ProcessFiber),std::move(fiber));
-    sharpen::EventLoop *loop = this->RoundRobinLoop();
+    sharpen::EventLoop *loop = this->FreeLoop();
+    if (!loop)
+    {
+        loop = this->RoundRobinLoop();
+    }
     loop->RunInLoopSoon(std::move(fn));
 }
 

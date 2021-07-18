@@ -81,9 +81,13 @@ void sharpen::WinNetStreamChannel::WriteAsync(const sharpen::Char *buf,sharpen::
     }
 }
         
-void sharpen::WinNetStreamChannel::WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Future<sharpen::Size> &future) 
+void sharpen::WinNetStreamChannel::WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Future<sharpen::Size> &future) 
 {
-    this->WriteAsync(buf.Data(),buf.GetSize(),future);
+    if (buf.GetSize() < bufferOffset)
+    {
+        throw std::length_error("buffer size is wrong");
+    }
+    this->WriteAsync(buf.Data() + bufferOffset,buf.GetSize() - bufferOffset,future);
 }
 
 void sharpen::WinNetStreamChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future) 
@@ -122,9 +126,13 @@ void sharpen::WinNetStreamChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bu
     }
 }
 
-void sharpen::WinNetStreamChannel::ReadAsync(sharpen::ByteBuffer &buf,sharpen::Future<sharpen::Size> &future) 
+void sharpen::WinNetStreamChannel::ReadAsync(sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Future<sharpen::Size> &future) 
 {
-    this->ReadAsync(buf.Data(),buf.GetSize(),future);
+    if (buf.GetSize() < bufferOffset)
+    {
+        throw std::length_error("buffer size is wrong");
+    }
+    this->ReadAsync(buf.Data() + bufferOffset,buf.GetSize() - bufferOffset,future);
 }
 
 void sharpen::WinNetStreamChannel::OnEvent(sharpen::IoEvent *event)

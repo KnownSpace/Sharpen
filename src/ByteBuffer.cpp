@@ -112,17 +112,14 @@ void sharpen::ByteBuffer::Reserve(sharpen::Size size)
     this->vector_.reserve(size);
 }
 
-void sharpen::ByteBuffer::Expand(sharpen::Size size)
+void sharpen::ByteBuffer::Extend(sharpen::Size size,sharpen::Char defaultValue)
 {
-    this->Reserve(size + this->GetSize());
+    this->vector_.resize(this->GetSize() + size,defaultValue);
 }
 
 void sharpen::ByteBuffer::Extend(sharpen::Size size)
 {
-    for (size_t i = 0; i < size; i++)
-    {
-        this->vector_.push_back(static_cast<sharpen::Char>(0));
-    }
+    this->Extend(size,0);
 }
 
 void sharpen::ByteBuffer::Reset(sharpen::Size size)
@@ -181,4 +178,62 @@ sharpen::Size sharpen::ByteBuffer::Remaining() const
 sharpen::Size sharpen::ByteBuffer::GetMark() const
 {
     return mark_;
+}
+
+sharpen::ByteBuffer::Iterator sharpen::ByteBuffer::Find(char e)
+{
+    for (auto begin = this->Begin(); begin != this->End(); begin++)
+    {
+        if (*begin == e)
+        {
+            return begin;
+        }
+    }
+    return this->End();
+}
+
+sharpen::ByteBuffer::ConstIterator sharpen::ByteBuffer::Find(char e) const
+{
+    for (auto begin = this->Begin(); begin != this->End(); begin++)
+    {
+        if (*begin == e)
+        {
+            return begin;
+        }
+    }
+    return this->End();
+}
+
+sharpen::ByteBuffer::ReverseIterator sharpen::ByteBuffer::ReverseFind(char e)
+{
+    for (auto begin = this->ReverseBegin(); begin != this->ReverseEnd(); begin++)
+    {
+        if (*begin == e)
+        {
+            return begin;
+        }
+    }
+    return this->ReverseEnd();
+}
+
+sharpen::ByteBuffer::ConstReverseIterator sharpen::ByteBuffer::ReverseFind(char e) const
+{
+    for (auto begin = this->ReverseBegin(); begin != this->ReverseEnd(); begin++)
+    {
+        if (*begin == e)
+        {
+            return begin;
+        }
+    }
+    return this->ReverseEnd();
+}
+
+void sharpen::ByteBuffer::Erase(ConstIterator where)
+{
+    this->vector_.erase(where);
+}
+
+void sharpen::ByteBuffer::Erase(ConstIterator begin,ConstIterator end)
+{
+    this->vector_.erase(begin,end);
 }

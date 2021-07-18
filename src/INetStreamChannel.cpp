@@ -9,6 +9,7 @@
 #include <netinet/tcp.h>
 #include <netinet/in.h>
 #include <sys/fcntl.h>
+#include <signal.h>
 #endif
 
 #ifdef SHARPEN_IS_WIN
@@ -37,15 +38,11 @@ sharpen::NetStreamChannelPtr sharpen::MakeTcpStreamChannel(sharpen::AddressFamil
     channel = std::make_shared<sharpen::WinNetStreamChannel>(reinterpret_cast<sharpen::FileHandle>(s),afValue);
     return std::move(channel);
 #else
-    sharpen::FileHandle s = ::socket(afValue,SOCK_STREAM,IPPROTO_TCP);
+    sharpen::FileHandle s = ::socket(afValue,SOCK_STREAM | SOCK_CLOEXEC | SOCK_NONBLOCK,IPPROTO_TCP);
     if (s == -1)
     {
         sharpen::ThrowLastError();
     }
-    int flag;
-    flag = ::fcntl(s,F_GETFL,0);
-    flag |= O_NONBLOCK;
-    ::fcntl(s,F_SETFL,flag);
     channel = std::make_shared<sharpen::PosixNetStreamChannel>(s);
     return std::move(channel);
 #endif
@@ -61,6 +58,10 @@ void sharpen::StartupNetSupport()
     {
         sharpen::ThrowLastError();
     }
+#else
+    struct sigaction sa;
+    sa.sa_handler = SIG_IGN;
+    sigaction(SIGPIPE,&sa,0);
 #endif
 }
 
@@ -68,6 +69,10 @@ void sharpen::CleanupNetSupport()
 {
 #ifdef SHARPEN_HAS_WINSOCKET
     WSACleanup();
+#else
+    struct sigaction sa;
+    sa.sa_handler = SIG_DFL;
+    sigaction(SIGPIPE,&sa,0);
 #endif
 }
 

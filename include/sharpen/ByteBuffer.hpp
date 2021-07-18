@@ -3,6 +3,8 @@
 #define _SHARPEN_BYTEBUFFER_HPP
 
 #include <vector>
+#include <algorithm>
+#include <type_traits>
 
 #include "Noncopyable.hpp"
 #include "TypeDef.hpp"
@@ -14,14 +16,7 @@ namespace sharpen
         using Vector = std::vector<sharpen::Char>;
 
         using Self = ByteBuffer;
-
-        using Iterator = typename Vector::iterator;
-
-        using ConstIterator = typename Vector::const_iterator;
-
-        using ReverseIterator = typename Vector::reverse_iterator;
-
-        using ConstReverseIterator = typename Vector::const_reverse_iterator;
+        
     protected:
         Vector vector_;
 
@@ -31,6 +26,14 @@ namespace sharpen
         void CheckAndMoveMark();
 
     public:
+        using Iterator = typename Vector::iterator;
+
+        using ConstIterator = typename Vector::const_iterator;
+
+        using ReverseIterator = typename Vector::reverse_iterator;
+
+        using ConstReverseIterator = typename Vector::const_reverse_iterator;
+
         ByteBuffer();
 
         explicit ByteBuffer(sharpen::Size size);
@@ -87,11 +90,11 @@ namespace sharpen
 
         void Reserve(sharpen::Size size);
 
-        void Expand(sharpen::Size size);
-
         void Reset(sharpen::Size size);
 
         void Extend(sharpen::Size size);
+
+        void Extend(sharpen::Size size,sharpen::Char defaultValue);
 
         void Shrink();
 
@@ -99,9 +102,23 @@ namespace sharpen
 
         void Append(const Self &other);
 
+        template<typename _Iterator,typename _Checker = decltype(std::declval<Self>().PushBack(*std::declval<_Iterator>()))>
+        void Append(_Iterator begin,_Iterator end)
+        {
+            while (begin != end)
+            {
+                this->vector_.push_back(*begin);
+                ++begin;
+            }
+        }
+
         void Erase(sharpen::Size pos);
 
         void Erase(sharpen::Size begin,sharpen::Size end);
+
+        void Erase(ConstIterator where);
+
+        void Erase(ConstIterator begin,ConstIterator end);
 
         void Mark(sharpen::Size pos);
 
@@ -149,17 +166,26 @@ namespace sharpen
             return this->vector_.crend();
         }
 
-        inline Vector &GetContainer()
+        ConstIterator Find(sharpen::Char e) const;
+
+        Iterator Find(sharpen::Char e);
+
+        ReverseIterator ReverseFind(sharpen::Char e);
+
+        ConstReverseIterator ReverseFind(sharpen::Char e) const;
+
+        template<typename _Iterator,typename _Check = decltype(std::declval<Self>().Get(0) == *std::declval<_Iterator>())>
+        Iterator Search(const _Iterator begin,const _Iterator end)
         {
-            return this->vector_;
+            return std::search(this->Begin(),this->End(),begin,end);
         }
 
-        inline const Vector &GetContainer() const
+        template<typename _Iterator,typename _Check = decltype(std::declval<Self>().Get(0) == *std::declval<_Iterator>())>
+        ConstIterator Search(const _Iterator begin,const _Iterator end) const
         {
-            return this->vector_;
+            return std::search(this->Begin(),this->End(),begin,end);
         }
     };
-    
 } 
 
 #endif

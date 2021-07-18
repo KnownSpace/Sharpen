@@ -40,11 +40,6 @@ namespace sharpen
         bool writeable_;
         bool readable_;
         IoStatus status_;
-        Lock acceptLock_;
-        sharpen::Uint16 acceptCount_;
-        Lock connectLock_;
-        sharpen::ErrorCode connectErr_;
-        bool connectCompleted_;
         //operator
         sharpen::PosixIoReader reader_;
         sharpen::PosixIoWriter writer_;
@@ -72,6 +67,10 @@ namespace sharpen
 
         void TryWrite(const char *buf,sharpen::Size bufSize,Callback cb);
 
+        void TryAccept(AcceptCallback cb);
+
+        void TryConnect(const sharpen::IEndPoint &endPoint,ConnectCallback cb);
+
         void RequestRead(char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future);
 
         void RequestWrite(const char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future);
@@ -98,11 +97,11 @@ namespace sharpen
 
         virtual void WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future) override;
         
-        virtual void WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Future<sharpen::Size> &future) override;
+        virtual void WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Future<sharpen::Size> &future) override;
 
         virtual void ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future) override;
         
-        virtual void ReadAsync(sharpen::ByteBuffer &buf,sharpen::Future<sharpen::Size> &future) override;
+        virtual void ReadAsync(sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Future<sharpen::Size> &future) override;
 
         virtual void OnEvent(sharpen::IoEvent *event) override;
 

@@ -9,44 +9,57 @@
 #include <algorithm>
 #include <sharpen/CtrlHandler.hpp>
 #include <cinttypes>
-
-#define TEST_COUNT 10000 * 100
+#include <cstring>
+#include <sharpen/HttpRequest.hpp>
+#include <sharpen/HttpResponse.hpp>
+#include <sharpen/HttpParser.hpp>
 
 void HandleClient(sharpen::NetStreamChannelPtr client)
 {
     bool keepalive = true;
-    sharpen::ByteBuffer buf(4096);
-    std::string keepaliveStr("keep-alive");
-    static std::atomic_uint count{0};
+    sharpen::ByteBuffer recvBuf(4096);
+    sharpen::ByteBuffer sendBuf;
+    sharpen::HttpRequest req;
+    sharpen::HttpParser parser(sharpen::HttpParser::ParserModel::Request);
+    req.ConfigParser(parser);
+    sharpen::HttpResponse res(sharpen::HttpVersion::Http1_1,sharpen::HttpStatusCode::OK);
+    res.Header()["Content-Length"] = "2";
+    res.Header()["Connection"] = "keep-alive";
+    res.Body().Push('O');
+    res.Body().Push('K');
+    res.CopyTo(sendBuf);
     while (keepalive)
     {
-        try
-        {
-            //std::printf("read %d\n",count + 1);
-            sharpen::Size size = client->ReadAsync(buf);
-            //std::printf("new request %zu\n",size);
-            if (size == 0)
+       try
+       {
+            while (!parser.IsCompleted())
+            {
+                sharpen::Size n = client->ReadAsync(recvBuf);
+                if (n == 0)
+                {
+                    return;
+                }
+                sharpen::Size np = parser.Parse(recvBuf.Data(),n);
+                if (np != n)
+                {
+                    return;
+                }
+            }
+            parser.SetCompleted(false);
+            if (!parser.ShouldKeepalive())
             {
                 keepalive = false;
-                break;
+                res.Header()["Connection"] = "close";
+                res.CopyTo(sendBuf);
             }
-            const char data[] = "HTTP/1.1 200\r\nConnection: keep-alive\r\nContent-Length: 2\r\n\r\nOK";
-            //std::printf("write %d\n",count + 1);
-            size = client->WriteAsync(data, sizeof(data) - 1);
-            //std::printf("response completed %zu \n",size);
-            // if (std::search(buf.Begin(), buf.End(), keepaliveStr.begin(), keepaliveStr.end()) == buf.End())
-            // {
-            //     keepalive = false;
-            // }
-        }
-        catch (const std::exception &e)
-        {
-            std::printf("handle client error %s\n",e.what());
-            keepalive = false;
-            break;
-        }
+            client->WriteAsync(sendBuf);
+       }
+       catch(const std::exception& e)
+       {
+           std::printf("handle client error: %s\n",e.what());
+           return;
+       }
     }
-    std::printf("client %u disconnected\n",count.fetch_add(1));
 }
 
 void WebTest()
@@ -63,16 +76,17 @@ void WebTest()
     server->Register(engine);
     sharpen::Launch([&server,&engine]()
     {
-        static std::atomic_uint count{0};
         while (true)
         {
             try
             {
                 sharpen::NetStreamChannelPtr client = server->AcceptAsync();
                 client->Register(engine);
-                //std::printf("new client connected\n");
                 sharpen::Launch(&HandleClient, client);
-                std::printf("connected %u\n",count.fetch_add(1));
+            }
+            catch(const std::system_error &e)
+            {
+                std::printf("accept error code %d msg %s",e.code().value(),e.what());
             }
             catch(const std::exception& e)
             {
@@ -87,7 +101,8 @@ void WebTest()
         sharpen::EventEngine::GetEngine().Stop();
         sharpen::CleanupNetSupport();
     });
-    char ip[21] = "";
+    char ip[21];
+    std::memset(ip,0,sizeof(ip));
     addr.GetAddrSring(ip,sizeof(ip));
     std::printf("now listen on %s:%d\n",ip,addr.GetPort());
     std::printf("use ctrl + c to stop\n");
@@ -117,6 +132,7 @@ void FileTest()
 
 int main(int argc, char const *argv[])
 {
+    std::printf("run in %u cores machine\n",std::thread::hardware_concurrency());
     WebTest();
     //FileTest();
     return 0;

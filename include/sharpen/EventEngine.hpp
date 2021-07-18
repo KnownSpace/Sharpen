@@ -50,6 +50,8 @@ namespace sharpen
 
         sharpen::EventLoop *RoundRobinLoop() noexcept;
 
+        sharpen::EventLoop *FreeLoop() noexcept;
+
         virtual void Schedule(sharpen::FiberPtr &&fiber) override;
 
         virtual bool IsProcesser() const override;

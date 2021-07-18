@@ -8,9 +8,14 @@ sharpen::Size sharpen::IAsyncReadable::ReadAsync(sharpen::Char *buf,sharpen::Siz
     return future.Await();
 }
 
-sharpen::Size sharpen::IAsyncReadable::ReadAsync(sharpen::ByteBuffer &buf)
+sharpen::Size sharpen::IAsyncReadable::ReadAsync(sharpen::ByteBuffer &buf,sharpen::Size bufferOffset)
 {
     sharpen::AwaitableFuture<sharpen::Size> future;
-    this->ReadAsync(buf,future);
+    this->ReadAsync(buf,bufferOffset,future);
     return future.Await();
+}
+
+sharpen::Size sharpen::IAsyncReadable::ReadAsync(sharpen::ByteBuffer &buf)
+{
+    return this->ReadAsync(buf,0);
 }

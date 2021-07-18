@@ -26,9 +26,11 @@ namespace sharpen
         
         virtual void ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future) = 0;
         
-        virtual void ReadAsync(sharpen::ByteBuffer &buf,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future) = 0;
+        virtual void ReadAsync(sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future) = 0;
 
         sharpen::Size ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset);
+
+        sharpen::Size ReadAsync(sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Uint64 offset);
 
         sharpen::Size ReadAsync(sharpen::ByteBuffer &buf,sharpen::Uint64 offset);
     };
