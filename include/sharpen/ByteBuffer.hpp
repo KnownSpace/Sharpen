@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <type_traits>
 
 #include "Noncopyable.hpp"
 #include "TypeDef.hpp"
@@ -101,6 +102,16 @@ namespace sharpen
 
         void Append(const Self &other);
 
+        template<typename _Iterator,typename _Checker = decltype(std::declval<Self>().PushBack(*std::declval<_Iterator>()))>
+        void Append(_Iterator begin,_Iterator end)
+        {
+            while (begin != end)
+            {
+                this->vector_.push_back(*begin);
+                ++begin;
+            }
+        }
+
         void Erase(sharpen::Size pos);
 
         void Erase(sharpen::Size begin,sharpen::Size end);
@@ -163,13 +174,13 @@ namespace sharpen
 
         ConstReverseIterator ReverseFind(sharpen::Char e) const;
 
-        template<typename _Iterator>
+        template<typename _Iterator,typename _Check = decltype(std::declval<Self>().Get(0) == *std::declval<_Iterator>())>
         Iterator Search(const _Iterator begin,const _Iterator end)
         {
             return std::search(this->Begin(),this->End(),begin,end);
         }
 
-        template<typename _Iterator>
+        template<typename _Iterator,typename _Check = decltype(std::declval<Self>().Get(0) == *std::declval<_Iterator>())>
         ConstIterator Search(const _Iterator begin,const _Iterator end) const
         {
             return std::search(this->Begin(),this->End(),begin,end);
