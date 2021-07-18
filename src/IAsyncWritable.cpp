@@ -17,5 +17,5 @@ sharpen::Size sharpen::IAsyncWritable::WriteAsync(const sharpen::ByteBuffer &buf
 
 sharpen::Size sharpen::IAsyncWritable::WriteAsync(const sharpen::ByteBuffer &buf)
 {
-    this->WriteAsync(buf,0);
+    return this->WriteAsync(buf,0);
 }

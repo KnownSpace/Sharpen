@@ -17,5 +17,5 @@ sharpen::Size sharpen::IAsyncReadable::ReadAsync(sharpen::ByteBuffer &buf,sharpe
 
 sharpen::Size sharpen::IAsyncReadable::ReadAsync(sharpen::ByteBuffer &buf)
 {
-    this->ReadAsync(buf,0);
+    return this->ReadAsync(buf,0);
 }
