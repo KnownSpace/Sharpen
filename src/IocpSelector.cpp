@@ -52,7 +52,7 @@ void sharpen::IocpSelector::Select(EventVector &events)
             sharpen::IocpOverlappedStruct *olStructPtr = CONTAINING_RECORD(e.lpOverlapped,sharpen::IocpOverlappedStruct,ol_);
             //check channel
             sharpen::ChannelPtr channel = olStructPtr->event_.GetChannel();
-            if (olStructPtr != nullptr && channel)
+            if (channel)
             {
                 sharpen::ErrorCode code = ERROR_SUCCESS;
                 //check error

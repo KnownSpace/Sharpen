@@ -57,6 +57,14 @@ namespace sharpen
         void SetKeepAlive(bool val);
 
         void SetReuseAddress(bool val);
+
+        virtual void WaitReadAsync(sharpen::Future<void> &future) = 0;
+
+        virtual void WaitWriteAsync(sharpen::Future<void> &future) = 0;
+
+        void WaitReadAsync();
+
+        void WaitWriteAsync();
     };
 
     enum class AddressFamily

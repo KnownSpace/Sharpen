@@ -31,6 +31,8 @@ namespace sharpen
 
         void HandleConnect(WSAOverlappedStruct &olStruct);
 
+        void HandlePoll(WSAOverlappedStruct &olStruct);
+
         int af_;
     public:
         explicit WinNetStreamChannel(sharpen::FileHandle handle,int af);
@@ -54,6 +56,10 @@ namespace sharpen
         virtual void AcceptAsync(sharpen::Future<sharpen::NetStreamChannelPtr> &future) override;
 
         virtual void ConnectAsync(const sharpen::IEndPoint &endpoint,sharpen::Future<void> &future) override;
+    
+        virtual void WaitReadAsync(sharpen::Future<void> &future) override;
+
+        virtual void WaitWriteAsync(sharpen::Future<void> &future) override;
     };
 };
 

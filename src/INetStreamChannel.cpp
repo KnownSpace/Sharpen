@@ -191,3 +191,17 @@ void sharpen::INetStreamChannel::SetReuseAddress(bool val)
 	::setsockopt(this->handle_, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 #endif
 }
+
+void sharpen::INetStreamChannel::WaitReadAsync()
+{
+    sharpen::AwaitableFuture<void> future;
+    this->WaitReadAsync(future);
+    future.Await();
+}
+
+void sharpen::INetStreamChannel::WaitWriteAsync()
+{
+    sharpen::AwaitableFuture<void> future;
+    this->WaitWriteAsync(future);
+    future.Await();
+}

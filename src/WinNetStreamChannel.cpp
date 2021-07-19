@@ -141,20 +141,25 @@ void sharpen::WinNetStreamChannel::OnEvent(sharpen::IoEvent *event)
      sharpen::IoEvent::EventType ev = olStruct->event_.GetEventType();
      if (ev & sharpen::IoEvent::EventTypeEnum::Accept)
      {
-         HandleAccept(*olStruct);
+         this->HandleAccept(*olStruct);
      }
      else if (ev & (sharpen::IoEvent::EventTypeEnum::Read | sharpen::IoEvent::EventTypeEnum::Write))
      {
-         HandleReadAndWrite(*olStruct);
+         this->HandleReadAndWrite(*olStruct);
      }
      else if (ev & sharpen::IoEvent::EventTypeEnum::Connect)
      {
-         HandleConnect(*olStruct);
+         this->HandleConnect(*olStruct);
      }
      else if (ev & sharpen::IoEvent::EventTypeEnum::Sendfile)
      {
-         HandleSendFile(*olStruct);
+         this->HandleSendFile(*olStruct);
      }
+     else if (ev & sharpen::IoEvent::EventTypeEnum::Poll)
+     {
+         this->HandlePoll(*olStruct);
+     }
+     
 }
 
 void sharpen::WinNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,sharpen::Uint64 size,sharpen::Uint64 offset,sharpen::Future<void> &future)
@@ -308,6 +313,81 @@ void sharpen::WinNetStreamChannel::ConnectAsync(const sharpen::IEndPoint &endpoi
     }
 }
 
+void sharpen::WinNetStreamChannel::WaitReadAsync(sharpen::Future<void> &future)
+{
+    if (!this->IsRegistered())
+    {
+        throw std::logic_error("should register to a loop first");
+    }
+    WSAOverlappedStruct *olStruct = new WSAOverlappedStruct();
+    if (!olStruct)
+    {
+        future.Fail(std::make_exception_ptr(std::bad_alloc()));
+        return;
+    }
+    //init iocp olStruct
+    this->InitOverlappedStruct(*olStruct);
+    olStruct->event_.SetData(olStruct);
+    olStruct->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Poll);
+    //record future
+    olStruct->data_ = &future;
+    //set buf
+    olStruct->buf_.buf = nullptr;
+    olStruct->buf_.len = 0;
+    //request
+    static DWORD recvFlag = 0;
+    //use WSARecv
+    //with buf = nullptr & len = 0
+    BOOL r = ::WSARecv(reinterpret_cast<SOCKET>(this->handle_),&(olStruct->buf_),1,nullptr,&recvFlag,reinterpret_cast<LPWSAOVERLAPPED>(&(olStruct->ol_)),nullptr);
+    if (r != TRUE)
+    {
+        sharpen::ErrorCode err = sharpen::GetLastError();
+        if (err != ERROR_IO_PENDING&& err != ERROR_SUCCESS)
+        {
+            delete olStruct;
+            future.Fail(sharpen::MakeLastErrorPtr());
+            return;
+        }
+    }
+}
+
+void sharpen::WinNetStreamChannel::WaitWriteAsync(sharpen::Future<void> &future)
+{
+    if (!this->IsRegistered())
+    {
+        throw std::logic_error("should register to a loop first");
+    }
+    WSAOverlappedStruct *olStruct = new WSAOverlappedStruct();
+    if (!olStruct)
+    {
+        future.Fail(std::make_exception_ptr(std::bad_alloc()));
+        return;
+    }
+    //init iocp olStruct
+    this->InitOverlappedStruct(*olStruct);
+    olStruct->event_.SetData(olStruct);
+    olStruct->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Poll);
+    //record future
+    olStruct->data_ = &future;
+    //set buf
+    olStruct->buf_.buf = nullptr;
+    olStruct->buf_.len = 0;
+    //request
+    //use WSASend
+    //with buf = nullptr & len = 0
+    BOOL r = ::WSASend(reinterpret_cast<SOCKET>(this->handle_),&(olStruct->buf_),1,nullptr,0,reinterpret_cast<LPWSAOVERLAPPED>(&(olStruct->ol_)),nullptr);
+    if (r != TRUE)
+    {
+        sharpen::ErrorCode err = sharpen::GetLastError();
+        if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
+        {
+            delete olStruct;
+            future.Fail(sharpen::MakeLastErrorPtr());
+            return;
+        }
+    }
+}
+
 void sharpen::WinNetStreamChannel::HandleReadAndWrite(WSAOverlappedStruct &olStruct)
 {
     sharpen::Future<sharpen::Size> *future = reinterpret_cast<sharpen::Future<sharpen::Size>*>(olStruct.data_);
@@ -353,6 +433,17 @@ void sharpen::WinNetStreamChannel::HandleConnect(WSAOverlappedStruct &olStruct)
         return;
     }
     ::setsockopt(reinterpret_cast<SOCKET>(this->handle_),SOL_SOCKET,SO_UPDATE_CONNECT_CONTEXT,nullptr,0);
+    future->Complete();
+}
+
+void sharpen::WinNetStreamChannel::HandlePoll(WSAOverlappedStruct &olStruct)
+{
+    sharpen::Future<void> *future = reinterpret_cast<sharpen::Future<void>*>(olStruct.data_);
+    if (olStruct.event_.IsErrorEvent())
+    {
+        future->Fail(sharpen::MakeSystemErrorPtr(olStruct.event_.GetErrorCode()));
+        return;
+    }
     future->Complete();
 }
 

@@ -81,6 +81,10 @@ namespace sharpen
 
         void RequestAccept(sharpen::Future<sharpen::NetStreamChannelPtr> *future);
 
+        void RequestPollRead(sharpen::Future<void> *future);
+
+        void RequestPollWrite(sharpen::Future<void> *future);
+
         static void CompleteConnectCallback(sharpen::Future<void> *future) noexcept;
 
         static void CompleteIoCallback(sharpen::Future<sharpen::Size> *future,ssize_t size) noexcept;
@@ -88,6 +92,8 @@ namespace sharpen
         static void CompleteSendFileCallback(sharpen::Future<void> *future,void *mem,sharpen::Size memLen,ssize_t) noexcept;
 
         static void CompleteAcceptCallback(sharpen::Future<sharpen::NetStreamChannelPtr> *future,sharpen::FileHandle accept) noexcept;
+
+        static void CompletePollCallback(sharpen::Future<void> *future,ssize_t size) noexcept;
 
     public:
 
@@ -114,6 +120,10 @@ namespace sharpen
         virtual void ConnectAsync(const sharpen::IEndPoint &endpoint,sharpen::Future<void> &future) override;
 
         virtual void Listen(sharpen::Uint16 queueLength) override;
+
+        virtual void WaitReadAsync(sharpen::Future<void> &future) override;
+
+        virtual void WaitWriteAsync(sharpen::Future<void> &future) override;
     };
 };
 

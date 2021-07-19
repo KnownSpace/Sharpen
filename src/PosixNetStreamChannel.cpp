@@ -216,6 +216,20 @@ void sharpen::PosixNetStreamChannel::RequestAccept(sharpen::Future<sharpen::NetS
     this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::TryAccept,this,std::move(cb)));
 }
 
+void sharpen::PosixNetStreamChannel::RequestPollRead(sharpen::Future<void> *future)
+{
+    using FnPtr = void(*)(sharpen::Future<void> *,ssize_t);
+    Callback cb = std::bind(reinterpret_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompletePollCallback),future,std::placeholders::_1);
+    this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::TryRead,this,nullptr,0,std::move(cb)));
+}
+
+void sharpen::PosixNetStreamChannel::RequestPollWrite(sharpen::Future<void> *future)
+{
+    using FnPtr = void(*)(sharpen::Future<void> *,ssize_t);
+    Callback cb = std::bind(reinterpret_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompletePollCallback),future,std::placeholders::_1);
+    this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::TryWrite,this,nullptr,0,std::move(cb)));
+}
+
 void sharpen::PosixNetStreamChannel::CompleteConnectCallback(sharpen::Future<void> *future) noexcept
 {
     if (sharpen::GetLastError() != 0)
@@ -235,6 +249,16 @@ void sharpen::PosixNetStreamChannel::CompleteIoCallback(sharpen::Future<sharpen:
         return;
     }
     future->Complete(size);
+}
+
+void sharpen::PosixNetStreamChannel::CompletePollCallback(sharpen::Future<void> *future,ssize_t size) noexcept
+{
+    if (size == -1)
+    {
+        future->Fail(sharpen::MakeLastErrorPtr());
+        return;
+    }
+    future->Complete();
 }
 
 void sharpen::PosixNetStreamChannel::CompleteSendFileCallback(sharpen::Future<void> *future,void *mem,sharpen::Size memLen,ssize_t size) noexcept
@@ -337,6 +361,24 @@ void sharpen::PosixNetStreamChannel::ConnectAsync(const sharpen::IEndPoint &endp
         throw std::logic_error("should register to a loop first");
     }
     this->RequestConnect(endpoint,&future);
+}
+
+void sharpen::PosixNetStreamChannel::WaitReadAsync(sharpen::Future<void> &future)
+{
+    if (!this->IsRegistered())
+    {
+        throw std::logic_error("should register to a loop first");
+    }
+    this->RequestPollRead(&future);
+}
+
+void sharpen::PosixNetStreamChannel::WaitWriteAsync(sharpen::Future<void> &future)
+{
+    if (!this->IsRegistered())
+    {
+        throw std::logic_error("should register to a loop first");
+    }
+    this->RequestPollWrite(&future);
 }
 
 void sharpen::PosixNetStreamChannel::Listen(sharpen::Uint16 queueLength)

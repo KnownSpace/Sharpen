@@ -40,7 +40,9 @@ namespace sharpen
                 //connect
                 Connect = 128,
                 //send file
-                Sendfile = 256
+                Sendfile = 256,
+                //poll
+                Poll = 512
             };
         };
         
