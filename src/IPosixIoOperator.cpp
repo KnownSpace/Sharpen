@@ -126,4 +126,16 @@ bool sharpen::IPosixIoOperator::IsBlockingError(sharpen::ErrorCode err)
     return err == EWOULDBLOCK;
 #endif
 }
+
+sharpen::Size sharpen::IPosixIoOperator::ComputePendingSize() const
+{
+    sharpen::Size size{0};
+    const IoBuffer *buf = this->GetFirstBuffer();
+    for (size_t i = 0,count = this->GetRemainingSize(); i < count; i++)
+    {
+        size += buf->iov_len;
+    }
+    return size;
+}
+
 #endif

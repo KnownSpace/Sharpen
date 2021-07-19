@@ -49,6 +49,8 @@ namespace sharpen
 
         sharpen::Size GetRemainingSize() const;
 
+        sharpen::Size ComputePendingSize() const;
+
         virtual void DoExecute(sharpen::FileHandle handle,bool &executed,bool &blocking) = 0;
     private:
         

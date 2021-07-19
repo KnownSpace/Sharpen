@@ -57,6 +57,17 @@ void sharpen::PosixIoReader::DoExecute(sharpen::FileHandle handle,bool &executed
         this->MoveMark(size);
         return;
     }
+    sharpen::Size pending = this->ComputePendingSize();
+    if (bytes == pending)
+    {
+        for (size_t i = 0; i < size; i++)
+        {
+            cbs[i](bufs[i].iov_len);
+        }
+        size += this->GetMark();
+        this->MoveMark(size);
+        return;
+    }
     //check completed buffer number
     sharpen::Size completed;
     sharpen::Size lastSize;
