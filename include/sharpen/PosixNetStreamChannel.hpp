@@ -12,7 +12,7 @@
 #include "PosixIoReader.hpp"
 #include "PosixIoWriter.hpp"
 
-#include <list>
+#include <vector>
 #include <sys/uio.h>
 #include <atomic>
 
@@ -28,6 +28,7 @@ namespace sharpen
         using ConnectCallback = std::function<void()>;
         using StatusBit = std::atomic_bool;
         using Callback = std::function<void(ssize_t)>;
+        using Callbacks = std::vector<Callback>;
 
         enum class IoStatus
         {
@@ -46,12 +47,18 @@ namespace sharpen
         //callback
         AcceptCallback acceptCb_;
         ConnectCallback connectCb_;
+        Callbacks pollReadCbs_;
+        Callbacks pollWriteCbs_;
 
         sharpen::FileHandle DoAccept();
 
         void DoRead();
 
         void DoWrite();
+
+        void DoPollRead();
+
+        void DoPollWrite();
 
         void HandleRead();
 
@@ -70,6 +77,10 @@ namespace sharpen
         void TryAccept(AcceptCallback cb);
 
         void TryConnect(const sharpen::IEndPoint &endPoint,ConnectCallback cb);
+
+        void TryPollRead(Callback cb);
+
+        void TryPollWrite(Callback cb);
 
         void RequestRead(char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future);
 

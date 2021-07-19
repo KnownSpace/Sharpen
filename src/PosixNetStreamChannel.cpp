@@ -17,6 +17,8 @@ sharpen::PosixNetStreamChannel::PosixNetStreamChannel(sharpen::FileHandle handle
     ,writer_(ECONNABORTED)
     ,acceptCb_()
     ,connectCb_()
+    ,pollReadCbs_()
+    ,pollWriteCbs_()
 {
     this->handle_ = handle;
 }
@@ -44,6 +46,40 @@ void sharpen::PosixNetStreamChannel::DoWrite()
     this->writeable_ = !executed | !blocking;
 }
 
+void sharpen::PosixNetStreamChannel::DoPollRead()
+{
+    if(this->pollReadCbs_.empty())
+    {
+        return;
+    }
+    iovec io;
+    io.iov_base = nullptr;
+    io.iov_len = 0;
+    ssize_t size = ::readv(this->handle_,&io,1);
+    for (auto begin = this->pollReadCbs_.begin();begin != this->pollReadCbs_.end();++begin)
+    {
+        (*begin)(size);
+    }
+    this->pollReadCbs_.clear();
+}
+
+void sharpen::PosixNetStreamChannel::DoPollWrite()
+{
+    if(this->pollWriteCbs_.empty())
+    {
+        return;
+    }
+    iovec io;
+    io.iov_base = nullptr;
+    io.iov_len = 0;
+    ssize_t size = ::writev(this->handle_,&io,1);
+    for (auto begin = this->pollWriteCbs_.begin();begin != this->pollWriteCbs_.end();++begin)
+    {
+        (*begin)(size);
+    }
+    this->pollWriteCbs_.clear();
+}
+
 void sharpen::PosixNetStreamChannel::HandleAccept()
 {
     AcceptCallback cb;
@@ -64,6 +100,7 @@ void sharpen::PosixNetStreamChannel::HandleRead()
         this->HandleAccept();
         return;
     }
+    this->DoPollRead();
     this->DoRead();
 }
 
@@ -91,6 +128,7 @@ void sharpen::PosixNetStreamChannel::HandleWrite()
             return;
         }
     }
+    this->DoPollWrite();
     this->DoWrite();
 }
 
@@ -111,6 +149,24 @@ void sharpen::PosixNetStreamChannel::TryWrite(const char *buf,sharpen::Size bufS
     {
         this->writeable_ = false;
         this->DoWrite();
+    }
+}
+
+void sharpen::PosixNetStreamChannel::TryPollRead(Callback cb)
+{
+    this->pollReadCbs_.push_back(std::move(cb));
+    if (this->readable_)
+    {
+        this->DoPollRead();
+    }
+}
+
+void sharpen::PosixNetStreamChannel::TryPollWrite(Callback cb)
+{
+    this->pollWriteCbs_.push_back(std::move(cb));
+    if(this->writeable_)
+    {
+        this->DoPollWrite();
     }
 }
 
@@ -220,14 +276,14 @@ void sharpen::PosixNetStreamChannel::RequestPollRead(sharpen::Future<void> *futu
 {
     using FnPtr = void(*)(sharpen::Future<void> *,ssize_t);
     Callback cb = std::bind(reinterpret_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompletePollCallback),future,std::placeholders::_1);
-    this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::TryRead,this,nullptr,0,std::move(cb)));
+    this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::TryPollRead,this,std::move(cb)));
 }
 
 void sharpen::PosixNetStreamChannel::RequestPollWrite(sharpen::Future<void> *future)
 {
     using FnPtr = void(*)(sharpen::Future<void> *,ssize_t);
     Callback cb = std::bind(reinterpret_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompletePollCallback),future,std::placeholders::_1);
-    this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::TryWrite,this,nullptr,0,std::move(cb)));
+    this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::TryPollWrite,this,std::move(cb)));
 }
 
 void sharpen::PosixNetStreamChannel::CompleteConnectCallback(sharpen::Future<void> *future) noexcept
