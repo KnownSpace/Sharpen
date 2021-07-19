@@ -57,9 +57,9 @@ namespace sharpen
 
         virtual void ConnectAsync(const sharpen::IEndPoint &endpoint,sharpen::Future<void> &future) override;
     
-        virtual void WaitReadAsync(sharpen::Future<void> &future) override;
+        virtual void PollReadAsync(sharpen::Future<void> &future) override;
 
-        virtual void WaitWriteAsync(sharpen::Future<void> &future) override;
+        virtual void PollWriteAsync(sharpen::Future<void> &future) override;
     };
 };
 

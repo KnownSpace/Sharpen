@@ -192,16 +192,16 @@ void sharpen::INetStreamChannel::SetReuseAddress(bool val)
 #endif
 }
 
-void sharpen::INetStreamChannel::WaitReadAsync()
+void sharpen::INetStreamChannel::PollReadAsync()
 {
     sharpen::AwaitableFuture<void> future;
-    this->WaitReadAsync(future);
+    this->PollReadAsync(future);
     future.Await();
 }
 
-void sharpen::INetStreamChannel::WaitWriteAsync()
+void sharpen::INetStreamChannel::PollWriteAsync()
 {
     sharpen::AwaitableFuture<void> future;
-    this->WaitWriteAsync(future);
+    this->PollWriteAsync(future);
     future.Await();
 }

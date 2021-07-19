@@ -313,7 +313,7 @@ void sharpen::WinNetStreamChannel::ConnectAsync(const sharpen::IEndPoint &endpoi
     }
 }
 
-void sharpen::WinNetStreamChannel::WaitReadAsync(sharpen::Future<void> &future)
+void sharpen::WinNetStreamChannel::PollReadAsync(sharpen::Future<void> &future)
 {
     if (!this->IsRegistered())
     {
@@ -351,7 +351,7 @@ void sharpen::WinNetStreamChannel::WaitReadAsync(sharpen::Future<void> &future)
     }
 }
 
-void sharpen::WinNetStreamChannel::WaitWriteAsync(sharpen::Future<void> &future)
+void sharpen::WinNetStreamChannel::PollWriteAsync(sharpen::Future<void> &future)
 {
     if (!this->IsRegistered())
     {

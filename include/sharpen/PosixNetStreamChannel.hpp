@@ -132,9 +132,9 @@ namespace sharpen
 
         virtual void Listen(sharpen::Uint16 queueLength) override;
 
-        virtual void WaitReadAsync(sharpen::Future<void> &future) override;
+        virtual void PollReadAsync(sharpen::Future<void> &future) override;
 
-        virtual void WaitWriteAsync(sharpen::Future<void> &future) override;
+        virtual void PollWriteAsync(sharpen::Future<void> &future) override;
     };
 };
 

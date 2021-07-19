@@ -419,7 +419,7 @@ void sharpen::PosixNetStreamChannel::ConnectAsync(const sharpen::IEndPoint &endp
     this->RequestConnect(endpoint,&future);
 }
 
-void sharpen::PosixNetStreamChannel::WaitReadAsync(sharpen::Future<void> &future)
+void sharpen::PosixNetStreamChannel::PollReadAsync(sharpen::Future<void> &future)
 {
     if (!this->IsRegistered())
     {
@@ -428,7 +428,7 @@ void sharpen::PosixNetStreamChannel::WaitReadAsync(sharpen::Future<void> &future
     this->RequestPollRead(&future);
 }
 
-void sharpen::PosixNetStreamChannel::WaitWriteAsync(sharpen::Future<void> &future)
+void sharpen::PosixNetStreamChannel::PollWriteAsync(sharpen::Future<void> &future)
 {
     if (!this->IsRegistered())
     {

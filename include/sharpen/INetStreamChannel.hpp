@@ -58,13 +58,13 @@ namespace sharpen
 
         void SetReuseAddress(bool val);
 
-        virtual void WaitReadAsync(sharpen::Future<void> &future) = 0;
+        virtual void PollReadAsync(sharpen::Future<void> &future) = 0;
 
-        virtual void WaitWriteAsync(sharpen::Future<void> &future) = 0;
+        virtual void PollWriteAsync(sharpen::Future<void> &future) = 0;
 
-        void WaitReadAsync();
+        void PollReadAsync();
 
-        void WaitWriteAsync();
+        void PollWriteAsync();
     };
 
     enum class AddressFamily
