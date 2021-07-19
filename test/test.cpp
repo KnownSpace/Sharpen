@@ -81,7 +81,6 @@ void WebTest()
         {
             try
             {
-                std::printf("wait connection\n");
                 sharpen::NetStreamChannelPtr client = server->AcceptAsync();
                 client->Register(engine);
                 sharpen::Launch(&HandleClient, client);
