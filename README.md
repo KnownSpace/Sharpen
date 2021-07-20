@@ -13,7 +13,7 @@ ____  _
 |____/|_| |_|\__,_|_|  | .__/ \___|_| |_|
                        |_|
 
-Sharpen is a low-performance C++ network library
+Sharpen is a multithreaded C++ network library
 ```
 #### Requires:
   - Windows version >= 7 or Linux kernel version >= 2.6.28
@@ -32,4 +32,4 @@ Sharpen is a low-performance C++ network library
   - Sharpen use MIT Lincense
   - Thrid party have their own lincense
   - Boost.Context use BOOST Lincense
-  - http_parser use MIT Lincense
+  - llhttp use MIT Lincense
