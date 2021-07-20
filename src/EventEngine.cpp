@@ -20,10 +20,12 @@ sharpen::EventEngine::EventEngine(sharpen::Size workerCount)
 {
     assert(workerCount != 0);
     this->mainLoop_.reset(new sharpen::EventLoop(sharpen::MakeDefaultSelector()));
+    this->loops_.push_back(this->mainLoop_.get());
     for (size_t i = 0,count = workerCount - 1; i < count; i++)
     {
         //one selector per thread
         std::unique_ptr<sharpen::EventLoopThread> thread(new sharpen::EventLoopThread(sharpen::MakeDefaultSelector()));
+        this->loops_.push_back(thread->GetLoop());
         this->workers_.push_back(std::move(thread));
     }
 }
@@ -35,15 +37,8 @@ sharpen::EventEngine::~EventEngine() noexcept
 
 sharpen::EventLoop *sharpen::EventEngine::RoundRobinLoop() noexcept
 {
-    sharpen::Size pos = this->pos_;
-    sharpen::Size size = this->workers_.size() + 1;
-    this->pos_++;
-    pos %= size;
-    if (pos)
-    {
-        return this->workers_[pos - 1]->GetLoop();
-    }
-    return this->mainLoop_.get();
+    sharpen::Size pos = this->pos_++;
+    return this->loops_[pos % this->loops_.size()];
 }
 
 void sharpen::EventEngine::Stop() noexcept

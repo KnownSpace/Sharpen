@@ -26,6 +26,7 @@ namespace sharpen
         Workers workers_;
         sharpen::Size pos_;
         std::unique_ptr<sharpen::EventLoop> mainLoop_;
+        std::vector<sharpen::EventLoop*> loops_;
 
         static thread_local SwitchCallback switchCb_;
 

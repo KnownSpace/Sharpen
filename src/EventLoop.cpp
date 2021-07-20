@@ -9,11 +9,14 @@ thread_local sharpen::FiberPtr sharpen::EventLoop::localFiber_;
 sharpen::EventLoop::EventLoop(SelectorPtr selector)
     :selector_(selector)
     ,tasks_()
+    ,pendingTasks_()
     ,exectingTask_(false)
-    ,lock_(std::make_shared<Lock>())
+    ,lock_()
     ,running_(false)
 {
     assert(selector != nullptr);
+    this->pendingTasks_.reserve(32);
+    this->tasks_.reserve(32);
 }
 
 sharpen::EventLoop::~EventLoop() noexcept
@@ -48,7 +51,7 @@ void sharpen::EventLoop::RunInLoopSoon(Task task)
 {
     bool execting(true);
     {
-        std::unique_lock<Lock> lock(*this->lock_);
+        std::unique_lock<Lock> lock(this->lock_);
         this->pendingTasks_.push_back(std::move(task));
         std::swap(execting,this->exectingTask_);
     }
@@ -61,7 +64,7 @@ void sharpen::EventLoop::RunInLoopSoon(Task task)
 void sharpen::EventLoop::ExecuteTask()
 {
     {
-        std::unique_lock<Lock> lock(*this->lock_);
+        std::unique_lock<Lock> lock(this->lock_);
         this->exectingTask_ = false;
         if (!this->pendingTasks_.empty())
         {

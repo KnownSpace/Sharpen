@@ -24,7 +24,6 @@ namespace sharpen
         using Task = std::function<void()>;
         using Lock = sharpen::SpinLock;
         using TaskVector = std::vector<Task>;
-        using LockPtr = std::shared_ptr<Lock>;
         using SelectorPtr = std::shared_ptr<sharpen::ISelector>;
         using EventVector = std::vector<sharpen::IoEvent*>;
         using WeakChannelPtr = std::weak_ptr<sharpen::IChannel>;
@@ -33,7 +32,7 @@ namespace sharpen
         TaskVector tasks_;
         TaskVector pendingTasks_;
         bool exectingTask_;
-        LockPtr lock_;
+        Lock lock_;
         bool running_;
 
         //one loop per thread
