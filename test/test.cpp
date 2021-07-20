@@ -24,10 +24,12 @@ void HandleClient(sharpen::NetStreamChannelPtr client)
     sharpen::HttpParser parser(sharpen::HttpParser::ParserModel::Request);
     req.ConfigParser(parser);
     sharpen::HttpResponse res(sharpen::HttpVersion::Http1_1,sharpen::HttpStatusCode::OK);
-    res.Header()["Content-Length"] = "2";
     res.Header()["Connection"] = "keep-alive";
-    res.Body().Push('O');
-    res.Body().Push('K');
+    const char content[] = "hello, world!\n";
+    res.Header()["Content-Length"] = std::to_string(sizeof(content) - 1);
+    res.Header()["Content-Type"] = "text/plain";
+    res.Header()["Server"] = "IIS 6.0";
+    res.Body().CopyFrom(content,sizeof(content) - 1);
     res.CopyTo(sendBuf);
     while (keepalive)
     {
@@ -59,34 +61,10 @@ void HandleClient(sharpen::NetStreamChannelPtr client)
     }
 }
 
-void HandleClientNoParser(sharpen::NetStreamChannelPtr client)
-{
-    bool keepalive = true;
-    sharpen::ByteBuffer buf(4096);
-    while (keepalive)
-    {
-        try
-        {
-            sharpen::Size size = client->ReadAsync(buf);
-            if (size == 0)
-            {
-                return;
-            }
-            const char data[] = "HTTP/1.1 200\r\nConnection: keep-alive\r\nContent-Length: 2\r\n\r\nOK";
-            size = client->WriteAsync(data, sizeof(data) - 1);
-        }
-        catch (const std::exception &e)
-        {
-            std::printf("handle client error %s\n",e.what());
-            return;
-        }
-    }
-}
-
-void WebTest(bool parser)
+void WebTest(sharpen::Size num)
 {
     sharpen::StartupNetSupport();
-    sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine();
+    sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine(num);
     sharpen::NetStreamChannelPtr server = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
     sharpen::IpEndPoint addr;
     addr.SetAddrByString("0.0.0.0");
@@ -95,7 +73,7 @@ void WebTest(bool parser)
     server->Bind(addr);
     server->Listen(65535);
     server->Register(engine);
-    sharpen::Launch([&server,&engine,parser]()
+    sharpen::Launch([&server,&engine]()
     {
         while (true)
         {
@@ -103,14 +81,7 @@ void WebTest(bool parser)
             {
                 sharpen::NetStreamChannelPtr client = server->AcceptAsync();
                 client->Register(engine);
-                if(parser)
-                {
-                    sharpen::Launch(&HandleClient, client);
-                }
-                else
-                {
-                    sharpen::Launch(&HandleClientNoParser,client);
-                }
+                sharpen::Launch(&HandleClient, client);
             }
             catch(const std::system_error &e)
             {
@@ -161,8 +132,12 @@ void FileTest()
 int main(int argc, char const *argv[])
 {
     std::printf("run in %u cores machine\nprocess id: %u\n",std::thread::hardware_concurrency(),sharpen::GetProcessId());
-    bool parser = argc > 1;
-    WebTest(parser);
+    sharpen::Size num = std::thread::hardware_concurrency();
+    if (argc > 1)
+    {
+        num = std::atoi(argv[1]);
+    }
+    WebTest(num);
     //FileTest();
     return 0;
 }
