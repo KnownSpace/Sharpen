@@ -6,11 +6,11 @@
 
 #include <sharpen/ByteBuffer.hpp>
 
-#include <http_parser.h>
+#include <llhttp.h>
 
 const char *sharpen::GetHttpMethodName(sharpen::HttpMethod method)
-{;
-    return ::http_method_str(static_cast<http_method>(method));
+{
+    return ::llhttp_method_name(static_cast<llhttp_method>(method));
 }
 
 void sharpen::InternalCopyHttpMethodNameToMem(sharpen::HttpMethod method,char *buf,sharpen::Size offset)

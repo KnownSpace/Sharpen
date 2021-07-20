@@ -12,9 +12,9 @@
 #include "HttpStatusCode.hpp"
 #include "HttpVersion.hpp"
 
-struct http_parser;
+struct llhttp__internal_s;
 
-struct http_parser_settings;
+struct llhttp_settings_s;
 
 namespace sharpen
 {
@@ -24,8 +24,10 @@ namespace sharpen
         using Self = sharpen::HttpParser;
         using EventCallback = std::function<int()>;
         using DataCallback = std::function<int(const char *,sharpen::Size)>;
+        using Parser = llhttp__internal_s;
+        using ParserSettings = llhttp_settings_s;
 
-        http_parser* parser_;
+        Parser* parser_;
         EventCallback onMsgBegin_;
         DataCallback onUrl_;
         DataCallback onStatusCode_;
@@ -38,27 +40,27 @@ namespace sharpen
         EventCallback onChunkComplete_;
         bool completed_;
 
-        static int OnMessageBegin(http_parser *parser);
+        static int OnMessageBegin(Parser *parser);
 
-        static int OnUrl(http_parser *parser,const char *str,sharpen::Size len);
+        static int OnUrl(Parser *parser,const char *str,sharpen::Size len);
 
-        static int OnStatusCode(http_parser *parser,const char *str,sharpen::Size len);
+        static int OnStatusCode(Parser *parser,const char *str,sharpen::Size len);
 
-        static int OnHeadersField(http_parser *parser,const char *str,sharpen::Size len);
+        static int OnHeadersField(Parser *parser,const char *str,sharpen::Size len);
 
-        static int OnHeadersValue(http_parser *parser,const char *str,sharpen::Size len);
+        static int OnHeadersValue(Parser *parser,const char *str,sharpen::Size len);
 
-        static int OnHeadersComplete(http_parser *parser);
+        static int OnHeadersComplete(Parser *parser);
 
-        static int OnBody(http_parser *parser,const char *str,sharpen::Size len);
+        static int OnBody(Parser *parser,const char *str,sharpen::Size len);
         
-        static int OnMessageEnd(http_parser *parser);
+        static int OnMessageEnd(Parser *parser);
 
-        static int OnChunkHeader(http_parser *parser);
+        static int OnChunkHeader(Parser *parser);
 
-        static int OnChunkComplete(http_parser *parser);
+        static int OnChunkComplete(Parser *parser);
 
-        static http_parser_settings *GetSettings();
+        static ParserSettings *GetSettings();
     public:
         enum class ParserModel
         {
@@ -121,7 +123,7 @@ namespace sharpen
             this->onChunkComplete_ = std::move(cb);
         }
 
-        sharpen::Size Parse(const char *data,sharpen::Size size);
+        void Parse(const char *data,sharpen::Size size);
 
         bool NeedUpgrade() const;
 

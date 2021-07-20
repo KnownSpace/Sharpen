@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <mutex>
 #include <cstdlib>
-#include <http_parser.h>
+#include <llhttp.h>
 
 sharpen::HttpParser::HttpParser(sharpen::HttpParser::ParserModel model)
     :parser_(nullptr)
@@ -19,13 +19,13 @@ sharpen::HttpParser::HttpParser(sharpen::HttpParser::ParserModel model)
     ,onChunkComplete_()
     ,completed_(false)
 {
-    http_parser *parser = reinterpret_cast<http_parser*>(std::malloc(sizeof(http_parser)));
+    Parser *parser = reinterpret_cast<Parser*>(std::malloc(sizeof(Parser)));
     if (parser == nullptr)
     {
         throw std::bad_alloc();
     }
     this->parser_ = parser;
-    ::http_parser_init(this->parser_,static_cast<http_parser_type>(model));
+    ::llhttp_init(this->parser_,static_cast<llhttp_type>(model),sharpen::HttpParser::GetSettings());
     this->parser_->data = this;
 }
 
@@ -34,7 +34,7 @@ sharpen::HttpParser::~HttpParser() noexcept
     std::free(this->parser_);
 }
 
-int sharpen::HttpParser::OnMessageBegin(http_parser *parser)
+int sharpen::HttpParser::OnMessageBegin(Parser *parser)
 {
     sharpen::HttpParser *thiz = reinterpret_cast<sharpen::HttpParser*>(parser->data);
     if (thiz->onMsgBegin_)
@@ -44,7 +44,7 @@ int sharpen::HttpParser::OnMessageBegin(http_parser *parser)
     return 0;
 }
 
-int sharpen::HttpParser::OnUrl(http_parser *parser,const char *str,sharpen::Size len)
+int sharpen::HttpParser::OnUrl(Parser *parser,const char *str,sharpen::Size len)
 {
     sharpen::HttpParser *thiz = reinterpret_cast<sharpen::HttpParser*>(parser->data);
     if (thiz->onUrl_)
@@ -54,7 +54,7 @@ int sharpen::HttpParser::OnUrl(http_parser *parser,const char *str,sharpen::Size
     return 0;
 }
 
-int sharpen::HttpParser::OnStatusCode(http_parser *parser,const char *str,sharpen::Size len)
+int sharpen::HttpParser::OnStatusCode(Parser *parser,const char *str,sharpen::Size len)
 {
     sharpen::HttpParser *thiz = reinterpret_cast<sharpen::HttpParser*>(parser->data);
     if (thiz->onStatusCode_)
@@ -64,7 +64,7 @@ int sharpen::HttpParser::OnStatusCode(http_parser *parser,const char *str,sharpe
     return 0;
 }
 
-int sharpen::HttpParser::OnHeadersField(http_parser *parser,const char *str,sharpen::Size len)
+int sharpen::HttpParser::OnHeadersField(Parser *parser,const char *str,sharpen::Size len)
 {
     if (len == 0)
     {
@@ -78,7 +78,7 @@ int sharpen::HttpParser::OnHeadersField(http_parser *parser,const char *str,shar
     return 0;
 }
 
-int sharpen::HttpParser::OnHeadersValue(http_parser *parser,const char *str,sharpen::Size len)
+int sharpen::HttpParser::OnHeadersValue(Parser *parser,const char *str,sharpen::Size len)
 {
     sharpen::HttpParser *thiz = reinterpret_cast<sharpen::HttpParser*>(parser->data);
     if (thiz->onHeadersValue_)
@@ -88,7 +88,7 @@ int sharpen::HttpParser::OnHeadersValue(http_parser *parser,const char *str,shar
     return 0;
 }
 
-int sharpen::HttpParser::OnHeadersComplete(http_parser *parser)
+int sharpen::HttpParser::OnHeadersComplete(Parser *parser)
 {
     sharpen::HttpParser *thiz = reinterpret_cast<sharpen::HttpParser*>(parser->data);
     if (thiz->onHeadersComplete_)
@@ -98,7 +98,7 @@ int sharpen::HttpParser::OnHeadersComplete(http_parser *parser)
     return 0;
 }
 
-int sharpen::HttpParser::OnBody(http_parser *parser,const char *str,sharpen::Size len)
+int sharpen::HttpParser::OnBody(Parser *parser,const char *str,sharpen::Size len)
 {
     sharpen::HttpParser *thiz = reinterpret_cast<sharpen::HttpParser*>(parser->data);
     if (thiz->onBody_)
@@ -108,7 +108,7 @@ int sharpen::HttpParser::OnBody(http_parser *parser,const char *str,sharpen::Siz
     return 0;
 }
         
-int sharpen::HttpParser::OnMessageEnd(http_parser *parser)
+int sharpen::HttpParser::OnMessageEnd(Parser *parser)
 {
     sharpen::HttpParser *thiz = reinterpret_cast<sharpen::HttpParser*>(parser->data);
     if (thiz->onMsgEnd_)
@@ -118,7 +118,7 @@ int sharpen::HttpParser::OnMessageEnd(http_parser *parser)
     return 0;
 }
 
-int sharpen::HttpParser::OnChunkHeader(http_parser *parser)
+int sharpen::HttpParser::OnChunkHeader(Parser *parser)
 {
     sharpen::HttpParser *thiz = reinterpret_cast<sharpen::HttpParser*>(parser->data);
     if (thiz->onChunkHeader_)
@@ -128,7 +128,7 @@ int sharpen::HttpParser::OnChunkHeader(http_parser *parser)
     return 0;
 }
 
-int sharpen::HttpParser::OnChunkComplete(http_parser *parser)
+int sharpen::HttpParser::OnChunkComplete(Parser *parser)
 {
     sharpen::HttpParser *thiz = reinterpret_cast<sharpen::HttpParser*>(parser->data);
     if (thiz->onChunkComplete_)
@@ -138,30 +138,30 @@ int sharpen::HttpParser::OnChunkComplete(http_parser *parser)
     return 0;
 }
 
-http_parser_settings *sharpen::HttpParser::GetSettings()
+sharpen::HttpParser::ParserSettings *sharpen::HttpParser::GetSettings()
 {
-    static http_parser_settings settings;
+    static ParserSettings settings;
     static std::once_flag flag;
     std::call_once(flag,[]() mutable
     {
-        ::http_parser_settings_init(&settings);
-        settings.on_message_begin = reinterpret_cast<http_cb>(&sharpen::HttpParser::OnMessageBegin);
-        settings.on_url = reinterpret_cast<http_data_cb>(&sharpen::HttpParser::OnUrl);
-        settings.on_status = reinterpret_cast<http_data_cb>(&sharpen::HttpParser::OnStatusCode);
-        settings.on_header_field = reinterpret_cast<http_data_cb>(&sharpen::HttpParser::OnHeadersField);
-        settings.on_header_value = reinterpret_cast<http_data_cb>(&sharpen::HttpParser::OnHeadersValue);
-        settings.on_headers_complete = reinterpret_cast<http_cb>(&sharpen::HttpParser::OnHeadersComplete);
-        settings.on_body = reinterpret_cast<http_data_cb>(&sharpen::HttpParser::OnBody);
-        settings.on_message_complete = reinterpret_cast<http_cb>(&sharpen::HttpParser::OnMessageEnd);
-        settings.on_chunk_header = reinterpret_cast<http_cb>(&sharpen::HttpParser::OnChunkHeader);
-        settings.on_chunk_complete = reinterpret_cast<http_cb>(&sharpen::HttpParser::OnChunkComplete);
+        ::llhttp_settings_init(&settings);
+        settings.on_message_begin = reinterpret_cast<llhttp_cb>(&sharpen::HttpParser::OnMessageBegin);
+        settings.on_url = reinterpret_cast<llhttp_data_cb>(&sharpen::HttpParser::OnUrl);
+        settings.on_status = reinterpret_cast<llhttp_data_cb>(&sharpen::HttpParser::OnStatusCode);
+        settings.on_header_field = reinterpret_cast<llhttp_data_cb>(&sharpen::HttpParser::OnHeadersField);
+        settings.on_header_value = reinterpret_cast<llhttp_data_cb>(&sharpen::HttpParser::OnHeadersValue);
+        settings.on_headers_complete = reinterpret_cast<llhttp_cb>(&sharpen::HttpParser::OnHeadersComplete);
+        settings.on_body = reinterpret_cast<llhttp_data_cb>(&sharpen::HttpParser::OnBody);
+        settings.on_message_complete = reinterpret_cast<llhttp_cb>(&sharpen::HttpParser::OnMessageEnd);
+        settings.on_chunk_header = reinterpret_cast<llhttp_cb>(&sharpen::HttpParser::OnChunkHeader);
+        settings.on_chunk_complete = reinterpret_cast<llhttp_cb>(&sharpen::HttpParser::OnChunkComplete);
     });
     return &settings;
 }
 
-sharpen::Size sharpen::HttpParser::Parse(const char *data,sharpen::Size size)
+void sharpen::HttpParser::Parse(const char *data,sharpen::Size size)
 {
-    return ::http_parser_execute(this->parser_,sharpen::HttpParser::GetSettings(),data,size);
+    ::llhttp_execute(this->parser_,data,size);
 }
 
 bool sharpen::HttpParser::NeedUpgrade() const
@@ -171,7 +171,7 @@ bool sharpen::HttpParser::NeedUpgrade() const
 
 bool sharpen::HttpParser::ShouldKeepalive() const
 {
-    return ::http_should_keep_alive(this->parser_) != 0;
+    return ::llhttp_should_keep_alive(this->parser_) != 0;
 }
 
 sharpen::HttpMethod sharpen::HttpParser::GetMethod() const
@@ -193,12 +193,12 @@ sharpen::HttpVersion sharpen::HttpParser::GetVersion() const
 
 bool sharpen::HttpParser::IsError() const
 {
-    return this->parser_->http_errno == http_errno::HPE_OK;
+    return this->parser_->error == llhttp_errno::HPE_OK;
 }
 
 const char *sharpen::HttpParser::GetErrorMessage() const
 {
-    return http_errno_description(static_cast<http_errno>(this->parser_->http_errno));
+    return llhttp_errno_name(static_cast<llhttp_errno>(this->parser_->error));
 }
 
 bool sharpen::HttpParser::IsCompleted() const
