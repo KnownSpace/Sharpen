@@ -5,6 +5,7 @@
 #include <functional>
 #include <vector>
 #include <memory>
+#include <mutex>
 
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
@@ -46,9 +47,6 @@ namespace sharpen
     public:
         //create event loop with a selector and an uniqued task list
         explicit EventLoop(SelectorPtr selector);
-        
-        //create event loop with a selector and an shared task list
-        EventLoop(SelectorPtr selector,TaskVectorPtr tasks,LockPtr lock);
         
         ~EventLoop() noexcept;
            

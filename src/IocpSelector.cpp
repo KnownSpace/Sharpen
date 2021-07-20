@@ -8,7 +8,7 @@
 
 sharpen::IocpSelector::IocpSelector()
     :iocp_()
-    ,count_(8)
+    ,eventBuf_(8)
 {}
 
 bool sharpen::IocpSelector::CheckChannel(sharpen::ChannelPtr &channel) noexcept
@@ -37,15 +37,10 @@ void sharpen::IocpSelector::Notify()
 
 void sharpen::IocpSelector::Select(EventVector &events)
 {
-    std::vector<sharpen::IoCompletionPort::Event> ev(this->count_);
-    sharpen::Uint32 count = this->iocp_.Wait(ev.data(),static_cast<Uint32>(ev.size()),INFINITE);
-    if (count == this->count_ && this->count_ <128)
-    {
-        this->count_ *= 2;
-    }
+    sharpen::Uint32 count = this->iocp_.Wait(this->eventBuf_.data(),static_cast<Uint32>(this->eventBuf_.size()),INFINITE);
     for (size_t i = 0; i < count; i++)
     {
-        sharpen::IoCompletionPort::Event &e = ev[i];
+        sharpen::IoCompletionPort::Event &e = this->eventBuf_[i];
         if (e.lpOverlapped != nullptr && e.lpCompletionKey != NULL)
         {
             //get overlapped struct
@@ -78,6 +73,10 @@ void sharpen::IocpSelector::Select(EventVector &events)
                 events.push_back(&(olStructPtr->event_));
             }
         }
+    }
+    if (count == this->eventBuf_.size())
+    {
+        this->eventBuf_.resize(count * 2);
     }
 }
 

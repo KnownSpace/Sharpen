@@ -6,7 +6,7 @@
 
 #ifdef SHARPEN_HAS_IOCP
 
-#include <unordered_map>
+#include <vector>
 
 #include "ISelector.hpp"
 #include "Noncopyable.hpp"
@@ -19,11 +19,14 @@ namespace sharpen
     class IocpSelector:public sharpen::ISelector,public sharpen::Nonmovable,public sharpen::Noncopyable
     {
     private:
+        using EventBuf = std::vector<sharpen::IoCompletionPort::Event>;
+
         sharpen::IoCompletionPort iocp_;
 
-        sharpen::Size count_;
+        EventBuf eventBuf_;
 
         static bool CheckChannel(sharpen::ChannelPtr &channel) noexcept;
+
     public:
 
         IocpSelector();

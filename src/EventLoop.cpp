@@ -1,7 +1,6 @@
 #include <sharpen/EventLoop.hpp>
 
 #include <cassert>
-#include <mutex>
 
 thread_local sharpen::EventLoop *sharpen::EventLoop::localLoop_(nullptr);
 
@@ -11,19 +10,8 @@ sharpen::EventLoop::EventLoop(SelectorPtr selector)
     :selector_(selector)
     ,tasks_(std::make_shared<TaskVector>())
     ,exectingTask_(false)
-    ,lock_(std::make_shared<sharpen::SpinLock>())
+    ,lock_(std::make_shared<Lock>())
     ,running_(false)
-{
-    assert(selector != nullptr);
-}
-
-sharpen::EventLoop::EventLoop(SelectorPtr selector,TaskVectorPtr tasks,LockPtr lock)
-    :selector_(selector)
-    ,tasks_(tasks)
-    ,exectingTask_(false)
-    ,lock_(lock)
-    ,running_(false)
-    ,wait_(false)
 {
     assert(selector != nullptr);
 }

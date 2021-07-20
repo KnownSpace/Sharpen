@@ -7,13 +7,6 @@ sharpen::EventLoopThread::EventLoopThread(sharpen::SelectorPtr selector)
     this->thread_ = std::move(std::thread(std::bind(&sharpen::EventLoopThread::Entry,this)));
 }
 
-sharpen::EventLoopThread::EventLoopThread(sharpen::SelectorPtr selector,std::shared_ptr<std::vector<std::function<void()>>> tasks,std::shared_ptr<sharpen::SpinLock> lock)
-    :loop_(selector,tasks,lock)
-    ,thread_()
-{
-    this->thread_ = std::move(std::thread(std::bind(&sharpen::EventLoopThread::Entry,this)));
-}
-
 sharpen::EventLoopThread::~EventLoopThread() noexcept
 {
     this->Stop();

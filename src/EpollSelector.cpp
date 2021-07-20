@@ -10,8 +10,7 @@ sharpen::EpollSelector::EpollSelector()
     :epoll_()
     ,eventfd_(0,O_CLOEXEC | O_NONBLOCK)
     ,map_()
-    ,lock_()
-    ,count_(8)
+    ,eventBuf_(8)
 {
     //register event fd
     Event &event = (this->map_[this->eventfd_.GetHandle()] = std::move(Event()));
@@ -30,15 +29,10 @@ bool sharpen::EpollSelector::CheckChannel(sharpen::ChannelPtr channel) noexcept
 
 void sharpen::EpollSelector::Select(EventVector &events)
 {
-    std::vector<sharpen::Epoll::Event> ev(this->count_);
-    sharpen::Uint32 count = this->epoll_.Wait(ev.data(),ev.size(),-1);
-    if (count == this->count_ && this->count_ < 128)
-    {
-        this->count_ *= 2;
-    }
+    sharpen::Uint32 count = this->epoll_.Wait(this->eventBuf_.data(),this->eventBuf_.size(),-1);
     for (size_t i = 0; i < count; i++)
     {
-        auto &e = ev[i];
+        auto &e = this->eventBuf_[i];
         auto *event = reinterpret_cast<Event*>(e.data.ptr);
         if (!event->internalEventfd_)
         {
@@ -65,6 +59,10 @@ void sharpen::EpollSelector::Select(EventVector &events)
             events.push_back(&(event->ioEvent_));
         }
     }
+    if(count == this->eventBuf_.size())
+    {
+        this->eventBuf_.resize(count * 2);
+    }
 }
         
 void sharpen::EpollSelector::Notify()
@@ -74,15 +72,12 @@ void sharpen::EpollSelector::Notify()
         
 void sharpen::EpollSelector::Resister(WeakChannelPtr channel)
 {
-    if (channel.expired())
+    sharpen::ChannelPtr ch = channel.lock();
+    if(!ch)
     {
         return;
     }
-    
-    sharpen::ChannelPtr ch = channel.lock();
-    std::unique_lock<Lock> lock(this->lock_);
     Event &event = (this->map_[ch->GetHandle()] = std::move(Event()));
-    lock.unlock();
     event.ioEvent_.SetChannel(ch);
     event.epollEvent_.data.ptr = &event;
     event.epollEvent_.events = EPOLLIN | EPOLLOUT | EPOLLET | EPOLLHUP | EPOLLERR;

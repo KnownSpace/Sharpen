@@ -1,5 +1,7 @@
 #include <sharpen/ByteBuffer.hpp>
 
+#include <cstring>
+
 void sharpen::ByteBuffer::swap(sharpen::ByteBuffer &other) noexcept
 {
     vector_.swap(other.vector_);
@@ -124,8 +126,7 @@ void sharpen::ByteBuffer::Extend(sharpen::Size size)
 
 void sharpen::ByteBuffer::Reset(sharpen::Size size)
 {
-    this->vector_.clear();
-    this->Reserve(size);
+    std::memset(this->vector_.data(),0,this->vector_.size());
 }
 
 void sharpen::ByteBuffer::Shrink()
