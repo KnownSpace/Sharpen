@@ -40,11 +40,7 @@ void HandleClient(sharpen::NetStreamChannelPtr client)
                 {
                     return;
                 }
-                sharpen::Size np = parser.Parse(recvBuf.Data(),n);
-                if (np != n)
-                {
-                    return;
-                }
+                parser.Parse(recvBuf.Data(),n);
             }
             parser.SetCompleted(false);
             if (!parser.ShouldKeepalive())
@@ -63,7 +59,31 @@ void HandleClient(sharpen::NetStreamChannelPtr client)
     }
 }
 
-void WebTest()
+void HandleClientNoParser(sharpen::NetStreamChannelPtr client)
+{
+    bool keepalive = true;
+    sharpen::ByteBuffer buf(4096);
+    while (keepalive)
+    {
+        try
+        {
+            sharpen::Size size = client->ReadAsync(buf);
+            if (size == 0)
+            {
+                return;
+            }
+            const char data[] = "HTTP/1.1 200\r\nConnection: keep-alive\r\nContent-Length: 2\r\n\r\nOK";
+            size = client->WriteAsync(data, sizeof(data) - 1);
+        }
+        catch (const std::exception &e)
+        {
+            std::printf("handle client error %s\n",e.what());
+            return;
+        }
+    }
+}
+
+void WebTest(bool parser)
 {
     sharpen::StartupNetSupport();
     sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine();
@@ -75,7 +95,7 @@ void WebTest()
     server->Bind(addr);
     server->Listen(65535);
     server->Register(engine);
-    sharpen::Launch([&server,&engine]()
+    sharpen::Launch([&server,&engine,parser]()
     {
         while (true)
         {
@@ -83,7 +103,14 @@ void WebTest()
             {
                 sharpen::NetStreamChannelPtr client = server->AcceptAsync();
                 client->Register(engine);
-                sharpen::Launch(&HandleClient, client);
+                if(parser)
+                {
+                    sharpen::Launch(&HandleClient, client);
+                }
+                else
+                {
+                    sharpen::Launch(&HandleClientNoParser,client);
+                }
             }
             catch(const std::system_error &e)
             {
@@ -134,7 +161,8 @@ void FileTest()
 int main(int argc, char const *argv[])
 {
     std::printf("run in %u cores machine\nprocess id: %u\n",std::thread::hardware_concurrency(),sharpen::GetProcessId());
-    WebTest();
+    bool parser = argc > 1;
+    WebTest(parser);
     //FileTest();
     return 0;
 }
