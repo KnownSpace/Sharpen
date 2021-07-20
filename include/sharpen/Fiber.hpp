@@ -57,8 +57,6 @@ namespace sharpen
 
         static void FiberEntry(transfer_t from);
 
-        static sharpen::FiberPtr InternalMakeFiber(sharpen::Size stackSize,Task task);
-
         static transfer_t SaveCurrentAndSwitch(transfer_t from);
 
         void InitFiber();

@@ -8,29 +8,39 @@
 
 namespace sharpen
 {
-    template<typename _Result>
-    class AwaitableFuture:public sharpen::Future<_Result>
+    template <typename _Result>
+    class AwaitableFuture : public sharpen::Future<_Result>
     {
         using MyBase = sharpen::Future<_Result>;
         using Self = sharpen::AwaitableFuture<_Result>;
-    public:
 
+    private:
+        void NotifyIfCompleted()
+        {
+            bool completed;
+            {
+                std::unique_lock<sharpen::SpinLock> lock(this->GetCompleteLock());
+                completed = this->CompletedOrError();
+                this->PrepareAwaiter();
+            }
+            if (completed)
+            {
+                this->awaiter_.Notify();
+            }
+        }
+
+    public:
         AwaitableFuture()
-            :MyBase()
-            ,scheduler_(&sharpen::EventEngine::GetEngine())
-            ,awaiter_(this->scheduler_)
-            ,pendingFiber_(nullptr)
-        {}
-        
+            : MyBase(), scheduler_(&sharpen::EventEngine::GetEngine()), awaiter_(this->scheduler_), pendingFiber_(nullptr)
+        {
+        }
+
         AwaitableFuture(Self &&other) noexcept
-            :MyBase(std::move(other))
-            ,scheduler_(other.scheduler_)
-            ,awaiter_(std::move(other.awaiter_))
-            ,pendingFiber_(std::move(other.pendingFiber_))
+            : MyBase(std::move(other)), scheduler_(other.scheduler_), awaiter_(std::move(other.awaiter_)), pendingFiber_(std::move(other.pendingFiber_))
         {
             other.scheduler_ = nullptr;
         }
-        
+
         virtual ~AwaitableFuture() noexcept = default;
 
         void PrepareAwaiter()
@@ -45,41 +55,24 @@ namespace sharpen
 
         auto Await() -> decltype(this->Get())
         {
+            //this thread is not a processer
+            if (!this->scheduler_->IsProcesser())
             {
-                std::unique_lock<sharpen::SpinLock> lock(this->GetCompleteLock());
-                //this thread is not a processer
-                if (!this->scheduler_->IsProcesser())
+                this->Wait();
+            }
+            //this thread is a processer
+            else
+            {
+                if (this->IsPending())
                 {
-                    lock.unlock();
-                    this->Wait();
-                }
-                //this thread is a processer
-                else
-                {
-                    if (this->IsPending())
-                    {
-                        lock.unlock();
-                        this->pendingFiber_ = sharpen::Fiber::GetCurrentFiber();
-                        this->scheduler_->SetSwitchCallback([this]() mutable
-                        {
-                            bool completed;
-                            {
-                                std::unique_lock<sharpen::SpinLock> lock(this->GetCompleteLock());
-                                completed = this->CompletedOrError();
-                                this->PrepareAwaiter();
-                            }
-                            if (completed)
-                            {
-                                this->NotifyAwaiter();
-                            }
-                        });
-                        this->scheduler_->SwitchToProcesserFiber();
-                    }
+                    this->pendingFiber_ = sharpen::Fiber::GetCurrentFiber();
+                    this->scheduler_->SetSwitchCallback(std::bind(&sharpen::AwaitableFuture<_Result>::NotifyIfCompleted,this));
+                    this->scheduler_->SwitchToProcesserFiber();
                 }
             }
             return this->Get();
         }
-        
+
         Self &operator=(Self &&other) noexcept
         {
             MyBase::operator=(std::move(other));
@@ -89,7 +82,6 @@ namespace sharpen
         }
 
     protected:
-
         virtual void ExecuteCallback() override
         {
             MyBase::ExecuteCallback();
@@ -97,16 +89,15 @@ namespace sharpen
         }
 
     private:
-
         sharpen::IFiberScheduler *scheduler_;
         sharpen::Awaiter awaiter_;
         sharpen::FiberPtr pendingFiber_;
     };
-  
-    template<typename _T>
+
+    template <typename _T>
     using AwaitableFuturePtr = std::shared_ptr<sharpen::AwaitableFuture<_T>>;
 
-    template<typename _T>
+    template <typename _T>
     inline sharpen::AwaitableFuturePtr<_T> MakeAwaitableFuture()
     {
         sharpen::AwaitableFuturePtr<_T> future = std::make_shared<sharpen::AwaitableFuture<_T>>();

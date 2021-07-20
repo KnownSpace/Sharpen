@@ -94,18 +94,3 @@ void sharpen::Fiber::InitFiber()
     this->handle_ = ::jump_fcontext(this->handle_,nullptr).fctx;
     this->stack_ = std::move(stack);
 }
-
-sharpen::FiberPtr sharpen::Fiber::InternalMakeFiber(sharpen::Size stackSize,sharpen::Fiber::Task task)
-{
-    if (stackSize == 0)
-    {
-        return nullptr;
-    }
-    sharpen::FiberPtr fiber = std::make_shared<sharpen::Fiber>();
-    sharpen::MemoryStack stack = sharpen::MemoryStack::AllocStack(stackSize);
-    fiber->handle_ = ::make_fcontext(stack.Top(),stack.Size(),&sharpen::Fiber::FiberEntry);
-    fiber->handle_ = ::jump_fcontext(fiber->handle_,nullptr).fctx;
-    fiber->task_ = std::move(task);
-    fiber->stack_ = std::move(stack);
-    return std::move(fiber);
-}
