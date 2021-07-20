@@ -24,18 +24,17 @@ namespace sharpen
         using Task = std::function<void()>;
         using Lock = sharpen::SpinLock;
         using TaskVector = std::vector<Task>;
-        using TaskVectorPtr = std::shared_ptr<TaskVector>;
         using LockPtr = std::shared_ptr<Lock>;
         using SelectorPtr = std::shared_ptr<sharpen::ISelector>;
         using EventVector = std::vector<sharpen::IoEvent*>;
         using WeakChannelPtr = std::weak_ptr<sharpen::IChannel>;
         
         SelectorPtr selector_;
-        TaskVectorPtr tasks_;
+        TaskVector tasks_;
+        TaskVector pendingTasks_;
         bool exectingTask_;
         LockPtr lock_;
         bool running_;
-        bool wait_;
 
         //one loop per thread
         thread_local static EventLoop *localLoop_;
@@ -74,8 +73,6 @@ namespace sharpen
         
         //stop event loop
         void Stop() noexcept;
-
-        bool IsWaiting() const noexcept;
 
         //get thread local event loop
         static sharpen::EventLoop *GetLocalLoop() noexcept;

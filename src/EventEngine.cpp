@@ -46,23 +46,6 @@ sharpen::EventLoop *sharpen::EventEngine::RoundRobinLoop() noexcept
     return this->mainLoop_.get();
 }
 
-sharpen::EventLoop *sharpen::EventEngine::FreeLoop() noexcept
-{
-    if (this->mainLoop_->IsWaiting())
-    {
-        return this->mainLoop_.get();
-    }
-    for (auto begin = this->workers_.begin();begin != this->workers_.end();++begin)
-    {
-        sharpen::EventLoop *loop = (*begin)->GetLoop();
-        if (loop->IsWaiting())
-        {
-            return loop;
-        }
-    }
-    return nullptr;
-}
-
 void sharpen::EventEngine::Stop() noexcept
 {
     for (auto begin = this->workers_.begin(),end = this->workers_.end();begin != end;++begin)
@@ -77,12 +60,7 @@ void sharpen::EventEngine::Schedule(sharpen::FiberPtr &&fiber)
 {
     using FnPtr = void(*)(sharpen::FiberPtr);
     auto &&fn = std::bind(reinterpret_cast<FnPtr>(&sharpen::EventEngine::ProcessFiber),std::move(fiber));
-    sharpen::EventLoop *loop = this->FreeLoop();
-    if (!loop)
-    {
-        loop = this->RoundRobinLoop();
-    }
-    loop->RunInLoopSoon(std::move(fn));
+    this->RoundRobinLoop()->RunInLoopSoon(std::move(fn));
 }
 
 void sharpen::EventEngine::ProcessFiber(sharpen::FiberPtr fiber)

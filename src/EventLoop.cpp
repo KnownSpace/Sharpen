@@ -8,7 +8,7 @@ thread_local sharpen::FiberPtr sharpen::EventLoop::localFiber_;
 
 sharpen::EventLoop::EventLoop(SelectorPtr selector)
     :selector_(selector)
-    ,tasks_(std::make_shared<TaskVector>())
+    ,tasks_()
     ,exectingTask_(false)
     ,lock_(std::make_shared<Lock>())
     ,running_(false)
@@ -49,7 +49,7 @@ void sharpen::EventLoop::RunInLoopSoon(Task task)
     bool execting(true);
     {
         std::unique_lock<Lock> lock(*this->lock_);
-        this->tasks_->push_back(std::move(task));
+        this->pendingTasks_.push_back(std::move(task));
         std::swap(execting,this->exectingTask_);
     }
     if (!execting)
@@ -60,17 +60,15 @@ void sharpen::EventLoop::RunInLoopSoon(Task task)
 
 void sharpen::EventLoop::ExecuteTask()
 {
-    TaskVector tasks;
     {
         std::unique_lock<Lock> lock(*this->lock_);
         this->exectingTask_ = false;
-        if (this->tasks_->empty())
+        if (!this->pendingTasks_.empty())
         {
-            return;
+            this->tasks_.swap(this->pendingTasks_);
         }
-        std::swap(*this->tasks_,tasks);
     }
-    for (auto begin = tasks.begin(),end = tasks.end();begin != end;++begin)
+    for (auto begin = this->tasks_.begin(),end = this->tasks_.end();begin != end;++begin)
     {
         try
         {
@@ -85,6 +83,7 @@ void sharpen::EventLoop::ExecuteTask()
             (void)ignore;
         }
     }
+    this->tasks_.clear();
 }
 
 void sharpen::EventLoop::Run()
@@ -96,14 +95,12 @@ void sharpen::EventLoop::Run()
     sharpen::EventLoop::localLoop_ = this;
     sharpen::EventLoop::localFiber_ = sharpen::Fiber::GetCurrentFiber();
     EventVector events;
-    events.reserve(32);
+    events.reserve(128);
     this->running_ = true;
     while (this->running_)
     {
-        this->wait_ = true;
         //select events
         this->selector_->Select(events);
-        this->wait_ = false;
         for (auto begin = events.begin(),end = events.end();begin != end;++begin)
         {
             sharpen::ChannelPtr channel = (*begin)->GetChannel();
@@ -118,11 +115,6 @@ void sharpen::EventLoop::Run()
     }
     sharpen::EventLoop::localLoop_ = nullptr;
     sharpen::EventLoop::localFiber_.reset();
-}
-
-bool sharpen::EventLoop::IsWaiting() const noexcept
-{
-    return this->wait_;
 }
 
 sharpen::FiberPtr sharpen::EventLoop::GetLocalFiber() noexcept
