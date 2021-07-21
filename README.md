@@ -28,7 +28,7 @@ Sharpen is a multithreaded C++ network library
   1. Add include directory
   1. Add link target
 
-#### LICENSES
+#### Licenses:
   - Sharpen use MIT Lincense
   - Thrid party have their own lincense
   - Boost.Context use BOOST Lincense
