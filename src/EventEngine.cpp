@@ -65,6 +65,11 @@ void sharpen::EventEngine::Schedule(sharpen::FiberPtr &&fiber)
 {
     using FnPtr = void(*)(sharpen::FiberPtr);
     auto &&fn = std::bind(reinterpret_cast<FnPtr>(&sharpen::EventEngine::ProcessFiber),std::move(fiber));
+    if (this->IsProcesser() && sharpen::EventLoop::GetLocalFiber() == sharpen::Fiber::GetCurrentFiber())
+    {
+        fn();
+        return;
+    }
     this->RoundRobinLoop()->RunInLoopSoon(std::move(fn));
 }
 
