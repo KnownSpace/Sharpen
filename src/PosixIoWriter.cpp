@@ -2,19 +2,6 @@
 
 #ifdef SHARPEN_IS_NIX
 
-sharpen::PosixIoWriter::PosixIoWriter(sharpen::ErrorCode cancelErr)
-    :Mybase()
-    ,cancelErr_(cancelErr)
-{}
-
-sharpen::PosixIoWriter::~PosixIoWriter() noexcept
-{
-    this->CancelCallback();
-    this->FillBufferAndCallback();
-    this->CancelCallback();
-}
-
-
 void sharpen::PosixIoWriter::DoExecute(sharpen::FileHandle handle,bool &executed,bool &blocking)
 {
     sharpen::Size size = this->GetRemainingSize();
@@ -81,16 +68,6 @@ void sharpen::PosixIoWriter::DoExecute(sharpen::FileHandle handle,bool &executed
     if (size != 0)
     {
         blocking = true;
-    }
-}
-
-void sharpen::PosixIoWriter::CancelCallback() noexcept
-{
-    Callback *cbs = this->GetFirstCallback();
-    for (size_t i = 0,count = this->GetRemainingSize(); i < count; i++)
-    {
-        errno = this->cancelErr_;
-        cbs[i](-1);
     }
 }
 

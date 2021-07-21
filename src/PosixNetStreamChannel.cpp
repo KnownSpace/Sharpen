@@ -13,8 +13,8 @@ sharpen::PosixNetStreamChannel::PosixNetStreamChannel(sharpen::FileHandle handle
     ,readable_(false)
     ,writeable_(false)
     ,status_(sharpen::PosixNetStreamChannel::IoStatus::Io)
-    ,reader_(ECONNABORTED)
-    ,writer_(ECONNABORTED)
+    ,reader_()
+    ,writer_()
     ,acceptCb_()
     ,connectCb_()
     ,pollReadCbs_()
@@ -23,6 +23,15 @@ sharpen::PosixNetStreamChannel::PosixNetStreamChannel(sharpen::FileHandle handle
     this->handle_ = handle;
 }
 
+bool sharpen::PosixNetStreamChannel::IsAcceptBlock(sharpen::ErrorCode err) noexcept
+{
+#ifdef EAGAIN
+    sharpen::ErrorCode blocking = EAGAIN;
+#else
+    sharpen::ErrorCode blocking = EWOULDBLOCK;
+#endif
+    return err == blocking || err == EINTR || err == EPROTO || err == ECONNABORTED;
+}
 
 sharpen::FileHandle sharpen::PosixNetStreamChannel::DoAccept()
 {
@@ -82,15 +91,23 @@ void sharpen::PosixNetStreamChannel::DoPollWrite()
 
 void sharpen::PosixNetStreamChannel::HandleAccept()
 {
-    AcceptCallback cb;
-    if (!this->acceptCb_)
+    this->readable_ = true;
+    if(this->acceptCb_)
     {
-        this->readable_ = true;
-        return;
+        AcceptCallback cb;
+        sharpen::FileHandle accept = this->DoAccept();
+        if (accept == -1)
+        {
+            sharpen::ErrorCode err = sharpen::GetLastError();
+            if (sharpen::PosixNetStreamChannel::IsAcceptBlock(err))
+            {
+                this->readable_ = false;
+                return;
+            }
+        }
+        std::swap(this->acceptCb_,cb);
+        cb(accept);
     }
-    std::swap(cb,this->acceptCb_);
-    sharpen::FileHandle accept = this->DoAccept();
-    cb(accept);
 }
 
 void sharpen::PosixNetStreamChannel::HandleRead()
@@ -175,25 +192,22 @@ void sharpen::PosixNetStreamChannel::TryAccept(AcceptCallback cb)
     if (this->readable_)
     {
         sharpen::FileHandle handle = this->DoAccept();
-        if(handle == -1)
+        if (handle == -1)
         {
             sharpen::ErrorCode err = sharpen::GetLastError();
-            
-#ifdef EAGAIN
-            sharpen::ErrorCode blocking = EAGAIN;
-#else
-            sharpen::ErrorCode blocking = EWOULDBLOCK;
-#endif
-            if(err == blocking || err == EINTR || err == EPROTO || err == ECONNABORTED)
+            if (!sharpen::PosixNetStreamChannel::IsAcceptBlock(err))
             {
-                this->readable_ = false;
-                this->acceptCb_ = std::move(cb);
+                cb(handle);
                 return;
             }
         }
-        cb(handle);
-        return;
+        else
+        {
+            cb(handle);
+            return;
+        }
     }
+    this->readable_ = false;
     this->acceptCb_ = std::move(cb);
 }
 

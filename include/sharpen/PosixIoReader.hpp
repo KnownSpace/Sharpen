@@ -12,16 +12,12 @@ namespace sharpen
     {
     private:
         using Mybase = sharpen::IPosixIoOperator;
-
-        sharpen::ErrorCode cancelErr_;
     protected:
         virtual void DoExecute(sharpen::FileHandle handle,bool &executed,bool &blocking) override;
-
-        void CancelCallback() noexcept;
     public:
-        explicit PosixIoReader(sharpen::ErrorCode cancelErr);
+        PosixIoReader() = default;
 
-        ~PosixIoReader() noexcept;
+        ~PosixIoReader() noexcept = default;
     };
     
 }

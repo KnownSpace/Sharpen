@@ -106,6 +106,7 @@ namespace sharpen
 
         static void CompletePollCallback(sharpen::Future<void> *future,ssize_t size) noexcept;
 
+        static bool IsAcceptBlock(sharpen::ErrorCode err) noexcept;
     public:
 
         explicit PosixNetStreamChannel(sharpen::FileHandle handle);
