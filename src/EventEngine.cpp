@@ -51,6 +51,16 @@ void sharpen::EventEngine::Stop() noexcept
     this->mainLoop_->Stop();
 }
 
+void sharpen::EventEngine::CallSwitchCallback()
+{
+    SwitchCallback cb;
+    std::swap(cb,sharpen::EventEngine::switchCb_);
+    if (cb)
+    {
+        cb();
+    }
+}
+
 void sharpen::EventEngine::Schedule(sharpen::FiberPtr &&fiber)
 {
     using FnPtr = void(*)(sharpen::FiberPtr);
@@ -70,12 +80,7 @@ void sharpen::EventEngine::ProcessFiber(sharpen::FiberPtr fiber)
         assert(ignore.what() == nullptr);
         (void)ignore;
     }
-    SwitchCallback cb;
-    std::swap(cb,sharpen::EventEngine::switchCb_);
-    if (cb)
-    {
-        cb();
-    }
+    sharpen::EventEngine::CallSwitchCallback();
 }
 
 sharpen::EventEngine &sharpen::EventEngine::SetupEngine(sharpen::Size workerCount)

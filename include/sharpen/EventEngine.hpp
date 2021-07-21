@@ -35,6 +35,8 @@ namespace sharpen
         EventEngine();
 
         explicit EventEngine(sharpen::Size workerCount);
+
+        static void CallSwitchCallback();
     public:
         
         virtual ~EventEngine() noexcept;

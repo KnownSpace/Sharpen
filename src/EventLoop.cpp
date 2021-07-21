@@ -4,7 +4,7 @@
 
 thread_local sharpen::EventLoop *sharpen::EventLoop::localLoop_(nullptr);
 
-thread_local sharpen::FiberPtr sharpen::EventLoop::localFiber_;
+thread_local sharpen::FiberPtr sharpen::EventLoop::localFiber_(nullptr);
 
 sharpen::EventLoop::EventLoop(SelectorPtr selector)
     :selector_(selector)
