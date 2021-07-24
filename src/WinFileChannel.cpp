@@ -2,6 +2,8 @@
 
 #ifdef SHARPEN_HAS_WINFILE
 
+#include <cstring>
+
 #include <Windows.h>
 
 sharpen::WinFileChannel::WinFileChannel(sharpen::FileHandle handle)
@@ -13,7 +15,7 @@ sharpen::WinFileChannel::WinFileChannel(sharpen::FileHandle handle)
 
 void sharpen::WinFileChannel::InitOverlapped(OVERLAPPED &ol,sharpen::Uint64 offset)
 {
-    ::memset(&ol,0,sizeof(ol));
+    std::memset(&ol,0,sizeof(ol));
     LARGE_INTEGER off;
     off.QuadPart = offset;
     ol.Offset = off.LowPart;
@@ -77,7 +79,7 @@ void sharpen::WinFileChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSize
     {
         throw std::logic_error("should register to a loop first");
     }
-    IocpOverlappedStruct *olStruct = new IocpOverlappedStruct();
+    sharpen::IocpOverlappedStruct *olStruct = new sharpen::IocpOverlappedStruct();
     if (!olStruct)
     {
         future.Fail(std::make_exception_ptr(std::bad_alloc()));
@@ -112,7 +114,7 @@ void sharpen::WinFileChannel::ReadAsync(sharpen::ByteBuffer &buf,sharpen::Size b
 
 void sharpen::WinFileChannel::OnEvent(sharpen::IoEvent *olStruct)
 {
-    std::unique_ptr<IocpOverlappedStruct> ev(reinterpret_cast<IocpOverlappedStruct*>(olStruct->GetData()));
+    std::unique_ptr<sharpen::IocpOverlappedStruct> ev(reinterpret_cast<sharpen::IocpOverlappedStruct*>(olStruct->GetData()));
     MyFuturePtr future = reinterpret_cast<MyFuturePtr>(ev->data_);
     if (olStruct->IsErrorEvent())
     {
