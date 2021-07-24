@@ -62,6 +62,13 @@ namespace sharpen
         virtual void SetSwitchCallback(std::function<void()> fn) override;
 
         void Run();
+
+        template<typename _Fn,typename ..._Args>
+        void LaunchAndRun(_Fn &&fn,_Args &&...args)
+        {
+            this->Launch(std::forward<_Fn>(fn),std::forward<_Args>(args)...);
+            this->Run();
+        }
     };
 }
 
