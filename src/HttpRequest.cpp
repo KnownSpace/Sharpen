@@ -182,6 +182,7 @@ void sharpen::HttpRequest::ConfigParser(sharpen::HttpParser &parser)
     parser.SetHeadersCompleteCallback([this,&parser]() mutable
     {
         this->Method() = parser.GetMethod();
+        this->Version() = parser.GetVersion();
         return 0;
     });
     parser.SetMessageBeginCallback([&parser,this]() mutable
