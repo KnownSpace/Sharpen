@@ -25,10 +25,10 @@ void HandleClient(sharpen::NetStreamChannelPtr client)
     req.ConfigParser(parser);
     sharpen::HttpResponse res(sharpen::HttpVersion::Http1_1,sharpen::HttpStatusCode::OK);
     res.Header()["Connection"] = "keep-alive";
-    const char content[] = "hello, world!\n";
+    const char content[] = "hello, world!";
     res.Header()["Content-Length"] = std::to_string(sizeof(content) - 1);
     res.Header()["Content-Type"] = "text/plain";
-    res.Header()["Server"] = "IIS 6.0";
+    res.Header()["Server"] = "IIS";
     res.Body().CopyFrom(content,sizeof(content) - 1);
     res.CopyTo(sendBuf);
     while (keepalive)
