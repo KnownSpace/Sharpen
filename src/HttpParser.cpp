@@ -193,7 +193,7 @@ sharpen::HttpVersion sharpen::HttpParser::GetVersion() const
 
 bool sharpen::HttpParser::IsError() const
 {
-    return this->parser_->error == llhttp_errno::HPE_OK;
+    return this->parser_->error != llhttp_errno::HPE_OK;
 }
 
 const char *sharpen::HttpParser::GetErrorMessage() const
