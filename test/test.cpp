@@ -28,7 +28,7 @@ protected:
         res.Body().CopyFrom(content,sizeof(content) - 1);
     }
 public:
-    TestHttpServer(const sharpen::IEndPoint &endpoint)
+    explicit TestHttpServer(const sharpen::IEndPoint &endpoint)
         :sharpen::HttpServer(sharpen::AddressFamily::Ip,endpoint,sharpen::EventEngine::GetEngine(),"IIS/Linux")
     {}
 
