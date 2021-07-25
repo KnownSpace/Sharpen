@@ -14,86 +14,34 @@
 #include <sharpen/HttpResponse.hpp>
 #include <sharpen/HttpParser.hpp>
 #include <sharpen/ProcessInfo.hpp>
+#include <sharpen/HttpServer.hpp>
 
-void HandleClient(sharpen::NetStreamChannelPtr client)
+class TestHttpServer:public sharpen::HttpServer
 {
-    bool keepalive = true;
-    sharpen::ByteBuffer recvBuf(4096);
-    sharpen::ByteBuffer sendBuf;
-    sharpen::HttpRequest req;
-    sharpen::HttpParser parser(sharpen::HttpParser::ParserModel::Request);
-    req.ConfigParser(parser);
-    sharpen::HttpResponse res(sharpen::HttpVersion::Http1_1,sharpen::HttpStatusCode::OK);
-    res.Header()["Connection"] = "keep-alive";
-    const char content[] = "hello, world!";
-    res.Header()["Content-Length"] = std::to_string(sizeof(content) - 1);
-    res.Header()["Content-Type"] = "text/plain";
-    res.Header()["Server"] = "IIS";
-    res.Body().CopyFrom(content,sizeof(content) - 1);
-    res.CopyTo(sendBuf);
-    while (keepalive)
+private:
+protected:
+    void DoHandleMessage(sharpen::NetStreamChannelPtr channel,const sharpen::HttpRequest &req,sharpen::HttpResponse &res) override
     {
-       try
-       {
-            while (!parser.IsCompleted())
-            {
-                sharpen::Size n = client->ReadAsync(recvBuf);
-                if (n == 0)
-                {
-                    return;
-                }
-                parser.Parse(recvBuf.Data(),n);
-            }
-            parser.SetCompleted(false);
-            if (!parser.ShouldKeepalive())
-            {
-                keepalive = false;
-                res.Header()["Connection"] = "close";
-                res.CopyTo(sendBuf);
-            }
-            client->WriteAsync(sendBuf);
-       }
-       catch(const std::exception& e)
-       {
-           std::printf("handle client error: %s\n",e.what());
-           return;
-       }
+        const char content[] = "hello world";
+        res.Header()["Content-Type"] = "text/plain";
+        res.Header()["Content-Length"] = std::to_string(sizeof(content) - 1);
+        res.Body().CopyFrom(content,sizeof(content) - 1);
     }
-}
+public:
+    TestHttpServer(const sharpen::IEndPoint &endpoint)
+        :sharpen::HttpServer(sharpen::AddressFamily::Ip,endpoint,sharpen::EventEngine::GetEngine(),"IIS/Linux")
+    {}
+
+    ~TestHttpServer() noexcept = default;
+};
 
 void WebTest(sharpen::Size num)
 {
     sharpen::StartupNetSupport();
-    sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine(num);
-    sharpen::NetStreamChannelPtr server = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
-    sharpen::IpEndPoint addr;
+    sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine(num);sharpen::IpEndPoint addr;
     addr.SetAddrByString("0.0.0.0");
     addr.SetPort(8080);
-    server->SetReuseAddress(true);
-    server->Bind(addr);
-    server->Listen(65535);
-    server->Register(engine);
-    sharpen::Launch([&server,&engine]()
-    {
-        while (true)
-        {
-            try
-            {
-                sharpen::NetStreamChannelPtr client = server->AcceptAsync();
-                client->Register(engine);
-                sharpen::Launch(&HandleClient, client);
-            }
-            catch(const std::system_error &e)
-            {
-                std::printf("accept error code %d msg %s",e.code().value(),e.what());
-            }
-            catch(const std::exception& e)
-            {
-                std::printf("accept error %s\n",e.what());
-                //break;
-            }
-        }
-    });
+    TestHttpServer server(addr);
     sharpen::RegisterCtrlHandler(sharpen::CtrlType::Interrupt,[]()
     {
         std::puts("stop now\n");
@@ -105,27 +53,7 @@ void WebTest(sharpen::Size num)
     addr.GetAddrSring(ip,sizeof(ip));
     std::printf("now listen on %s:%d\n",ip,addr.GetPort());
     std::printf("use ctrl + c to stop\n");
-    engine.Run();
-}
-
-void FileTest()
-{
-    sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine(1);
-    sharpen::Launch([&engine]()
-    {
-        sharpen::FileChannelPtr channel = sharpen::MakeFileChannel("./newFile.txt",sharpen::FileAccessModel::All,sharpen::FileOpenModel::CreateOrOpen);
-        channel->Register(engine);
-        sharpen::Launch([]()
-        {
-            std::printf("writing\n");
-        });
-        sharpen::ByteBuffer buf("hello world",11);
-        std::printf("prepare write operation\n");
-        //await in here
-        channel->WriteAsync(buf,0);
-        std::printf("write done\n");
-        engine.Stop();
-    });
+    server.StartAsync();
     engine.Run();
 }
 
@@ -138,6 +66,5 @@ int main(int argc, char const *argv[])
         num = std::atoi(argv[1]);
     }
     WebTest(num);
-    //FileTest();
     return 0;
 }
