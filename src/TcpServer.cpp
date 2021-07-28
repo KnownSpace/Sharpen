@@ -13,7 +13,7 @@ void sharpen::TcpServer::RunAsync()
     {
         sharpen::NetStreamChannelPtr channel = this->acceptor_.AcceptAsync();
         channel->Register(*this->engine_);
-        this->engine_->Launch(&sharpen::TcpServer::DoHandleChannel,this,channel);
+        this->engine_->Launch(&sharpen::TcpServer::OnNewChannel,this,channel);
     }
     this->waiter_.Complete();
 }

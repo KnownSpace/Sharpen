@@ -11,7 +11,7 @@ sharpen::HttpServer::HttpServer(sharpen::AddressFamily af,const sharpen::IEndPoi
     :HttpServer(af,endpoint,engine,"")
 {}
 
-void sharpen::HttpServer::DoHandleChannel(sharpen::NetStreamChannelPtr channel)
+void sharpen::HttpServer::OnNewChannel(sharpen::NetStreamChannelPtr channel)
 {
     sharpen::ByteBuffer buf(4096);
     sharpen::HttpRequest req;
@@ -54,7 +54,7 @@ void sharpen::HttpServer::DoHandleChannel(sharpen::NetStreamChannelPtr channel)
         }
         keep = parser.ShouldKeepalive();
         //handle
-        this->DoHandleMessage(channel,req,res);
+        this->OnNewMessage(channel,req,res);
         //send res
         sharpen::Size n = res.CopyTo(buf);
         channel->WriteAsync(buf.Data(),n);

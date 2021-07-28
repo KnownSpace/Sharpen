@@ -16,9 +16,9 @@ namespace sharpen
         std::string name_;
 
     protected:
-        virtual void DoHandleChannel(sharpen::NetStreamChannelPtr channel) override;
+        virtual void OnNewChannel(sharpen::NetStreamChannelPtr channel) override;
 
-        virtual void DoHandleMessage(sharpen::NetStreamChannelPtr channel,const sharpen::HttpRequest &req,sharpen::HttpResponse &res) = 0;
+        virtual void OnNewMessage(sharpen::NetStreamChannelPtr channel,const sharpen::HttpRequest &req,sharpen::HttpResponse &res) = 0;
     public:
         
         HttpServer(sharpen::AddressFamily af,const sharpen::IEndPoint &endpoint,sharpen::EventEngine &engine);

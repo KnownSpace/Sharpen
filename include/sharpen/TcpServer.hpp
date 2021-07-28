@@ -18,7 +18,7 @@ namespace sharpen
         sharpen::AwaitableFuture<void> waiter_;
         sharpen::EventEngine *engine_;
     protected:
-        virtual void DoHandleChannel(sharpen::NetStreamChannelPtr channel) = 0;
+        virtual void OnNewChannel(sharpen::NetStreamChannelPtr channel) = 0;
     public:
         explicit TcpServer(sharpen::AddressFamily af,const sharpen::IEndPoint &endpoint,sharpen::EventEngine &engine);
 

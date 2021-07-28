@@ -20,7 +20,7 @@ class TestHttpServer:public sharpen::HttpServer
 {
 private:
 protected:
-    void DoHandleMessage(sharpen::NetStreamChannelPtr channel,const sharpen::HttpRequest &req,sharpen::HttpResponse &res) override
+    void OnNewMessage(sharpen::NetStreamChannelPtr channel,const sharpen::HttpRequest &req,sharpen::HttpResponse &res) override
     {
         const char content[] = "hello world";
         res.Header()["Content-Type"] = "text/plain";
