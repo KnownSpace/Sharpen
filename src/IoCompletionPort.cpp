@@ -26,7 +26,7 @@ sharpen::Uint32 sharpen::IoCompletionPort::Wait(sharpen::IoCompletionPort::Event
 {
     assert(this->handle_ != NULL);
     ULONG count = 0;
-    BOOL r = ::GetQueuedCompletionStatusEx(this->handle_,events,maxEvent,&count,timeout,FALSE);
+    BOOL r = ::GetQueuedCompletionStatusEx(this->handle_,events,maxEvent,&count,timeout,TRUE);
     if(r == FALSE)
     {
         sharpen::ErrorCode err = sharpen::GetLastError();
