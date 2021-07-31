@@ -6,6 +6,7 @@
 
 #include "AwaitableFuture.hpp"
 #include "AsyncHelper.hpp"
+#include "ITimer.hpp"
 
 namespace sharpen
 {
@@ -26,6 +27,13 @@ namespace sharpen
             sharpen::AsyncHelper<std::function<_Result()>,_Result>::RunAndSetFuture(func,*future);
         });
         return future;
+    }
+
+    template<typename _Rep,typename _Period>
+    inline void Delay(const std::chrono::duration<_Rep,_Period> &time)
+    {
+        sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::EventEngine::GetEngine());
+        timer->Await();
     }
 }
 
