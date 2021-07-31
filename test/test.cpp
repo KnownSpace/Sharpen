@@ -38,7 +38,8 @@ public:
 void WebTest(sharpen::Size num)
 {
     sharpen::StartupNetSupport();
-    sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine(num);sharpen::IpEndPoint addr;
+    sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine(num);
+    sharpen::IpEndPoint addr;
     addr.SetAddrByString("0.0.0.0");
     addr.SetPort(8080);
     TestHttpServer server(addr);
