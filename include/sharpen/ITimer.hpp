@@ -14,7 +14,7 @@ namespace sharpen
     private:
         using Self = sharpen::ITimer;
         using WaitFuture = sharpen::Future<void>;
-        
+
     public:
         ITimer() = default;
 
@@ -24,7 +24,7 @@ namespace sharpen
 
         virtual ~ITimer() noexcept = default;
 
-        virtual void WaitAsync(WaitFuture &future,sharpen::Uint64 waitMs);
+        virtual void WaitAsync(WaitFuture &future,sharpen::Uint64 waitMs) = 0;
 
         template<typename _Rep,typename _Period>
         void Await(const std::chrono::duration<_Rep,_Period> &time)
