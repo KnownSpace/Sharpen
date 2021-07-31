@@ -30,7 +30,7 @@ sharpen::Uint32 sharpen::IoCompletionPort::Wait(sharpen::IoCompletionPort::Event
     if(r == FALSE)
     {
         sharpen::ErrorCode err = sharpen::GetLastError();
-        if (err != WAIT_TIMEOUT)
+        if (err != WAIT_TIMEOUT && err != WAIT_IO_COMPLETION)
         {
             sharpen::ThrowLastError();
         }

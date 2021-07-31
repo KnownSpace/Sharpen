@@ -5,7 +5,7 @@
 #include <chrono>
 #include <functional>
 
-#include "Future.hpp"
+#include "AwaitableFuture.hpp"
 
 namespace sharpen
 {
@@ -14,10 +14,7 @@ namespace sharpen
     private:
         using Self = sharpen::ITimer;
         using WaitFuture = sharpen::Future<void>;
-    protected:
-        using Closer = std::function<void()>;
-
-        Closer closer_;
+        
     public:
         ITimer() = default;
 
@@ -25,17 +22,17 @@ namespace sharpen
 
         ITimer(Self &&other) noexcept = default;
 
-        virtual ~ITimer() noexcept
+        virtual ~ITimer() noexcept = default;
+
+        virtual void WaitAsync(WaitFuture &future,sharpen::Uint64 waitMs);
+
+        template<typename _Rep,typename _Period>
+        void Await(const std::chrono::duration<_Rep,_Period> &time)
         {
-            if (this->closer_)
-            {
-                this->closer_();
-            }
+            sharpen::AwaitableFuture<void> future;
+            this->WaitAsync(future,time/std::chrono::milliseconds(1));
+            future.Await();
         }
-
-        virtual void WaitAsync(WaitFuture &future);
-
-        void Await();
     };
 }
 
