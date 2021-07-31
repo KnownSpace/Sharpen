@@ -4,11 +4,16 @@
 
 #include <chrono>
 #include <functional>
+#include <memory>
 
 #include "AwaitableFuture.hpp"
 
 namespace sharpen
 {
+    class EventLoop;
+
+    class EventEngine;
+
     class ITimer
     {
     private:
@@ -34,6 +39,12 @@ namespace sharpen
             future.Await();
         }
     };
+
+    using TimerPtr = std::shared_ptr<sharpen::ITimer>;
+
+    extern sharpen::TimerPtr MakeTimer(sharpen::EventLoop &loop);
+
+    extern sharpen::TimerPtr MakeTimer(sharpen::EventEngine &engine);
 }
 
 #endif

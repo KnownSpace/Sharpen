@@ -4,6 +4,7 @@
 
 #include <Windows.h>
 #include <sharpen/SystemError.hpp>
+#include <cassert>
 
 sharpen::WinTimer::WinTimer()
     :Mybase()
@@ -31,9 +32,14 @@ void sharpen::WinTimer::CompleteFuture(void *arg,DWORD,DWORD)
 
 void sharpen::WinTimer::WaitAsync(sharpen::Future<void> &future,sharpen::Uint64 waitMs)
 {
+    assert(this->handle_ != INVALID_HANDLE_VALUE);
     LARGE_INTEGER li;
     li.QuadPart = -10*1000*waitMs;
-    ::SetWaitableTimer(this->handle_,&li,0,&sharpen::WinTimer::CompleteFuture,&future,FALSE);
+    BOOL r = ::SetWaitableTimer(this->handle_,&li,0,&sharpen::WinTimer::CompleteFuture,&future,FALSE);
+    if(r == FALSE)
+    {
+        sharpen::ThrowLastError();
+    }
 }
 
 #endif
