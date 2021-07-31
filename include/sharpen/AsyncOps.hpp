@@ -33,7 +33,7 @@ namespace sharpen
     inline void Delay(const std::chrono::duration<_Rep,_Period> &time)
     {
         sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::EventEngine::GetEngine());
-        timer->Await();
+        timer->Await(time);
     }
 }
 
