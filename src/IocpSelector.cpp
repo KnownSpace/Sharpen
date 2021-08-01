@@ -76,7 +76,12 @@ void sharpen::IocpSelector::Select(EventVector &events)
     }
     if (count == this->eventBuf_.size())
     {
+        this->eventBuf_.clear();
         this->eventBuf_.resize(count * 2);
+    }
+    else
+    {
+        std::memset(this->eventBuf_.data(),0,count * sizeof(sharpen::IoCompletionPort::Event));
     }
 }
 
