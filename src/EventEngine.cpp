@@ -47,7 +47,6 @@ void sharpen::EventEngine::Stop() noexcept
     {
         (*begin)->Stop();
     }
-    this->workers_.clear();
     this->mainLoop_->Stop();
 }
 
