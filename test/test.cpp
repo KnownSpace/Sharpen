@@ -47,6 +47,7 @@ void WebTest(sharpen::Size num)
     {
         std::puts("stop now\n");
         sharpen::EventEngine::GetEngine().Stop();
+        std::puts("cleanup network support\n");
         sharpen::CleanupNetSupport();
     });
     char ip[21];
