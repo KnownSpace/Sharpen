@@ -342,7 +342,7 @@ void sharpen::PosixNetStreamChannel::CompleteSendFileCallback(sharpen::Future<vo
 
 void sharpen::PosixNetStreamChannel::CompleteAcceptCallback(sharpen::Future<sharpen::NetStreamChannelPtr> *future,sharpen::FileHandle accept) noexcept
 {
-    if (sharpen::GetLastError() != 0 && accept == -1)
+    if (accept == -1)
     {
         future->Fail(sharpen::MakeLastErrorPtr());
         return;

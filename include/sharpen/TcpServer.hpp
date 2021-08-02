@@ -25,14 +25,11 @@ namespace sharpen
         virtual ~TcpServer() noexcept
         {
             this->Stop();
-            this->Await();
         }
 
         void RunAsync();
 
         void StartAsync();
-
-        void Await() noexcept;
 
         void Stop() noexcept;
 

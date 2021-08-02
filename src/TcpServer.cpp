@@ -15,7 +15,6 @@ void sharpen::TcpServer::RunAsync()
         channel->Register(*this->engine_);
         this->engine_->Launch(&sharpen::TcpServer::OnNewChannel,this,channel);
     }
-    this->waiter_.Complete();
 }
 
 void sharpen::TcpServer::StartAsync()
@@ -27,9 +26,4 @@ void sharpen::TcpServer::Stop() noexcept
 {
     this->running_ = false;
     this->acceptor_.Close();
-}
-
-void sharpen::TcpServer::Await() noexcept
-{
-    this->waiter_.Await();
 }

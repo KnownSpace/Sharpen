@@ -1,5 +1,7 @@
 #include <sharpen/EventLoopThread.hpp>
 
+#include <cassert>
+
 sharpen::EventLoopThread::EventLoopThread(sharpen::SelectorPtr selector)
     :loop_(selector)
     ,thread_()
@@ -15,6 +17,7 @@ sharpen::EventLoopThread::~EventLoopThread() noexcept
 
 void sharpen::EventLoopThread::Join()
 {
+    assert(std::this_thread::get_id() != this->thread_.get_id());
     if (this->thread_.joinable())
     {
         this->thread_.join();
