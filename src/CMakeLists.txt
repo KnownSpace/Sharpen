@@ -67,6 +67,7 @@ aux_source_directory("${PROJECT_SOURCE_DIR}/thrid_party/llhttp/src" llhttp_src)
 #build src
 aux_source_directory("${PROJECT_SOURCE_DIR}/src" src)
 add_library(sharpen ${src} ${fcontext_src} ${llhttp_src})
+add_library(sharpen::sharpen ALIAS sharpen)
 
 if(UNIX)
     set(THREADS_PREFER_PTHREAD_FLAG ON)
