@@ -15,6 +15,7 @@
 #include <sharpen/HttpParser.hpp>
 #include <sharpen/ProcessInfo.hpp>
 #include <sharpen/HttpServer.hpp>
+#include <sharpen/TimeWheel.hpp>
 
 class TestHttpServer:public sharpen::HttpServer
 {
@@ -57,6 +58,28 @@ void WebTest(sharpen::Size num)
     std::printf("use ctrl + c to stop\n");
     server.StartAsync();
     engine.Run();
+}
+
+void TimeWheelTest()
+{
+    sharpen::EventEngine &engine = sharpen::EventEngine::SetupSingleThreadEngine();
+    engine.LaunchAndRun([]()
+    {
+        sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::EventEngine::GetEngine());
+        sharpen::TimeWheel wheel(std::chrono::seconds(1),60,timer);
+        sharpen::TimeWheelPtr upstream = std::make_shared<sharpen::TimeWheel>(std::chrono::minutes(1),60);
+        upstream->Put(std::chrono::minutes(1),[&wheel]() mutable
+        {
+            std::printf("ok\n");
+            wheel.Stop();
+        });
+        wheel.SetUpstream(upstream);
+        wheel.Put(std::chrono::seconds(10),[&wheel]() mutable
+        {
+            std::printf("hello world\n");
+        });
+        wheel.RunAsync();
+    });
 }
 
 int main(int argc, char const *argv[])
