@@ -120,7 +120,7 @@ sharpen::Size sharpen::HttpResponse::CopyTo(char *buf,sharpen::Size size) const
     //header
     offset += this->header_.CopyTo(buf + offset,size - offset);
     //body
-    offset += this->body_.CopyTo(buf + offset,size - offset);
+    this->body_.CopyTo(buf + offset,size - offset);
     return needSize;
 }
 

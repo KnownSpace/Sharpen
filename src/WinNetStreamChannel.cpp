@@ -282,7 +282,6 @@ void sharpen::WinNetStreamChannel::ConnectAsync(const sharpen::IEndPoint &endpoi
         int iResult = WSAIoctl(reinterpret_cast<SOCKET>(this->handle_), SIO_GET_EXTENSION_FUNCTION_POINTER,&connectexId, sizeof (connectexId), &WSAConnectEx, sizeof (WSAConnectEx), &dwBytes, NULL, NULL);
         if (iResult != 0)
         {
-            sharpen::ErrorCode err = sharpen::GetLastError();
             future.Fail(sharpen::MakeLastErrorPtr());
             return;
         }
