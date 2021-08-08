@@ -86,6 +86,10 @@ namespace sharpen
 
         inline void SetUpstream(sharpen::TimeWheelPtr upstream)
         {
+            if (!upstream)
+            {
+                this->upstream_.reset();
+            }
             if (this->roundTime_ != upstream->waitTime_)
             {
                 throw std::invalid_argument("upstream wait time != round time");
