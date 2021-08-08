@@ -109,17 +109,7 @@ void sharpen::EventLoop::Run()
             sharpen::ChannelPtr channel = (*begin)->GetChannel();
             if (channel)
             {
-                try
-                {
-                    channel->OnEvent(*begin);
-                }
-                catch(const std::exception& ignore)
-                {
-#ifndef NDEBUG
-                    std::perror(ignore.what());
-#endif
-                    (void)ignore;
-                }
+                channel->OnEvent(*begin);
             }
         }
         events.clear();
