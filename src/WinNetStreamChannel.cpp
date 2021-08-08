@@ -240,7 +240,6 @@ void sharpen::WinNetStreamChannel::AcceptAsync(sharpen::Future<sharpen::NetStrea
     SOCKET s = ::socket(this->af_, SOCK_STREAM, IPPROTO_TCP);
     if (s == INVALID_SOCKET)
     {
-        sharpen::ErrorCode err = sharpen::GetLastError();
         delete olStruct;
         future.Fail(sharpen::MakeLastErrorPtr());
         return;

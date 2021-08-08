@@ -157,7 +157,7 @@ sharpen::Size sharpen::HttpResponse::CopyTo(sharpen::ByteBuffer &buf,sharpen::Si
     //header
     offset += this->header_.CopyTo(buf,offset);
     //body
-    offset += this->body_.CopyTo(buf,offset);
+    this->body_.CopyTo(buf,offset);
     return size;
 }
 

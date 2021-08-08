@@ -52,7 +52,7 @@ void sharpen::PosixNetStreamChannel::DoWrite()
     bool blocking;
     bool executed;
     this->writer_.Execute(this->handle_,executed,blocking);
-    this->writeable_ = !executed | !blocking;
+    this->writeable_ = !executed || !blocking;
 }
 
 void sharpen::PosixNetStreamChannel::DoPollRead()

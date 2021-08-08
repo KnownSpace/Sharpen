@@ -69,7 +69,7 @@ namespace sharpen
             Both
         };
 
-        HttpParser(ParserModel model);
+        explicit HttpParser(ParserModel model);
 
         ~HttpParser() noexcept;
 

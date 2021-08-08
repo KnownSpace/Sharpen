@@ -26,9 +26,9 @@ namespace sharpen
         Ptr obj_;
         Lock lock_;
     public:
-
+        std::thread
         template<typename ..._Args>
-        CopyOnWriteObject(_Args &&...args)
+        explicit CopyOnWriteObject(_Args &&...args)
             :obj_(std::make_shared<_T>(std::forward<_Args>(args)...))
             ,lock_()
         {}

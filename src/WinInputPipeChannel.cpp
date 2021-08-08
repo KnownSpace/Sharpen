@@ -37,6 +37,7 @@ void sharpen::WinInputPipeChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bu
     if (!olStruct)
     {
         future.Fail(std::make_exception_ptr(std::bad_alloc()));
+        return;
     }
     //init iocp olStruct
     this->InitOverlappedStruct(*olStruct);
