@@ -35,18 +35,18 @@ void sharpen::IPosixIoOperator::FillBufferAndCallback()
 {
     if (this->GetRemainingSize() == 0)
     {
+        this->mark_ = 0;
         this->bufs_.clear();
         this->cbs_.clear();
         std::swap(this->bufs_,this->pendingBufs_);
         std::swap(this->cbs_,this->pendingCbs_);
-        this->mark_ = 0;
     }
 }
 
 void sharpen::IPosixIoOperator::MoveMark(sharpen::Size newMark)
 {
     assert(this->bufs_.size() == this->cbs_.size());
-    assert(this->bufs_.size() >= newMark);
+    //assert(this->bufs_.size() >= newMark);
     this->mark_ = newMark;
 }
 
@@ -108,7 +108,7 @@ void sharpen::IPosixIoOperator::AddPendingTask(sharpen::Char *buf,sharpen::Size 
 sharpen::Size sharpen::IPosixIoOperator::GetRemainingSize() const
 {
     assert(this->bufs_.size() == this->cbs_.size());
-    assert(this->bufs_.size() >= this->mark_);
+    //assert(this->bufs_.size() >= this->mark_);
     return  this->bufs_.size() - this->mark_;
 }
 
