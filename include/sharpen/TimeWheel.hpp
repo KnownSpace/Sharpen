@@ -73,9 +73,10 @@ namespace sharpen
             sharpen::TimeWheel::TickCallback cb;
             cb.cb_ = std::move(task);
             cb.round_ = duration / this->roundTime_;
-            sharpen::Size buck = (duration % this->waitTime_) / this->waitTime_;
+            sharpen::Size buck = (duration % this->roundTime_) / this->waitTime_;
             buck += this->pos_;
             buck %= this->buckets_.size();
+            buck -= 1;
             auto &bucket = this->buckets_[buck];
             {
                 std::unique_lock<sharpen::SpinLock> lock(bucket.lock_);
