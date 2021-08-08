@@ -114,6 +114,20 @@ namespace sharpen
 
         ~TimeWheel() noexcept;
     };
+
+    template<typename _Rep,typename _Period>
+    inline sharpen::TimeWheelPtr MakeTimeWheel(const std::chrono::duration<_Rep,_Period> &duration,sharpen::Size count,sharpen::TimerPtr timer)
+    {
+        sharpen::TimeWheelPtr tw = std::make_shared<sharpen::TimeWheel>(duration,count,timer);
+        return std::move(tw);
+    }
+
+    template<typename _Rep,typename _Period>
+    inline sharpen::TimeWheelPtr MakeUpstreamTimeWheel(const std::chrono::duration<_Rep,_Period> &duration,sharpen::Size count)
+    {
+        sharpen::TimeWheelPtr tw = std::make_shared<sharpen::TimeWheel>(duration,count);
+        return std::move(tw);
+    }
 }
 
 #endif
