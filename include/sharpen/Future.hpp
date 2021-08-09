@@ -184,8 +184,20 @@ namespace sharpen
         {
             return *this->lock_;
         }
+
+        void Reset()
+        {
+            std::unique_lock<sharpen::SpinLock> lock(*this->lock_);
+            this->ResetWithoutLock();
+        }
         
     protected:
+
+        virtual void ResetWithoutLock()
+        {
+            this->value_.reset(nullptr);
+            this->state_ = sharpen::FutureState::Pending;
+        }
 
         virtual void ExecuteCallback()
         {
@@ -345,7 +357,17 @@ namespace sharpen
         {
             return *this->lock_;
         }
+
+        void Reset()
+        {
+            std::unique_lock<sharpen::SpinLock> lock(*this->lock_);
+            this->ResetWithoutLock();
+        }
     protected:
+        virtual void ResetWithoutLock()
+        {
+            this->state_ = sharpen::FutureState::Pending;
+        }
 
         virtual void ExecuteCallback()
         {

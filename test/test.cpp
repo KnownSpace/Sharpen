@@ -82,6 +82,25 @@ void TimeWheelTest()
     });
 }
 
+void ResetTest()
+{
+    sharpen::EventEngine &engine = sharpen::EventEngine::SetupSingleThreadEngine();
+    engine.LaunchAndRun([]()
+    {
+        sharpen::AwaitableFuture<void> future;
+        sharpen::Launch([&future](){
+            future.Complete();
+        });
+        future.Await();
+        future.Reset();
+        sharpen::Launch([&future](){
+            future.Complete();
+        });
+        future.Await();
+        std::printf("done\n");
+    });
+}
+
 int main(int argc, char const *argv[])
 {
     std::printf("run in %u cores machine\nprocess id: %u\n",std::thread::hardware_concurrency(),sharpen::GetProcessId());
