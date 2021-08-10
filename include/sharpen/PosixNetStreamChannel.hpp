@@ -38,8 +38,8 @@ namespace sharpen
         };
 
         //status
-        bool writeable_;
         bool readable_;
+        bool writeable_;
         IoStatus status_;
         //operator
         sharpen::PosixIoReader reader_;
@@ -137,7 +137,7 @@ namespace sharpen
 
         virtual void PollWriteAsync(sharpen::Future<void> &future) override;
     };
-};
+}
 
 #endif
 #endif

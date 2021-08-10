@@ -90,7 +90,7 @@ sharpen::MemoryStack sharpen::MemoryStack::AllocStack(sharpen::Size size)
         throw std::bad_alloc();
     }
     sharpen::MemoryStack stack(mem,size);
-    return std::move(stack);
+    return stack;
 }
 
 void sharpen::MemoryStack::Extend(sharpen::Size newSize)

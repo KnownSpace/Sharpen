@@ -14,7 +14,9 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
 {
     sharpen::FileChannelPtr channel;
 #ifdef SHARPEN_HAS_WINFILE
-    DWORD sharedModel,accessModel,openModel;
+    DWORD sharedModel = FILE_SHARE_READ;
+    DWORD accessModel = FILE_GENERIC_READ;
+    DWORD openModel = OPEN_EXISTING;
     //set access and shared
     switch (access)
     {
@@ -30,6 +32,8 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
         accessModel = FILE_GENERIC_READ | FILE_GENERIC_WRITE;
         sharedModel = FILE_SHARE_READ | FILE_SHARE_WRITE;
         break;
+    default:
+        throw std::logic_error("unkonw access model");
     }
     //set open
     switch (open)
@@ -43,6 +47,8 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
     case sharpen::FileOpenModel::CreateOrOpen:
         openModel = OPEN_ALWAYS;
         break;
+    default:
+        std::logic_error("unknow open model");
     }
     //create file
     sharpen::FileHandle handle = ::CreateFileA(filename,accessModel,sharedModel,nullptr,openModel,FILE_FLAG_OVERLAPPED,INVALID_HANDLE_VALUE);
@@ -65,6 +71,8 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
     case sharpen::FileAccessModel::All:
         accessModel = O_RDWR;
         break;
+    default:
+        throw std::logic_error("unknow access model");
     }
     //set open
     switch (open)
@@ -78,6 +86,8 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
     case sharpen::FileOpenModel::CreateOrOpen:
         openModel = O_CREAT;
         break;
+    default:
+        throw std::logic_error("unknow open model");
     }
     sharpen::FileHandle handle = ::open(filename,accessModel | openModel | O_CLOEXEC);
     if (handle == -1)
@@ -86,5 +96,5 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
     }
     channel = std::make_shared<sharpen::PosixFileChannel>(handle);
 #endif
-    return std::move(channel);
+    return channel;
 }

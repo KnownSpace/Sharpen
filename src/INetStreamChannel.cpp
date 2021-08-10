@@ -44,7 +44,7 @@ sharpen::NetStreamChannelPtr sharpen::MakeTcpStreamChannel(sharpen::AddressFamil
         sharpen::ThrowLastError();
     }
     channel = std::make_shared<sharpen::PosixNetStreamChannel>(s);
-    return std::move(channel);
+    return channel;
 #endif
 }
 

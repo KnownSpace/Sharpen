@@ -66,8 +66,15 @@ aux_source_directory("${PROJECT_SOURCE_DIR}/thrid_party/llhttp/src" llhttp_src)
 
 #build src
 aux_source_directory("${PROJECT_SOURCE_DIR}/src" src)
-add_library(sharpen ${src} ${fcontext_src} ${llhttp_src})
+add_library(llhttp ${llhttp_src})
+add_library(sharpen ${src} ${fcontext_src})
 add_library(sharpen::sharpen ALIAS sharpen)
+
+if(MSVC)
+  target_compile_options(sharpen PRIVATE /W4 /WX)
+else()
+  target_compile_options(sharpen PRIVATE -Wall -Wextra -pedantic -Werror)
+endif()
 
 if(UNIX)
     set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -76,5 +83,7 @@ if(UNIX)
 endif()
 
 if(WIN32)
-    target_link_libraries(sharpen Ws2_32 Mswsock)
+    target_link_libraries(sharpen PRIVATE Ws2_32 Mswsock)
 endif()
+
+target_link_libraries(sharpen PRIVATE llhttp)

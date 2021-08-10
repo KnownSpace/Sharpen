@@ -101,13 +101,13 @@ sharpen::Size sharpen::HttpResponse::CopyTo(char *buf,sharpen::Size size) const
     offset += 1;
     //status code
     int tmp = static_cast<int>(this->status_);
-    buf[offset] = tmp/100 + 48;
+    buf[offset] = static_cast<char>(tmp/100 + 48);
     offset += 1;
     tmp %= 100;
-    buf[offset] = tmp/10 +48;
+    buf[offset] = static_cast<char>(tmp/10 +48);
     offset += 1;
     tmp %= 10;
-    buf[offset] = tmp + 48;
+    buf[offset] = static_cast<char>(tmp + 48);
     offset += 1;
     buf[offset] = ' ';
     offset += 1;
@@ -138,13 +138,13 @@ sharpen::Size sharpen::HttpResponse::CopyTo(sharpen::ByteBuffer &buf,sharpen::Si
     offset += 1;
     //status code
     int tmp = static_cast<int>(this->status_);
-    buf[offset] = tmp/100 + 48;
+    buf[offset] = static_cast<char>(tmp/100 + 48);
     offset += 1;
     tmp %= 100;
-    buf[offset] = tmp/10 +48;
+    buf[offset] = static_cast<char>(tmp/10 +48);
     offset += 1;
     tmp %= 10;
-    buf[offset] = tmp + 48;
+    buf[offset] = static_cast<char>(tmp + 48);
     offset += 1;
     buf[offset] = ' ';
     offset += 1;

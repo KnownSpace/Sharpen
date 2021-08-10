@@ -124,7 +124,7 @@ void sharpen::ByteBuffer::Extend(sharpen::Size size)
     this->Extend(size,0);
 }
 
-void sharpen::ByteBuffer::Reset(sharpen::Size size)
+void sharpen::ByteBuffer::Reset()
 {
     std::memset(this->vector_.data(),0,this->vector_.size());
 }

@@ -8,8 +8,8 @@
 #include <sharpen/SystemError.hpp>
 
 sharpen::LinuxTimer::LinuxTimer()
-    :Mybase()
-    ,MyTimerBase()
+    :MyTimerBase()
+    ,Mybase()
     ,cb_()
 {
     this->handle_ = ::timerfd_create(CLOCK_REALTIME,TFD_NONBLOCK | TFD_CLOEXEC);

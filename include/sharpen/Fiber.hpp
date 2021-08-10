@@ -79,7 +79,7 @@ namespace sharpen
             sharpen::FiberPtr fiber = std::make_shared<sharpen::Fiber>();
             fiber->stack_ = std::move(sharpen::MemoryStack(nullptr,stackSize));
             fiber->task_ = std::move(std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...));
-            return std::move(fiber);
+            return fiber;
         }
     };
     

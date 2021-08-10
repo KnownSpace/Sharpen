@@ -19,7 +19,7 @@ void sharpen::IPosixIoOperator::ConvertByteToBufferNumber(sharpen::Size byteNumb
     assert(bufs != nullptr);
     sharpen::Size remaining = this->GetRemainingSize();
     assert(remaining != 0);
-    sharpen::Size number{0};
+    (void)remaining;
     sharpen::Size i{0};
     while (bufs[i].iov_len < byteNumber)
     {

@@ -77,6 +77,7 @@ void sharpen::PosixFileChannel::ReadAsync(sharpen::ByteBuffer &buf,sharpen::Size
 void sharpen::PosixFileChannel::OnEvent(sharpen::IoEvent *event)
 {
     //do nothing
+    (void)event;
 }
 
 sharpen::Uint64 sharpen::PosixFileChannel::GetFileSize() const

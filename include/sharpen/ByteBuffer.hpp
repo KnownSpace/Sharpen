@@ -90,7 +90,7 @@ namespace sharpen
 
         void Reserve(sharpen::Size size);
 
-        void Reset(sharpen::Size size);
+        void Reset();
 
         void Extend(sharpen::Size size);
 
