@@ -21,7 +21,7 @@ namespace sharpen
     inline sharpen::AwaitableFuturePtr<_Result> Async(_Fn &&fn,_Args &&...args)
     {
         auto future = sharpen::MakeAwaitableFuture<_Result>();
-        std::function<_Result()> func = std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...);
+        std::function<typename _Result()> func = std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...);
         sharpen::Launch([func,future]() mutable
         {
             sharpen::AsyncHelper<std::function<_Result()>,_Result>::RunAndSetFuture(func,*future);

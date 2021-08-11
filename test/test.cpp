@@ -16,6 +16,7 @@
 #include <sharpen/ProcessInfo.hpp>
 #include <sharpen/HttpServer.hpp>
 #include <sharpen/TimeWheel.hpp>
+#include <sharpen/AwaitOps.hpp>
 
 class TestHttpServer:public sharpen::HttpServer
 {
@@ -58,6 +59,42 @@ void WebTest(sharpen::Size num)
     std::printf("use ctrl + c to stop\n");
     server.StartAsync();
     engine.Run();
+}
+
+struct A
+{};
+
+void AwaitTest()
+{
+    sharpen::EventEngine &engine = sharpen::EventEngine::SetupSingleThreadEngine();
+    engine.LaunchAndRun([]()
+    {
+        auto f1 = sharpen::Async([]()
+        {
+            std::printf("hello ");
+            return 1;
+        });
+        auto f2 = sharpen::Async([](){
+            std::printf("world\n");
+        });
+        auto f3 = sharpen::Async([](){
+            return "hello world";
+        });
+        int r;
+        std::tie(r,std::ignore,std::ignore) = sharpen::AwaitAll(*f1,*f2,*f3);
+        std::printf("ret %d\n",r);
+        auto f4 = sharpen::Async([]()
+        {
+            sharpen::Delay(std::chrono::seconds(9));
+            std::printf("ok1\n");
+        });
+        auto f5 = sharpen::Async([](){
+            sharpen::Delay(std::chrono::seconds(1));
+            std::printf("ok2\n");
+        });
+        sharpen::AwaitAny(*f5,*f4);
+        std::printf("done\n");
+    });
 }
 
 void TimeWheelTest()
