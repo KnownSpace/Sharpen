@@ -79,7 +79,7 @@ namespace sharpen
     };
 
     template<typename ..._T,typename _Ret = typename std::tuple<decltype(sharpen::AwaitPackageHelper<_T>::Decltype())...>>
-    auto AwaitAll(sharpen::AwaitableFuture<_T> &...futures) -> _Ret
+    inline auto AwaitAll(sharpen::AwaitableFuture<_T> &...futures) -> _Ret
     {
         _Ret tuple;
         sharpen::AwaitSetTupleHelper<_Ret,0,sharpen::AwaitableFuture<_T>...>::AwaitAndSet(tuple,futures...);
@@ -124,7 +124,7 @@ namespace sharpen
     
 
     template<typename ..._T>
-    void AwaitAny(sharpen::Future<_T> &...futures)
+    inline void AwaitAny(sharpen::Future<_T> &...futures)
     {
         std::shared_ptr<std::atomic_flag> flag = std::make_shared<std::atomic_flag>();
         sharpen::AwaitableFuture<void> future;
