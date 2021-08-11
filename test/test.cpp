@@ -45,6 +45,11 @@ void WebTest(sharpen::Size num)
     addr.SetAddrByString("0.0.0.0");
     addr.SetPort(8080);
     TestHttpServer server(addr);
+    char ip[21];
+    std::memset(ip,0,sizeof(ip));
+    addr.GetAddrSring(ip,sizeof(ip));
+    std::printf("now listen on %s:%d\n",ip,addr.GetPort());
+    std::printf("use ctrl + c to stop\n");
     sharpen::RegisterCtrlHandler(sharpen::CtrlType::Interrupt,[]()
     {
         std::puts("stop now\n");
@@ -52,13 +57,10 @@ void WebTest(sharpen::Size num)
         std::puts("cleanup network support\n");
         sharpen::CleanupNetSupport();
     });
-    char ip[21];
-    std::memset(ip,0,sizeof(ip));
-    addr.GetAddrSring(ip,sizeof(ip));
-    std::printf("now listen on %s:%d\n",ip,addr.GetPort());
-    std::printf("use ctrl + c to stop\n");
-    server.StartAsync();
-    engine.Run();
+    engine.LaunchAndRun([&server]()
+    {
+        server.RunAsync();
+    });
 }
 
 struct A

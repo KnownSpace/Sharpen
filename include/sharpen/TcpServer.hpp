@@ -29,8 +29,6 @@ namespace sharpen
 
         void RunAsync();
 
-        void StartAsync();
-
         void Stop() noexcept;
 
         inline void GetLocalEndPoint(sharpen::IEndPoint &endpoint) const

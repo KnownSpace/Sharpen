@@ -50,6 +50,11 @@ namespace sharpen
         sharpen::TimerPtr timer_;
 
         void Tick();
+
+        static void CompleteFuture(sharpen::Future<void> *future) noexcept
+        {
+            future->Complete();
+        }
     public:
         template<typename _Rep,typename _Period>
         TimeWheel(const std::chrono::duration<_Rep,_Period> &duration,sharpen::Size count,sharpen::TimerPtr timer)
@@ -84,32 +89,16 @@ namespace sharpen
             }
         }
 
-        inline void SetUpstream(sharpen::TimeWheelPtr upstream)
+        template<typename _Rep,typename _Period>
+        void PutFuture(const std::chrono::duration<_Rep,_Period> &duration,sharpen::Future<void> &future)
         {
-            if (!upstream)
-            {
-                this->upstream_.reset();
-            }
-            if (this->roundTime_ != upstream->waitTime_)
-            {
-                throw std::invalid_argument("upstream wait time != round time");
-            }
-            this->upstream_ = upstream;
+            using FnPtr = void(*)(sharpen::Future<void> *);
+            this->Put(duration,std::bind(reinterpret_cast<FnPtr>(&sharpen::TimeWheel::CompleteFuture),&future));
         }
 
-        inline void RunAsync()
-        {
-            if (!this->timer_)
-            {
-                throw std::logic_error("this timer wheel is an upstream wheel");
-            }
-            this->running_ = true;
-            while (this->running_)
-            {
-                this->timer_->Await(this->waitTime_);
-                this->Tick();
-            }
-        }
+        void SetUpstream(sharpen::TimeWheelPtr upstream);
+
+        void RunAsync();
 
         inline void Stop()
         {

@@ -17,11 +17,6 @@ void sharpen::TcpServer::RunAsync()
     }
 }
 
-void sharpen::TcpServer::StartAsync()
-{
-    this->engine_->Launch(&sharpen::TcpServer::RunAsync,this);
-}
-
 void sharpen::TcpServer::Stop() noexcept
 {
     this->running_ = false;

@@ -45,3 +45,30 @@ void sharpen::TimeWheel::Tick()
         this->upstream_->Tick();
     }
 }
+
+void sharpen::TimeWheel::SetUpstream(sharpen::TimeWheelPtr upstream)
+{
+    if (!upstream)
+    {
+        this->upstream_.reset();
+    }
+    if (this->roundTime_ != upstream->waitTime_)
+    {
+        throw std::invalid_argument("upstream wait time != round time");
+    }
+    this->upstream_ = upstream;
+}
+
+void sharpen::TimeWheel::RunAsync()
+{
+    if (!this->timer_)
+    {
+        throw std::logic_error("this timer wheel is an upstream wheel");
+    }
+    this->running_ = true;
+    while (this->running_)
+    {
+        this->timer_->Await(this->waitTime_);
+        this->Tick();
+    }
+}
