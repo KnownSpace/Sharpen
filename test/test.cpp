@@ -1,18 +1,12 @@
 #include <cstdio>
-#include <mutex>
 #include <string>
 #include <sharpen/IFileChannel.hpp>
 #include <sharpen/EventEngine.hpp>
 #include <sharpen/INetStreamChannel.hpp>
 #include <sharpen/IpEndPoint.hpp>
 #include <sharpen/AsyncOps.hpp>
-#include <algorithm>
 #include <sharpen/CtrlHandler.hpp>
-#include <cinttypes>
 #include <cstring>
-#include <sharpen/HttpRequest.hpp>
-#include <sharpen/HttpResponse.hpp>
-#include <sharpen/HttpParser.hpp>
 #include <sharpen/ProcessInfo.hpp>
 #include <sharpen/HttpServer.hpp>
 #include <sharpen/TimeWheel.hpp>
@@ -62,9 +56,6 @@ void WebTest(sharpen::Size num)
         server.RunAsync();
     });
 }
-
-struct A
-{};
 
 void AwaitTest()
 {
