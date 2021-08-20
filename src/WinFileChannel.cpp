@@ -32,6 +32,7 @@ void sharpen::WinFileChannel::InitOverlappedStruct(IocpOverlappedStruct &olStruc
     olStruct.event_.SetEvent(sharpen::IoEvent::EventTypeEnum::Request);
     olStruct.event_.SetChannel(this->shared_from_this());
     olStruct.event_.SetErrorCode(ERROR_SUCCESS);
+    olStruct.channel_ = this->shared_from_this();
 }
 
 void sharpen::WinFileChannel::WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)

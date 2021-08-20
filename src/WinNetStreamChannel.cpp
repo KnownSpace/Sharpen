@@ -29,6 +29,7 @@ void sharpen::WinNetStreamChannel::InitOverlappedStruct(sharpen::WSAOverlappedSt
     olStruct.event_.SetEvent(sharpen::IoEvent::EventTypeEnum::Request);
     olStruct.event_.SetChannel(this->shared_from_this());
     olStruct.event_.SetErrorCode(ERROR_SUCCESS);
+    olStruct.channel_ = this->shared_from_this();
 }
 
 void sharpen::WinNetStreamChannel::Closer(sharpen::FileHandle handle)

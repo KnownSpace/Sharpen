@@ -25,6 +25,7 @@ void sharpen::WinInputPipeChannel::InitOverlappedStruct(sharpen::IocpOverlappedS
     olStruct.event_.SetChannel(this->shared_from_this());
     olStruct.event_.SetErrorCode(ERROR_SUCCESS);
     olStruct.length_ = 0;
+    olStruct.channel_ = this->shared_from_this();
 }
 
 void sharpen::WinInputPipeChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future)
