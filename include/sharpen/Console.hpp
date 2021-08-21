@@ -21,7 +21,7 @@ namespace sharpen
 
         const _T &val_;
     public:
-        HexFormat(const _T &val) noexcept
+        explicit HexFormat(const _T &val) noexcept
             :val_(val)
         {}
 
@@ -45,7 +45,7 @@ namespace sharpen
 
         const _T &val_;
     public:
-        DecFormat(const _T &val) noexcept
+        explicit DecFormat(const _T &val) noexcept
             :val_(val)
         {}
 
