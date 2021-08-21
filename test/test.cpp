@@ -11,6 +11,7 @@
 #include <sharpen/HttpServer.hpp>
 #include <sharpen/TimeWheel.hpp>
 #include <sharpen/AwaitOps.hpp>
+#include <sharpen/Console.hpp>
 
 class TestHttpServer:public sharpen::HttpServer
 {
@@ -131,6 +132,17 @@ void ResetTest()
     });
 }
 
+void ConsoleTest()
+{
+    //print
+    sharpen::Print("hello world\n"
+    ,1,"\n"
+    ,1.0,"\n"
+    ,false,"\n"
+    ,sharpen::HexFormat<int>(160),"\n"
+    ,sharpen::DecFormat<int>(80));
+}
+
 int main(int argc, char const *argv[])
 {
     std::printf("run in %u cores machine\nprocess id: %u\n",std::thread::hardware_concurrency(),sharpen::GetProcessId());
@@ -139,6 +151,7 @@ int main(int argc, char const *argv[])
     {
         num = std::atoi(argv[1]);
     }
-    WebTest(num);
+    //WebTest(num);
+    ConsoleTest();
     return 0;
 }
