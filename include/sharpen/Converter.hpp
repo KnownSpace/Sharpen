@@ -32,16 +32,17 @@ namespace sharpen
             i++;
             num /= radix;
         }
-        sharpen::Size t{0};
+        i--;
         if (buf[0] == '-')
         {
-            t++;
+            buf += 1;
+            i--;
         }
-        for (sharpen::Size count = (i-t)/2; t < count; t++)
+        for (sharpen::Size t = 0,size = i + 1,count = size/2;t < count;++t)
         {
             char tmp = buf[t];
-            buf[t] = buf[count - t];
-            buf[count - t] = tmp;
+            buf[t] = buf[i - t];
+            buf[i - t] = tmp;
         }
     }
 }
