@@ -151,7 +151,6 @@ int main(int argc, char const *argv[])
     {
         num = std::atoi(argv[1]);
     }
-    //WebTest(num);
-    ConsoleTest();
+    WebTest(num);
     return 0;
 }
