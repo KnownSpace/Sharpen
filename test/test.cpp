@@ -135,12 +135,22 @@ void ResetTest()
 void ConsoleTest()
 {
     //print
-    sharpen::Print("hello world\n"
-    ,1,"\n"
-    ,1.0,"\n"
-    ,false,"\n"
-    ,sharpen::HexFormat<int>(160),"\n"
-    ,sharpen::DecFormat<int>(80));
+    //output c style string
+    sharpen::Print("hello world\n");
+    //printf
+    sharpen::Print("the number is ",1,"\n","float is ",1.00,"\n");
+    //output ptr
+    sharpen::Print("null pointer is ",nullptr,"\n");
+    //output bool
+    sharpen::Print("token is ",true,"\n");
+    //%x & %X
+    sharpen::Print("255 dec is ",sharpen::DecFormat<int>(255),"\n");
+    sharpen::Print("255 hex is ",sharpen::HexFormat<int>(255),"\n");
+    //0b
+    sharpen::Print("255 bin is ",sharpen::BinFormat<int>(255),"\n");
+    //output std::string
+    std::string str{"std::string\n"};
+    sharpen::Print(str);
 }
 
 int main(int argc, char const *argv[])

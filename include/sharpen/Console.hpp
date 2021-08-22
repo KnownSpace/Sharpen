@@ -61,6 +61,30 @@ namespace sharpen
         }
     };
 
+    template<typename _T,typename _IsNum = typename std::enable_if<std::is_integral<_T>::value>::type>
+    struct BinFormat:public sharpen::Nonmovable
+    {
+    private:
+        using Self = sharpen::BinFormat<_T>;
+
+        const _T &val_;
+    public:
+        explicit BinFormat(const _T &val) noexcept
+            :val_(val)
+        {}
+
+        BinFormat(const Self &other) noexcept
+            :val_(other.val_)
+        {}
+
+        ~BinFormat() noexcept = default;
+
+        const _T &Value() const noexcept
+        {
+            return this->val_;
+        }
+    };
+
     template<typename _T>
     struct SpecialPrinter<sharpen::HexFormat<_T>>
     {
@@ -79,6 +103,17 @@ namespace sharpen
         {
             char buf[24] = {0};
             sharpen::Itoa(val.Value(),8,buf);
+            std::fputs(buf,file);
+        }
+    };
+
+    template<typename _T>
+    struct SpecialPrinter<sharpen::BinFormat<_T>>
+    {
+        static void Print(FILE *file,const sharpen::BinFormat<_T> &val)
+        {
+            char buf[66] = {0};
+            sharpen::Itoa(val.Value(),2,buf);
             std::fputs(buf,file);
         }
     };
@@ -126,7 +161,12 @@ namespace sharpen
         template<typename _T,typename _IsCstr = decltype(sharpen::TypePrinter::IsCstr(std::declval<_T>()))>
         static void Print(FILE *file,_T &&cstr,int,int,int,int,...)
         {
-            std::fputs(cstr,file);
+            if (cstr != nullptr)
+            {
+                std::fputs(cstr,file);
+                return;
+            }
+            std::fprintf(file,"%p",cstr);
         }
 
         //T is bool
