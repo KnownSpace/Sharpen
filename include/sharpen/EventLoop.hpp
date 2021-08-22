@@ -34,6 +34,7 @@ namespace sharpen
         bool exectingTask_;
         Lock lock_;
         bool running_;
+        bool waiting_;
 
         //one loop per thread
         thread_local static EventLoop *localLoop_;
@@ -79,6 +80,8 @@ namespace sharpen
         static bool IsInLoop() noexcept;
 
         static sharpen::FiberPtr GetLocalFiber() noexcept;
+
+        bool IsWaiting() const noexcept;
     };
 }
 

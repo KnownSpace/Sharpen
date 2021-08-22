@@ -13,6 +13,7 @@ sharpen::EventLoop::EventLoop(SelectorPtr selector)
     ,exectingTask_(false)
     ,lock_()
     ,running_(false)
+    ,waiting_(false)
 {
     assert(selector != nullptr);
     this->pendingTasks_.reserve(32);
@@ -103,7 +104,9 @@ void sharpen::EventLoop::Run()
     while (this->running_)
     {
         //select events
+        this->waiting_ = true;
         this->selector_->Select(events);
+        this->waiting_ = false;
         for (auto begin = events.begin(),end = events.end();begin != end;++begin)
         {
             sharpen::ChannelPtr channel = (*begin)->GetChannel();
@@ -142,4 +145,9 @@ sharpen::EventLoop *sharpen::EventLoop::GetLocalLoop() noexcept
 bool sharpen::EventLoop::IsInLoop() noexcept
 {
     return sharpen::EventLoop::GetLocalLoop() != nullptr;
+}
+
+bool sharpen::EventLoop::IsWaiting() const noexcept
+{
+    return this->waiting_;
 }
