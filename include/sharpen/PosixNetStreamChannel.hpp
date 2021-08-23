@@ -111,7 +111,7 @@ namespace sharpen
 
         explicit PosixNetStreamChannel(sharpen::FileHandle handle);
 
-        ~PosixNetStreamChannel() noexcept = default;
+        virtual ~PosixNetStreamChannel() noexcept = default;
 
         virtual void WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future) override;
         

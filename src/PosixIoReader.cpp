@@ -34,7 +34,7 @@ void sharpen::PosixIoReader::DoExecute(sharpen::FileHandle handle,bool &executed
         this->MoveMark(size);
         return;
     }
-    else if(bytes == 0)
+    if(bytes == 0)
     {
         //disconnect
         for (size_t i = 0; i < size; i++)

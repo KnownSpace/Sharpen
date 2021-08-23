@@ -154,6 +154,7 @@ void sharpen::PosixNetStreamChannel::TryRead(char *buf,sharpen::Size bufSize,Cal
     this->reader_.AddPendingTask(buf,bufSize,std::move(cb));
     if (this->readable_)
     {
+        this->readable_ = false;
         this->DoRead();
     }
 }
@@ -163,6 +164,7 @@ void sharpen::PosixNetStreamChannel::TryWrite(const char *buf,sharpen::Size bufS
     this->writer_.AddPendingTask(const_cast<char*>(buf),bufSize,std::move(cb));
     if(this->writeable_)
     {
+        this->writeable_ = false;
         this->DoWrite();
     }
 }
