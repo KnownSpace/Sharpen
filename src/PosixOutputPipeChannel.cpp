@@ -31,7 +31,6 @@ void sharpen::PosixOutputPipeChannel::TryWrite(const char *buf,sharpen::Size buf
     this->writer_.AddPendingTask(const_cast<char*>(buf),bufSize,std::move(cb));
     if (this->writeable_)
     {
-        this->writeable_ = false;
         this->DoWrite();
     }
 }
@@ -40,7 +39,7 @@ void sharpen::PosixOutputPipeChannel::RequestWrite(const char *buf,sharpen::Size
 {
     using FnPtr = void(*)(sharpen::Future<sharpen::Size>*,ssize_t);
     Callback cb = std::bind(reinterpret_cast<FnPtr>(&sharpen::PosixOutputPipeChannel::CompleteWriteCallback),future,std::placeholders::_1);
-    this->loop_->RunInLoop(std::bind(&sharpen::PosixOutputPipeChannel::TryWrite,this,buf,bufSize,std::move(cb)));
+    this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixOutputPipeChannel::TryWrite,this,buf,bufSize,std::move(cb)));
 }
 
 void sharpen::PosixOutputPipeChannel::WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future)
