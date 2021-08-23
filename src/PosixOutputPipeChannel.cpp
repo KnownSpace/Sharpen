@@ -31,6 +31,7 @@ void sharpen::PosixOutputPipeChannel::TryWrite(const char *buf,sharpen::Size buf
     this->writer_.AddPendingTask(const_cast<char*>(buf),bufSize,std::move(cb));
     if (this->writeable_)
     {
+        this->writeable_ = false;
         this->DoWrite();
     }
 }

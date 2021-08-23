@@ -31,6 +31,7 @@ void sharpen::PosixInputPipeChannel::TryRead(char *buf,sharpen::Size bufSize,Cal
     this->reader_.AddPendingTask(buf,bufSize,std::move(cb));
     if(this->readable_)
     {
+        this->readable_ = false;
         this->DoRead();
     }
 }
