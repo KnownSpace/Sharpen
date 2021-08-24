@@ -274,14 +274,14 @@ void sharpen::PosixNetStreamChannel::RequestConnect(const sharpen::IEndPoint &en
     this->status_ = sharpen::PosixNetStreamChannel::IoStatus::Connect;
     using FnPtr = void (*)(sharpen::Future<void> *);
     ConnectCallback cb = std::bind(reinterpret_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompleteConnectCallback),future);
-    this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::TryConnect,this,std::cref(endPoint),std::move(cb)));
+    this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixNetStreamChannel::TryConnect,this,std::cref(endPoint),std::move(cb)));
 }
 
 void sharpen::PosixNetStreamChannel::RequestAccept(sharpen::Future<sharpen::NetStreamChannelPtr> *future)
 {
     using FnPtr = void (*)(sharpen::Future<sharpen::NetStreamChannelPtr> *,sharpen::FileHandle);
     AcceptCallback cb = std::bind(reinterpret_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompleteAcceptCallback),future,std::placeholders::_1);
-    this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::TryAccept,this,std::move(cb)));
+    this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixNetStreamChannel::TryAccept,this,std::move(cb)));
 }
 
 void sharpen::PosixNetStreamChannel::RequestPollRead(sharpen::Future<void> *future)
