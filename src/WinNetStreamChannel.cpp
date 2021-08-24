@@ -54,7 +54,7 @@ void sharpen::WinNetStreamChannel::WriteAsync(const sharpen::Char *buf,sharpen::
     {
         throw std::logic_error("should register to a loop first");
     }
-    sharpen::WSAOverlappedStruct *olStruct = new sharpen::WSAOverlappedStruct();
+    sharpen::WSAOverlappedStruct *olStruct = new (std::nothrow) sharpen::WSAOverlappedStruct();
     if (!olStruct)
     {
         future.Fail(std::make_exception_ptr(std::bad_alloc()));
@@ -98,7 +98,7 @@ void sharpen::WinNetStreamChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bu
     {
         throw std::logic_error("should register to a loop first");
     }
-    sharpen::WSAOverlappedStruct *olStruct = new sharpen::WSAOverlappedStruct();
+    sharpen::WSAOverlappedStruct *olStruct = new (std::nothrow) sharpen::WSAOverlappedStruct();
     if (!olStruct)
     {
         future.Fail(std::make_exception_ptr(std::bad_alloc()));
@@ -170,7 +170,7 @@ void sharpen::WinNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,sh
     {
         throw std::logic_error("should register to a loop first");
     }
-    sharpen::WSAOverlappedStruct *olStruct = new sharpen::WSAOverlappedStruct();
+    sharpen::WSAOverlappedStruct *olStruct = new (std::nothrow) sharpen::WSAOverlappedStruct();
     if (!olStruct)
     {
         future.Fail(std::make_exception_ptr(std::bad_alloc()));
@@ -225,7 +225,7 @@ void sharpen::WinNetStreamChannel::AcceptAsync(sharpen::Future<sharpen::NetStrea
             return;
         }
     }
-    sharpen::WSAOverlappedStruct *olStruct = new sharpen::WSAOverlappedStruct();
+    sharpen::WSAOverlappedStruct *olStruct = new (std::nothrow) sharpen::WSAOverlappedStruct();
     if (!olStruct)
     {
         future.Fail(std::make_exception_ptr(std::bad_alloc()));
@@ -287,7 +287,7 @@ void sharpen::WinNetStreamChannel::ConnectAsync(const sharpen::IEndPoint &endpoi
             return;
         }
     }
-    sharpen::WSAOverlappedStruct *olStruct = new sharpen::WSAOverlappedStruct();
+    sharpen::WSAOverlappedStruct *olStruct = new (std::nothrow) sharpen::WSAOverlappedStruct();
     if (!olStruct)
     {
         future.Fail(std::make_exception_ptr(std::bad_alloc()));
@@ -319,7 +319,7 @@ void sharpen::WinNetStreamChannel::PollReadAsync(sharpen::Future<void> &future)
     {
         throw std::logic_error("should register to a loop first");
     }
-    sharpen::WSAOverlappedStruct *olStruct = new sharpen::WSAOverlappedStruct();
+    sharpen::WSAOverlappedStruct *olStruct = new (std::nothrow) sharpen::WSAOverlappedStruct();
     if (!olStruct)
     {
         future.Fail(std::make_exception_ptr(std::bad_alloc()));
@@ -357,7 +357,7 @@ void sharpen::WinNetStreamChannel::PollWriteAsync(sharpen::Future<void> &future)
     {
         throw std::logic_error("should register to a loop first");
     }
-    sharpen::WSAOverlappedStruct *olStruct = new sharpen::WSAOverlappedStruct();
+    sharpen::WSAOverlappedStruct *olStruct = new (std::nothrow) sharpen::WSAOverlappedStruct();
     if (!olStruct)
     {
         future.Fail(std::make_exception_ptr(std::bad_alloc()));

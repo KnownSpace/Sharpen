@@ -34,7 +34,7 @@ void sharpen::WinInputPipeChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bu
     {
         throw std::logic_error("should register to a loop first");
     }
-    IocpOverlappedStruct *olStruct = new sharpen::IocpOverlappedStruct();
+    IocpOverlappedStruct *olStruct = new (std::nothrow) sharpen::IocpOverlappedStruct();
     if (!olStruct)
     {
         future.Fail(std::make_exception_ptr(std::bad_alloc()));

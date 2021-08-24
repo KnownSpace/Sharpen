@@ -32,7 +32,7 @@ void sharpen::WinOutputPipeChannel::WriteAsync(const sharpen::Char *buf,sharpen:
     {
         throw std::logic_error("should register to a loop first");
     }
-    sharpen::IocpOverlappedStruct *olStruct = new sharpen::IocpOverlappedStruct();
+    sharpen::IocpOverlappedStruct *olStruct = new (std::nothrow) sharpen::IocpOverlappedStruct();
     if (!olStruct)
     {
         future.Fail(std::make_exception_ptr(std::bad_alloc()));
