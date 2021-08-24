@@ -182,7 +182,7 @@ namespace sharpen
         }
 
         //SpecialPrinter
-        template<typename _T,typename _RawType = typename std::remove_pointer<_T>::type,typename _HasSpecialPrinter = decltype(&sharpen::SpecialPrinter<_RawType>::Print)>
+        template<typename _T,typename _RawType = typename std::remove_reference<_T>::type,typename _HasSpecialPrinter = decltype(&sharpen::SpecialPrinter<_RawType>::Print)>
         static void Print(FILE *file,_T &&val,int,int,int,int,int,int,...)
         {
             sharpen::SpecialPrinter<_RawType>::Print(file,std::forward<_T>(val));
