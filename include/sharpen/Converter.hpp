@@ -11,7 +11,7 @@ namespace sharpen
     //unsafe
     //bufSize must be checked by user
     template<typename _T,typename _RawType = typename std::remove_const<typename std::remove_reference<_T>::type>::type,typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value>::type>
-    static void Itoa(_T &&val,sharpen::Byte radix,char *buf)
+    void Itoa(_T &&val,sharpen::Byte radix,char *buf)
     {
         if (!buf)
         {
