@@ -17,8 +17,11 @@ namespace sharpen
 
         static FasleType Test(...);
     public:
-        static constexpr bool Value = std::is_same<FasleType,decltype(Test(1))>::value;
+        static constexpr bool Value = std::is_same<FasleType,decltype(Test(0))>::value;
     };
+
+    template<typename ..._T>
+    using TypeChecker = void;
 }
 
 #endif
