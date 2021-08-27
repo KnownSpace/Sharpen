@@ -159,7 +159,7 @@ namespace sharpen
 
         //T is c-style string
         template<typename _T,typename _IsCstr = decltype(sharpen::TypePrinter::IsCstr(std::declval<_T>()))>
-        static void Print(FILE *file,_T &&cstr,int,int,int,int,...)
+        static void Print(FILE *file,_T cstr,int,int,int,int,...)
         {
             if (cstr)
             {
