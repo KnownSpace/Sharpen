@@ -176,6 +176,7 @@ int main(int argc, char const *argv[])
     {
         num = std::atoi(argv[1]);
     }
+    ValidTest();
     WebTest(num);
     return 0;
 }
