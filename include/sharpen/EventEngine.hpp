@@ -9,6 +9,7 @@
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "IFiberScheduler.hpp"
+#include "TypeTraits.hpp"
 
 namespace sharpen
 {
@@ -63,10 +64,29 @@ namespace sharpen
 
         void Run();
 
-        template<typename _Fn,typename ..._Args>
+        template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCallable<_Fn,_Args...>::Value>>
         void LaunchAndRun(_Fn &&fn,_Args &&...args)
         {
             this->Launch(std::forward<_Fn>(fn),std::forward<_Args>(args)...);
+            this->Run();
+        }
+
+        template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCallable<_Fn,_Args...>::Value>>
+        void Startup(_Fn &&fn,_Args &&...args)
+        {
+            auto task = std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...);
+            this->Launch([task,this]() mutable
+            {
+                try
+                {
+                    task();
+                }
+                catch(const std::exception& ignore)
+                {
+                    (void)ignore;
+                }
+                this->Stop();
+            });
             this->Run();
         }
     };

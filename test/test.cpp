@@ -62,7 +62,7 @@ void WebTest(sharpen::Size num)
 void AwaitTest()
 {
     sharpen::EventEngine &engine = sharpen::EventEngine::SetupSingleThreadEngine();
-    engine.LaunchAndRun([]()
+    engine.Startup([]()
     {
         auto f1 = sharpen::Async([]()
         {
@@ -95,7 +95,7 @@ void AwaitTest()
 void TimeWheelTest()
 {
     sharpen::EventEngine &engine = sharpen::EventEngine::SetupSingleThreadEngine();
-    engine.LaunchAndRun([]()
+    engine.Startup([]()
     {
         sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::EventEngine::GetEngine());
         sharpen::TimeWheel wheel(std::chrono::seconds(1),60,timer);
@@ -117,7 +117,7 @@ void TimeWheelTest()
 void ResetTest()
 {
     sharpen::EventEngine &engine = sharpen::EventEngine::SetupSingleThreadEngine();
-    engine.LaunchAndRun([]()
+    engine.Startup([]()
     {
         sharpen::AwaitableFuture<void> future;
         sharpen::Launch([&future](){
@@ -178,7 +178,6 @@ int main(int argc, char const *argv[])
     {
         num = std::atoi(argv[1]);
     }
-    ValidTest();
     WebTest(num);
     return 0;
 }

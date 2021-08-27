@@ -69,14 +69,7 @@ void sharpen::EventEngine::Schedule(sharpen::FiberPtr &&fiber)
         fn();
         return;
     }
-    //this->RoundRobinLoop()->RunInLoopSoon(std::move(fn));
-
     //find a waiting loop
-    if (this->mainLoop_->IsWaiting())
-    {
-        this->mainLoop_->RunInLoopSoon(std::move(fn));
-        return;
-    }
     for (auto begin = this->loops_.begin(),end = this->loops_.end(); begin != end; begin++)
     {
         sharpen::EventLoop *loop = *begin;

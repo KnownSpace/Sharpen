@@ -6,32 +6,39 @@
 
 namespace sharpen
 {
-    template<typename _Fn,typename ..._Args>
-    struct IsCallable
-    {
-    private:
-        struct FasleType;
-
-        template<typename _U>
-        static auto Test(int) -> decltype(std::declval<_Fn>()(std::declval<_Args>()...));
-
-        static FasleType Test(...);
-    public:
-        static constexpr bool Value = std::is_same<FasleType,decltype(Test(0))>::value;
-    };
-
-    template<typename ..._T>
-    using TypeChecker = void;
-
     template<bool _Value>
     struct BoolType
     {
         constexpr static bool Value = _Value;
     };
 
+    
     using TrueType = sharpen::BoolType<true>;
 
     using FalseType = sharpen::BoolType<false>;
+
+    template<typename _Fn,typename ..._Args>
+    struct IsCallable
+    {
+    private:
+        template<typename _Check = decltype(std::declval<_Fn>()(std::declval<_Args>()...))>
+        constexpr static sharpen::TrueType Test(int) noexcept
+        {
+            return sharpen::TrueType();
+        }
+
+        constexpr static sharpen::FalseType Test(...) noexcept
+        {
+            return sharpen::FalseType();
+        }
+    public:
+        using Type = decltype(sharpen::IsCallable<_Fn,_Args...>::Test(0));
+
+        static constexpr bool Value = Type::Value;
+    };
+
+    template<typename ..._T>
+    using TypeChecker = void;
 
     template<typename _Checker>
     struct ValidContainer
@@ -83,6 +90,9 @@ namespace sharpen
     
     template<template<class ...> class _Tmp,typename ..._T>
     using IsMatches = decltype(sharpen::MatchesContainer::Matches<_Tmp,_T...>(0));
+
+    template<bool _Cond,typename _T = void>
+    using EnableIf = typename std::enable_if<_Cond,_T>::type;
 }
 
 #endif
