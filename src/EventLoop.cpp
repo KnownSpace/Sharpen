@@ -1,6 +1,7 @@
 #include <sharpen/EventLoop.hpp>
 
 #include <cassert>
+#include <thread>
 
 thread_local sharpen::EventLoop *sharpen::EventLoop::localLoop_(nullptr);
 
