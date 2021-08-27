@@ -161,7 +161,7 @@ namespace sharpen
         template<typename _T,typename _IsCstr = decltype(sharpen::TypePrinter::IsCstr(std::declval<_T>()))>
         static void Print(FILE *file,_T &&cstr,int,int,int,int,...)
         {
-            if (cstr != nullptr)
+            if (!cstr)
             {
                 std::fputs(cstr,file);
                 return;
