@@ -164,8 +164,10 @@ struct A
 
 void ValidTest()
 {
-    sharpen::Print("A has func? ",sharpen::IsMatches<HasFunc,A>::Value,"\n");
-    sharpen::Print("int has func? ",sharpen::IsMatches<HasFunc,int>::Value);
+    int tmp = sharpen::IsMatches<HasFunc,A>::Value;
+    std::printf("a has func? %d\n",tmp);
+    tmp = sharpen::IsMatches<HasFunc,int>::Value;
+    std::printf("int has func?%d\n",tmp);
 }
 
 int main(int argc, char const *argv[])
