@@ -170,7 +170,7 @@ namespace sharpen
         }
 
         //T is bool
-        template<typename _T,typename _IsBool = typename std::enable_if<std::is_same<bool,typename std::remove_reference<_T>::type>::value>::type>
+        template<typename _T,typename _IsBool = typename std::enable_if<std::is_same<bool,typename std::remove_const<typename std::remove_reference<_T>::type>::type>::value>::type>
         static void Print(FILE *file,_T &&val,int,int,int,int,int,...)
         {
             const char *str = "true";

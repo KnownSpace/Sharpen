@@ -46,9 +46,9 @@ namespace sharpen
         }
     public:
         Future()
-            :lock_(std::make_unique<sharpen::SpinLock>())
+            :lock_(new sharpen::SpinLock())
             ,value_(nullptr)
-            ,cond_(std::make_unique<std::condition_variable_any>())
+            ,cond_(new std::condition_variable_any())
             ,callback_()
             ,state_(sharpen::FutureState::Pending)
             ,error_()
@@ -235,8 +235,8 @@ namespace sharpen
     public:
 
         Future()
-            :lock_(std::make_unique<sharpen::SpinLock>())
-            ,cond_(std::make_unique<std::condition_variable_any>())
+            :lock_(new sharpen::SpinLock())
+            ,cond_(new std::condition_variable_any())
             ,callback_()
             ,state_(sharpen::FutureState::Pending)
             ,error_()

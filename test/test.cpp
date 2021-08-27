@@ -12,6 +12,7 @@
 #include <sharpen/TimeWheel.hpp>
 #include <sharpen/AwaitOps.hpp>
 #include <sharpen/Console.hpp>
+#include <sharpen/TypeTraits.hpp>
 
 class TestHttpServer:public sharpen::HttpServer
 {
@@ -151,6 +152,20 @@ void ConsoleTest()
     //output std::string
     std::string str{"std::string\n"};
     sharpen::Print(str);
+}
+
+template<typename _T>
+using HasFunc = auto(*)()->decltype(std::declval<_T>().Func());
+
+struct A
+{
+    void Func();
+};
+
+void ValidTest()
+{
+    sharpen::Print("A has func? ",sharpen::IsMatches<HasFunc,A>::Value,"\n");
+    sharpen::Print("int has func? ",sharpen::IsMatches<HasFunc,int>::Value);
 }
 
 int main(int argc, char const *argv[])
