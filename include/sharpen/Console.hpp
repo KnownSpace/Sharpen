@@ -6,6 +6,7 @@
 #include <string>
 
 #include "Converter.hpp"
+#include "CompilerInfo.hpp"
 
 namespace sharpen
 {
@@ -157,6 +158,11 @@ namespace sharpen
             std::fprintf(file,"%p",ptr);
         }
 
+#ifdef SHARPEN_COMPILER_GCC
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnonnull"
+#endif
+
         //T is c-style string
         template<typename _T,typename _IsCstr = decltype(sharpen::TypePrinter::IsCstr(std::declval<_T>()))>
         static void Print(FILE *file,_T cstr,int,int,int,int,...)
@@ -168,6 +174,9 @@ namespace sharpen
             }
             std::fprintf(file,"%p",cstr);
         }
+#ifdef SHARPEN_COMPILER_GCC
+#pragma GCC diagnostic pop
+#endif
 
         //T is bool
         template<typename _T,typename _IsBool = typename std::enable_if<std::is_same<bool,typename std::remove_const<typename std::remove_reference<_T>::type>::type>::value>::type>
