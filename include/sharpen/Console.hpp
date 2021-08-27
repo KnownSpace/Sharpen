@@ -158,7 +158,7 @@ namespace sharpen
             std::fprintf(file,"%p",ptr);
         }
 
-#ifdef SHARPEN_COMPILER_GCC
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnonnull"
 #endif
@@ -174,7 +174,7 @@ namespace sharpen
             }
             std::fprintf(file,"%p",cstr);
         }
-#ifdef SHARPEN_COMPILER_GCC
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
 
