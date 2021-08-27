@@ -158,15 +158,11 @@ namespace sharpen
             std::fprintf(file,"%p",ptr);
         }
 
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnonnull"
-#endif
-
         //T is c-style string
         template<typename _T,typename _IsCstr = decltype(sharpen::TypePrinter::IsCstr(std::declval<_T>()))>
-        static void Print(FILE *file,_T cstr,int,int,int,int,...)
+        static void Print(FILE *file,_T &&str,int,int,int,int,...)
         {
+            const char *cstr = str;
             if (cstr)
             {
                 std::fputs(cstr,file);
@@ -174,9 +170,6 @@ namespace sharpen
             }
             std::fprintf(file,"%p",cstr);
         }
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
 
         //T is bool
         template<typename _T,typename _IsBool = typename std::enable_if<std::is_same<bool,typename std::remove_const<typename std::remove_reference<_T>::type>::type>::value>::type>
