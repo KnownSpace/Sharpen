@@ -288,14 +288,14 @@ void sharpen::PosixNetStreamChannel::RequestPollRead(sharpen::Future<void> *futu
 {
     using FnPtr = void(*)(sharpen::Future<void> *,ssize_t);
     Callback cb = std::bind(reinterpret_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompletePollCallback),future,std::placeholders::_1);
-    this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::TryPollRead,this,std::move(cb)));
+    this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixNetStreamChannel::TryPollRead,this,std::move(cb)));
 }
 
 void sharpen::PosixNetStreamChannel::RequestPollWrite(sharpen::Future<void> *future)
 {
     using FnPtr = void(*)(sharpen::Future<void> *,ssize_t);
     Callback cb = std::bind(reinterpret_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompletePollCallback),future,std::placeholders::_1);
-    this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::TryPollWrite,this,std::move(cb)));
+    this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixNetStreamChannel::TryPollWrite,this,std::move(cb)));
 }
 
 void sharpen::PosixNetStreamChannel::CompleteConnectCallback(sharpen::Future<void> *future) noexcept
