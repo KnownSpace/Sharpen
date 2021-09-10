@@ -89,6 +89,11 @@ namespace sharpen
             });
             this->Run();
         }
+
+        sharpen::Size LoopNumber() const noexcept
+        {
+            return this->loops_.size();
+        }
     };
 }
 

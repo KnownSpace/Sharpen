@@ -35,6 +35,13 @@ namespace sharpen
         sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::EventEngine::GetEngine());
         timer->Await(time);
     }
+
+    void ParallelFor(sharpen::Size begin,sharpen::Size end,sharpen::Size grainsSize,std::function<void(sharpen::Size)> fn);
+
+    inline void ParallelFor(sharpen::Size begin,sharpen::Size end,std::function<void(sharpen::Size)> fn)
+    {
+        sharpen::ParallelFor(begin,end,1000,std::move(fn));
+    }
 }
 
 #endif
