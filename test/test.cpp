@@ -13,6 +13,8 @@
 #include <sharpen/AwaitOps.hpp>
 #include <sharpen/Console.hpp>
 #include <sharpen/TypeTraits.hpp>
+#include <sharpen/StopWatcher.hpp>
+#include <iostream>
 
 class TestHttpServer:public sharpen::HttpServer
 {
@@ -170,6 +172,44 @@ void ValidTest()
     sharpen::Print("int has func? ",tmp,"\n");
 }
 
+bool IsPrimeEx(size_t num)
+{
+	if (num <= 3) {
+		return num > 1;
+	}
+
+	// If a number is not between 6 it can not be a prime number
+	if (num % 6 != 1 && num % 6 != 5) {
+		return false;
+	}
+	size_t tmp = static_cast<size_t>(sqrt(static_cast<double>(num)));
+	for (size_t i = 5; i <= tmp; i += 6) {
+		if (num % i == 0 || num % (i + 2) == 0) {
+			return false;
+		}
+	}
+	return true;
+}
+
+void ParallelTest(size_t n)
+{
+    sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine();
+    engine.Startup([n]()
+    {
+        sharpen::StopWatcher sw;
+        sw.Begin();
+        sharpen::ParallelFor(0,n,[](size_t i)
+        {
+            if (IsPrimeEx(i))
+            {
+                sharpen::Print(i,"\t");
+            }
+        });
+        sw.Stop();
+        sharpen::Print("\n using ",sw.Compute()/CLOCKS_PER_SEC," sec\n");
+    });
+}
+
 int main(int argc, char const *argv[])
 {
     std::printf("run in %u cores machine\nprocess id: %u\n",std::thread::hardware_concurrency(),sharpen::GetProcessId());
@@ -178,6 +218,7 @@ int main(int argc, char const *argv[])
     {
         num = std::atoi(argv[1]);
     }
-    WebTest(num);
+    //WebTest(num);
+    ParallelTest(num);
     return 0;
 }
