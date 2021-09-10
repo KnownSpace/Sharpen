@@ -8,6 +8,24 @@
 
 namespace sharpen
 {
+    template<typename _T,typename _RawType = typename std::remove_const<typename std::remove_reference<_T>::type>::type,typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value || std::is_floating_point<_RawType>::value>::type,typename _IsUnsig = typename std::enable_if<std::is_unsigned<_RawType>::value>::type>
+    auto InternalGetAbs(_T &&v,int) -> decltype(std::forward<_T>(v))
+    {
+        return std::forward<_T>(v);
+    }
+
+    template<typename _T,typename _RawType = typename std::remove_const<typename std::remove_reference<_T>::type>::type,typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value || std::is_floating_point<_RawType>::value>::type>
+    auto InternalGetAbs(_T &&v,...) ->decltype(v < 0 ? -v:v)
+    {
+        return v < 0 ? -v:v;
+    }
+
+    template<typename _T>
+    auto GetAbs(_T &&v) ->decltype(sharpen::InternalGetAbs(v,0))
+    {
+        return sharpen::InternalGetAbs(v,0);
+    }
+
     //unsafe
     //bufSize must be checked by user
     template<typename _T,typename _RawType = typename std::remove_const<typename std::remove_reference<_T>::type>::type,typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value>::type>
@@ -19,12 +37,11 @@ namespace sharpen
         }
         const char *index = "0123456789ABCDEF";
         sharpen::Size i{0};
-        _RawType num{val};
+        _RawType num{sharpen::GetAbs(val)};
         if (val < 0)
         {
             buf[0] = '-';
             i++;
-            num = -num;
         }
         while (num)
         {
