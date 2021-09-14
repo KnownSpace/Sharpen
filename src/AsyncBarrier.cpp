@@ -1,6 +1,6 @@
 #include <sharpen/AsyncBarrier.hpp>
 
-sharpen::AsyncBarrier::AsyncBarrier(sharpen::Uint32 counter)
+sharpen::AsyncBarrier::AsyncBarrier(sharpen::Uint64 counter)
     :counter_(counter)
     ,waiters_()
     ,beginCounter_(counter)

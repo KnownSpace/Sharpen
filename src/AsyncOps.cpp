@@ -7,53 +7,53 @@ void sharpen::ParallelFor(sharpen::Size begin,sharpen::Size end,sharpen::Size gr
     {
         return;
     }
-    sharpen::Size pNum = sharpen::EventEngine::GetEngine().LoopNumber();
+    sharpen::Size parallelNumber{sharpen::EventEngine::GetEngine().LoopNumber()};
     //compute max grainsSize
-    sharpen::Size max = end - begin;
-    max /= pNum;
+    sharpen::Size max {end - begin};
+    max /= parallelNumber;
     if(max > grainsSize)
     {
         max = grainsSize;
     }
     //init iterator
     std::atomic_size_t ite{begin};
-    std::atomic_size_t comp{begin};
     //init future
     sharpen::AwaitableFuture<void> future;
+    std::atomic_size_t comp{parallelNumber};
     //launch fiber
-    for (sharpen::Size i = 0; i < pNum; i++)
+    for (sharpen::Size i = 0; i < parallelNumber; i++)
     {
-        sharpen::Launch([&ite,&comp,max,end,pNum,fn,&future]()
+        sharpen::Launch([&ite,max,end,parallelNumber,&fn,&comp,&future]()
         {
             while(true)
             {
                 sharpen::Size iterator = ite.load();
                 sharpen::Size size{0};
-                //interlocked
+                //get size
                 do
                 {
-                    if (iterator >= end)
-                    {
-                        return;
-                    }
+                    assert(end >= iterator);
                     size = end - iterator;
                     if(size > max)
                     {
                         size = max;
                     }
-                } while (!ite.compare_exchange_strong(iterator,iterator + size));
+                } while (!ite.compare_exchange_weak(iterator,iterator + size));
+                if (!size)
+                {
+                    sharpen::Size copy = comp.fetch_sub(1);
+                    copy -= 1;
+                    if (copy == 0)
+                    {
+                        future.Complete();
+                    }
+                    return;
+                }
                 //execute function
                 for (sharpen::Size i = 0; i < size; i++)
                 {
+                    assert(fn);
                     fn(i + iterator);
-                }
-                //complete
-                sharpen::Size ccomp = comp.fetch_add(size);
-                ccomp += size;
-                if (ccomp >= end)
-                {
-                    future.Complete();
-                    return;
                 }
             }
         });

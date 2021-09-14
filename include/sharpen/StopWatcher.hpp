@@ -30,7 +30,7 @@ namespace sharpen
             this->end_ = std::clock();
         }
 
-        sharpen::Uint64 Compute()
+        auto Compute() -> decltype(this->end_ - this->begin_)
         {
             return this->end_ - this->begin_;
         }
