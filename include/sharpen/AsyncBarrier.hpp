@@ -16,12 +16,12 @@ namespace sharpen
         using MyFuturePtr = MyFuture*;
         using List = std::list<MyFuturePtr>;
 
-        sharpen::Uint32 counter_;
+        sharpen::Uint64 counter_;
         List waiters_;
-        sharpen::Uint32 beginCounter_;
+        sharpen::Uint64 beginCounter_;
         sharpen::SpinLock lock_;
     public:
-        explicit AsyncBarrier(sharpen::Uint32 count);
+        explicit AsyncBarrier(sharpen::Uint64 count);
 
         void WaitAsync();
         

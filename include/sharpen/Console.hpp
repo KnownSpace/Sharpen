@@ -135,32 +135,16 @@ namespace sharpen
             std::fputs(str.c_str(),file);
         }
 
-        //T is int or uint
-        template<typename _T,typename _IsNum = typename std::enable_if<std::is_integral<typename std::remove_reference<_T>::type>::value>::type>
-        static void Print(FILE *file,_T &&val,int,...)
-        {
-            char buf[22] = {0};
-            sharpen::Itoa(val,10,buf);
-            std::fputs(buf,file);
-        }
-
-        //T is float or double
-        template<typename _T,typename _IsFloat = typename std::enable_if<std::is_floating_point<typename std::remove_reference<_T>::type>::value>::type>
-        static void Print(FILE *file,_T &&val,int,int,...)
-        {
-            std::fprintf(file,"%f",val);
-        }
-
         //T is pointer
         template<typename _T,typename _IsPtr = typename std::enable_if<std::is_pointer<_T>::value>::type>
-        static void Print(FILE *file,_T &&ptr,int,int,int,...)
+        static void Print(FILE *file,_T &&ptr,int,...)
         {
             std::fprintf(file,"%p",ptr);
         }
 
         //T is c-style string
         template<typename _T,typename _IsCstr = decltype(sharpen::TypePrinter::IsCstr(std::declval<_T>()))>
-        static void Print(FILE *file,_T &&str,int,int,int,int,...)
+        static void Print(FILE *file,_T &&str,int,int,...)
         {
             const char *cstr = str;
             if (cstr)
@@ -169,6 +153,22 @@ namespace sharpen
                 return;
             }
             std::fprintf(file,"%p",cstr);
+        }
+
+        //T is int or uint
+        template<typename _T,typename _IsNum = typename std::enable_if<std::is_integral<typename std::remove_reference<_T>::type>::value>::type>
+        static void Print(FILE *file,_T &&val,int,int,int,...)
+        {
+            char buf[22] = {0};
+            sharpen::Itoa(val,10,buf);
+            std::fputs(buf,file);
+        }
+
+        //T is float or double
+        template<typename _T,typename _IsFloat = typename std::enable_if<std::is_floating_point<typename std::remove_reference<_T>::type>::value>::type>
+        static void Print(FILE *file,_T &&val,int,int,int,int,...)
+        {
+            std::fprintf(file,"%f",val);
         }
 
         //T is bool

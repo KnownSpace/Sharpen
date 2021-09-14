@@ -63,5 +63,4 @@ namespace sharpen
         }
     }
 }
-
 #endif
