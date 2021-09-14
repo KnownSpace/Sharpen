@@ -219,27 +219,6 @@ void ParallelTest(size_t n)
         sw.Stop();
         double nt = sw.Compute()/CLOCKS_PER_SEC;
         sharpen::Print("\nparallel version using ",pt," sec\n","normal version using ",nt," sec\n");
-        std::vector<size_t> data;
-        for (size_t i = 0; i < data.size(); i++)
-        {
-            data.push_back(i);
-        }
-        sw.Begin();
-        std::function<void(decltype(data)::iterator)> fn = [](decltype(data)::iterator ite)
-        {
-            sharpen::Print(*ite,"\t");
-        };
-        sharpen::ParallelForeach(data.begin(),data.end(),fn);
-        sw.Stop();
-        pt = sw.Compute();
-        sw.Begin();
-        for (auto &&i : data)
-        {
-            sharpen::Print(i,"\t");
-        }
-        sw.Stop();
-        nt = sw.Compute();
-        sharpen::Print("\nparallel version using ",pt," sec\n","normal version using ",nt," sec\n");
     });
 }
 
