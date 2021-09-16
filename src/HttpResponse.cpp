@@ -44,6 +44,10 @@ sharpen::HttpResponse &sharpen::HttpResponse::operator=(const Self &other)
 
 sharpen::HttpResponse &sharpen::HttpResponse::operator=(Self &&other) noexcept
 {
+    if(this == std::addressof(other))
+    {
+        return *this;
+    }
     this->version_ = other.version_;
     this->status_ = other.status_;
     this->header_ = std::move(other.header_);

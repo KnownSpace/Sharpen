@@ -75,6 +75,10 @@ namespace sharpen
 
         Self &operator=(Self &&other) noexcept
         {
+            if(this == std::addressof(other))
+            {
+                return *this;
+            }
             MyBase::operator=(std::move(other));
             this->awaiter_ = std::move(other.awaiter_);
             this->pendingFiber_ = std::move(other.awaiter_);

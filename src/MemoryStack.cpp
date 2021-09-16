@@ -31,6 +31,10 @@ sharpen::MemoryStack::~MemoryStack() noexcept
 
 sharpen::MemoryStack &sharpen::MemoryStack::operator=(sharpen::MemoryStack &&other) noexcept
 {
+    if(this == std::addressof(other))
+    {
+        return *this;
+    }
     this->size_ = 0;
     this->mem_ = nullptr;
     this->Swap(other);

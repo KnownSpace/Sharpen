@@ -27,6 +27,10 @@ sharpen::HttpHeader &sharpen::HttpHeader::operator=(const Self &other)
 
 sharpen::HttpHeader &sharpen::HttpHeader::operator=(Self &&other) noexcept
 {
+    if(this == std::addressof(other))
+    {
+        return *this;
+    }
     this->headers_ = std::move(other.headers_);
     return *this;
 }

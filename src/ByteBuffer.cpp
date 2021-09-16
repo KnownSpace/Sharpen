@@ -40,6 +40,10 @@ sharpen::ByteBuffer::ByteBuffer(sharpen::ByteBuffer &&other) noexcept
 
 sharpen::ByteBuffer &sharpen::ByteBuffer::operator=(sharpen::ByteBuffer &&other) noexcept
 {
+    if(this == std::addressof(other))
+    {
+        return *this;
+    }
     this->vector_ = std::move(other.vector_);
     this->mark_ = other.mark_;
     return *this;

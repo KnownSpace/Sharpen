@@ -60,6 +60,10 @@ sharpen::FileHandle sharpen::EventFd::GetHandle() noexcept
 
 sharpen::EventFd &sharpen::EventFd::operator=(sharpen::EventFd &&other) noexcept
 {
+    if(this == std::addressof(other))
+    {
+        return *this;
+    }
     this->handle_ = other.handle_;
     other.handle_ = -1;
     return *this;

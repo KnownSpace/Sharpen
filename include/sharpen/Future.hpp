@@ -74,6 +74,10 @@ namespace sharpen
 
         Self &operator=(Self &&other) noexcept
         {
+            if(this == std::addressof(other))
+            {
+                return *this;
+            }
             this->lock_ = std::move(other.lock_);
             this->value_ = std::move(other.value_);
             this->cond_ = std::move(other.cond_);
@@ -262,6 +266,10 @@ namespace sharpen
 
         Self &operator=(Self &&other) noexcept
         {
+            if(this == std::addressof(other))
+            {
+                return *this;
+            }
             this->lock_ = std::move(other.lock_);
             this->cond_ = std::move(other.cond_);
             this->callback_ = std::move(other.callback_);

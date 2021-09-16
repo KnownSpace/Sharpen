@@ -32,6 +32,10 @@ sharpen::HttpBody &sharpen::HttpBody::operator=(const Self &other)
 
 sharpen::HttpBody &sharpen::HttpBody::operator=(Self &&other) noexcept
 {
+    if(this == std::addressof(other))
+    {
+        return *this;
+    }
     this->data_ = std::move(other.data_);
     return *this;
 }
