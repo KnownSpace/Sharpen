@@ -16,6 +16,7 @@
 #include <sharpen/StopWatcher.hpp>
 #include <iostream>
 #include <sharpen/AsyncMutex.hpp>
+#include <cmath>
 
 class TestHttpServer:public sharpen::HttpServer
 {
@@ -183,7 +184,7 @@ bool IsPrimeEx(size_t num)
 	if (num % 6 != 1 && num % 6 != 5) {
 		return false;
 	}
-	size_t tmp = static_cast<size_t>(sqrt(static_cast<double>(num)));
+	size_t tmp = static_cast<size_t>(std::sqrt(static_cast<double>(num)));
 	for (size_t i = 5; i <= tmp; i += 6) {
 		if (num % i == 0 || num % (i + 2) == 0) {
 			return false;
