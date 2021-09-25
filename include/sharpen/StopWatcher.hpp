@@ -20,17 +20,17 @@ namespace sharpen
 
         ~StopWatcher() noexcept = default;
 
-        void Begin()
+        void Begin() noexcept
         {
             this->begin_ = std::clock();
         }
 
-        void Stop()
+        void Stop() noexcept
         {
             this->end_ = std::clock();
         }
 
-        auto Compute() -> decltype(this->end_ - this->begin_)
+        std::clock_t Compute() noexcept
         {
             return this->end_ - this->begin_;
         }
