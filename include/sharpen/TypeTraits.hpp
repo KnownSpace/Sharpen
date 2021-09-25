@@ -10,8 +10,17 @@ namespace sharpen
     struct BoolType
     {
         constexpr static bool Value = _Value;
-    };
 
+        constexpr bool operator()() const noexcept
+        {
+            return _Value;
+        }
+
+        constexpr operator bool() const noexcept
+        {
+            return _Value;
+        }
+    };
     
     using TrueType = sharpen::BoolType<true>;
 
