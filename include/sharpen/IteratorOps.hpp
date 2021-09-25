@@ -27,7 +27,7 @@ namespace sharpen
     }
 
     template<typename _Iterator>
-    inline auto IteratorForward(_Iterator ite,sharpen::Size n) SHARPEN_NOEXCEPT_IF(ite,n,0) -> decltype(sharpen::InternalIteratorForward(ite,n,0))
+    inline auto IteratorForward(_Iterator ite,sharpen::Size n) SHARPEN_NOEXCEPT_IF(sharpen::InternalIteratorForward(ite,n,0)) -> decltype(sharpen::InternalIteratorForward(ite,n,0))
     {
         return sharpen::InternalIteratorForward(ite,n,0);   
     }
