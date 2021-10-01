@@ -4,11 +4,14 @@
 
 #include <type_traits>
 
+#include "TypeDef.hpp"
+
 namespace sharpen
 {
     template<bool _Value>
     struct BoolType
     {
+        
         constexpr static bool Value = _Value;
 
         constexpr bool operator()() const noexcept
@@ -102,6 +105,54 @@ namespace sharpen
 
     template<bool _Cond,typename _T = void>
     using EnableIf = typename std::enable_if<_Cond,_T>::type;
+
+    template<bool _Cond,typename _TrueType,typename _FalseType>
+    struct InternalTypeIfElse
+    {
+        using Type = typename _TrueType;
+    };
+
+    template<typename _TrueType,typename _FalseType>
+    struct InternalTypeIfElse<false,_TrueType,_FalseType>
+    {
+        using Type = typename _FalseType;
+    };
+    
+    template<bool _Cond,typename _TrueType,typename _FalseType>
+    using EnableIfElse = typename sharpen::InternalTypeIfElse<_Cond,_TrueType,_FalseType>::Type;
+
+    struct InternalEmptyTestBase
+    {
+        char flag_;
+    };
+
+    template<typename _T>
+    struct InternalEmptyTest:public _T,public sharpen::InternalEmptyTestBase
+    {};
+
+    template<typename _T,sharpen::Size _Size>
+    struct InternalIsEmptyType:public sharpen::FalseType
+    {
+    };
+
+    template<sharpen::Size _Size>
+    struct InternalIsEmptyType<bool,_Size>:public sharpen::FalseType
+    {};
+
+    template<sharpen::Size _Size>
+    struct InternalIsEmptyType<char,_Size>:public sharpen::FalseType
+    {};
+
+    template<sharpen::Size _Size>
+    struct InternalIsEmptyType<unsigned char,_Size>:public sharpen::FalseType
+    {};
+
+    template<typename _T>
+    struct InternalIsEmptyType<_T,1>:public sharpen::EnableIfElse<(sizeof(sharpen::InternalEmptyTest<_T>) == sizeof(sharpen::InternalEmptyTestBase)),sharpen::TrueType,sharpen::FalseType>
+    {};
+
+    template<typename _T>
+    using IsEmptyType = sharpen::InternalIsEmptyType<_T,sizeof(_T)>;
 }
 
 #endif
