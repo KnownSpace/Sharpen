@@ -17,6 +17,7 @@
 #include <iostream>
 #include <sharpen/AsyncMutex.hpp>
 #include <cmath>
+#include <sharpen/CompressedPair.hpp>
 
 class TestHttpServer:public sharpen::HttpServer
 {

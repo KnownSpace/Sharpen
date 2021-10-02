@@ -11,7 +11,6 @@ namespace sharpen
     template<bool _Value>
     struct BoolType
     {
-        
         constexpr static bool Value = _Value;
 
         constexpr bool operator()() const noexcept
@@ -30,7 +29,7 @@ namespace sharpen
     using FalseType = sharpen::BoolType<false>;
 
     template<typename _Fn,typename ..._Args>
-    struct IsCallable
+    struct InternalIsCallable
     {
     private:
         template<typename _Check = decltype(std::declval<_Fn>()(std::declval<_Args>()...))>
@@ -44,10 +43,13 @@ namespace sharpen
             return sharpen::FalseType();
         }
     public:
-        using Type = decltype(sharpen::IsCallable<_Fn,_Args...>::Test(0));
+        using Type = decltype(sharpen::InternalIsCallable<_Fn,_Args...>::Test(0));
 
         static constexpr bool Value = Type::Value;
     };
+
+    template<typename _Fn,typename ..._Args>
+    using IsCallable = typename sharpen::InternalIsCallable<_Fn,_Args...>::Type;
 
     template<typename ..._T>
     using TypeChecker = void;
@@ -109,31 +111,39 @@ namespace sharpen
     template<bool _Cond,typename _TrueType,typename _FalseType>
     struct InternalTypeIfElse
     {
-        using Type = typename _TrueType;
+        using Type = _TrueType;
     };
 
     template<typename _TrueType,typename _FalseType>
     struct InternalTypeIfElse<false,_TrueType,_FalseType>
     {
-        using Type = typename _FalseType;
+        using Type = _FalseType;
     };
     
     template<bool _Cond,typename _TrueType,typename _FalseType>
     using EnableIfElse = typename sharpen::InternalTypeIfElse<_Cond,_TrueType,_FalseType>::Type;
+
+    template<typename _T>
+    using InternalIsCompletedType = auto(*)() -> decltype(sizeof(_T));
+
+    template<typename _T>
+    using IsCompletedType = sharpen::IsMatches<sharpen::InternalIsCompletedType,_T>;
 
     struct InternalEmptyTestBase
     {
         char flag_;
     };
 
+    struct InternalEmptyType
+    {};
+
     template<typename _T>
     struct InternalEmptyTest:public _T,public sharpen::InternalEmptyTestBase
     {};
 
     template<typename _T,sharpen::Size _Size>
-    struct InternalIsEmptyType:public sharpen::FalseType
-    {
-    };
+    struct InternalIsEmptyType:sharpen::FalseType
+    {};
 
     template<sharpen::Size _Size>
     struct InternalIsEmptyType<bool,_Size>:public sharpen::FalseType
@@ -148,11 +158,16 @@ namespace sharpen
     {};
 
     template<typename _T>
-    struct InternalIsEmptyType<_T,1>:public sharpen::EnableIfElse<(sizeof(sharpen::InternalEmptyTest<_T>) == sizeof(sharpen::InternalEmptyTestBase)),sharpen::TrueType,sharpen::FalseType>
+    struct InternalIsEmptyType<_T,sizeof(sharpen::InternalEmptyType)>:public sharpen::EnableIfElse<(sizeof(sharpen::InternalEmptyTest<_T>) == sizeof(sharpen::InternalEmptyTestBase)),sharpen::TrueType,sharpen::FalseType>
     {};
-
+    
+    template<typename _T,typename _Check = void>
+    struct IsEmptyType:public sharpen::FalseType
+    {};
+    
     template<typename _T>
-    using IsEmptyType = sharpen::InternalIsEmptyType<_T,sizeof(_T)>;
+    struct IsEmptyType<_T,sharpen::EnableIf<sharpen::IsCompletedType<_T>::Value>>:public sharpen::InternalIsEmptyType<_T,sizeof(_T)>
+    {};
 }
 
 #endif
