@@ -26,6 +26,18 @@ namespace sharpen
         return sharpen::InternalGetAbs(v,0);
     }
 
+    template<typename _T,typename _Check = std::enable_if<(std::is_integral<_T>::value && std::is_signed<_T>::value) || std::is_floating_point<_T>::value>::type>
+    constexpr bool IsNegative(const _T &value) noexcept
+    {
+        return value < 0;
+    }
+
+    template<typename _T,typename _Check = std::enable_if<std::is_integral<_T>::value && std::is_unsigned<_T>::value>::type>
+    constexpr bool IsNegative(const _T &value) noexcept
+    {
+        return false;
+    }
+
     //unsafe
     //bufSize must be checked by user
     template<typename _T,typename _RawType = typename std::remove_const<typename std::remove_reference<_T>::type>::type,typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value>::type>
