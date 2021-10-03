@@ -64,10 +64,13 @@ namespace sharpen
         
         void Swap(Self &other) noexcept
         {
-            std::swap(this->objects_,other.objects_);
-            std::swap(this->creator_,other.creator_);
-            std::swap(this->deletor_,other.deletor_);
-            std::swap(this->maxReserved_,other.maxReserved_);
+            if (&other != this)
+            {
+                std::swap(this->objects_,other.objects_);
+                std::swap(this->creator_,other.creator_);
+                std::swap(this->deletor_,other.deletor_);
+                std::swap(this->maxReserved_,other.maxReserved_);
+            }
         }
         
         inline void swap(Self &other) noexcept

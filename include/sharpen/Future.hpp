@@ -90,13 +90,16 @@ namespace sharpen
 
         void swap(Self &other) noexcept
         {
-            this->lock_.swap(other.lock_);
-            this->value_.swap(other.value_);
-            this->cond_.swap(other.cond_);
-            this->callback_.swap(other.callback_);
-            std::swap(this->state_,other.state_);
-            std::swap(this->error_,other.error_);
-            std::swap(this->waiters_,other.waiters_);
+            if (&other != this)
+            {
+                this->lock_.swap(other.lock_);
+                this->value_.swap(other.value_);
+                this->cond_.swap(other.cond_);
+                this->callback_.swap(other.callback_);
+                std::swap(this->state_,other.state_);
+                std::swap(this->error_,other.error_);
+                std::swap(this->waiters_,other.waiters_);
+            }
         }
 
         inline void Swap(Self &&other) noexcept
@@ -281,12 +284,15 @@ namespace sharpen
 
         void swap(Self &other) noexcept
         {
-            this->lock_.swap(other.lock_);
-            this->cond_.swap(other.cond_);
-            this->callback_.swap(other.callback_);
-            std::swap(this->state_,other.state_);
-            std::swap(this->error_,other.error_);
-            std::swap(this->waiters_,other.waiters_);
+            if (&other != this)
+            {
+                this->lock_.swap(other.lock_);
+                this->cond_.swap(other.cond_);
+                this->callback_.swap(other.callback_);
+                std::swap(this->state_,other.state_);
+                std::swap(this->error_,other.error_);
+                std::swap(this->waiters_,other.waiters_);
+            }
         }
 
         inline void Swap(Self &other) noexcept

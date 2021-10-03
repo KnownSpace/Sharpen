@@ -47,8 +47,11 @@ namespace sharpen
 
         void Swap(Self &other) noexcept
         {
-            std::swap(this->first_,other.first_);
-            std::swap(this->second_,other.second_);
+            if (&other != this)
+            {
+                std::swap(this->first_,other.first_);
+                std::swap(this->second_,other.second_);
+            }
         }
 
         inline void swap(Self &other) noexcept
@@ -126,10 +129,13 @@ namespace sharpen
 
         void Swap(Self &other) noexcept
         {
-            MyFirstBase &first = *this,&otherFirst = other;
-            MySecondBase &second = *this,&otherSecond = other;
-            std::swap(first,otherFirst);
-            std::swap(second,otherSecond);
+            if (&other != this)
+            {
+                MyFirstBase &first = *this,&otherFirst = other;
+                MySecondBase &second = *this,&otherSecond = other;
+                std::swap(first,otherFirst);
+                std::swap(second,otherSecond);
+            }
         }
 
         inline void swap(Self &other) noexcept
@@ -205,9 +211,12 @@ namespace sharpen
 
         void Swap(Self &other) noexcept
         {
-            std::swap(this->second_,other.second_);
-            MyBase &base = *this,&otherBase = other;
-            std::swap(base,otherBase);
+            if (&other != this)
+            {
+                std::swap(this->second_,other.second_);
+                MyBase &base = *this,&otherBase = other;
+                std::swap(base,otherBase);
+            }
         }
 
         inline void swap(Self &other) noexcept
@@ -283,9 +292,12 @@ namespace sharpen
 
         void Swap(Self &other) noexcept
         {
-            std::swap(this->frist_,other.first_);
-            MyBase &base = *this,&otherBase = other;
-            std::swap(base,otherBase);
+            if (&other != this)
+            {
+                std::swap(this->frist_,other.first_);
+                MyBase &base = *this,&otherBase = other;
+                std::swap(base,otherBase);
+            }
         }
 
         inline void swap(Self &other) noexcept
@@ -362,9 +374,12 @@ namespace sharpen
 
         void Swap(Self &other) noexcept
         {
-            std::swap(this->second_,other.second_);
-            MyBase &base = *this,&otherBase = other;
-            std::swap(base,otherBase);
+            if (&other != this)
+            {
+                std::swap(this->second_,other.second_);
+                MyBase &base = *this,&otherBase = other;
+                std::swap(base,otherBase);
+            }
         }
 
         inline void swap(Self &other) noexcept

@@ -126,7 +126,10 @@ sharpen::Size sharpen::HttpHeader::CopyTo(sharpen::ByteBuffer &buf,sharpen::Size
 
 void sharpen::HttpHeader::Swap(sharpen::HttpHeader &other) noexcept
 {
-    std::swap(this->headers_,other.headers_);
+    if (&other != this)
+    {
+        std::swap(this->headers_,other.headers_);
+    }
 }
 
 void sharpen::HttpHeader::Clear()

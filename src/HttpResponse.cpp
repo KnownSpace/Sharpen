@@ -57,10 +57,13 @@ sharpen::HttpResponse &sharpen::HttpResponse::operator=(Self &&other) noexcept
 
 void sharpen::HttpResponse::Swap(Self &other) noexcept
 {
-    std::swap(this->version_,other.version_);
-    std::swap(this->status_,other.status_);
-    this->header_.Swap(other.header_);
-    this->body_.Swap(other.body_);
+    if (&other != this)
+    {
+        std::swap(this->version_,other.version_);
+        std::swap(this->status_,other.status_);
+        this->header_.Swap(other.header_);
+        this->body_.Swap(other.body_);
+    }
 }
 
 void sharpen::HttpResponse::Clear()

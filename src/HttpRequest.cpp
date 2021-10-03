@@ -58,11 +58,14 @@ sharpen::HttpRequest &sharpen::HttpRequest::operator=(Self &&other) noexcept
 
 void sharpen::HttpRequest::Swap(Self &other) noexcept
 {
-    std::swap(this->method_,other.method_);
-    this->url_.swap(other.url_);
-    std::swap(this->version_,other.version_);
-    this->header_.swap(other.header_);
-    this->body_.swap(other.body_);
+    if (&other != this)
+    {
+        std::swap(this->method_,other.method_);
+        this->url_.swap(other.url_);
+        std::swap(this->version_,other.version_);
+        this->header_.swap(other.header_);
+        this->body_.swap(other.body_);
+    }
 }
 
 void sharpen::HttpRequest::Clear()

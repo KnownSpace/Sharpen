@@ -74,12 +74,15 @@ sharpen::Size sharpen::MemoryStack::Size() const noexcept
 
 void sharpen::MemoryStack::Swap(sharpen::MemoryStack &other) noexcept
 {
-    void *mem = this->mem_;
-    sharpen::Size size = this->size_;
-    this->mem_ = other.mem_;
-    this->size_ = other.size_;
-    other.mem_ = mem;
-    other.size_ = size;
+    if(&other != this)
+    {
+        void *mem = this->mem_;
+        sharpen::Size size = this->size_;
+        this->mem_ = other.mem_;
+        this->size_ = other.size_;
+        other.mem_ = mem;
+        other.size_ = size;
+    }
 }
 
 sharpen::MemoryStack sharpen::MemoryStack::AllocStack(sharpen::Size size)
