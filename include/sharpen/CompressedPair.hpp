@@ -203,7 +203,7 @@ namespace sharpen
             return this->second_;
         }
 
-        void Swap(Self &other)
+        void Swap(Self &other) noexcept
         {
             std::swap(this->second_,other.second_);
             MyBase &base = *this,&otherBase = other;
@@ -281,7 +281,7 @@ namespace sharpen
             return *this;
         }
 
-        void Swap(Self &other)
+        void Swap(Self &other) noexcept
         {
             std::swap(this->frist_,other.first_);
             MyBase &base = *this,&otherBase = other;
@@ -358,6 +358,18 @@ namespace sharpen
         const _T &Second() const noexcept
         {
             return this->second_;
+        }
+
+        void Swap(Self &other) noexcept
+        {
+            std::swap(this->second_,other.second_);
+            MyBase &base = *this,&otherBase = other;
+            std::swap(base,otherBase);
+        }
+
+        inline void swap(Self &other) noexcept
+        {
+            this->Swap(other);
         }
     };
 
