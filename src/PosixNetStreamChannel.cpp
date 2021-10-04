@@ -211,6 +211,7 @@ void sharpen::PosixNetStreamChannel::TryAccept(AcceptCallback cb)
 
 void sharpen::PosixNetStreamChannel::TryConnect(const sharpen::IEndPoint &endPoint,ConnectCallback cb)
 {
+    this->status_ = sharpen::PosixNetStreamChannel::IoStatus::Connect;
     int r = ::connect(this->handle_,endPoint.GetAddrPtr(),endPoint.GetAddrLen());
     if(r == -1)
     {
@@ -271,7 +272,6 @@ void sharpen::PosixNetStreamChannel::RequestSendFile(sharpen::FileHandle handle,
 
 void sharpen::PosixNetStreamChannel::RequestConnect(const sharpen::IEndPoint &endPoint,sharpen::Future<void> *future)
 {
-    this->status_ = sharpen::PosixNetStreamChannel::IoStatus::Connect;
     using FnPtr = void (*)(sharpen::Future<void> *);
     ConnectCallback cb = std::bind(reinterpret_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompleteConnectCallback),future);
     this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixNetStreamChannel::TryConnect,this,std::cref(endPoint),std::move(cb)));
