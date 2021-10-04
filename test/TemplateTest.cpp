@@ -15,7 +15,7 @@ struct A
 void ValidTest()
 {
     std::printf("valid test begin\n");
-    int tmp = sharpen::IsMatches<HasFunc,A>::Value;
+    bool tmp = sharpen::IsMatches<HasFunc,A>::Value;
     std::printf("a has func? %d\n",tmp);
     assert(tmp == true);
     tmp = sharpen::IsMatches<HasFunc,int>::Value;
@@ -31,7 +31,7 @@ void IsCompletedTest()
 {
     std::printf("is completed type test begin\n");
     class inc;
-    int tmp = sharpen::IsCompletedType<inc>::Value;
+    bool tmp = sharpen::IsCompletedType<inc>::Value;
     std::printf("inc is completed type? %d\n",tmp);
     assert(tmp == false);
     tmp = sharpen::IsCompletedType<int>::Value;
@@ -43,7 +43,7 @@ void IsCompletedTest()
 void IsEmptyTest()
 {
     std::printf("is empty type test begin\n");
-    int tmp = sharpen::IsEmptyType<Empty>::Value;
+    bool tmp = sharpen::IsEmptyType<Empty>::Value;
     std::printf("empty is empty type? %d\n",tmp);
     assert(tmp == true);
     tmp = sharpen::IsEmptyType<int>::Value;
@@ -56,7 +56,7 @@ void CompressedTest()
 {
     std::printf("compressed pair test begin\n");
     sharpen::CompressedPair<Empty,int> p;
-    int tmp = sizeof(p) == sizeof(int);
+    bool tmp = sizeof(p) == sizeof(int);
     std::printf("compressed pair size == int size? %d\n",tmp);
     assert(tmp == true);
     std::printf("compressed pair test pass\n");
