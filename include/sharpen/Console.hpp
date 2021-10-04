@@ -7,6 +7,7 @@
 
 #include "Converter.hpp"
 #include "CompilerInfo.hpp"
+#include "Nonmovable.hpp"
 
 namespace sharpen
 {
