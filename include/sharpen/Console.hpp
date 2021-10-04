@@ -168,7 +168,12 @@ namespace sharpen
         template<typename _T,typename _IsFloat = typename std::enable_if<std::is_floating_point<typename std::remove_reference<_T>::type>::value>::type>
         static void Print(FILE *file,_T &&val,int,int,int,int,...)
         {
-            std::fprintf(file,"%f",val);
+            const char *format = "%f";
+            if (sizeof(val) == sizeof(long double))
+            {
+                format = "%Lf";
+            }
+            std::fprintf(file,format,val);
         }
 
         //T is bool
