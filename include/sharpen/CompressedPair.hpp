@@ -2,6 +2,8 @@
 #ifndef _SHARPEN_COMPRESSEDPAIR_HPP
 #define _SHARPEN_COMPRESSEDPAIR_HPP
 
+#include <utility>
+
 #include "TypeDef.hpp"
 #include "TypeTraits.hpp"
 

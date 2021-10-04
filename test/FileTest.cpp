@@ -14,14 +14,15 @@ void FileTest()
         channel->Register(engine);
         char str[] = "hello";
         sharpen::Size size = channel->WriteAsync(str,sizeof(str) - 1,0);
-        std::printf("write test pass\n");
+        std::printf("write size is %zu\n",size);
         assert(size == sizeof(str)-1);
-        char buf[4096] = {0};
+        std::printf("write test pass\n");
+        char buf[sizeof(str)] = {0};
         channel->Close();
         channel = sharpen::MakeFileChannel("./hello.txt",sharpen::FileAccessModel::Read,sharpen::FileOpenModel::Open);
         channel->Register(engine);
-        size = channel->ReadAsync(buf,sizeof(buf),0);
-        assert(size == sizeof(str)-1);
+        size = channel->ReadAsync(buf,sizeof(buf) - 1,0);
+        std::printf("read size is %zu\n",size);
         for (size_t i = 0; i < sizeof(str) -1; i++)
         {
             assert(buf[i] == str[i]);
