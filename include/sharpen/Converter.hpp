@@ -27,15 +27,21 @@ namespace sharpen
     }
 
     template<typename _T,typename _Check = std::enable_if<(std::is_integral<_T>::value && std::is_signed<_T>::value) || std::is_floating_point<_T>::value>::type>
-    constexpr bool IsNegative(const _T &value) noexcept
+    constexpr bool InternalIsNegative(const _T &value,...) noexcept
     {
         return value < 0;
     }
 
     template<typename _T,typename _Check = std::enable_if<std::is_integral<_T>::value && std::is_unsigned<_T>::value>::type>
-    constexpr bool IsNegative(const _T &value) noexcept
+    constexpr bool InternalIsNegative(const _T &value,int) noexcept
     {
         return false;
+    }
+
+    template<typename _T>
+    constexpr auto IsNegative(const _T &value) noexcept -> decltype(sharpen::InternalIsNegative(value,0))
+    {
+        return sharpen::IsNegative(value,0);
     }
 
     //unsafe
