@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14.0)
 
-include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/thrid_party/include")
+include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/lib/include")
 
 #build fcontext
 
@@ -57,17 +57,18 @@ elseif (WIN32)
     
 endif()
 
-set(fcontext_src "${PROJECT_SOURCE_DIR}/thrid_party/boost.context/asm/make_${CPU_ARCH}_${ASM_EXT}"
-                "${PROJECT_SOURCE_DIR}/thrid_party/boost.context/asm/jump_${CPU_ARCH}_${ASM_EXT}"
-                "${PROJECT_SOURCE_DIR}/thrid_party/boost.context/asm/ontop_${CPU_ARCH}_${ASM_EXT}")
+set(fcontext_src "${PROJECT_SOURCE_DIR}/lib/boost.context/asm/make_${CPU_ARCH}_${ASM_EXT}"
+                "${PROJECT_SOURCE_DIR}/lib/boost.context/asm/jump_${CPU_ARCH}_${ASM_EXT}"
+                "${PROJECT_SOURCE_DIR}/lib/boost.context/asm/ontop_${CPU_ARCH}_${ASM_EXT}")
 
 #build llhttp
-aux_source_directory("${PROJECT_SOURCE_DIR}/thrid_party/llhttp/src" llhttp_src)
+aux_source_directory("${PROJECT_SOURCE_DIR}/lib/llhttp/src" llhttp_src)
 
 #build src
+file(GLOB_RECURSE headers "${PROJECT_SOURCE_DIR}/include/sharpen" "*.h" "*.hpp")
 aux_source_directory("${PROJECT_SOURCE_DIR}/src" src)
 add_library(llhttp ${llhttp_src})
-add_library(sharpen ${src} ${fcontext_src})
+add_library(sharpen ${src} ${fcontext_src} ${headers})
 add_library(sharpen::sharpen ALIAS sharpen)
 
 if(MSVC)
