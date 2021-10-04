@@ -6,6 +6,7 @@ void TimeWheelTest()
     sharpen::EventEngine &engine = sharpen::EventEngine::SetupSingleThreadEngine();
     engine.Startup([]()
     {
+        std::printf("timer test begin\n");
         sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::EventEngine::GetEngine());
         sharpen::TimeWheel wheel(std::chrono::seconds(1),10,timer);
         sharpen::TimeWheelPtr upstream = std::make_shared<sharpen::TimeWheel>(std::chrono::seconds(10),6);
@@ -22,6 +23,7 @@ void TimeWheelTest()
             token = true;
         });
         wheel.RunAsync();
+        std::printf("timer test pass\n");
     });
 }
 

@@ -6,6 +6,7 @@ void ParallelTest(size_t n)
     sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine();
     engine.Startup([n]()
     {
+        std::printf("parallel test begin\n");
         std::atomic_size_t ar{0};
         sharpen::ParallelFor(0,n,[&ar](size_t i)
         {
@@ -18,6 +19,7 @@ void ParallelTest(size_t n)
         }
         std::printf("r is %zu ar is %zu\n",r,ar.load());
         assert(r == ar);
+        std::printf("parallel test pass\n");
     });
 }
 

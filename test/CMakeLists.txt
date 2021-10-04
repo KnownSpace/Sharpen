@@ -15,6 +15,8 @@ add_executable(consoletest "${PROJECT_SOURCE_DIR}/test/ConsoleTest.cpp")
 add_executable(paralleltest "${PROJECT_SOURCE_DIR}/test/ParallelTest.cpp")
 #template test
 add_executable(templatetest "${PROJECT_SOURCE_DIR}/test/TemplateTest.cpp")
+#file test
+add_executable(filetest "${PROJECT_SOURCE_DIR}/test/FileTest.cpp")
 #link
 target_link_libraries(webserver sharpen)
 
@@ -23,6 +25,7 @@ target_link_libraries(timertest sharpen)
 target_link_libraries(consoletest sharpen)
 target_link_libraries(paralleltest sharpen)
 target_link_libraries(templatetest sharpen)
+target_link_libraries(filetest sharpen)
 #test
 enable_testing()
 #tests
@@ -31,3 +34,4 @@ add_test(NAME timer_test COMMAND ./timertest)
 add_test(NAME console_test COMMAND ./consoletest)
 add_test(NAME parallel_test COMMAND ./paralleltest)
 add_test(NAME template_test COMMAND ./templatetest)
+add_test(NAME file_test COMMAND ./filetest)
