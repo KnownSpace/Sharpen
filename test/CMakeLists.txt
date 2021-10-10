@@ -19,6 +19,8 @@ add_executable(templatetest "${PROJECT_SOURCE_DIR}/test/TemplateTest.cpp")
 add_executable(filetest "${PROJECT_SOURCE_DIR}/test/FileTest.cpp")
 #network test
 add_executable(networktest "${PROJECT_SOURCE_DIR}/test/NetworkTest.cpp")
+#option test
+add_executable(optiontest "${PROJECT_SOURCE_DIR}/test/OptionTest.cpp")
 #link
 target_link_libraries(webserver sharpen)
 
@@ -29,6 +31,7 @@ target_link_libraries(paralleltest sharpen)
 target_link_libraries(templatetest sharpen)
 target_link_libraries(filetest sharpen)
 target_link_libraries(networktest sharpen)
+target_link_libraries(optiontest sharpen)
 #test
 enable_testing()
 #tests
@@ -44,3 +47,4 @@ add_test(NAME parallel_test COMMAND "./paralleltest${extname}")
 add_test(NAME template_test COMMAND "./templatetest${extname}")
 add_test(NAME file_test COMMAND "./filetest${extname}")
 add_test(NAME network_test COMMAND "./networktest${extname}")
+add_test(NAME option_test COMMAND "./optiontest${extname}")
