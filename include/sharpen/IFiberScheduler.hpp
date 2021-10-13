@@ -7,7 +7,7 @@
 #include "Nonmovable.hpp"
 
 #ifndef SHARPEN_FIBER_STACK_SIZE
-#define SHARPEN_FIBER_STACK_SIZE 16*1024
+#define SHARPEN_FIBER_STACK_SIZE 64*1024
 #endif
 
 namespace sharpen
