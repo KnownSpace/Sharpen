@@ -32,14 +32,17 @@ namespace sharpen
             :epoch_(0)
             ,ptrs_(bufferSize_)
             ,flag_()
-        {
-        }
+        {}
 
-        AtomicPtr(_Ptr ptr)
-            : AtomicPtr()
+        explicit AtomicPtr(_Ptr ptr)
+            :AtomicPtr()
         {
             this->Store(std::move(ptr));
         }
+
+        explicit AtomicPtr(std::nullptr_t)
+            :AtomicPtr()
+        {}
 
         ~AtomicPtr() noexcept = default;
 
