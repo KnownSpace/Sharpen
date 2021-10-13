@@ -6,13 +6,18 @@ namespace sharpen
 {
     class Noncopyable
     {
+    private:
         using Self = sharpen::Noncopyable;
     public:
-        Noncopyable() = default;
+        Noncopyable() noexcept = default;
 
-        Noncopyable(const Self &) = delete;
+        Noncopyable(const Self &) noexcept = delete;
 
         Noncopyable(Self &&) noexcept = default;
+
+        Self &operator=(const Self &) noexcept = delete;
+
+        Self &operator=(Self &&other) noexcept = default;
 
         ~Noncopyable() noexcept = default;
     };

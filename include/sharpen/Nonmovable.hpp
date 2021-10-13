@@ -7,11 +7,15 @@ namespace sharpen
     {
         using Self = sharpen::Nonmovable;
     public:
-        Nonmovable() = default;
+        Nonmovable() noexcept = default;
 
-        Nonmovable(const Self &) = default;
+        Nonmovable(const Self &) noexcept = default;
 
         Nonmovable(Self &&) noexcept = delete;
+
+        Self &operator=(const Self &) noexcept = default;
+
+        Self &operator=(Self &&other) noexcept = delete;
 
         ~Nonmovable() noexcept = default;
     };
