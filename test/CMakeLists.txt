@@ -21,8 +21,6 @@ add_executable(filetest "${PROJECT_SOURCE_DIR}/test/FileTest.cpp")
 add_executable(networktest "${PROJECT_SOURCE_DIR}/test/NetworkTest.cpp")
 #option test
 add_executable(optiontest "${PROJECT_SOURCE_DIR}/test/OptionTest.cpp")
-#option test
-add_executable(atomicptrtest "${PROJECT_SOURCE_DIR}/test/AtomicPtrTest.cpp")
 #link
 target_link_libraries(webserver sharpen)
 
@@ -34,7 +32,6 @@ target_link_libraries(templatetest sharpen)
 target_link_libraries(filetest sharpen)
 target_link_libraries(networktest sharpen)
 target_link_libraries(optiontest sharpen)
-target_link_libraries(atomicptrtest sharpen)
 #test
 enable_testing()
 #tests
@@ -51,4 +48,3 @@ add_test(NAME template_test COMMAND "./templatetest${extname}")
 add_test(NAME file_test COMMAND "./filetest${extname}")
 add_test(NAME network_test COMMAND "./networktest${extname}")
 add_test(NAME option_test COMMAND "./optiontest${extname}")
-add_test(NAME atomic_ptr_test COMMAND "./atomicptrtest${extname}")
