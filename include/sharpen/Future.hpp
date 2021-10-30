@@ -112,6 +112,10 @@ namespace sharpen
         {
             {
                 std::unique_lock<sharpen::SpinLock> lock(*this->lock_);
+                if(this->state_ != sharpen::FutureState::Pending)
+                {
+                    return;
+                }
                 this->state_ = sharpen::FutureState::Completed;
                 this->value_.reset(new _Value(args...));
             }
@@ -304,6 +308,10 @@ namespace sharpen
         {
             {
                 std::unique_lock<sharpen::SpinLock> lock(*this->lock_);
+                if(this->state_ != sharpen::FutureState::Pending)
+                {
+                    return;
+                }
                 this->state_ = sharpen::FutureState::Completed;
             }
             this->ExecuteCallback();

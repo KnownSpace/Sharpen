@@ -42,7 +42,7 @@ namespace sharpen
         {}
 
         AwaitableFuture(Self &&other) noexcept
-            : MyBase(std::move(other))
+            :MyBase(std::move(other))
             ,scheduler_(other.scheduler_)
             ,awaiter_(std::move(other.awaiter_))
             ,pendingFiber_(std::move(other.pendingFiber_))
