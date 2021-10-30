@@ -34,7 +34,7 @@ namespace sharpen
             :AwaitableFuture(&sharpen::EventEngine::GetEngine())
         {}
 
-        AwaitableFuture(sharpen::IFiberScheduler *scheduler)
+        explicit AwaitableFuture(sharpen::IFiberScheduler *scheduler)
             :MyBase()
             ,scheduler_(scheduler)
             ,awaiter_(this->scheduler_)
