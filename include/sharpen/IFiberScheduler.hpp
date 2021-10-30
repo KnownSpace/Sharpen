@@ -23,10 +23,16 @@ namespace sharpen
 
         virtual void Schedule(sharpen::FiberPtr &&fiber) = 0;
 
-        template<typename _Fn,typename ..._Args>
+        template<typename _Fn,typename ..._Args,typename _Check = decltype(std::bind(std::declval<_Fn>(),std::declval<_Args>()...)())>
         void Launch(_Fn &&fn,_Args &&...args)
         {
-            sharpen::FiberPtr fiber = sharpen::Fiber::MakeFiber(SHARPEN_FIBER_STACK_SIZE,std::forward<_Fn>(fn),std::forward<_Args>(args)...);
+            this->LaunchSpecial(SHARPEN_FIBER_STACK_SIZE,std::forward<_Fn>(fn),std::forward<_Args>(args)...);
+        }
+
+        template<typename _Fn,typename ..._Args,typename _Check = decltype(std::bind(std::declval<_Fn>(),std::declval<_Args>()...)())>
+        void LaunchSpecial(sharpen::Size stackSize,_Fn &&fn,_Args &&...args)
+        {
+            sharpen::FiberPtr fiber = sharpen::Fiber::MakeFiber(stackSize,std::forward<_Fn>(fn),std::forward<_Args>(args)...);
             this->Schedule(std::move(fiber));
         }
 

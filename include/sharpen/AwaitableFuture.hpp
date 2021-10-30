@@ -31,12 +31,21 @@ namespace sharpen
 
     public:
         AwaitableFuture()
-            : MyBase(), scheduler_(&sharpen::EventEngine::GetEngine()), awaiter_(this->scheduler_), pendingFiber_(nullptr)
-        {
-        }
+            :AwaitableFuture(&sharpen::EventEngine::GetEngine())
+        {}
+
+        AwaitableFuture(sharpen::IFiberScheduler *scheduler)
+            :MyBase()
+            ,scheduler_(scheduler)
+            ,awaiter_(this->scheduler_)
+            ,pendingFiber_(nullptr)
+        {}
 
         AwaitableFuture(Self &&other) noexcept
-            : MyBase(std::move(other)), scheduler_(other.scheduler_), awaiter_(std::move(other.awaiter_)), pendingFiber_(std::move(other.pendingFiber_))
+            : MyBase(std::move(other))
+            ,scheduler_(other.scheduler_)
+            ,awaiter_(std::move(other.awaiter_))
+            ,pendingFiber_(std::move(other.pendingFiber_))
         {
             other.scheduler_ = nullptr;
         }
@@ -82,6 +91,8 @@ namespace sharpen
             MyBase::operator=(std::move(other));
             this->awaiter_ = std::move(other.awaiter_);
             this->pendingFiber_ = std::move(other.awaiter_);
+            this->scheduler_ = other.scheduler_;
+            other.scheduler_ = nullptr;
             return *this;
         }
 
