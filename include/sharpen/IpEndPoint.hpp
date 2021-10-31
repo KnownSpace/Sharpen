@@ -37,7 +37,7 @@ namespace sharpen
 
         Self &operator=(const Self &other);
 
-        Self &operator=(Self &&other) noexcept = default;
+        Self &operator=(Self &&other) noexcept;
 
         virtual NativeAddr *GetAddrPtr() noexcept override;
 

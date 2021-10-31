@@ -35,6 +35,15 @@ sharpen::IpEndPoint &sharpen::IpEndPoint::operator=(const sharpen::IpEndPoint &o
     return *this;
 }
 
+sharpen::IpEndPoint &sharpen::IpEndPoint::operator=(sharpen::IpEndPoint &&other) noexcept
+{
+    if(this != std::addressof(other))
+    {
+        this->addr_ = std::move(other.addr_);
+    }
+    return *this;
+}
+
 sharpen::IpEndPoint::NativeAddr *sharpen::IpEndPoint::GetAddrPtr() noexcept
 {
     return reinterpret_cast<sharpen::IpEndPoint::NativeAddr*>(&(this->addr_));

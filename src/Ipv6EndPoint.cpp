@@ -28,6 +28,15 @@ sharpen::Ipv6EndPoint &sharpen::Ipv6EndPoint::operator=(const sharpen::Ipv6EndPo
     return *this;
 }
 
+sharpen::Ipv6EndPoint &sharpen::Ipv6EndPoint::operator=(sharpen::Ipv6EndPoint &&other) noexcept
+{
+    if(this != std::addressof(other))
+    {
+        this->addr_ = std::move(other.addr_);
+    }
+    return *this;
+}
+
 sharpen::Ipv6EndPoint::NativeAddr *sharpen::Ipv6EndPoint::GetAddrPtr() noexcept
 {
     return reinterpret_cast<sockaddr*>(&this->addr_);
