@@ -2,6 +2,8 @@
 #ifndef _SHARPEN_IPENDPOINT_HPP
 #define _SHARPEN_IPENDPOINT_HPP
 
+#include <functional>
+
 #include "SystemMacro.hpp"
 
 #ifdef SHARPEN_IS_NIX
@@ -62,4 +64,15 @@ namespace sharpen
     };
 }
 
+namespace std
+{
+    template<>
+    struct hash<sharpen::IpEndPoint>
+    {
+        std::size_t operator()(const sharpen::IpEndPoint &endpoint) const noexcept
+        {
+            return endpoint.GetAddr() ^ endpoint.GetPort();
+        }
+    };
+}
 #endif

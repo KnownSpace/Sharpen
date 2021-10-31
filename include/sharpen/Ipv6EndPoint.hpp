@@ -68,4 +68,24 @@ namespace sharpen
     
 }
 
+namespace std
+{
+    template<>
+    struct hash<sharpen::Ipv6EndPoint>
+    {
+        std::size_t operator()(const sharpen::Ipv6EndPoint &endpoint) const noexcept
+        {
+            in6_addr addr;
+            endpoint.GetAddr(addr);
+            sharpen::Size hash = endpoint.GetPort();
+            sharpen::Size *p = reinterpret_cast<sharpen::Size*>(&addr);
+            for (sharpen::Size i = 0; i < sizeof(addr)/sizeof(sharpen::Size); i++)
+            {
+                   hash ^= p[i];
+            }
+            return hash;
+        }
+    };
+}
+
 #endif
