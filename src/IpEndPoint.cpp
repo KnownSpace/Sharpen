@@ -1,5 +1,7 @@
 #include <sharpen/IpEndPoint.hpp>
 
+#include <utility>
+
 #include <sharpen/SystemMacro.hpp>
 
 #ifdef SHARPEN_IS_WIN
@@ -26,6 +28,12 @@ sharpen::IpEndPoint::IpEndPoint(sharpen::UintIpAddr addr,sharpen::UintPort port)
     addr_.sin_port = ::htons(port);
 }
 
+sharpen::IpEndPoint &sharpen::IpEndPoint::operator=(const sharpen::IpEndPoint &other)
+{
+    Self tmp(other);
+    std::swap(tmp,*this);
+    return *this;
+}
 
 sharpen::IpEndPoint::NativeAddr *sharpen::IpEndPoint::GetAddrPtr() noexcept
 {

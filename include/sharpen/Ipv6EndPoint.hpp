@@ -19,7 +19,7 @@
 
 namespace sharpen
 {
-    class Ipv6EndPoint:public sharpen::IEndPoint,public sharpen::Noncopyable,public sharpen::Nonmovable
+    class Ipv6EndPoint:public sharpen::IEndPoint
     {
     private:
         using Mybase = sharpen::IEndPoint;
@@ -34,7 +34,15 @@ namespace sharpen
 
         Ipv6EndPoint(const in6_addr &ip,sharpen::UintPort port);
 
+        Ipv6EndPoint(const Self &other) = default;
+
+        Ipv6EndPoint(Self &&other) noexcept = default;
+
         ~Ipv6EndPoint() noexcept = default;
+
+        Self &operator=(const Self &other);
+
+        Self &operator=(Self &&other) noexcept = default;
 
         virtual NativeAddr *GetAddrPtr() noexcept override;
 

@@ -16,7 +16,7 @@
 
 namespace sharpen
 {
-    class IpEndPoint:public sharpen::IEndPoint,public sharpen::Noncopyable,public sharpen::Nonmovable
+    class IpEndPoint:public sharpen::IEndPoint
     {
     private:
         using MyAddr = sockaddr_in;
@@ -27,9 +27,17 @@ namespace sharpen
     public:
         IpEndPoint() noexcept;
 
+        IpEndPoint(const Self &other) = default;
+
+        IpEndPoint(Self &&other) noexcept = default;
+
         IpEndPoint(sharpen::UintIpAddr addr,sharpen::UintPort port);
 
         ~IpEndPoint() noexcept = default;
+
+        Self &operator=(const Self &other);
+
+        Self &operator=(Self &&other) noexcept = default;
 
         virtual NativeAddr *GetAddrPtr() noexcept override;
 

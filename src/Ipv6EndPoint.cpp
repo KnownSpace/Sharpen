@@ -1,6 +1,7 @@
 #include <sharpen/Ipv6EndPoint.hpp>
 
 #include <cstring>
+#include <utility>
 
 #ifdef SHARPEN_IS_NIX
 #include <arpa/inet.h>
@@ -18,6 +19,13 @@ sharpen::Ipv6EndPoint::Ipv6EndPoint(const in6_addr &addr,sharpen::UintPort port)
     this->addr_.sin6_family = AF_INET6;
     sharpen::Ipv6EndPoint::CopyIn6Addr(this->addr_.sin6_addr,addr);
     this->addr_.sin6_port = port;
+}
+
+sharpen::Ipv6EndPoint &sharpen::Ipv6EndPoint::operator=(const sharpen::Ipv6EndPoint &other)
+{
+    Self tmp(other);
+    std::swap(tmp,*this);
+    return *this;
 }
 
 sharpen::Ipv6EndPoint::NativeAddr *sharpen::Ipv6EndPoint::GetAddrPtr() noexcept
