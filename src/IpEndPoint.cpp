@@ -44,6 +44,11 @@ sharpen::IpEndPoint &sharpen::IpEndPoint::operator=(sharpen::IpEndPoint &&other)
     return *this;
 }
 
+bool sharpen::IpEndPoint::operator==(const sharpen::IpEndPoint &other) const noexcept
+{
+    return this->GetAddr() == other.GetAddr() && this->GetPort() == other.GetPort();
+}
+
 sharpen::IpEndPoint::NativeAddr *sharpen::IpEndPoint::GetAddrPtr() noexcept
 {
     return reinterpret_cast<sharpen::IpEndPoint::NativeAddr*>(&(this->addr_));

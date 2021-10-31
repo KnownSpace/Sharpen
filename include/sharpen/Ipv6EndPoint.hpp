@@ -28,7 +28,9 @@ namespace sharpen
     
         Myaddr addr_;
 
-        static void CopyIn6Addr(in6_addr &dst,const in6_addr &src);
+        static void CopyIn6Addr(in6_addr &dst,const in6_addr &src) noexcept;
+
+        static int CompareIn6Addr(const in6_addr &addr1,const in6_addr &addr2) noexcept;
     public:
         Ipv6EndPoint() noexcept;
 
@@ -43,6 +45,13 @@ namespace sharpen
         Self &operator=(const Self &other);
 
         Self &operator=(Self &&other) noexcept;
+
+        bool operator==(const Self &other) const noexcept;
+
+        inline bool operator!=(const Self &other) const noexcept
+        {
+            return !(*this == other);
+        }
 
         virtual NativeAddr *GetAddrPtr() noexcept override;
 

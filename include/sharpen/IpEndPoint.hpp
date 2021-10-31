@@ -41,6 +41,13 @@ namespace sharpen
 
         Self &operator=(Self &&other) noexcept;
 
+        bool operator==(const Self &other) const noexcept;
+
+        inline bool operator!=(const Self &other) const noexcept
+        {
+            return !(*this == other);
+        }
+
         virtual NativeAddr *GetAddrPtr() noexcept override;
 
         virtual const NativeAddr *GetAddrPtr() const noexcept override;
