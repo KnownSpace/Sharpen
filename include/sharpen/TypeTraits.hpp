@@ -168,6 +168,27 @@ namespace sharpen
     template<typename _T>
     struct IsEmptyType<_T,sharpen::EnableIf<sharpen::IsCompletedType<_T>::Value>>:public sharpen::InternalIsEmptyType<_T,sizeof(_T)>
     {};
+
+    template<template<class> class _Matches,typename _Arg,typename ..._Args>
+    struct InternalMultiMatches
+    {
+    public:
+        static constexpr bool Value = sharpen::IsMatches<_Matches,_Arg>::Value;
+
+        using Type = sharpen::BoolType<Value && sharpen::InternalMultiMatches<_T,_Args...>::Value>;
+    };
+
+    template<template<class> class _Matches,typename _Arg>
+    struct InternalMultiMatches<_Matches,_Arg>
+    {
+    public:
+        static constexpr bool Value = sharpen::IsMatches<_Matches,_Arg>::Value;
+
+        using Type = sharpen::BoolType<Value>;
+    };
+    
+    template<typename _T,typename _Arg,typename ..._Args>
+    using MultiMatches = typename sharpen::InternalMultiMatches<_T,_Arg,_Args...>::Type;
 }
 
 #endif
