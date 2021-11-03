@@ -213,9 +213,11 @@ namespace sharpen
         virtual void ExecuteCallback()
         {
             this->NoticeIfNeed();
-            if (this->callback_)
+            Callback cb;
+            std::swap(cb,this->callback_);
+            if (cb)
             {
-                this->callback_(*this);
+                cb(*this);
             }
         }
     };
@@ -394,9 +396,11 @@ namespace sharpen
         virtual void ExecuteCallback()
         {
             this->NoticeIfNeed();
-            if (this->callback_)
+            Callback cb;
+            std::swap(cb,this->callback_);
+            if (cb)
             {
-                this->callback_(*this);
+                cb(*this);
             }
         }
     };
