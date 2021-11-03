@@ -9,14 +9,22 @@
 #include "AsyncHelper.hpp"
 #include "ITimer.hpp"
 #include "IteratorOps.hpp"
+#include "TypeTraits.hpp"
 
 namespace sharpen
 {
-    template<typename _Fn,typename ..._Args>
+    template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCallable<_Fn,_Args...>::Value>>
     inline void Launch(_Fn &&fn,_Args &&...args)
     {
         sharpen::EventEngine &engine = sharpen::EventEngine::GetEngine();
         engine.Launch(std::forward<_Fn>(fn),std::forward<_Args>(args)...);
+    }
+
+    template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCallable<_Fn,_Args...>::Value>>
+    inline void LaunchSpecial(sharpen::Size stackSize,_Fn &&fn,_Args &&...args)
+    {
+        sharpen::EventEngine &engine = sharpen::EventEngine::GetEngine();
+        engine.LaunchSpecial(stackSize,std::forward<_Fn>(fn),std::forward<_Args>(args)...);
     }
 
     template<typename _Fn,typename ..._Args,typename _Result = decltype(std::declval<_Fn>()(std::declval<_Args>()...))>
@@ -25,6 +33,18 @@ namespace sharpen
         auto future = sharpen::MakeAwaitableFuture<_Result>();
         std::function<_Result()> func = std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...);
         sharpen::Launch([func,future]() mutable
+        {
+            sharpen::AsyncHelper<std::function<_Result()>,_Result>::RunAndSetFuture(func,*future);
+        });
+        return future;
+    }
+
+    template<typename _Fn,typename ..._Args,typename _Result = decltype(std::declval<_Fn>()(std::declval<_Args>()...))>
+    inline sharpen::AwaitableFuturePtr<_Result> AsyncSpecial(sharpen::Size stackSize,_Fn &&fn,_Args &&...args)
+    {
+        auto future = sharpen::MakeAwaitableFuture<_Result>();
+        std::function<_Result()> func = std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...);
+        sharpen::LaunchSpecial(stackSize,[func,future]() mutable
         {
             sharpen::AsyncHelper<std::function<_Result()>,_Result>::RunAndSetFuture(func,*future);
         });

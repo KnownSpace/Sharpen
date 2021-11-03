@@ -82,7 +82,6 @@ namespace sharpen
             return fiber;
         }
     };
-    
 } 
 
 #endif
