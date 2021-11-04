@@ -14,7 +14,8 @@ void *sharpen::AlignedAlloc(sharpen::Size size,sharpen::Size alignment) noexcept
     return _aligned_malloc(size,alignment);
 #else
     void *p = nullptr;
-    posix_memalign(&p,alignment,size);
+    int r = posix_memalign(&p,alignment,size);
+    static_cast<void>(r);
     return p;
 #endif
 }
