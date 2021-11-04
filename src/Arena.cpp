@@ -3,7 +3,7 @@
 #include <mutex>
 
 sharpen::Arena::Arena(sharpen::Size blockSize)
-    :smallBlocks_(sharpen::Arena::AllocSmallBlock(blockSize))
+    :smallBlocks_(sharpen::Arena::AllocSmallBlock(blockSize + sizeof(*this->smallBlocks_)))
     ,largeBlocks_(nullptr)
     ,lock_()
 {}
@@ -21,7 +21,6 @@ sharpen::Arena::SmallBlock *sharpen::Arena::AllocSmallBlock(sharpen::Size size) 
     }
     char *byte = reinterpret_cast<char*>(sb);
     sb->next_ = nullptr;
-    // sb->curr_ = byte + sizeof(*sb);
     new (&sb->curr_) std::atomic<char*>(byte + sizeof(*sb));
     sb->end_ = byte + size;
     return sb;

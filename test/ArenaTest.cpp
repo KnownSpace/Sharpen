@@ -2,6 +2,7 @@
 #include <cassert>
 #include <cstdio>
 #include <sharpen/StopWatcher.hpp>
+#include <vector>
 
 class MyTestClass
 {
@@ -51,28 +52,36 @@ int main(int argc, char const *argv[])
         auto copy = obj;
     }
     std::puts("pass");
-    std::puts("benchmark");
+    std::puts("benchmark begin");
     constexpr size_t count = static_cast<size_t>(1e8);
     sharpen::StopWatcher sw;
-    sw.Begin();
     {
-        for (size_t i = 0; i < count; i++)
+
+        sw.Begin();
         {
-            std::unique_ptr<size_t> p(new size_t(i));
+            std::vector<std::unique_ptr<int>> ptrs{count};
+            for (int i = 0; i < count; i++)
+            {
+                ptrs[i] = std::unique_ptr<int>(new int(i));
+            }
         }
+        sw.Stop();
     }
-    sw.Stop();
-    std::printf("malloc using %zu tu\n",static_cast<size_t>(sw.Compute()));
-    sw.Begin();
+    size_t mallocUse = static_cast<size_t>(sw.Compute());
     {
-        sharpen::Arena arena;
-        for (size_t i = 0; i < count; i++)
+        sw.Begin();
         {
-            auto p = arena.MakeUniqueObject<size_t>(i);
+            sharpen::Arena arena;
+            std::vector<std::unique_ptr<int,sharpen::Arena::ObjectDeletor<int>>> ptrs{count};
+            for (int i = 0; i < count; i++)
+            {
+                ptrs[i] = arena.MakeUniqueObject<int>(i);
+            }
         }
+        sw.Stop();
     }
-    sw.Stop();
-    std::printf("arena using %zu tu\n",static_cast<size_t>(sw.Compute()));
-    std::printf("1 sec = %zu tu\n",static_cast<size_t>(CLOCKS_PER_SEC));
+    std::printf("alloc using %zu tu\n", mallocUse);
+    std::printf("arena using %zu tu\n", static_cast<size_t>(sw.Compute()));
+    std::printf("1 sec = %zu tu\n", static_cast<size_t>(CLOCKS_PER_SEC));
     return 0;
 }

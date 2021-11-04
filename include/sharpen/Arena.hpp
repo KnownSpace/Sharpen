@@ -20,7 +20,7 @@ namespace sharpen
     private:
         
         //max alloc
-        static constexpr sharpen::Size maxAlloc_ = 8*1024;
+        static constexpr sharpen::Size maxAlloc_ = 16*1024;
 
         struct SmallBlock
         {
@@ -46,7 +46,7 @@ namespace sharpen
         void *AllocLarge(sharpen::Size size) noexcept;
     public:
         Arena()
-            :Arena(maxAlloc_ + sizeof(SmallBlock))
+            :Arena(maxAlloc_)
         {}
 
         explicit Arena(sharpen::Size blockSize);
@@ -136,7 +136,7 @@ namespace sharpen
         };
 
         template<typename _T,typename ..._Args>
-        auto MakeUniqueObject(_Args &&...args) ->decltype(std::unique_ptr<_T,sharpen::Arena::ObjectDeletor<_T>>(new (nullptr) _T{std::forward<_Args>(args)...}))
+        inline auto MakeUniqueObject(_Args &&...args) ->decltype(std::unique_ptr<_T,sharpen::Arena::ObjectDeletor<_T>>(new (nullptr) _T{std::forward<_Args>(args)...}))
         {
             auto *p = this->Construct<_T>(std::forward<_Args>(args)...);
             if(!p)
@@ -147,7 +147,7 @@ namespace sharpen
         }
 
         template<typename _T,typename ..._Args>
-        auto MakeUniqueArray(sharpen::Size count,_Args &&...args) ->decltype(std::unique_ptr<_T,sharpen::Arena::ArrayDeletor<_T>>(new (nullptr) _T{std::forward<_Args>(args)...},sharpen::Arena::ArrayDeletor<_T>{0}))
+        inline auto MakeUniqueArray(sharpen::Size count,_Args &&...args) ->decltype(std::unique_ptr<_T,sharpen::Arena::ArrayDeletor<_T>>(new (nullptr) _T{std::forward<_Args>(args)...},sharpen::Arena::ArrayDeletor<_T>{0}))
         {
             auto *p = this->ConstructArray<_T>(count,std::forward<_Args>(args)...);
             if(!p)
@@ -158,7 +158,7 @@ namespace sharpen
         }
 
         template<typename _T,typename ..._Args>
-        auto MakeSharedObject(_Args &&...args) ->decltype(std::shared_ptr<_T>(new (nullptr) _T{std::forward<_Args>(args)...}))
+        inline auto MakeSharedObject(_Args &&...args) ->decltype(std::shared_ptr<_T>(new (nullptr) _T{std::forward<_Args>(args)...}))
         {
             auto *p = this->Construct<_T>(std::forward<_Args>(args)...);
             if(!p)
@@ -169,7 +169,7 @@ namespace sharpen
         }
 
         template<typename _T,typename ..._Args>
-        auto MakeSharedArray(sharpen::Size count,_Args &&...args) ->decltype(std::shared_ptr<_T>(new (nullptr) _T{std::forward<_Args>(args)...},sharpen::Arena::ArrayDeletor<_T>{0}))
+        inline auto MakeSharedArray(sharpen::Size count,_Args &&...args) ->decltype(std::shared_ptr<_T>(new (nullptr) _T{std::forward<_Args>(args)...},sharpen::Arena::ArrayDeletor<_T>{0}))
         {
             auto *p = this->ConstructArray<_T>(count,std::forward<_Args>(args)...);
             if(!p)
