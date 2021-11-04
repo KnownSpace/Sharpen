@@ -175,7 +175,7 @@ namespace sharpen
     public:
         static constexpr bool Value = sharpen::IsMatches<_Matches,_Arg>::Value;
 
-        using Type = sharpen::BoolType<Value && sharpen::InternalMultiMatches<_T,_Args...>::Value>;
+        using Type = sharpen::BoolType<Value && sharpen::InternalMultiMatches<_Matches,_Args...>::Value>;
     };
 
     template<template<class> class _Matches,typename _Arg>
@@ -187,8 +187,8 @@ namespace sharpen
         using Type = sharpen::BoolType<Value>;
     };
     
-    template<typename _T,typename _Arg,typename ..._Args>
-    using MultiMatches = typename sharpen::InternalMultiMatches<_T,_Arg,_Args...>::Type;
+    template<template<class> class _Matches,typename _Arg,typename ..._Args>
+    using MultiMatches = typename sharpen::InternalMultiMatches<_Matches,_Arg,_Args...>::Type;
 }
 
 #endif

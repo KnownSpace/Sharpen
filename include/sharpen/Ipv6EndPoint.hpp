@@ -2,6 +2,8 @@
 #ifndef _SHARPEN_IPV6ENDPOINT_HPP
 #define _SHARPEN_IPV6ENDPOINT_HPP
 
+#include <functional>
+
 #include "SystemMacro.hpp"
 
 #ifdef SHARPEN_IS_NIX
