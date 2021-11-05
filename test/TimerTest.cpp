@@ -23,6 +23,16 @@ void TimeWheelTest()
             token = true;
         });
         wheel.RunAsync();
+        std::printf("test cancel\n");
+        sharpen::AwaitableFuture<void> future;
+        auto begin = std::chrono::system_clock::now();
+        timer->WaitAsync(future,std::chrono::seconds(3));
+        timer->Cancel();
+        future.Await();
+        auto end = std::chrono::system_clock::now();
+        auto time = end - begin;
+        assert(time <= std::chrono::seconds(3));
+        std::printf("cancel using %zu ms\n",(time/std::chrono::milliseconds(1)));
         std::printf("timer test pass\n");
     });
 }

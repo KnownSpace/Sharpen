@@ -31,11 +31,19 @@ namespace sharpen
 
         virtual void WaitAsync(WaitFuture &future,sharpen::Uint64 waitMs) = 0;
 
+        virtual void Cancel() = 0;
+
+        template<typename _Rep,typename _Period>
+        inline void WaitAsync(WaitFuture &future,const std::chrono::duration<_Rep,_Period> &time)
+        {
+            this->WaitAsync(future,time/std::chrono::milliseconds(1));
+        }
+
         template<typename _Rep,typename _Period>
         void Await(const std::chrono::duration<_Rep,_Period> &time)
         {
             sharpen::AwaitableFuture<void> future;
-            this->WaitAsync(future,time/std::chrono::milliseconds(1));
+            this->WaitAsync(future,time);
             future.Await();
         }
     };

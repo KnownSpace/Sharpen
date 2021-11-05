@@ -6,6 +6,8 @@
 
 #ifdef SHARPEN_IS_LINUX
 
+#include <atomic>
+
 #include "ITimer.hpp"
 #include "IChannel.hpp"
 #include "Noncopyable.hpp"
@@ -23,9 +25,17 @@ namespace sharpen
         using MyTimerBase = sharpen::ITimer;
         using Callback = std::function<void()>;
 
-        Callback cb_;
+        struct WaitStruct
+        {
+            sharpen::LinuxTimer *timer_;
+            sharpen::Size localTick_;
+        };
 
-        static void CompleteFuture(sharpen::Future<void> *future);
+        std::atomic_size_t tick_;
+        Callback cb_;
+        sharpen::Future<void> *future_;
+
+        static void CompleteFuture(sharpen::LinuxTimer::WaitStruct *wait);
     public:
         LinuxTimer();
 
@@ -34,6 +44,8 @@ namespace sharpen
         virtual void OnEvent(sharpen::IoEvent *event) override;
 
         virtual void WaitAsync(sharpen::Future<void> &future,sharpen::Uint64 waitMs);
+
+        virtual void Cancel() override;
     };
 }
 
