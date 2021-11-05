@@ -57,6 +57,7 @@ void sharpen::LinuxTimer::CompleteFuture(sharpen::Future<void> *future)
 
 void sharpen::LinuxTimer::Cancel()
 {
+    assert(this->handle_ != -1);
     itimerspec time;
     std::memset(&(time.it_interval),0,sizeof(time.it_interval));
     std::memset(&(time.it_value),0,sizeof(time.it_value));
