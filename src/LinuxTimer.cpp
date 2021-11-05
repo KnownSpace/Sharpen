@@ -22,16 +22,8 @@ sharpen::LinuxTimer::LinuxTimer()
 void sharpen::LinuxTimer::WaitAsync(sharpen::Future<void> &future,sharpen::Uint64 waitMs)
 {
     assert(this->handle_ != -1);
-    using FnPtr = void(*)(sharpen::LinuxTimer::WaitStruct*);
-    sharpen::LinuxTimer::WaitStruct *wait(new sharpen::LinuxTimer::WaitStruct());
-    if(!wait)
-    {
-        throw std::bad_alloc();
-    }
-    wait->localTick_ = this->tick_.load();
-    wait->timer_ = this;
-    this->future_ = &future;
-    this->cb_ = std::bind(reinterpret_cast<FnPtr>(&sharpen::LinuxTimer::CompleteFuture),wait);
+    using FnPtr = void(*)(sharpen::Future<void>*);
+    this->cb_ = std::bind(reinterpret_cast<FnPtr>(&sharpen::LinuxTimer::CompleteFuture),&future);
     itimerspec time;
     std::memset(&(time.it_interval),0,sizeof(time.it_interval));
     time.it_value.tv_sec = waitMs / 1000;
@@ -39,7 +31,6 @@ void sharpen::LinuxTimer::WaitAsync(sharpen::Future<void> &future,sharpen::Uint6
     int r = ::timerfd_settime(this->handle_,0,&time,nullptr);
     if(r == -1)
     {
-        delete wait;
         sharpen::ThrowLastError();
     }
 }
@@ -58,29 +49,23 @@ void sharpen::LinuxTimer::OnEvent(sharpen::IoEvent *event)
     }
 }
 
-void sharpen::LinuxTimer::CompleteFuture(sharpen::LinuxTimer::WaitStruct *arg)
+void sharpen::LinuxTimer::CompleteFuture(sharpen::Future<void> *future)
 {
-    assert(arg != nullptr);
-    std::unique_ptr<sharpen::LinuxTimer::WaitStruct> wait(arg);
-    if(wait->localTick_ == wait->timer_->tick_.load())
-    {
-        sharpen::Future<void> *future;
-        std::swap(wait->timer_->future_,future);
-        if(future)
-        {
-            future->Complete();
-        }
-    }
+    assert(future);
+    future->Complete();
 }
 
 void sharpen::LinuxTimer::Cancel()
 {
-    this->tick_.fetch_add(1);
-    sharpen::Future<void> *future{nullptr};
-    std::swap(future,this->future_);
-    if(future)
+    itimerspec time;
+    std::memset(&(time.it_interval),0,sizeof(time.it_interval));
+    std::memset(&(time.it_value),0,sizeof(time.it_value));
+    ::timerfd_settime(this->handle_,0,&time,nullptr);
+    Callback cb;
+    std::swap(cb,this->cb_);
+    if(cb)
     {
-        future->Complete();
+        cb();
     }
 }
 

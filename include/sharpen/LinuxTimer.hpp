@@ -25,17 +25,9 @@ namespace sharpen
         using MyTimerBase = sharpen::ITimer;
         using Callback = std::function<void()>;
 
-        struct WaitStruct
-        {
-            sharpen::LinuxTimer *timer_;
-            sharpen::Size localTick_;
-        };
-
-        std::atomic_size_t tick_;
         Callback cb_;
-        sharpen::Future<void> *future_;
 
-        static void CompleteFuture(sharpen::LinuxTimer::WaitStruct *wait);
+        static void CompleteFuture(sharpen::Future<void> *future);
     public:
         LinuxTimer();
 

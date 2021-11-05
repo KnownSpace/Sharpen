@@ -5,8 +5,6 @@
 #include "SystemMacro.hpp"
 #ifdef SHARPEN_IS_WIN
 
-#include <atomic>
-
 #include "ITimer.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
@@ -19,17 +17,9 @@ namespace sharpen
      private:
           using Myhandle = void *;
           using Mybase = sharpen::ITimer;
-
-          struct WaitStruct
-          {
-               sharpen::WinTimer *timer_;
-               sharpen::Size localTick_;
-          };
           
-
           Myhandle handle_;
           sharpen::Future<void> *future_;
-          std::atomic_size_t tick_;
 
           static void CompleteFuture(void *arg, DWORD, DWORD);
      public:
