@@ -42,17 +42,17 @@ namespace sharpen
         union 
         {
             _T value_;
-            sharpen::InternalOptionDummpType dummp_;
+            sharpen::InternalOptionDummpType dummy_;
         };
     public:
         InternalOption() noexcept
             :hasValue_(false)
-            ,dummp_()
+            ,dummy_()
         {}
 
         InternalOption(const Self &other)
             :hasValue_(other.hasValue_)
-            ,dummp_()
+            ,dummy_()
         {
             if (this->hasValue_)
             {
@@ -62,7 +62,7 @@ namespace sharpen
 
         InternalOption(Self &&other) noexcept
             :hasValue_(other.hasValue_)
-            ,dummp_()
+            ,dummy_()
         {
             if (this->hasValue_)
             {
@@ -74,14 +74,14 @@ namespace sharpen
         template<typename ..._Args,typename _Check = decltype(_T{std::declval<_Args>()...})>
         InternalOption(_Args &&...args) SHARPEN_NOEXCEPT_IF(_T {std::declval<_Args>()...})
             :hasValue_(true)
-            ,dummp_()
+            ,dummy_()
         {
             ::new (&this->value_) _T{std::forward<_Args>(args)...};
         }
 
         InternalOption(sharpen::NullOption)
             :hasValue_(false)
-            ,dummp_()
+            ,dummy_()
         {}
 
         Self &operator=(const Self &other)
@@ -189,17 +189,17 @@ namespace sharpen
         union 
         {
             _T value_;
-            sharpen::InternalOptionDummpType dummp_;
+            sharpen::InternalOptionDummpType dummy_;
         };
     public:
         InternalOption() noexcept
             :hasValue_(false)
-            ,dummp_()
+            ,dummy_()
         {}
 
         InternalOption(const Self &other)
             :hasValue_(other.hasValue_)
-            ,dummp_()
+            ,dummy_()
         {
             if (this->hasValue_)
             {
@@ -209,7 +209,7 @@ namespace sharpen
 
         InternalOption(Self &&other) noexcept
             :hasValue_(other.hasValue_)
-            ,dummp_()
+            ,dummy_()
         {
             if (this->hasValue_)
             {
@@ -221,14 +221,14 @@ namespace sharpen
         template<typename ..._Args,typename _Check = decltype(_T{std::declval<_Args>()...})>
         InternalOption(_Args &&...args) SHARPEN_NOEXCEPT_IF(_T {std::declval<_Args>()...})
             :hasValue_(true)
-            ,dummp_()
+            ,dummy_()
         {
             ::new (&this->value_) _T{std::forward<_Args>(args)...};
         }
 
         InternalOption(sharpen::NullOption)
             :hasValue_(false)
-            ,dummp_()
+            ,dummy_()
         {}
 
         Self &operator=(const Self &other)
