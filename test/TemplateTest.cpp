@@ -83,6 +83,7 @@ void TypeListTest()
     std::printf("first is %s\n",typeid(NewTL2::At<0>).name());
     std::printf("second is %s\n",typeid(NewTL2::At<1>).name());
     std::printf("thrid is %s\n",typeid(NewTL2::At<2>).name());
+    std::printf("TL contain int? %d\n",NewTL2::Contain<int>::Value);
 }
 
 int main(int argc, char const *argv[])

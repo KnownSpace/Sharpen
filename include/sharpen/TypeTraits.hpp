@@ -208,7 +208,7 @@ namespace sharpen
     template<>
     struct TypeList<>
     {
-        template<typename _U,typename ..._Us>
+        template<typename _U>
         using PushBack = sharpen::TypeList<_U>;
         
         template<typename _U>
@@ -224,6 +224,8 @@ namespace sharpen
         using Contain = sharpen::BoolType<false>;
 
         constexpr static sharpen::Size Size = 0;
+
+        using First = void;
     };
 
     template<typename _TL,sharpen::Size _Index>
@@ -295,6 +297,13 @@ namespace sharpen
         using Sub = typename sharpen::InternalTypeListFind<SubList,_U,typename SubList::First>;
         constexpr static sharpen::Size Index = 1 + Sub::Index;
     };
+
+    template<typename _U,typename _First>
+    struct InternalTypeListFind<sharpen::TypeList<>,_U,_First>
+    {
+        constexpr static sharpen::Size Index = 0;
+    };
+    
         
     template<typename _TL,typename _First>
     struct InternalTypeListFind<_TL,_First,_First>
