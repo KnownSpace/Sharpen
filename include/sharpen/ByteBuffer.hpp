@@ -11,7 +11,7 @@
 
 namespace sharpen
 {
-    class ByteBuffer:public sharpen::Noncopyable
+    class ByteBuffer
     {
         using Vector = std::vector<sharpen::Char>;
 
@@ -42,9 +42,13 @@ namespace sharpen
 
         ByteBuffer(const sharpen::Char *p,sharpen::Size size);
 
+        ByteBuffer(const Self &other);
+
         ByteBuffer(Self &&other) noexcept;
 
         virtual ~ByteBuffer() noexcept = default;
+
+        Self &operator=(const Self &other);
 
         Self &operator=(Self &&other) noexcept;
 

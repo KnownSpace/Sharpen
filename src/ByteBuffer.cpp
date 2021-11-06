@@ -33,19 +33,36 @@ sharpen::ByteBuffer::ByteBuffer(const sharpen::Char *p,sharpen::Size size)
     }
 }
 
-sharpen::ByteBuffer::ByteBuffer(sharpen::ByteBuffer &&other) noexcept
-    :vector_(std::move(other.vector_))
+sharpen::ByteBuffer::ByteBuffer(const sharpen::ByteBuffer &other)
+    :vector_(other.vector_)
     ,mark_(other.mark_)
 {}
 
+sharpen::ByteBuffer::ByteBuffer(sharpen::ByteBuffer &&other) noexcept
+    :vector_(std::move(other.vector_))
+    ,mark_(other.mark_)
+{
+    other.mark_ = 0;
+}
+
+sharpen::ByteBuffer &sharpen::ByteBuffer::operator=(const sharpen::ByteBuffer &other)
+{
+    if(this != std::addressof(other))
+    {
+        sharpen::ByteBuffer tmp{other};
+        std::swap(tmp,*this);
+    }
+    return *this;
+}
+
 sharpen::ByteBuffer &sharpen::ByteBuffer::operator=(sharpen::ByteBuffer &&other) noexcept
 {
-    if(this == std::addressof(other))
+    if(this != std::addressof(other))
     {
-        return *this;
+        this->vector_ = std::move(other.vector_);
+        this->mark_ = other.mark_;
+        other.mark_ = 0;
     }
-    this->vector_ = std::move(other.vector_);
-    this->mark_ = other.mark_;
     return *this;
 }
 
