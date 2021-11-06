@@ -189,6 +189,154 @@ namespace sharpen
     
     template<template<class> class _Matches,typename _Arg,typename ..._Args>
     using MultiMatches = typename sharpen::InternalMultiMatches<_Matches,_Arg,_Args...>::Type;
-}
 
+    template<typename _Int,_Int _First,_Int _Second,_Int ..._Values>
+    struct MaxValue
+    {
+        static constexpr _Int Value = sharpen::MaxValue<_Int,(_First > _Second) ? _First:_Second,_Values...>::Value;
+    };
+
+    template<typename _Int,_Int _First,_Int _Second>
+    struct MaxValue<_Int,_First,_Second>
+    {
+        static constexpr _Int Value = _First > _Second ? _First:_Second;
+    };
+    
+    template<typename ..._Types>
+    struct TypeList;
+
+    template<>
+    struct TypeList<>
+    {
+        template<typename _U,typename ..._Us>
+        using PushBack = sharpen::TypeList<_U>;
+        
+        template<typename _U>
+        using PushFront = sharpen::TypeList<_U>;
+
+        template<typename _U>
+        struct Find
+        {
+            constexpr static sharpen::Size Index = 0;
+        };
+
+        template<typename _U>        
+        using Contain = sharpen::BoolType<false>;
+
+        constexpr static sharpen::Size Size = 0;
+    };
+
+    template<typename _TL,sharpen::Size _Index>
+    struct InternalTypeListAt
+    {
+        using Type = typename sharpen::InternalTypeListAt<typename _TL::SubList,_Index - 1>::Type;
+    };
+
+    template<typename _TL>
+    struct InternalTypeListAt<_TL,0>
+    {
+        using Type = typename _TL::First;
+    };
+
+    template<typename _TL,typename _U>
+    struct InternalTypeListPushFront;
+
+    template<typename _U,typename ..._Types>
+    struct InternalTypeListPushFront<sharpen::TypeList<_Types...>,_U>
+    {
+        using Type = sharpen::TypeList<_U,_Types...>;
+    };
+     
+    template<typename _TL,typename _U>
+    struct InternalTypeListPushBack;
+
+    template<typename _U,typename ..._Types>
+    struct InternalTypeListPushBack<sharpen::TypeList<_Types...>,_U>
+    {
+        using Type = sharpen::TypeList<_Types...,_U>;
+    };
+
+    template<typename _TL,sharpen::Size _Index>
+    struct InternalTypeListErase
+    {
+        using Sub = typename sharpen::InternalTypeListErase<typename _TL::SubList,(_Index - 1)>::Type;
+        using Type = typename sharpen::InternalTypeListPushFront<Sub,typename _TL::First>;
+    };
+        
+    template<typename _TL>
+    struct InternalTypeListErase<_TL,0>
+    {
+        using Type = typename _TL::SubList;
+    };
+
+    template<typename _TL,sharpen::Size _Index,typename _U,sharpen::Size _Size>
+    struct InternalTypeListInsert
+    {
+        using Sub = typename sharpen::InternalTypeListInsert<typename _TL::SubList,_Index - 1,_U,_TL::SubList::Size>::Type;
+        using Type = typename sharpen::InternalTypeListPushFront<Sub,typename _TL::First>::Type;
+    };
+        
+    template<typename _TL,typename _U,sharpen::Size _Size>
+    struct InternalTypeListInsert<_TL,0,_U,_Size>
+    {
+        using Type = typename sharpen::InternalTypeListPushFront<_TL,_U>::Type;
+    };
+
+    template<typename _TL,typename _U,sharpen::Size _Size>
+    struct InternalTypeListInsert<_TL,_Size,_U,_Size>
+    {
+        using Type = typename sharpen::InternalTypeListPushBack<_TL,_U>::Type;
+    };
+
+    template<typename _TL,typename _U,typename _First>
+    struct InternalTypeListFind
+    {
+        using SubList = typename _TL::SubList;
+        using Sub = typename sharpen::InternalTypeListFind<SubList,_U,typename SubList::First>;
+        constexpr static sharpen::Size Index = 1 + Sub::Index;
+    };
+        
+    template<typename _TL,typename _First>
+    struct InternalTypeListFind<_TL,_First,_First>
+    {
+       constexpr static sharpen::Size Index = 0;
+    };
+
+    template<typename _T,typename ..._Types>
+    struct TypeList<_T,_Types...>
+    {
+        using Self = sharpen::TypeList<_T,_Types...>;
+        using First = _T;
+        using SubList = sharpen::TypeList<_Types...>;
+
+        constexpr static sharpen::Size Size = sizeof...(_Types) + 1;
+
+        template<sharpen::Size _Index>
+        using At = typename sharpen::InternalTypeListAt<Self,_Index>::Type;
+
+        template<typename _U>
+        using PushBack = sharpen::TypeList<_T,_Types...,_U>;
+        
+        template<typename _U>
+        using PushFront = sharpen::TypeList<_U,_T,_Types...>;
+        
+        template<sharpen::Size _Index>
+        using Erase = typename sharpen::InternalTypeListErase<Self,_Index>::Type;
+
+        template<sharpen::Size _Index,typename _U>
+        using Insert = typename InternalTypeListInsert<Self,_Index,_U,Size>::Type;
+
+        template<typename _U>
+        struct Find
+        {
+            constexpr static sharpen::Size Index = sharpen::InternalTypeListFind<Self,_U,_T>::Index;
+        };
+
+        template<typename _U>        
+        using Contain = sharpen::BoolType<(Find<_U>::Index != Size)>;
+
+        template<typename _U>
+        using Remove = Erase<Find<_U>::Index>;
+    };
+}
 #endif

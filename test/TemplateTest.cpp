@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <cassert>
+#include <typeinfo>
 
 #include <sharpen/TypeTraits.hpp>
 #include <sharpen/CompressedPair.hpp>
@@ -62,11 +63,34 @@ void CompressedTest()
     std::printf("compressed pair test pass\n");
 }
 
+void TypeListTest()
+{
+    using TL = sharpen::TypeList<int,char,double>;
+    std::printf("TL has %zu types\n",TL::Size);
+    std::printf("first is %s\n",typeid(TL::At<0>).name());
+    std::printf("second is %s\n",typeid(TL::At<1>).name());
+    std::printf("thrid is %s\n",typeid(TL::At<2>).name());
+    std::printf("now we push a float to TL\n");
+    using NewTL1 = TL::PushBack<float>;
+    std::printf("TL has %zu types\n",NewTL1::Size);
+    std::printf("first is %s\n",typeid(NewTL1::At<0>).name());
+    std::printf("second is %s\n",typeid(NewTL1::At<1>).name());
+    std::printf("thrid is %s\n",typeid(NewTL1::At<2>).name());
+    std::printf("fourth is %s\n",typeid(NewTL1::At<3>).name());
+    std::printf("now we remove int from TL\n");
+    using NewTL2 = NewTL1::Remove<int>;
+    std::printf("TL has %zu types\n",NewTL2::Size);
+    std::printf("first is %s\n",typeid(NewTL2::At<0>).name());
+    std::printf("second is %s\n",typeid(NewTL2::At<1>).name());
+    std::printf("thrid is %s\n",typeid(NewTL2::At<2>).name());
+}
+
 int main(int argc, char const *argv[])
 {
     ValidTest();
     IsCompletedTest();
     IsEmptyTest();
     CompressedTest();
+    TypeListTest();
     return 0;
 }
