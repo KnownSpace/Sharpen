@@ -158,7 +158,7 @@ namespace sharpen
         using Self = sharpen::DummyType<_T,_Types...>;
         using TL = sharpen::TypeList<_T,_Types...>;
         template<sharpen::Size _Index>
-        using At = sharpen::InternalTypeListAt<TL,_Index>;
+        using At = typename sharpen::InternalTypeListAt<TL,_Index>::Type;
         template<typename _U>
         using Find = sharpen::InternalTypeListFind<TL,_U,_T>;
         template<typename _U>
