@@ -158,9 +158,12 @@ namespace sharpen
         using Self = sharpen::DummyType<_T,_Types...>;
         using TL = sharpen::TypeList<_T,_Types...>;
         template<sharpen::Size _Index>
-        using At = typename TL::At<_Index>;
+        using At = sharpen::InternalTypeListAt<TL,_Index>;
         template<typename _U>
-        using Contain = typename TL::Contain;
+        using Find = sharpen::InternalTypeListFind<TL,_U,_T>;
+        template<typename _U>
+        using Contain = sharpen::BoolType<Find<_U>::Index != TL::Size>;
+
         constexpr static sharpen::Size typeSize_ = sharpen::MaxValue<sharpen::Size,sizeof(_T),sizeof(_Types)...>::Value;
         constexpr static sharpen::Size typeListSize_ = TL::Size;
 
@@ -171,7 +174,7 @@ namespace sharpen
         {
             if(this->typeIndex_ != typeListSize_)
             {
-                sharpen::InternalDummyTypeDtor<typeListSize_ - 1,Self::At>::Release(this->typeIndex_,this->dummy_);
+                sharpen::InternalDummyTypeDtor<typeListSize_ - 1,At>::Release(this->typeIndex_,this->dummy_);
                 this->typeIndex_ = typeListSize_;
             }
         }        
@@ -187,7 +190,7 @@ namespace sharpen
         {
             if(this->typeIndex_ != typeListSize_)
             {
-                sharpen::InternalDummyTypeCopy<typeListSize_ - 1,Self::At>::CopyConstruct(this->typeIndex_,this->dummy_,other.dummy_);
+                sharpen::InternalDummyTypeCopy<typeListSize_ - 1,At>::CopyConstruct(this->typeIndex_,this->dummy_,other.dummy_);
             }
         }
 
@@ -197,7 +200,7 @@ namespace sharpen
         {
             if(this->typeIndex_ != typeListSize_)
             {
-                sharpen::InternalDummyTypeMove<typeListSize_ - 1,Self::At>::MoveConstruct(this->typeIndex_,this->dummy_,other.dummy_);
+                sharpen::InternalDummyTypeMove<typeListSize_ - 1,At>::MoveConstruct(this->typeIndex_,this->dummy_,other.dummy_);
                 other.Release();
             }
         }
@@ -217,7 +220,7 @@ namespace sharpen
             if(this != std::addressof(other) && other.typeIndex_ != typeListSize_)
             {
                 this->typeIndex_ = other.typeIndex_;
-                sharpen::InternalDummyTypeMove<typeListSize_ - 1,Self::At>::MoveAssign(this->typeIndex_,this->dummy_,other.dummy_);
+                sharpen::InternalDummyTypeMove<typeListSize_ - 1,At>::MoveAssign(this->typeIndex_,this->dummy_,other.dummy_);
                 other.Release();
             }
             return *this;
@@ -231,17 +234,15 @@ namespace sharpen
         template<typename _U,typename ..._Args,typename _Contain = Contain<_U>,typename _Check = sharpen::EnableIf<_Contain::Value>>
         void Construct(_Args &&...args) SHARPEN_NOEXCEPT_IF(new (nullptr) _U(std::declval<_Args>()...))
         {
-            using Find = typename TL::Find<_U>;
             this->Release();
             new (this->dummy_) _U(std::forward<_Args>(args)...);
-            this->typeIndex_ = Find::Index;
+            this->typeIndex_ = Find<_U>::Index;
         }
 
         template<typename _U,typename _Contain =  Contain<_U>,typename _Check = sharpen::EnableIf<_Contain::Value>>
         _U &Get() noexcept
         {
-            using Find = typename TL::Find<_U>;
-            assert(Find::Index == this->typeIndex_);
+            assert(Find<_U>::Index == this->typeIndex_);
             char *p = this->dummy_;
             return *reinterpret_cast<_U*>(p);
         }
@@ -249,8 +250,7 @@ namespace sharpen
         template<typename _U,typename _Contain =  Contain<_U>,typename _Check = sharpen::EnableIf<_Contain::Value>>
         const _U &Get() const noexcept
         {
-            using Find = typename TL::Find<_U>;
-            assert(Find::Index == this->typeIndex_);
+            assert(Find<_U>::Index == this->typeIndex_);
             const char *p = this->dummy_;
             return *reinterpret_cast<const _U*>(p);
         }
