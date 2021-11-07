@@ -4,6 +4,7 @@
 
 #include <sharpen/TypeTraits.hpp>
 #include <sharpen/CompressedPair.hpp>
+#include <sharpen/DummyType.hpp>
 
 template<typename _T>
 using HasFunc = auto(*)()->decltype(std::declval<_T>().Func());
@@ -86,6 +87,84 @@ void TypeListTest()
     std::printf("TL contain int? %d\n",NewTL2::Contain<int>::Value);
 }
 
+struct MyTestA
+{
+    MyTestA()
+    {
+        std::printf("A CTOR\n");
+    }
+
+    ~MyTestA() noexcept
+    {
+        std::printf("A DTOR\n");
+    }
+
+    MyTestA(const MyTestA &)
+    {
+        std::printf("A COPY CTOR\n");
+    }
+
+    MyTestA(MyTestA &&) noexcept
+    {
+        std::printf("A MOVE CTOR\n");
+    }
+
+    MyTestA &operator=(const MyTestA &)
+    {
+        std::printf("A COPY ASSIGN\n");
+        return *this;
+    }
+
+    MyTestA &operator=(MyTestA &&) noexcept
+    {
+        std::printf("A MOVE ASSIGN\n");
+        return *this;
+    }
+};
+
+struct MyTestB
+{
+    MyTestB()
+    {
+        std::printf("B CTOR\n");
+    }
+
+    ~MyTestB() noexcept
+    {
+        std::printf("B DTOR\n");
+    }
+    MyTestB(const MyTestB &)
+    {
+        std::printf("B COPY CTOR\n");
+    }
+
+    MyTestB(MyTestB &&) noexcept
+    {
+        std::printf("B MOVE CTOR\n");
+    }
+
+    MyTestB &operator=(const MyTestB &)
+    {
+        std::printf("B COPY ASSIGN\n");
+        return *this;
+    }
+
+    MyTestB &operator=(MyTestB &&) noexcept
+    {
+        std::printf("B MOVE ASSIGN\n");
+        return *this;
+    }
+};
+
+void DummyTypeTest()
+{
+    sharpen::DummyType<MyTestA,MyTestB> dummy,odummy;
+    dummy.Construct<MyTestA>();
+    odummy = std::move(dummy);
+    odummy.Construct<MyTestB>();
+    dummy = odummy;
+}
+
 int main(int argc, char const *argv[])
 {
     ValidTest();
@@ -93,5 +172,6 @@ int main(int argc, char const *argv[])
     IsEmptyTest();
     CompressedTest();
     TypeListTest();
+    DummyTypeTest();
     return 0;
 }
