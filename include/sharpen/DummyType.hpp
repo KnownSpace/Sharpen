@@ -11,28 +11,28 @@
 
 namespace sharpen
 {
-    template<sharpen::Size _Index,typename _TL>
+    template<sharpen::Size _Index,template<sharpen::Size> class _TIterator>
     struct InternalDummyTypeDtor
     {
         static void Release(sharpen::Size typeIndex,char *p) noexcept
         {
-            using _T = typename _TL::At<_Index>;
+            using _T = _TIterator<_Index>;
             if (_Index == typeIndex)
             {
                 _T *obj = reinterpret_cast<_T*>(p);
                 obj->~_T();
                 return;
             }
-            sharpen::InternalDummyTypeDtor<_Index - 1,_TL>::Release(typeIndex,p);
+            sharpen::InternalDummyTypeDtor<_Index - 1,_TIterator>::Release(typeIndex,p);
         }
     };
     
-    template<typename _TL>
-    struct InternalDummyTypeDtor<0,_TL>
+    template<template<sharpen::Size> class _TIterator>
+    struct InternalDummyTypeDtor<0,_TIterator>
     {
         static void Release(sharpen::Size typeIndex,char *p) noexcept
         {
-            using _T = typename _TL::At<0>;
+            using _T = _TIterator<0>;
             if (0 == typeIndex)
             {
                 _T *obj = reinterpret_cast<_T*>(p);
@@ -41,12 +41,12 @@ namespace sharpen
         }
     };
 
-    template<sharpen::Size _Index,typename _TL>
+    template<sharpen::Size _Index,template<sharpen::Size> class _TIterator>
     struct InternalDummyTypeCopy
     {
         static void CopyAssign(sharpen::Size typeIndex,char *dst,const char *src)
         {
-            using _T = typename _TL::At<_Index>;
+            using _T = _TIterator<_Index>;
             if (_Index == typeIndex)
             {
                 _T *dstObj = reinterpret_cast<_T*>(dst);
@@ -54,28 +54,28 @@ namespace sharpen
                 *dstObj = *srcObj;
                 return;
             }
-            sharpen::InternalDummyTypeCopy<_Index - 1,_TL>::CopyAssign(typeIndex,dst,src);
+            sharpen::InternalDummyTypeCopy<_Index - 1,_TIterator>::CopyAssign(typeIndex,dst,src);
         }
 
         static void CopyConstruct(sharpen::Size typeIndex,char *dst,const char *src)
         {
-            using _T = typename _TL::At<_Index>;
+            using _T = _TIterator<_Index>;
             if (_Index == typeIndex)
             {
                 const _T *srcObj = reinterpret_cast<const _T*>(src);
                 new (dst) _T{*srcObj};
                 return;
             }
-            sharpen::InternalDummyTypeCopy<_Index - 1,_TL>::CopyConstruct(typeIndex,dst,src);
+            sharpen::InternalDummyTypeCopy<_Index - 1,_TIterator>::CopyConstruct(typeIndex,dst,src);
         }
     };
     
-    template<typename _TL>
-    struct InternalDummyTypeCopy<0,_TL>
+    template<template<sharpen::Size> class _TIterator>
+    struct InternalDummyTypeCopy<0,_TIterator>
     {
         static void CopyAssign(sharpen::Size typeIndex,char *dst,const char *src)
         {
-            using _T = typename _TL::At<0>;
+            using _T = _TIterator<0>;
             if (0 == typeIndex)
             {
                 _T *dstObj = reinterpret_cast<_T*>(dst);
@@ -86,7 +86,7 @@ namespace sharpen
 
         static void CopyConstruct(sharpen::Size typeIndex,char *dst,const char *src)
         {
-            using _T = typename _TL::At<0>;
+            using _T = _TIterator<0>;
             if (0 == typeIndex)
             {
                 const _T *srcObj = reinterpret_cast<const _T*>(src);
@@ -95,12 +95,12 @@ namespace sharpen
         }
     };
 
-    template<sharpen::Size _Index,typename _TL>
+    template<sharpen::Size _Index,template<sharpen::Size> class _TIterator>
     struct InternalDummyTypeMove
     {
         static void MoveAssign(sharpen::Size typeIndex,char *dst,char *src) noexcept
         {
-            using _T = typename _TL::At<_Index>;
+            using _T = _TIterator<_Index>;
             if (_Index == typeIndex)
             {
                 _T *dstObj = reinterpret_cast<_T*>(dst);
@@ -108,28 +108,28 @@ namespace sharpen
                 *dstObj = std::move(*srcObj);
                 return;
             }
-            sharpen::InternalDummyTypeMove<_Index - 1,_TL>::MoveAssign(typeIndex,dst,src);
+            sharpen::InternalDummyTypeMove<_Index - 1,_TIterator>::MoveAssign(typeIndex,dst,src);
         }
 
         static void MoveConstruct(sharpen::Size typeIndex,char *dst,char *src) noexcept
         {
-            using _T = typename _TL::At<_Index>;
+            using _T = _TIterator<_Index>;
             if (_Index == typeIndex)
             {
                 _T *srcObj = reinterpret_cast<_T*>(src);
                 new (dst) _T{std::move(*srcObj)};
                 return;
             }
-            sharpen::InternalDummyTypeMove<_Index - 1,_TL>::MoveConstruct(typeIndex,dst,src);
+            sharpen::InternalDummyTypeMove<_Index - 1,_TIterator>::MoveConstruct(typeIndex,dst,src);
         }
     };
 
-    template<typename _TL>
-    struct InternalDummyTypeMove<0,_TL>
+    template<template<sharpen::Size> class _TIterator>
+    struct InternalDummyTypeMove<0,_TIterator>
     {
         static void MoveAssign(sharpen::Size typeIndex,char *dst,char *src) noexcept
         {
-            using _T = typename _TL::At<0>;
+            using _T = _TIterator<0>;
             if (0 == typeIndex)
             {
                 _T *dstObj = reinterpret_cast<_T*>(dst);
@@ -141,7 +141,7 @@ namespace sharpen
 
         static void MoveConstruct(sharpen::Size typeIndex,char *dst,char *src) noexcept
         {
-            using _T = typename _TL::At<0>;
+            using _T = _TIterator<0>;
             if (0 == typeIndex)
             {
                 _T *srcObj = reinterpret_cast<_T*>(src);
@@ -157,6 +157,8 @@ namespace sharpen
     private:
         using Self = sharpen::DummyType<_T,_Types...>;
         using TL = sharpen::TypeList<_T,_Types...>;
+        template<sharpen::Size _Index>
+        using At = typename TL::At<_Index>;
         constexpr static sharpen::Size typeSize_ = sharpen::MaxValue<sharpen::Size,sizeof(_T),sizeof(_Types)...>::Value;
         constexpr static sharpen::Size typeListSize_ = TL::Size;
 
@@ -167,7 +169,7 @@ namespace sharpen
         {
             if(this->typeIndex_ != typeListSize_)
             {
-                sharpen::InternalDummyTypeDtor<typeListSize_ - 1,TL>::Release(this->typeIndex_,this->dummy_);
+                sharpen::InternalDummyTypeDtor<typeListSize_ - 1,At>::Release(this->typeIndex_,this->dummy_);
                 this->typeIndex_ = typeListSize_;
             }
         }        
@@ -183,7 +185,7 @@ namespace sharpen
         {
             if(this->typeIndex_ != typeListSize_)
             {
-                sharpen::InternalDummyTypeCopy<typeListSize_ - 1,TL>::CopyConstruct(this->typeIndex_,this->dummy_,other.dummy_);
+                sharpen::InternalDummyTypeCopy<typeListSize_ - 1,At>::CopyConstruct(this->typeIndex_,this->dummy_,other.dummy_);
             }
         }
 
@@ -193,7 +195,7 @@ namespace sharpen
         {
             if(this->typeIndex_ != typeListSize_)
             {
-                sharpen::InternalDummyTypeMove<typeListSize_ - 1,TL>::MoveConstruct(this->typeIndex_,this->dummy_,other.dummy_);
+                sharpen::InternalDummyTypeMove<typeListSize_ - 1,At>::MoveConstruct(this->typeIndex_,this->dummy_,other.dummy_);
                 other.Release();
             }
         }
@@ -213,7 +215,7 @@ namespace sharpen
             if(this != std::addressof(other) && other.typeIndex_ != typeListSize_)
             {
                 this->typeIndex_ = other.typeIndex_;
-                sharpen::InternalDummyTypeMove<typeListSize_ - 1,TL>::MoveAssign(this->typeIndex_,this->dummy_,other.dummy_);
+                sharpen::InternalDummyTypeMove<typeListSize_ - 1,At>::MoveAssign(this->typeIndex_,this->dummy_,other.dummy_);
                 other.Release();
             }
             return *this;
