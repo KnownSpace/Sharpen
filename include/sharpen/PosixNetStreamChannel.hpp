@@ -108,7 +108,7 @@ namespace sharpen
 
         static bool IsAcceptBlock(sharpen::ErrorCode err) noexcept;
 
-        void DoCancel() noexcept;
+        void DoCancel(sharpen::ErrorCode err) noexcept;
     public:
 
         explicit PosixNetStreamChannel(sharpen::FileHandle handle);

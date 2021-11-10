@@ -373,7 +373,7 @@ void sharpen::WinNetStreamChannel::HandleReadAndWrite(sharpen::WSAOverlappedStru
     sharpen::Future<sharpen::Size> *future = reinterpret_cast<sharpen::Future<sharpen::Size>*>(olStruct.data_);
     if (olStruct.event_.IsErrorEvent())
     {
-        future->Fail(sharpen::MakeSystemErrorPtr(olStruct.event_.GetErrorCode()));
+        future->Fail(sharpen::MakeLastErrorPtr());
         return;
     }
     future->Complete(olStruct.length_);
@@ -385,7 +385,7 @@ void sharpen::WinNetStreamChannel::HandleAccept(sharpen::WSAOverlappedStruct &ol
     std::free(olStruct.buf_.buf);
     if (olStruct.event_.IsErrorEvent())
     {
-        future->Fail(sharpen::MakeSystemErrorPtr(olStruct.event_.GetErrorCode()));
+        future->Fail(sharpen::MakeLastErrorPtr());
         return;
     }
     ::setsockopt(reinterpret_cast<SOCKET>(olStruct.accepted_),SOL_SOCKET,SO_UPDATE_ACCEPT_CONTEXT,reinterpret_cast<char*>(&this->handle_),sizeof(SOCKET));
@@ -398,7 +398,7 @@ void sharpen::WinNetStreamChannel::HandleSendFile(sharpen::WSAOverlappedStruct &
     sharpen::Future<void> *future = reinterpret_cast<sharpen::Future<void>*>(olStruct.data_);
     if (olStruct.event_.IsErrorEvent())
     {
-        future->Fail(sharpen::MakeSystemErrorPtr(olStruct.event_.GetErrorCode()));
+        future->Fail(sharpen::MakeLastErrorPtr());
         return;
     }
     future->Complete();
@@ -409,7 +409,7 @@ void sharpen::WinNetStreamChannel::HandleConnect(sharpen::WSAOverlappedStruct &o
     sharpen::Future<void> *future = reinterpret_cast<sharpen::Future<void>*>(olStruct.data_);
     if (olStruct.event_.IsErrorEvent())
     {
-        future->Fail(sharpen::MakeSystemErrorPtr(olStruct.event_.GetErrorCode()));
+        future->Fail(sharpen::MakeLastErrorPtr());
         return;
     }
     ::setsockopt(reinterpret_cast<SOCKET>(this->handle_),SOL_SOCKET,SO_UPDATE_CONNECT_CONTEXT,nullptr,0);
@@ -421,7 +421,7 @@ void sharpen::WinNetStreamChannel::HandlePoll(sharpen::WSAOverlappedStruct &olSt
     sharpen::Future<void> *future = reinterpret_cast<sharpen::Future<void>*>(olStruct.data_);
     if (olStruct.event_.IsErrorEvent())
     {
-        future->Fail(sharpen::MakeSystemErrorPtr(olStruct.event_.GetErrorCode()));
+        future->Fail(sharpen::MakeLastErrorPtr());
         return;
     }
     future->Complete();

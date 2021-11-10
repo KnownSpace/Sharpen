@@ -80,16 +80,16 @@ void CancelTest()
     sharpen::AwaitableFuture<sharpen::Size> future;
     addr.SetPort(8080);
     client->ConnectAsync(addr);
-    char buf[1024];
-    client->ReadAsync(buf,1024,future);
+    char buf[512];
+    client->ReadAsync(buf,512,future);
     try
     {
         client->Cancel();
         future.Await();
     }
-    catch(const std::exception& e)
+    catch(const std::system_error& e)
     {
-        std::printf("error: %s\n",e.what());
+        std::printf("code: %d\nerror: %s\n",e.code().value(),e.what());
         flag = 1;
     }
     std::printf("cancel test end\n");

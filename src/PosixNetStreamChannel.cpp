@@ -2,11 +2,14 @@
 
 #ifdef SHARPEN_HAS_POSIXSOCKET
 
-#include <sharpen/SystemError.hpp>
-#include <sharpen/EventLoop.hpp>
-#include <sys/mman.h>
 #include <algorithm>
 #include <cassert>
+
+#include <sys/mman.h>
+#include <unistd.h>
+
+#include <sharpen/SystemError.hpp>
+#include <sharpen/EventLoop.hpp>
 
 sharpen::PosixNetStreamChannel::PosixNetStreamChannel(sharpen::FileHandle handle)
     : Mybase()
@@ -25,7 +28,7 @@ sharpen::PosixNetStreamChannel::PosixNetStreamChannel(sharpen::FileHandle handle
 
 sharpen::PosixNetStreamChannel::~PosixNetStreamChannel() noexcept
 {
-    this->DoCancel();
+    this->DoCancel(ECONNABORTED);
 }
 
 bool sharpen::PosixNetStreamChannel::IsAcceptBlock(sharpen::ErrorCode err) noexcept
@@ -111,7 +114,12 @@ void sharpen::PosixNetStreamChannel::HandleAccept()
             }
         }
         std::swap(this->acceptCb_,cb);
-        cb(accept);
+        if(cb)
+        {
+            cb(accept);
+            return;
+        }
+        ::close(accept);
     }
 }
 
@@ -133,10 +141,12 @@ bool sharpen::PosixNetStreamChannel::HandleConnect()
     ::getsockopt(this->handle_,SOL_SOCKET,SO_ERROR,&err,&errSize);
     ConnectCallback cb;
     std::swap(cb,this->connectCb_);
-    assert(cb);
     errno = err;
     this->status_ = sharpen::PosixNetStreamChannel::IoStatus::Io;
-    cb();
+    if(cb)
+    {
+        cb();
+    }
     return err == 0;
 }
 
@@ -460,12 +470,12 @@ void sharpen::PosixNetStreamChannel::Listen(sharpen::Uint16 queueLength)
     Mybase::Listen(queueLength);
 }
 
-void sharpen::PosixNetStreamChannel::DoCancel() noexcept
+void sharpen::PosixNetStreamChannel::DoCancel(sharpen::ErrorCode err) noexcept
 {
     //cancel all io
-    this->reader_.CancelAllIo(ECANCELED);
-    this->writer_.CancelAllIo(ECANCELED);
-    errno = ECANCELED;
+    this->reader_.CancelAllIo(err);
+    this->writer_.CancelAllIo(err);
+    errno = err;
     for (auto begin = this->pollReadCbs_.begin();begin != this->pollReadCbs_.end();++begin)
     {
         (*begin)(-1);
@@ -476,11 +486,23 @@ void sharpen::PosixNetStreamChannel::DoCancel() noexcept
         (*begin)(-1);
     }
     this->pollWriteCbs_.clear();
+    AcceptCallback acb;
+    std::swap(this->acceptCb_,acb);
+    if(acb)
+    {
+        acb(-1);
+    }
+    ConnectCallback ccb;
+    std::swap(this->connectCb_,ccb);
+    if(ccb)
+    {
+        ccb();
+    }
 }
 
 void sharpen::PosixNetStreamChannel::Cancel() noexcept
 {
-    this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixNetStreamChannel::DoCancel,this));
+    this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixNetStreamChannel::DoCancel,this,ECANCELED));
 }
 
 #endif
