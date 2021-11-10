@@ -39,7 +39,7 @@ namespace sharpen
     public:
         explicit PosixOutputPipeChannel(sharpen::FileHandle handle);
 
-        virtual ~PosixOutputPipeChannel() noexcept = default;
+        virtual ~PosixOutputPipeChannel() noexcept;
 
         virtual void WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future) override;
         

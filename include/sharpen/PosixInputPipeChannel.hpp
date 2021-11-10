@@ -37,7 +37,7 @@ namespace sharpen
     public:
         explicit PosixInputPipeChannel(sharpen::FileHandle handle);
 
-        virtual ~PosixInputPipeChannel() = default;
+        virtual ~PosixInputPipeChannel();
 
         virtual void ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future) override;
         

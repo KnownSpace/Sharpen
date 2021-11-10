@@ -13,6 +13,11 @@ sharpen::PosixInputPipeChannel::PosixInputPipeChannel(sharpen::FileHandle handle
     this->handle_ = handle;
 }
 
+sharpen::PosixInputPipeChannel::~PosixInputPipeChannel() noexcept
+{
+    this->reader_.CancelAllIo(ECANCELED);
+}
+
 void sharpen::PosixInputPipeChannel::HandleRead()
 {
     this->DoRead();

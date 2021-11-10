@@ -13,6 +13,11 @@ sharpen::PosixOutputPipeChannel::PosixOutputPipeChannel(sharpen::FileHandle hand
     this->handle_ = handle;
 }
 
+sharpen::PosixOutputPipeChannel::~PosixOutputPipeChannel() noexcept
+{
+    this->writer_.CancelAllIo(ECANCELED);
+}
+
 void sharpen::PosixOutputPipeChannel::DoWrite()
 {
     bool executed;
