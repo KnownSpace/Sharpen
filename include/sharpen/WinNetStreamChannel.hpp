@@ -17,7 +17,7 @@ namespace sharpen
     private:
         using Mybase = sharpen::INetStreamChannel;
 
-        static void Closer(sharpen::FileHandle handle);
+        static void Closer(sharpen::FileHandle handle) noexcept;
 
         static void InitOverlapped(OVERLAPPED &ol);
 

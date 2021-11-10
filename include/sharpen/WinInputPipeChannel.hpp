@@ -26,7 +26,7 @@ namespace sharpen
     public:
         explicit WinInputPipeChannel(sharpen::FileHandle handle);
         
-        virtual ~WinInputPipeChannel() = default;
+        virtual ~WinInputPipeChannel();
 
         virtual void ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future) override;
         

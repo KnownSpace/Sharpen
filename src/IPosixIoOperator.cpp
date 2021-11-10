@@ -138,4 +138,22 @@ sharpen::Size sharpen::IPosixIoOperator::ComputePendingSize() const
     return size;
 }
 
+void sharpen::IPosixIoOperator::CancelAllIo(sharpen::ErrorCode err) noexcept
+{
+    Callback *cbs = this->GetFirstCallback();
+    sharpen::Size size = this->GetRemainingSize();
+    errno = err;
+    for (size_t i = 0; i < size; i++)
+    {
+        cbs[i](-1);
+    }
+    this->FillBufferAndCallback();
+    cbs = this->GetFirstCallback();
+    size = this->GetRemainingSize();
+    for (size_t i = 0; i < size; i++)
+    {
+        cbs[i](-1);
+    }
+}
+
 #endif

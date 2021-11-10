@@ -65,6 +65,8 @@ namespace sharpen
         void Execute(sharpen::FileHandle handle,bool &executed,bool &blocking);
 
         static bool IsBlockingError(sharpen::ErrorCode code);
+
+        void CancelAllIo(sharpen::ErrorCode err) noexcept;
     };
 }
 

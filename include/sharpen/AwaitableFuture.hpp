@@ -100,6 +100,9 @@ namespace sharpen
         virtual void ExecuteCallback() override
         {
             MyBase::ExecuteCallback();
+            //must be last line
+            //resume coroutine
+            //and this maybe released
             this->NotifyAwaiter();
         }
 
@@ -115,8 +118,13 @@ namespace sharpen
     template <typename _T>
     inline sharpen::AwaitableFuturePtr<_T> MakeAwaitableFuture()
     {
-        sharpen::AwaitableFuturePtr<_T> future = std::make_shared<sharpen::AwaitableFuture<_T>>();
-        return std::move(future);
+        return std::make_shared<sharpen::AwaitableFuture<_T>>();
+    }
+
+    template <typename _T>
+    inline sharpen::AwaitableFuturePtr<_T> MakeAwaitableFuture(sharpen::IFiberScheduler *scheduler)
+    {
+        return std::make_shared<sharpen::AwaitableFuture<_T>>(scheduler);
     }
 }
 

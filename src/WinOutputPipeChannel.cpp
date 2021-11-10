@@ -12,6 +12,11 @@ sharpen::WinOutputPipeChannel::WinOutputPipeChannel(sharpen::FileHandle handle)
     this->handle_ = handle;
 }
 
+sharpen::WinOutputPipeChannel::~WinOutputPipeChannel() noexcept
+{
+    ::CancelIoEx(this->handle_,nullptr);
+}
+
 void sharpen::WinOutputPipeChannel::InitOverlapped(OVERLAPPED &ol)
 {
     std::memset(&ol,0,sizeof(ol));

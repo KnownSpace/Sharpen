@@ -32,9 +32,10 @@ void sharpen::WinNetStreamChannel::InitOverlappedStruct(sharpen::WSAOverlappedSt
     olStruct.channel_ = this->shared_from_this();
 }
 
-void sharpen::WinNetStreamChannel::Closer(sharpen::FileHandle handle)
+void sharpen::WinNetStreamChannel::Closer(sharpen::FileHandle handle) noexcept
 {
     SOCKET sock = reinterpret_cast<SOCKET>(handle);
+    ::CancelIoEx(handle,nullptr);
     ::closesocket(sock);
 }
 

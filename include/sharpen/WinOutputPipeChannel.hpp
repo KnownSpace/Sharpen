@@ -23,7 +23,7 @@ namespace sharpen
     public:
         explicit WinOutputPipeChannel(sharpen::FileHandle handle);
 
-        virtual ~WinOutputPipeChannel() = default;
+        virtual ~WinOutputPipeChannel();
 
         virtual void WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future) override;
         

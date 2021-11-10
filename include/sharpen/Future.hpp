@@ -122,7 +122,12 @@ namespace sharpen
             this->ExecuteCallback();
         }
 
-        void Fail(std::exception_ptr &&err)
+        inline void CompleteForBind(_Value val)
+        {
+            this->Complete(std::move(val));
+        }
+
+        void Fail(std::exception_ptr err)
         {
             {
                 std::unique_lock<sharpen::SpinLock> lock(*this->lock_);
@@ -319,7 +324,12 @@ namespace sharpen
             this->ExecuteCallback();
         }
 
-        void Fail(std::exception_ptr &&err)
+        inline void CompleteForBind()
+        {
+            this->Complete();
+        }
+
+        void Fail(std::exception_ptr err)
         {
             {
                 std::unique_lock<sharpen::SpinLock> lock(*this->lock_);

@@ -33,7 +33,7 @@ namespace sharpen
 
         void RequestRead(char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future);
 
-        static void CompleteReadCallback(sharpen::Future<sharpen::Size> *future,ssize_t size) noexcept;
+        static void CompleteReadCallback(sharpen::EventLoop *loop,sharpen::Future<sharpen::Size> *future,ssize_t size) noexcept;
     public:
         explicit PosixInputPipeChannel(sharpen::FileHandle handle);
 

@@ -34,7 +34,7 @@ namespace sharpen
 
         void RequestWrite(const char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future);
         
-        static void CompleteWriteCallback(sharpen::Future<sharpen::Size> *future,ssize_t size) noexcept;
+        static void CompleteWriteCallback(sharpen::EventLoop *loop,sharpen::Future<sharpen::Size> *future,ssize_t size) noexcept;
     
     public:
         explicit PosixOutputPipeChannel(sharpen::FileHandle handle);

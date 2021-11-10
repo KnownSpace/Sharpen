@@ -37,9 +37,9 @@ void sharpen::PosixInputPipeChannel::TryRead(char *buf,sharpen::Size bufSize,Cal
 
 void sharpen::PosixInputPipeChannel::RequestRead(char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future)
 {
-    using FnPtr = void(*)(sharpen::Future<sharpen::Size> *,ssize_t);
-    Callback cb = std::bind(reinterpret_cast<FnPtr>(&sharpen::PosixInputPipeChannel::CompleteReadCallback),future,std::placeholders::_1);
-    this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixInputPipeChannel::TryRead,this,buf,bufSize,std::move(cb)));
+    using FnPtr = void(*)(sharpen::EventLoop *,sharpen::Future<sharpen::Size> *,ssize_t);
+    Callback cb = std::bind(reinterpret_cast<FnPtr>(&sharpen::PosixInputPipeChannel::CompleteReadCallback),this->loop_,future,std::placeholders::_1);
+    this->loop_->RunInLoop(std::bind(&sharpen::PosixInputPipeChannel::TryRead,this,buf,bufSize,std::move(cb)));
 }
 
 void sharpen::PosixInputPipeChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future)
@@ -68,13 +68,13 @@ void sharpen::PosixInputPipeChannel::OnEvent(sharpen::IoEvent *event)
     }
 }
 
-void sharpen::PosixInputPipeChannel::CompleteReadCallback(sharpen::Future<sharpen::Size> *future,ssize_t size) noexcept
+void sharpen::PosixInputPipeChannel::CompleteReadCallback(sharpen::EventLoop *loop,sharpen::Future<sharpen::Size> *future,ssize_t size) noexcept
 {
     if(size == -1)
     {
-        future->Fail(sharpen::MakeLastErrorPtr());
+        loop->RunInLoopSoon(std::bind(&sharpen::Future<sharpen::Size>::Fail,future,sharpen::MakeLastErrorPtr()));
         return;
     }
-    future->Complete(size);
+    loop->RunInLoopSoon(std::bind(&sharpen::Future<sharpen::Size>::CompleteForBind,future,static_cast<sharpen::Size>(size)));
 }
 #endif

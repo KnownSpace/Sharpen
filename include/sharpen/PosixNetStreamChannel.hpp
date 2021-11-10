@@ -96,22 +96,22 @@ namespace sharpen
 
         void RequestPollWrite(sharpen::Future<void> *future);
 
-        static void CompleteConnectCallback(sharpen::Future<void> *future) noexcept;
+        static void CompleteConnectCallback(sharpen::EventLoop *loop,sharpen::Future<void> *future) noexcept;
 
-        static void CompleteIoCallback(sharpen::Future<sharpen::Size> *future,ssize_t size) noexcept;
+        static void CompleteIoCallback(sharpen::EventLoop *loop,sharpen::Future<sharpen::Size> *future,ssize_t size) noexcept;
 
-        static void CompleteSendFileCallback(sharpen::Future<void> *future,void *mem,sharpen::Size memLen,ssize_t) noexcept;
+        static void CompleteSendFileCallback(sharpen::EventLoop *loop,sharpen::Future<void> *future,void *mem,sharpen::Size memLen,ssize_t) noexcept;
 
-        static void CompleteAcceptCallback(sharpen::Future<sharpen::NetStreamChannelPtr> *future,sharpen::FileHandle accept) noexcept;
+        static void CompleteAcceptCallback(sharpen::EventLoop *loop,sharpen::Future<sharpen::NetStreamChannelPtr> *future,sharpen::FileHandle accept) noexcept;
 
-        static void CompletePollCallback(sharpen::Future<void> *future,ssize_t size) noexcept;
+        static void CompletePollCallback(sharpen::EventLoop *loop,sharpen::Future<void> *future,ssize_t size) noexcept;
 
         static bool IsAcceptBlock(sharpen::ErrorCode err) noexcept;
     public:
 
         explicit PosixNetStreamChannel(sharpen::FileHandle handle);
 
-        virtual ~PosixNetStreamChannel() noexcept = default;
+        virtual ~PosixNetStreamChannel() noexcept;
 
         virtual void WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future) override;
         
