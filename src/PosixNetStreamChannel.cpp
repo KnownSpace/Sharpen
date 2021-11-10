@@ -25,20 +25,7 @@ sharpen::PosixNetStreamChannel::PosixNetStreamChannel(sharpen::FileHandle handle
 
 sharpen::PosixNetStreamChannel::~PosixNetStreamChannel() noexcept
 {
-    //cancel all io
-    this->reader_.CancelAllIo(ECANCELED);
-    this->writer_.CancelAllIo(ECANCELED);
-    errno = ECANCELED;
-    for (auto begin = this->pollReadCbs_.begin();begin != this->pollReadCbs_.end();++begin)
-    {
-        (*begin)(-1);
-    }
-    this->pollReadCbs_.clear();
-    for (auto begin = this->pollWriteCbs_.begin();begin != this->pollWriteCbs_.end();++begin)
-    {
-        (*begin)(-1);
-    }
-    this->pollWriteCbs_.clear();
+    this->DoCancel();
 }
 
 bool sharpen::PosixNetStreamChannel::IsAcceptBlock(sharpen::ErrorCode err) noexcept
@@ -250,14 +237,14 @@ void sharpen::PosixNetStreamChannel::TryConnect(const sharpen::IEndPoint &endPoi
 void sharpen::PosixNetStreamChannel::RequestRead(char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future)
 {
     using FnPtr = void(*)(sharpen::EventLoop *,sharpen::Future<sharpen::Size> *,ssize_t);
-    Callback cb = std::bind(reinterpret_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompleteIoCallback),this->loop_,future,std::placeholders::_1);
+    Callback cb = std::bind(static_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompleteIoCallback),this->loop_,future,std::placeholders::_1);
     this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::TryRead,this,buf,bufSize,std::move(cb)));
 }
 
 void sharpen::PosixNetStreamChannel::RequestWrite(const char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future)
 {
     using FnPtr = void(*)(sharpen::EventLoop *,sharpen::Future<sharpen::Size> *,ssize_t);
-    Callback cb = std::bind(reinterpret_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompleteIoCallback),this->loop_,future,std::placeholders::_1);
+    Callback cb = std::bind(static_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompleteIoCallback),this->loop_,future,std::placeholders::_1);
     this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::TryWrite,this,buf,bufSize,std::move(cb)));
 }
 
@@ -283,36 +270,36 @@ void sharpen::PosixNetStreamChannel::RequestSendFile(sharpen::FileHandle handle,
     }
     sharpen::Uintptr p = reinterpret_cast<sharpen::Uintptr>(mem);
     p += over;
-    using FnPtr = void (*)(sharpen::EventLoop *,sharpen::Future<void> *,void *,sharpen::Size,sharpen::Size);
-    Callback cb = std::bind(reinterpret_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompleteSendFileCallback),this->loop_,future,mem,memSize,std::placeholders::_1);
+    using FnPtr = void (*)(sharpen::EventLoop *,sharpen::Future<void> *,void *,sharpen::Size,ssize_t);
+    Callback cb = std::bind(static_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompleteSendFileCallback),this->loop_,future,mem,memSize,std::placeholders::_1);
     this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::TryWrite,this,reinterpret_cast<const char*>(p),size,std::move(cb)));
 }
 
 void sharpen::PosixNetStreamChannel::RequestConnect(const sharpen::IEndPoint &endPoint,sharpen::Future<void> *future)
 {
     using FnPtr = void (*)(sharpen::EventLoop *,sharpen::Future<void> *);
-    ConnectCallback cb = std::bind(reinterpret_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompleteConnectCallback),this->loop_,future);
+    ConnectCallback cb = std::bind(static_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompleteConnectCallback),this->loop_,future);
     this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::TryConnect,this,std::cref(endPoint),std::move(cb)));
 }
 
 void sharpen::PosixNetStreamChannel::RequestAccept(sharpen::Future<sharpen::NetStreamChannelPtr> *future)
 {
     using FnPtr = void (*)(sharpen::EventLoop *,sharpen::Future<sharpen::NetStreamChannelPtr> *,sharpen::FileHandle);
-    AcceptCallback cb = std::bind(reinterpret_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompleteAcceptCallback),this->loop_,future,std::placeholders::_1);
+    AcceptCallback cb = std::bind(static_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompleteAcceptCallback),this->loop_,future,std::placeholders::_1);
     this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::TryAccept,this,std::move(cb)));
 }
 
 void sharpen::PosixNetStreamChannel::RequestPollRead(sharpen::Future<void> *future)
 {
     using FnPtr = void(*)(sharpen::EventLoop *,sharpen::Future<void> *,ssize_t);
-    Callback cb = std::bind(reinterpret_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompletePollCallback),this->loop_,future,std::placeholders::_1);
+    Callback cb = std::bind(static_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompletePollCallback),this->loop_,future,std::placeholders::_1);
     this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::TryPollRead,this,std::move(cb)));
 }
 
 void sharpen::PosixNetStreamChannel::RequestPollWrite(sharpen::Future<void> *future)
 {
     using FnPtr = void(*)(sharpen::EventLoop *,sharpen::Future<void> *,ssize_t);
-    Callback cb = std::bind(reinterpret_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompletePollCallback),this->loop_,future,std::placeholders::_1);
+    Callback cb = std::bind(static_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompletePollCallback),this->loop_,future,std::placeholders::_1);
     this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::TryPollWrite,this,std::move(cb)));
 }
 
@@ -471,6 +458,29 @@ void sharpen::PosixNetStreamChannel::Listen(sharpen::Uint16 queueLength)
 {
     this->status_ = sharpen::PosixNetStreamChannel::IoStatus::Accept;
     Mybase::Listen(queueLength);
+}
+
+void sharpen::PosixNetStreamChannel::DoCancel() noexcept
+{
+    //cancel all io
+    this->reader_.CancelAllIo(ECANCELED);
+    this->writer_.CancelAllIo(ECANCELED);
+    errno = ECANCELED;
+    for (auto begin = this->pollReadCbs_.begin();begin != this->pollReadCbs_.end();++begin)
+    {
+        (*begin)(-1);
+    }
+    this->pollReadCbs_.clear();
+    for (auto begin = this->pollWriteCbs_.begin();begin != this->pollWriteCbs_.end();++begin)
+    {
+        (*begin)(-1);
+    }
+    this->pollWriteCbs_.clear();
+}
+
+void sharpen::PosixNetStreamChannel::Cancel() noexcept
+{
+    this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixNetStreamChannel::DoCancel,this));
 }
 
 #endif

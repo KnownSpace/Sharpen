@@ -23,7 +23,7 @@ void sharpen::LinuxTimer::WaitAsync(sharpen::Future<void> &future,sharpen::Uint6
 {
     assert(this->handle_ != -1);
     using FnPtr = void(*)(sharpen::Future<void>*);
-    this->cb_ = std::bind(reinterpret_cast<FnPtr>(&sharpen::LinuxTimer::CompleteFuture),&future);
+    this->cb_ = std::bind(static_cast<FnPtr>(&sharpen::LinuxTimer::CompleteFuture),&future);
     itimerspec time;
     std::memset(&(time.it_interval),0,sizeof(time.it_interval));
     time.it_value.tv_sec = waitMs / 1000;

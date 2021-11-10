@@ -62,6 +62,40 @@ void ClientTest()
     std::printf("client test pass\n");
 }
 
+void CancelTest()
+{
+    sharpen::NetStreamChannelPtr server = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
+    sharpen::NetStreamChannelPtr client = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
+    sharpen::IpEndPoint addr;
+    addr.SetAddrByString("127.0.0.1");
+    addr.SetPort(8080);
+    server->Bind(addr);
+    server->Register(sharpen::EventEngine::GetEngine());
+    addr.SetPort(0);
+    client->Bind(addr);
+    client->Register(sharpen::EventEngine::GetEngine());
+    server->Listen(65535);
+    std::printf("cancel test begin\n");
+    int flag = 0;
+    sharpen::AwaitableFuture<sharpen::Size> future;
+    addr.SetPort(8080);
+    client->ConnectAsync(addr);
+    char buf[1024];
+    client->ReadAsync(buf,1024,future);
+    try
+    {
+        client->Cancel();
+        future.Await();
+    }
+    catch(const std::exception& e)
+    {
+        std::printf("error: %s\n",e.what());
+        flag = 1;
+    }
+    std::printf("cancel test end\n");
+    assert(flag == 1);
+}
+
 void NetworkTest()
 {
     sharpen::StartupNetSupport();
@@ -70,6 +104,7 @@ void NetworkTest()
     {
         std::printf("network test begin\n");
         ServerTest();
+        CancelTest();
         std::printf("network test pass\n");
         sharpen::CleanupNetSupport();
     });

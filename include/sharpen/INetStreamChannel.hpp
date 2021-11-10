@@ -65,6 +65,8 @@ namespace sharpen
         void PollReadAsync();
 
         void PollWriteAsync();
+
+        virtual void Cancel() noexcept = 0;
     };
 
     enum class AddressFamily

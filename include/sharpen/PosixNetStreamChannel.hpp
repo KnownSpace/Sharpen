@@ -107,6 +107,8 @@ namespace sharpen
         static void CompletePollCallback(sharpen::EventLoop *loop,sharpen::Future<void> *future,ssize_t size) noexcept;
 
         static bool IsAcceptBlock(sharpen::ErrorCode err) noexcept;
+
+        void DoCancel() noexcept;
     public:
 
         explicit PosixNetStreamChannel(sharpen::FileHandle handle);
@@ -136,6 +138,8 @@ namespace sharpen
         virtual void PollReadAsync(sharpen::Future<void> &future) override;
 
         virtual void PollWriteAsync(sharpen::Future<void> &future) override;
+
+        virtual void Cancel() noexcept override;
     };
 }
 

@@ -66,11 +66,11 @@ void sharpen::RegisterCtrlHandler(sharpen::CtrlType type,sharpen::CtrlHelper::Ha
     {
 #ifdef SHARPEN_IS_WIN
         using FnPtr = BOOL(*)(DWORD);
-        ::SetConsoleCtrlHandler(reinterpret_cast<FnPtr>(&sharpen::CtrlHelper::CtrlHandler),TRUE);
+        ::SetConsoleCtrlHandler(static_cast<FnPtr>(&sharpen::CtrlHelper::CtrlHandler),TRUE);
 #else
         using FnPtr = void(*)(int);
         struct sigaction sa;
-        sa.sa_handler = reinterpret_cast<FnPtr>(&sharpen::CtrlHelper::CtrlHandler);
+        sa.sa_handler = static_cast<FnPtr>(&sharpen::CtrlHelper::CtrlHandler);
         ::sigaction(SIGINT,&sa,0);
         ::sigaction(SIGQUIT,&sa,0);
 #endif

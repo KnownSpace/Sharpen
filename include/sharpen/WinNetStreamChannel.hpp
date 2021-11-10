@@ -33,11 +33,27 @@ namespace sharpen
 
         void HandlePoll(WSAOverlappedStruct &olStruct);
 
+        void RequestRead(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future);
+
+        void RequestWrite(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future);
+
+        void RequestSendFile(sharpen::FileChannelPtr file,sharpen::Uint64 size,sharpen::Uint64 offset,sharpen::Future<void> *future);
+
+        void RequestConnect(const sharpen::IEndPoint *endpoint,sharpen::Future<void> *future);
+
+        void RequestAccept(sharpen::Future<sharpen::NetStreamChannelPtr> *future);
+
+        void RequestPollRead(sharpen::Future<void> *future);
+
+        void RequestPollWrite(sharpen::Future<void> *future);
+
+        void RequestCancel() noexcept;
+
         int af_;
     public:
-        explicit WinNetStreamChannel(sharpen::FileHandle handle,int af);
+        WinNetStreamChannel(sharpen::FileHandle handle,int af);
 
-        ~WinNetStreamChannel() noexcept;
+        ~WinNetStreamChannel() noexcept = default;
 
         virtual void WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future) override;
         
@@ -60,6 +76,8 @@ namespace sharpen
         virtual void PollReadAsync(sharpen::Future<void> &future) override;
 
         virtual void PollWriteAsync(sharpen::Future<void> &future) override;
+
+        virtual void Cancel() noexcept override;
     };
 };
 

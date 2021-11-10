@@ -96,7 +96,7 @@ namespace sharpen
         void PutFuture(const std::chrono::duration<_Rep,_Period> &duration,sharpen::Future<void> &future)
         {
             using FnPtr = void(*)(sharpen::Future<void> *);
-            this->Put(duration,std::bind(reinterpret_cast<FnPtr>(&sharpen::TimeWheel::CompleteFuture),&future));
+            this->Put(duration,std::bind(static_cast<FnPtr>(&sharpen::TimeWheel::CompleteFuture),&future));
         }
 
         void SetUpstream(sharpen::TimeWheelPtr upstream);

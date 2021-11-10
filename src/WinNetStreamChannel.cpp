@@ -9,6 +9,7 @@
 #include <WinSock2.h>
 #include <MSWSock.h>
 
+#include <sharpen/EventLoop.hpp>
 
 void sharpen::WinNetStreamChannel::InitOverlapped(OVERLAPPED &ol)
 {
@@ -32,14 +33,6 @@ void sharpen::WinNetStreamChannel::InitOverlappedStruct(sharpen::WSAOverlappedSt
     olStruct.channel_ = this->shared_from_this();
 }
 
-sharpen::WinNetStreamChannel::~WinNetStreamChannel() noexcept
-{
-    if (this->handle_ != INVALID_HANDLE_VALUE)
-    {
-        ::CancelIoEx(this->handle_,nullptr);
-    }
-}
-
 void sharpen::WinNetStreamChannel::Closer(sharpen::FileHandle handle) noexcept
 {
     SOCKET sock = reinterpret_cast<SOCKET>(handle);
@@ -52,20 +45,16 @@ sharpen::WinNetStreamChannel::WinNetStreamChannel(sharpen::FileHandle handle,int
 {
     assert(handle != reinterpret_cast<sharpen::FileHandle>(INVALID_SOCKET));
     this->handle_ = handle;
-    using FnPtr = void (*) (void);
-    this->closer_  = std::move(std::bind(reinterpret_cast<FnPtr>(&sharpen::WinNetStreamChannel::Closer)));
+    using FnPtr = void (*) (sharpen::FileHandle);
+    this->closer_  = std::bind(static_cast<FnPtr>(&sharpen::WinNetStreamChannel::Closer),std::placeholders::_1);
 }
 
-void sharpen::WinNetStreamChannel::WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future)
+void sharpen::WinNetStreamChannel::RequestWrite(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future)
 {
-    if (!this->IsRegistered())
-    {
-        throw std::logic_error("should register to a loop first");
-    }
     sharpen::WSAOverlappedStruct *olStruct = new (std::nothrow) sharpen::WSAOverlappedStruct();
     if (!olStruct)
     {
-        future.Fail(std::make_exception_ptr(std::bad_alloc()));
+        future->Fail(std::make_exception_ptr(std::bad_alloc()));
         return;
     }
     //init iocp olStruct
@@ -73,7 +62,7 @@ void sharpen::WinNetStreamChannel::WriteAsync(const sharpen::Char *buf,sharpen::
     olStruct->event_.SetData(olStruct);
     olStruct->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Write);
     //record future
-    olStruct->data_ = &future;
+    olStruct->data_ = future;
     //set buf
     olStruct->buf_.buf = const_cast<CHAR*>(buf);
     olStruct->buf_.len = static_cast<ULONG>(bufSize);
@@ -85,7 +74,7 @@ void sharpen::WinNetStreamChannel::WriteAsync(const sharpen::Char *buf,sharpen::
         if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
         {
             delete olStruct;
-            future.Fail(sharpen::MakeLastErrorPtr());
+            future->Fail(sharpen::MakeLastErrorPtr());
             return;
         }
     }
@@ -100,7 +89,7 @@ void sharpen::WinNetStreamChannel::WriteAsync(const sharpen::ByteBuffer &buf,sha
     this->WriteAsync(buf.Data() + bufferOffset,buf.GetSize() - bufferOffset,future);
 }
 
-void sharpen::WinNetStreamChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future) 
+void sharpen::WinNetStreamChannel::RequestRead(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future) 
 {
     if (!this->IsRegistered())
     {
@@ -109,7 +98,7 @@ void sharpen::WinNetStreamChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bu
     sharpen::WSAOverlappedStruct *olStruct = new (std::nothrow) sharpen::WSAOverlappedStruct();
     if (!olStruct)
     {
-        future.Fail(std::make_exception_ptr(std::bad_alloc()));
+        future->Fail(std::make_exception_ptr(std::bad_alloc()));
         return;
     }
     //init iocp olStruct
@@ -117,7 +106,7 @@ void sharpen::WinNetStreamChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bu
     olStruct->event_.SetData(olStruct);
     olStruct->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Read);
     //record future
-    olStruct->data_ = &future;
+    olStruct->data_ = future;
     //set buf
     olStruct->buf_.buf = buf;
     olStruct->buf_.len = static_cast<ULONG>(bufSize);
@@ -130,7 +119,7 @@ void sharpen::WinNetStreamChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bu
         if (err != ERROR_IO_PENDING&& err != ERROR_SUCCESS)
         {
             delete olStruct;
-            future.Fail(sharpen::MakeLastErrorPtr());
+            future->Fail(sharpen::MakeLastErrorPtr());
             return;
         }
     }
@@ -172,16 +161,12 @@ void sharpen::WinNetStreamChannel::OnEvent(sharpen::IoEvent *event)
      
 }
 
-void sharpen::WinNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,sharpen::Uint64 size,sharpen::Uint64 offset,sharpen::Future<void> &future)
+void sharpen::WinNetStreamChannel::RequestSendFile(sharpen::FileChannelPtr file,sharpen::Uint64 size,sharpen::Uint64 offset,sharpen::Future<void> *future)
 {
-    if (!this->IsRegistered())
-    {
-        throw std::logic_error("should register to a loop first");
-    }
     sharpen::WSAOverlappedStruct *olStruct = new (std::nothrow) sharpen::WSAOverlappedStruct();
     if (!olStruct)
     {
-        future.Fail(std::make_exception_ptr(std::bad_alloc()));
+        future->Fail(std::make_exception_ptr(std::bad_alloc()));
         return;
     }
     //init iocp olStruct
@@ -189,7 +174,7 @@ void sharpen::WinNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,sh
     olStruct->event_.SetData(olStruct);
     olStruct->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Sendfile);
     //record future
-    olStruct->data_ = &future;
+    olStruct->data_ = future;
     //set offset
     LARGE_INTEGER li;
     li.QuadPart = offset;
@@ -203,7 +188,7 @@ void sharpen::WinNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,sh
         if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
         {
             delete olStruct;
-            future.Fail(sharpen::MakeLastErrorPtr());
+            future->Fail(sharpen::MakeLastErrorPtr());
             return;
         }
     }
@@ -214,7 +199,7 @@ void sharpen::WinNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,sh
     this->SendFileAsync(file,file->GetFileSize(),0,future);
 }
 
-void sharpen::WinNetStreamChannel::AcceptAsync(sharpen::Future<sharpen::NetStreamChannelPtr> &future)
+void sharpen::WinNetStreamChannel::RequestAccept(sharpen::Future<sharpen::NetStreamChannelPtr> *future)
 {
     static LPFN_ACCEPTEX WSAAcceptEx = nullptr;
 
@@ -229,14 +214,14 @@ void sharpen::WinNetStreamChannel::AcceptAsync(sharpen::Future<sharpen::NetStrea
         int iResult = WSAIoctl(reinterpret_cast<SOCKET>(this->handle_), SIO_GET_EXTENSION_FUNCTION_POINTER,&acceptexId, sizeof (acceptexId), &WSAAcceptEx, sizeof (WSAAcceptEx), &dwBytes, NULL, NULL);
         if (iResult != 0)
         {
-            future.Fail(sharpen::MakeLastErrorPtr());
+            future->Fail(sharpen::MakeLastErrorPtr());
             return;
         }
     }
     sharpen::WSAOverlappedStruct *olStruct = new (std::nothrow) sharpen::WSAOverlappedStruct();
     if (!olStruct)
     {
-        future.Fail(std::make_exception_ptr(std::bad_alloc()));
+        future->Fail(std::make_exception_ptr(std::bad_alloc()));
         return;
     }
     //init iocp olStruct
@@ -244,13 +229,13 @@ void sharpen::WinNetStreamChannel::AcceptAsync(sharpen::Future<sharpen::NetStrea
     olStruct->event_.SetData(olStruct);
     olStruct->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Accept);
     //record future
-    olStruct->data_ = &future;
+    olStruct->data_ = future;
     //open client socket
     SOCKET s = ::socket(this->af_, SOCK_STREAM, IPPROTO_TCP);
     if (s == INVALID_SOCKET)
     {
         delete olStruct;
-        future.Fail(sharpen::MakeLastErrorPtr());
+        future->Fail(sharpen::MakeLastErrorPtr());
         return;
     }
     olStruct->accepted_ = reinterpret_cast<sharpen::FileHandle>(s);
@@ -259,7 +244,7 @@ void sharpen::WinNetStreamChannel::AcceptAsync(sharpen::Future<sharpen::NetStrea
     if (olStruct->buf_.buf == nullptr)
     {
         delete olStruct;
-        future.Fail(std::make_exception_ptr(std::bad_alloc()));
+        future->Fail(std::make_exception_ptr(std::bad_alloc()));
         return;
     }
     //request
@@ -270,20 +255,15 @@ void sharpen::WinNetStreamChannel::AcceptAsync(sharpen::Future<sharpen::NetStrea
         if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
         {
             delete olStruct;
-            future.Fail(sharpen::MakeLastErrorPtr());
+            future->Fail(sharpen::MakeLastErrorPtr());
             return;
         }
     }
 }
 
-void sharpen::WinNetStreamChannel::ConnectAsync(const sharpen::IEndPoint &endpoint,sharpen::Future<void> &future)
+void sharpen::WinNetStreamChannel::RequestConnect(const sharpen::IEndPoint *endpoint,sharpen::Future<void> *future)
 {
     static LPFN_CONNECTEX WSAConnectEx = nullptr;
-
-    if (!this->IsRegistered())
-    {
-        throw std::logic_error("should register to a loop first");
-    }
     //get acceptex
     {
         GUID connectexId = WSAID_CONNECTEX;
@@ -291,14 +271,14 @@ void sharpen::WinNetStreamChannel::ConnectAsync(const sharpen::IEndPoint &endpoi
         int iResult = WSAIoctl(reinterpret_cast<SOCKET>(this->handle_), SIO_GET_EXTENSION_FUNCTION_POINTER,&connectexId, sizeof (connectexId), &WSAConnectEx, sizeof (WSAConnectEx), &dwBytes, NULL, NULL);
         if (iResult != 0)
         {
-            future.Fail(sharpen::MakeLastErrorPtr());
+            future->Fail(sharpen::MakeLastErrorPtr());
             return;
         }
     }
     sharpen::WSAOverlappedStruct *olStruct = new (std::nothrow) sharpen::WSAOverlappedStruct();
     if (!olStruct)
     {
-        future.Fail(std::make_exception_ptr(std::bad_alloc()));
+        future->Fail(std::make_exception_ptr(std::bad_alloc()));
         return;
     }
     //init iocp olStruct
@@ -306,31 +286,27 @@ void sharpen::WinNetStreamChannel::ConnectAsync(const sharpen::IEndPoint &endpoi
     olStruct->event_.SetData(olStruct);
     olStruct->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Connect);
     //record future
-    olStruct->data_ = &future;
+    olStruct->data_ = future;
     //request
-    BOOL r = WSAConnectEx(reinterpret_cast<SOCKET>(this->handle_),endpoint.GetAddrPtr(),endpoint.GetAddrLen(),nullptr,0,nullptr,&(olStruct->ol_));
+    BOOL r = WSAConnectEx(reinterpret_cast<SOCKET>(this->handle_),endpoint->GetAddrPtr(),endpoint->GetAddrLen(),nullptr,0,nullptr,&(olStruct->ol_));
     if (r != TRUE)
     {
         sharpen::ErrorCode err = sharpen::GetLastError();
         if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
         {
             delete olStruct;
-            future.Fail(sharpen::MakeLastErrorPtr());
+            future->Fail(sharpen::MakeLastErrorPtr());
             return;
         }
     }
 }
 
-void sharpen::WinNetStreamChannel::PollReadAsync(sharpen::Future<void> &future)
+void sharpen::WinNetStreamChannel::RequestPollRead(sharpen::Future<void> *future)
 {
-    if (!this->IsRegistered())
-    {
-        throw std::logic_error("should register to a loop first");
-    }
     sharpen::WSAOverlappedStruct *olStruct = new (std::nothrow) sharpen::WSAOverlappedStruct();
     if (!olStruct)
     {
-        future.Fail(std::make_exception_ptr(std::bad_alloc()));
+        future->Fail(std::make_exception_ptr(std::bad_alloc()));
         return;
     }
     //init iocp olStruct
@@ -338,7 +314,7 @@ void sharpen::WinNetStreamChannel::PollReadAsync(sharpen::Future<void> &future)
     olStruct->event_.SetData(olStruct);
     olStruct->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Poll);
     //record future
-    olStruct->data_ = &future;
+    olStruct->data_ = future;
     //set buf
     olStruct->buf_.buf = nullptr;
     olStruct->buf_.len = 0;
@@ -353,22 +329,18 @@ void sharpen::WinNetStreamChannel::PollReadAsync(sharpen::Future<void> &future)
         if (err != ERROR_IO_PENDING&& err != ERROR_SUCCESS)
         {
             delete olStruct;
-            future.Fail(sharpen::MakeLastErrorPtr());
+            future->Fail(sharpen::MakeLastErrorPtr());
             return;
         }
     }
 }
 
-void sharpen::WinNetStreamChannel::PollWriteAsync(sharpen::Future<void> &future)
+void sharpen::WinNetStreamChannel::RequestPollWrite(sharpen::Future<void> *future)
 {
-    if (!this->IsRegistered())
-    {
-        throw std::logic_error("should register to a loop first");
-    }
     sharpen::WSAOverlappedStruct *olStruct = new (std::nothrow) sharpen::WSAOverlappedStruct();
     if (!olStruct)
     {
-        future.Fail(std::make_exception_ptr(std::bad_alloc()));
+        future->Fail(std::make_exception_ptr(std::bad_alloc()));
         return;
     }
     //init iocp olStruct
@@ -376,7 +348,7 @@ void sharpen::WinNetStreamChannel::PollWriteAsync(sharpen::Future<void> &future)
     olStruct->event_.SetData(olStruct);
     olStruct->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Poll);
     //record future
-    olStruct->data_ = &future;
+    olStruct->data_ = future;
     //set buf
     olStruct->buf_.buf = nullptr;
     olStruct->buf_.len = 0;
@@ -390,7 +362,7 @@ void sharpen::WinNetStreamChannel::PollWriteAsync(sharpen::Future<void> &future)
         if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
         {
             delete olStruct;
-            future.Fail(sharpen::MakeLastErrorPtr());
+            future->Fail(sharpen::MakeLastErrorPtr());
             return;
         }
     }
@@ -453,6 +425,79 @@ void sharpen::WinNetStreamChannel::HandlePoll(sharpen::WSAOverlappedStruct &olSt
         return;
     }
     future->Complete();
+}
+
+void sharpen::WinNetStreamChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future)
+{
+    if (!this->IsRegistered())
+    {
+        throw std::logic_error("should register to a loop first");
+    }
+    this->loop_->RunInLoop(std::bind(&sharpen::WinNetStreamChannel::RequestRead,this,buf,bufSize,&future));
+}
+
+void sharpen::WinNetStreamChannel::WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future)
+{
+    if (!this->IsRegistered())
+    {
+        throw std::logic_error("should register to a loop first");
+    }
+    this->loop_->RunInLoop(std::bind(&sharpen::WinNetStreamChannel::RequestWrite,this,buf,bufSize,&future));
+}
+
+void sharpen::WinNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,sharpen::Uint64 size,sharpen::Uint64 offset,sharpen::Future<void> &future)
+{
+    if (!this->IsRegistered())
+    {
+        throw std::logic_error("should register to a loop first");
+    }
+    this->loop_->RunInLoop(std::bind(&sharpen::WinNetStreamChannel::RequestSendFile,this,file,size,offset,&future));
+}
+
+void sharpen::WinNetStreamChannel::ConnectAsync(const sharpen::IEndPoint &endpoint,sharpen::Future<void> &future)
+{
+    if (!this->IsRegistered())
+    {
+        throw std::logic_error("should register to a loop first");
+    }
+    this->loop_->RunInLoop(std::bind(&sharpen::WinNetStreamChannel::RequestConnect,this,&endpoint,&future));
+}
+
+void sharpen::WinNetStreamChannel::AcceptAsync(sharpen::Future<sharpen::NetStreamChannelPtr> &future)
+{
+    if (!this->IsRegistered())
+    {
+        throw std::logic_error("should register to a loop first");
+    }
+    this->loop_->RunInLoop(std::bind(&sharpen::WinNetStreamChannel::RequestAccept,this,&future));
+}
+
+void sharpen::WinNetStreamChannel::PollReadAsync(sharpen::Future<void> &future)
+{
+    if (!this->IsRegistered())
+    {
+        throw std::logic_error("should register to a loop first");
+    }
+    this->loop_->RunInLoop(std::bind(&sharpen::WinNetStreamChannel::RequestPollRead,this,&future));
+}
+
+void sharpen::WinNetStreamChannel::PollWriteAsync(sharpen::Future<void> &future)
+{
+    if (!this->IsRegistered())
+    {
+        throw std::logic_error("should register to a loop first");
+    }
+    this->loop_->RunInLoop(std::bind(&sharpen::WinNetStreamChannel::RequestPollWrite,this,&future));
+}
+
+void sharpen::WinNetStreamChannel::RequestCancel() noexcept
+{
+    ::CancelIo(this->handle_);
+}
+
+void sharpen::WinNetStreamChannel::Cancel() noexcept
+{
+    this->loop_->RunInLoop(std::bind(&sharpen::WinNetStreamChannel::RequestCancel,this));
 }
 
 #endif

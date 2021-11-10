@@ -147,6 +147,8 @@ void sharpen::IPosixIoOperator::CancelAllIo(sharpen::ErrorCode err) noexcept
     {
         cbs[i](-1);
     }
+    size += this->GetMark();
+    this->MoveMark(size);
     this->FillBufferAndCallback();
     cbs = this->GetFirstCallback();
     size = this->GetRemainingSize();
@@ -154,6 +156,8 @@ void sharpen::IPosixIoOperator::CancelAllIo(sharpen::ErrorCode err) noexcept
     {
         cbs[i](-1);
     }
+    size += this->GetMark();
+    this->MoveMark(size);
 }
 
 #endif

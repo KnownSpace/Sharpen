@@ -43,7 +43,7 @@ void sharpen::PosixOutputPipeChannel::TryWrite(const char *buf,sharpen::Size buf
 void sharpen::PosixOutputPipeChannel::RequestWrite(const char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future)
 {
     using FnPtr = void(*)(sharpen::EventLoop *,sharpen::Future<sharpen::Size>*,ssize_t);
-    Callback cb = std::bind(reinterpret_cast<FnPtr>(&sharpen::PosixOutputPipeChannel::CompleteWriteCallback),this->loop_,future,std::placeholders::_1);
+    Callback cb = std::bind(static_cast<FnPtr>(&sharpen::PosixOutputPipeChannel::CompleteWriteCallback),this->loop_,future,std::placeholders::_1);
     this->loop_->RunInLoop(std::bind(&sharpen::PosixOutputPipeChannel::TryWrite,this,buf,bufSize,std::move(cb)));
 }
 
