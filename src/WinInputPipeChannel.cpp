@@ -16,7 +16,10 @@ sharpen::WinInputPipeChannel::WinInputPipeChannel(sharpen::FileHandle handle)
 
 sharpen::WinInputPipeChannel::~WinInputPipeChannel() noexcept
 {
-    ::CancelIoEx(this->handle_,nullptr);
+    if (this->handle_ != INVALID_HANDLE_VALUE)
+    {
+        ::CancelIoEx(this->handle_,nullptr);
+    }
 }
 
 void sharpen::WinInputPipeChannel::InitOverlapped(OVERLAPPED &ol)

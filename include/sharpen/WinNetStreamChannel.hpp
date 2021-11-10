@@ -37,7 +37,7 @@ namespace sharpen
     public:
         explicit WinNetStreamChannel(sharpen::FileHandle handle,int af);
 
-        ~WinNetStreamChannel() noexcept = default;
+        ~WinNetStreamChannel() noexcept;
 
         virtual void WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future) override;
         
