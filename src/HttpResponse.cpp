@@ -6,6 +6,7 @@
 
 #include <sharpen/ByteBuffer.hpp>
 #include <sharpen/HttpParser.hpp>
+#include <sharpen/HttpResponseDecoder.hpp>
 
 sharpen::HttpResponse::HttpResponse()
     :version_(sharpen::HttpVersion::Unkown)
@@ -24,8 +25,8 @@ sharpen::HttpResponse::HttpResponse(sharpen::HttpVersion version,sharpen::HttpSt
 sharpen::HttpResponse::HttpResponse(const Self &other)
     :version_(other.version_)
     ,status_(other.status_)
-    ,header_()
-    ,body_()
+    ,header_(other.header_)
+    ,body_(other.body_)
 {}
 
 sharpen::HttpResponse::HttpResponse(Self &&other) noexcept
@@ -44,14 +45,15 @@ sharpen::HttpResponse &sharpen::HttpResponse::operator=(const Self &other)
 
 sharpen::HttpResponse &sharpen::HttpResponse::operator=(Self &&other) noexcept
 {
-    if(this == std::addressof(other))
+    if(this != std::addressof(other))
     {
-        return *this;
+        this->version_ = other.version_;
+        this->status_ = other.status_;
+        this->header_ = std::move(other.header_);
+        this->body_ = std::move(other.body_);
+        other.version_ = sharpen::HttpVersion::Unkown;
+        other.status_ = sharpen::HttpStatusCode::OK;
     }
-    this->version_ = other.version_;
-    this->status_ = other.status_;
-    this->header_ = std::move(other.header_);
-    this->body_ = std::move(other.body_);
     return *this;
 }
 
@@ -206,4 +208,9 @@ void sharpen::HttpResponse::ConfigParser(sharpen::HttpParser &parser)
         parser.SetCompleted(true);
         return 0;
     });
+}
+
+void sharpen::HttpResponse::ConfigDecoder(sharpen::HttpResponseDecoder &decoder)
+{
+    this->ConfigParser(decoder.GetParser());
 }

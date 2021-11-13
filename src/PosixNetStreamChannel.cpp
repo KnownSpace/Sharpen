@@ -12,7 +12,7 @@
 #include <sharpen/EventLoop.hpp>
 
 sharpen::PosixNetStreamChannel::PosixNetStreamChannel(sharpen::FileHandle handle)
-    : Mybase()
+    :Mybase()
     ,readable_(false)
     ,writeable_(false)
     ,status_(sharpen::PosixNetStreamChannel::IoStatus::Io)

@@ -15,6 +15,8 @@ namespace sharpen
 
     class HttpParser;
 
+    class HttpRequestDecoder;
+
     class HttpRequest
     {
     private:
@@ -121,6 +123,8 @@ namespace sharpen
         }
 
         void ConfigParser(sharpen::HttpParser &parser);
+
+        void ConfigDecoder(sharpen::HttpRequestDecoder &decoder);
     };
 }
 

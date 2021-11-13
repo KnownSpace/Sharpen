@@ -26,10 +26,21 @@ namespace sharpen
     {
     private:
         using Base = std::logic_error;
+        using Self = sharpen::BadOptionException;
     public:
         explicit BadOptionException(const char *str) noexcept
             :Base(str)
         {}
+
+        BadOptionException(const Self &other) noexcept = default;
+
+        BadOptionException(Self &&other) noexcept = default;
+
+        ~BadOptionException() noexcept = default;
+
+        Self &operator=(const Self &other) noexcept = default;
+
+        Self &operator=(Self &&other) noexcept = default;
     };
 
     template<typename _T,bool _IsTrivial>
@@ -174,6 +185,13 @@ namespace sharpen
         void Reset() noexcept
         {
             this->hasValue_ = false;
+        }
+
+        template<typename ..._Args,typename _Check = decltype(_T{std::declval<_Args>()...})>
+        void Construct(_Args &&...args) SHARPEN_NOEXCEPT_IF(_T {std::declval<_Args>()...})
+        {
+            this->hasValue_ = true;
+            ::new (&this->value_) _T{std::forward<_Args>(args)...};
         }      
 
         ~InternalOption() noexcept = default;
@@ -203,7 +221,7 @@ namespace sharpen
         {
             if (this->hasValue_)
             {
-                this->value_ = other.value_;
+                ::new(&this->value_) _T(other.value_);
             }
         }
 
@@ -213,7 +231,7 @@ namespace sharpen
         {
             if (this->hasValue_)
             {
-                this->value_ = std::move(other.value_);
+                ::new(&this->value_) _T(std::move(other.value_));
             }
             other.Reset();
         }
@@ -240,14 +258,14 @@ namespace sharpen
 
         Self &operator=(Self &&other) noexcept
         {
-            if (this != &other)
+            if (this != std::addressof(other))
             {
                 if (this->hasValue_)
                 {
                     this->Reset();
                 }
                 this->hasValue_ = true;
-                this->value_ = std::move(other.value_);
+                ::new(&this->value_) _T(std::move(other.value_));
                 other.Reset();
             }
             return *this;
@@ -323,6 +341,14 @@ namespace sharpen
             {
                 this->value_.~_T();
             }
+        }
+
+        template<typename ..._Args,typename _Check = decltype(_T{std::declval<_Args>()...})>
+        void Construct(_Args &&...args) SHARPEN_NOEXCEPT_IF(_T {std::declval<_Args>()...})
+        {
+            this->Reset();
+            this->hasValue_ = true;
+            ::new (&this->value_) _T{std::forward<_Args>(args)...};
         }
 
         ~InternalOption() noexcept

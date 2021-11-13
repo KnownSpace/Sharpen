@@ -6,6 +6,7 @@
 
 #include <sharpen/ByteBuffer.hpp>
 #include <sharpen/HttpParser.hpp>
+#include <sharpen/HttpRequestDecoder.hpp>
 
 sharpen::HttpRequest::HttpRequest()
     :HttpRequest(sharpen::HttpMethod::GET,"/",sharpen::HttpVersion::Unkown)
@@ -44,15 +45,14 @@ sharpen::HttpRequest &sharpen::HttpRequest::operator=(const Self &other)
 
 sharpen::HttpRequest &sharpen::HttpRequest::operator=(Self &&other) noexcept
 {
-    if(this == std::addressof(other))
+    if(this != std::addressof(other))
     {
-        return *this;
+        this->method_ = other.method_;
+        this->url_ = std::move(other.url_);
+        this->version_ = other.version_;
+        this->header_ = std::move(other.header_);
+        this->body_ = std::move(other.body_);
     }
-    this->method_ = other.method_;
-    this->url_ = std::move(other.url_);
-    this->version_ = other.version_;
-    this->header_ = std::move(other.header_);
-    this->body_ = std::move(other.body_);
     return *this;
 }
 
@@ -203,4 +203,9 @@ void sharpen::HttpRequest::ConfigParser(sharpen::HttpParser &parser)
         parser.SetCompleted(true);
         return 0;
     });
+}
+
+void sharpen::HttpRequest::ConfigDecoder(sharpen::HttpRequestDecoder &decoder)
+{
+    this->ConfigParser(decoder.GetParser());
 }

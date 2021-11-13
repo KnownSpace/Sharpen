@@ -136,3 +136,23 @@ void sharpen::HttpHeader::Clear()
 {
     this->headers_.clear();
 }
+
+sharpen::HttpHeader::ConstIterator sharpen::HttpHeader::Begin() const
+{
+    return this->headers_.cbegin();
+}
+
+sharpen::HttpHeader::Iterator sharpen::HttpHeader::Begin()
+{
+    return this->headers_.begin();
+}
+
+sharpen::HttpHeader::ConstIterator sharpen::HttpHeader::End() const
+{
+    return this->headers_.cend();
+}
+
+sharpen::HttpHeader::Iterator sharpen::HttpHeader::End()
+{
+    return this->headers_.end();
+}

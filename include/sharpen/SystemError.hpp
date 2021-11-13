@@ -49,6 +49,14 @@ namespace sharpen
     {
        return sharpen::MakeSystemErrorPtr(sharpen::GetLastError());
     }
+
+#ifdef SHARPEN_IS_WIN
+    constexpr sharpen::ErrorCode ErrorCancel = ERROR_CANCELLED;
+    constexpr sharpen::ErrorCode ErrorConnectionAborted = ERROR_CONNECTION_ABORTED;
+#else
+    constexpr sharpen::ErrorCode ErrorCancel = ECANCELED;
+    constexpr sharpen::ErrorCode ErrorConnectionAborted = ECONNABORTED;
+#endif
 }
 
 #endif

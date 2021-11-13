@@ -21,8 +21,10 @@ add_executable(filetest "${PROJECT_SOURCE_DIR}/test/FileTest.cpp")
 add_executable(networktest "${PROJECT_SOURCE_DIR}/test/NetworkTest.cpp")
 #option test
 add_executable(optiontest "${PROJECT_SOURCE_DIR}/test/OptionTest.cpp")
-#option test
+#arena test
 add_executable(arenatest "${PROJECT_SOURCE_DIR}/test/ArenaTest.cpp")
+#rpc client test
+add_executable(rpcclienttest "${PROJECT_SOURCE_DIR}/test/RpcClientTest.cpp")
 #link
 target_link_libraries(webserver sharpen)
 
@@ -35,6 +37,7 @@ target_link_libraries(filetest sharpen)
 target_link_libraries(networktest sharpen)
 target_link_libraries(optiontest sharpen)
 target_link_libraries(arenatest sharpen)
+target_link_libraries(rpcclienttest sharpen)
 #test
 enable_testing()
 #tests

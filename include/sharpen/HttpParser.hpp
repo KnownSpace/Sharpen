@@ -64,9 +64,9 @@ namespace sharpen
     public:
         enum class ParserModel
         {
-            Request,
-            Response,
-            Both
+            Both = 0,
+            Request = 1,
+            Response = 2
         };
 
         explicit HttpParser(ParserModel model);

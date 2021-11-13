@@ -198,7 +198,7 @@ bool sharpen::HttpParser::IsError() const
 
 const char *sharpen::HttpParser::GetErrorMessage() const
 {
-    return llhttp_errno_name(static_cast<llhttp_errno>(this->parser_->error));
+    return llhttp_get_error_reason(this->parser_);
 }
 
 bool sharpen::HttpParser::IsCompleted() const

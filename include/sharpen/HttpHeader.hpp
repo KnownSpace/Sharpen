@@ -16,6 +16,8 @@ namespace sharpen
     private:
         using Self = sharpen::HttpHeader;
         using Headers = std::unordered_map<std::string,std::string>;
+        using Iterator = typename Headers::iterator;
+        using ConstIterator = typename Headers::const_iterator;
 
         Headers headers_;
 
@@ -72,6 +74,14 @@ namespace sharpen
         }
 
         void Clear();
+
+        Iterator Begin();
+
+        Iterator End();
+
+        ConstIterator Begin() const;
+
+        ConstIterator End() const;
     };
 }
 
