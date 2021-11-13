@@ -104,6 +104,7 @@ namespace sharpen
 
             bool complete = this->GetDecoder().IsCompleted();
             Waiter last;
+            last.invoker_ = nullptr;
             _Response res;
             if(complete)
             {
@@ -157,7 +158,15 @@ namespace sharpen
             this->FailReceive(sharpen::MakeSystemErrorPtr(err));
         }
     public:
-        RpcClient(sharpen::NetStreamChannelPtr conn,const _Encoder &encoder = _Encoder{},const _Decoder &decoder = _Decoder{})
+        explicit RpcClient(sharpen::NetStreamChannelPtr conn)
+            :RpcClient(conn,_Encoder{},_Decoder{})
+        {}
+
+        RpcClient(sharpen::NetStreamChannelPtr conn,const _Encoder &encoder)
+            :RpcClient(conn,encoder,_Decoder{})
+        {}
+
+        RpcClient(sharpen::NetStreamChannelPtr conn,const _Encoder &encoder,const _Decoder &decoder)
             :lock_()
             ,started_(false)
             ,pair_()
