@@ -67,6 +67,11 @@ namespace sharpen
         {
             return this->parser_;
         }
+
+        void SetCompleted(bool completed)
+        {
+            this->parser_.SetCompleted(completed);
+        }
     };
 }
 

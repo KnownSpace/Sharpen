@@ -1,7 +1,6 @@
 #include <sharpen/TimeWheel.hpp>
 
-#include <mutex>
-#include <algorithm>
+#include <sharpen/IteratorOps.hpp>
 
 sharpen::TimeWheel::~TimeWheel() noexcept
 {
@@ -12,23 +11,25 @@ void sharpen::TimeWheel::Tick()
 {
     //collect timer
     TickBucket &bucket = this->buckets_[this->pos_ % this->buckets_.size()];
+    using CompPtr = bool(*)(const TickCallback &,const TickCallback &);
     std::list<TickCallback> cbs;
     {
         std::unique_lock<sharpen::SpinLock> lock(bucket.lock_);
-        auto ite = bucket.cbs_.begin();
-        while (ite != bucket.cbs_.end())
+        auto begin = bucket.cbs_.begin(),end = bucket.cbs_.end();
+        while (begin != end && begin->round_ == 0)
         {
-            if (ite->round_ == 0)
-            {
-                cbs.push_back(std::move(*ite));
-                ite = bucket.cbs_.erase(ite);
-            }
-            else
-            {
-                ite->round_ -= 1;
-                ite++;
-            }
+            std::pop_heap(bucket.cbs_.begin(),bucket.cbs_.end(),std::bind(static_cast<CompPtr>(&Self::CompareRound),std::placeholders::_1,std::placeholders::_2));
+            --end;
         }
+        while (begin != end)
+        {
+            begin->round_ -= 1;
+            ++begin;
+        }
+        begin = end;
+        end = bucket.cbs_.end();
+        cbs.assign(std::make_move_iterator(begin),std::make_move_iterator(end));
+        bucket.cbs_.erase(begin,end);
     }
     bool upstream{false};
     if (this->upstream_ && this->pos_ != 0 && (this->pos_ % this->buckets_.size()) == 0)

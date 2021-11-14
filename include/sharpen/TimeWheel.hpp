@@ -7,6 +7,7 @@
 #include <memory>
 #include <list>
 #include <mutex>
+#include <algorithm>
 
 #include "ITimer.hpp"
 #include "SpinLock.hpp"
@@ -20,6 +21,7 @@ namespace sharpen
     class TimeWheel:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
+        using Self = TimeWheel;
 
         struct TickCallback
         {
@@ -34,8 +36,8 @@ namespace sharpen
         struct TickBucket
         {
         private:
-            using Cb = typename sharpen::TimeWheel::TickCallback;
-            using Cbs = std::list<Cb>;
+            using Cb = typename Self::TickCallback;
+            using Cbs = std::vector<Cb>;
         public:
             sharpen::SpinLock lock_;
             Cbs cbs_;
@@ -43,7 +45,7 @@ namespace sharpen
 
         std::chrono::milliseconds waitTime_;
         sharpen::TimeWheelPtr upstream_;
-        std::vector<typename sharpen::TimeWheel::TickBucket> buckets_;
+        std::vector<typename Self::TickBucket> buckets_;
         sharpen::Size pos_;
         std::atomic_bool running_;
         std::chrono::milliseconds roundTime_;
@@ -54,6 +56,11 @@ namespace sharpen
         static void CompleteFuture(sharpen::Future<void> *future) noexcept
         {
             future->Complete();
+        }
+
+        static bool CompareRound(const TickCallback &a,const TickCallback &b)
+        {
+            return a.round_ < b.round_;
         }
     public:
         template<typename _Rep,typename _Period>
@@ -87,8 +94,10 @@ namespace sharpen
             buck %= this->buckets_.size();
             auto &bucket = this->buckets_[buck];
             {
+                using CompPtr = bool(*)(const TickCallback &,const TickCallback &);
                 std::unique_lock<sharpen::SpinLock> lock(bucket.lock_);
                 bucket.cbs_.push_back(std::move(cb));
+                std::push_heap(bucket.cbs_.begin(),bucket.cbs_.end(),std::bind(static_cast<CompPtr>(&Self::CompareRound),std::placeholders::_1,std::placeholders::_2));
             }
         }
 

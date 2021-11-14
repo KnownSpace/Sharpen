@@ -13,6 +13,13 @@
 
 namespace sharpen
 {
+    //NOTE:
+    //we will send _Request to server
+    //and expect to get a _Response as response
+    //_Encoder should has ByteBuffer Encode(const _Request &req) function
+    //_Decoder should has void Decode(const char *data,size_t size) and bool IsCompleted() function
+    //all requests will be sended in a order
+    //all response should be returned in same order or you may get a wrong message
     template<typename _Request,typename _Encoder,typename _Response,typename _Decoder>
     class RpcClient:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
@@ -38,22 +45,22 @@ namespace sharpen
         WaiterList waiters_;
         _Response res_;
 
-        _Decoder &GetDecoder() noexcept
+        _Decoder &Decoder() noexcept
         {
             return this->pair_.Second();
         }
 
-        const _Decoder &GetDecoder() const noexcept
+        const _Decoder &Decoder() const noexcept
         {
             return this->pair_.Second();
         }
 
-        _Encoder &GetEncoder() noexcept
+        _Encoder &Encoder() noexcept
         {
             return this->pair_.First();
         }
 
-        const _Encoder &GetEncoder() const noexcept
+        const _Encoder &Encoder() const noexcept
         {
             return this->pair_.First();
         }
@@ -61,7 +68,7 @@ namespace sharpen
         void StartReceive()
         {
             this->reader_.Reset();
-            this->res_.ConfigDecoder(this->GetDecoder());
+            this->res_.ConfigDecoder(this->Decoder());
             this->reader_.SetCallback(std::bind(&Self::ReceiveCallback,this,std::placeholders::_1));
             this->conn_->ReadAsync(this->readBuf_,0,this->reader_);
         }
@@ -94,7 +101,7 @@ namespace sharpen
             try
             {
                 sharpen::Size size = future.Get();
-                this->GetDecoder().Decode(this->readBuf_.Data(),size);
+                this->Decoder().Decode(this->readBuf_.Data(),size);
             }
             catch(const std::exception &)
             {
@@ -102,7 +109,7 @@ namespace sharpen
                 return;
             }
 
-            bool complete = this->GetDecoder().IsCompleted();
+            bool complete = this->Decoder().IsCompleted();
             Waiter last;
             last.invoker_ = nullptr;
             _Response res;
@@ -162,16 +169,16 @@ namespace sharpen
             :RpcClient(conn,_Encoder{},_Decoder{})
         {}
 
-        RpcClient(sharpen::NetStreamChannelPtr conn,const _Encoder &encoder)
-            :RpcClient(conn,encoder,_Decoder{})
+        RpcClient(sharpen::NetStreamChannelPtr conn,_Encoder encoder)
+            :RpcClient(conn,std::move(encoder),_Decoder{})
         {}
 
-        RpcClient(sharpen::NetStreamChannelPtr conn,const _Encoder &encoder,const _Decoder &decoder)
+        RpcClient(sharpen::NetStreamChannelPtr conn,_Encoder encoder,_Decoder decoder)
             :lock_()
             ,started_(false)
             ,pair_()
             ,reader_()
-            ,conn_(conn)
+            ,conn_(std::move(conn))
             ,readBuf_(4096)
             ,waiters_()
             ,res_()
@@ -180,7 +187,7 @@ namespace sharpen
             this->pair_.Second() = std::move(decoder);
         }
 
-        ~RpcClient() noexcept
+        virtual ~RpcClient() noexcept
         {
             this->conn_->Close();
             this->DoCancel(sharpen::ErrorConnectionAborted);
@@ -193,14 +200,14 @@ namespace sharpen
             Waiter waiter;
             waiter.invoker_ = &future;
             waiter.sender_.Construct();
-            Waiter *pwaiter = nullptr;
+            Waiter *waiterPtr = nullptr;
             {
                 std::unique_lock<Lock> lock(this->lock_);
                 this->waiters_.push_back(std::move(waiter));
-                pwaiter = &this->waiters_.back();
+                waiterPtr = &this->waiters_.back();
             }
-            pwaiter->sender_.Get().SetCallback(std::bind(&Self::SendCallback,this,std::ref(future),std::placeholders::_1));
-            this->conn_->WriteAsync(this->GetEncoder().Encode(package),0,pwaiter->sender_.Get());
+            waiterPtr->sender_.Get().SetCallback(std::bind(&Self::SendCallback,this,std::ref(future),std::placeholders::_1));
+            this->conn_->WriteAsync(this->Encoder().Encode(package),0,waiterPtr->sender_.Get());
         }
 
         _Response InvokeAsync(const _Request &package)
