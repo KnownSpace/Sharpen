@@ -49,13 +49,14 @@ namespace sharpen
             return this->parser_.IsCompleted();
         }
 
-        void Decode(const char *data,sharpen::Size size)
+        sharpen::Size Decode(const char *data,sharpen::Size size)
         {
             this->parser_.Parse(data,size);
             if (this->parser_.IsError())
             {
                 throw sharpen::HttpParseException(this->parser_.GetErrorMessage());
             }
+            return size;
         }
 
         sharpen::HttpParser &GetParser() noexcept

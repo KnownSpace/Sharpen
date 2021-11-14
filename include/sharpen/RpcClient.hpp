@@ -17,7 +17,7 @@ namespace sharpen
     //we will send _Request to server
     //and expect to get a _Response as response
     //_Encoder should has ByteBuffer Encode(const _Request &req) function
-    //_Decoder should has void Decode(const char *data,size_t size) and bool IsCompleted() function
+    //_Decoder should has size_t Decode(const char *data,size_t size) and bool IsCompleted() function
     //all requests will be sended in a order
     //all response should be returned in same order or you may get a wrong message
     template<typename _Request,typename _Encoder,typename _Response,typename _Decoder>
@@ -44,6 +44,7 @@ namespace sharpen
         sharpen::ByteBuffer readBuf_;
         WaiterList waiters_;
         _Response res_;
+        sharpen::Size lastRead_;
 
         _Decoder &Decoder() noexcept
         {
@@ -69,6 +70,12 @@ namespace sharpen
         {
             this->reader_.Reset();
             this->res_.ConfigDecoder(this->Decoder());
+            if (this->lastRead_ && this->readBuf_.GetMark() != 0)
+            {
+                HandleData(this->lastRead_);
+                HandleCallback();
+                return;
+            }
             this->reader_.SetCallback(std::bind(&Self::ReceiveCallback,this,std::placeholders::_1));
             this->conn_->ReadAsync(this->readBuf_,0,this->reader_);
         }
@@ -96,20 +103,10 @@ namespace sharpen
             }
         }
 
-        void ReceiveCallback(sharpen::Future<sharpen::Size> &future)
+        void HandleCallback()
         {
-            try
-            {
-                sharpen::Size size = future.Get();
-                this->Decoder().Decode(this->readBuf_.Data(),size);
-            }
-            catch(const std::exception &)
-            {
-                this->FailReceive(std::current_exception());
-                return;
-            }
-
             bool complete = this->Decoder().IsCompleted();
+            this->Decoder().SetCompleted(false);
             Waiter last;
             last.invoker_ = nullptr;
             _Response res;
@@ -135,6 +132,43 @@ namespace sharpen
             {
                 last.invoker_->Complete(std::move(res));
             }
+        }
+
+        void HandleData(sharpen::Size size)
+        {
+            size -= this->readBuf_.GetMark();
+            //try decode message
+            sharpen::Size dSize = this->Decoder().Decode(this->readBuf_.Data() + this->readBuf_.GetMark(),size);
+            //more than a request
+            if(dSize != size)
+            {
+                //move mark
+                this->readBuf_.Mark(dSize + this->readBuf_.GetMark());
+            }
+            else
+            {
+                //set mark to 0
+                this->readBuf_.Mark(0);
+            }
+        }
+
+        void ReceiveCallback(sharpen::Future<sharpen::Size> &future)
+        {
+            try
+            {
+                this->lastRead_ = future.Get();
+                if(this->lastRead_ == 0)
+                {
+                    sharpen::ThrowSystemError(sharpen::ErrorConnectionAborted);
+                }
+                this->HandleData(this->lastRead_);
+            }
+            catch(const std::exception &)
+            {
+                this->FailReceive(std::current_exception());
+                return;
+            }
+            this->HandleCallback();
         }
 
         void SendCallback(sharpen::Future<_Response> &invoker,sharpen::Future<sharpen::Size> &future)
@@ -182,6 +216,7 @@ namespace sharpen
             ,readBuf_(4096)
             ,waiters_()
             ,res_()
+            ,lastRead_(0)
         {
             this->pair_.First() = std::move(encoder);
             this->pair_.Second() = std::move(decoder);
