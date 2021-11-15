@@ -33,7 +33,7 @@ namespace sharpen
         {
             this->pair_.First() = std::move(encoder);
             this->pair_.Second() = std::move(decoder);
-            this->req_.ConfigDecoder(this->Decoder());
+            this->Decoder().Bind(this->req_);
         }
 
         ~RpcContext() noexcept = default;

@@ -38,6 +38,17 @@ void Entry()
         sharpen::ByteBuffer &&buf = ctx.Encoder().Encode(res);
         ctx.Connection()->WriteAsync(buf);
     });
+    server.Register("/Benchmark",[](Context &ctx)
+    {
+        sharpen::HttpResponse res(sharpen::HttpVersion::Http1_1,sharpen::HttpStatusCode::OK);
+        const char content[] = "Hello world";
+        res.Header()["Content-Type"] = "text/plain";
+        res.Header()["Content-Length"] = std::to_string(sizeof(content) - 1);
+        res.Body().CopyFrom(content,sizeof(content) - 1);
+        thread_local static sharpen::ByteBuffer buf{4096};
+        sharpen::Size size = ctx.Encoder().EncodeTo(res,buf);
+        ctx.Connection()->WriteAsync(buf.Data(),size);
+    });
     sharpen::RegisterCtrlHandler(sharpen::CtrlType::Interrupt,[&server]() mutable
     {
         std::printf("stop now\n");

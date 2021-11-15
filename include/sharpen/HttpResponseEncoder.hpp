@@ -18,6 +18,11 @@ namespace sharpen
             req.CopyTo(buf);
             return std::move(buf);
         }
+
+        static sharpen::Size EncodeTo(const sharpen::HttpResponse &res,sharpen::ByteBuffer &buf)
+        {
+            return res.CopyTo(buf);
+        }
     };
 }
 

@@ -79,7 +79,7 @@ namespace sharpen
         void StartReceive()
         {
             this->reader_.Reset();
-            this->res_.ConfigDecoder(this->Decoder());
+            this->Decoder().Bind(this->res_);
             if (this->lastRead_ && this->readBuf_.GetMark() != 0)
             {
                 HandleData(this->lastRead_);

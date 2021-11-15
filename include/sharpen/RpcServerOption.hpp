@@ -41,7 +41,7 @@ namespace sharpen
             ,decoderBuilder_(std::move(decoderBuilder))
         {}
 
-        RpcServerOption(_Dispatcher dispatcher)
+        explicit RpcServerOption(_Dispatcher dispatcher)
             :RpcServerOption(std::move(dispatcher),EncoderBuilder{},DecoderBuilder{})
         {}
 
