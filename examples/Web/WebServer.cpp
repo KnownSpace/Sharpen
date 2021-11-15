@@ -27,10 +27,9 @@ public:
     ~TestHttpServer() noexcept = default;
 };
 
-void WebTest(sharpen::Size num)
+void Entry()
 {
     sharpen::StartupNetSupport();
-    sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine(num);
     sharpen::IpEndPoint addr;
     addr.SetAddrByString("0.0.0.0");
     addr.SetPort(8080);
@@ -40,17 +39,13 @@ void WebTest(sharpen::Size num)
     addr.GetAddrSring(ip,sizeof(ip));
     std::printf("now listen on %s:%d\n",ip,addr.GetPort());
     std::printf("use ctrl + c to stop\n");
-    sharpen::RegisterCtrlHandler(sharpen::CtrlType::Interrupt,[]()
+    sharpen::RegisterCtrlHandler(sharpen::CtrlType::Interrupt,[&server]() mutable
     {
-        std::puts("stop now\n");
-        sharpen::EventEngine::GetEngine().Stop();
-        std::puts("cleanup network support\n");
-        sharpen::CleanupNetSupport();
+        std::printf("stop now\n");
+        server.Stop();
     });
-    engine.LaunchAndRun([&server]()
-    {
-        server.RunAsync();
-    });
+    server.RunAsync();
+    sharpen::CleanupNetSupport();
 }
 
 int main(int argc, char const *argv[])
@@ -61,6 +56,6 @@ int main(int argc, char const *argv[])
     {
         num = std::atoi(argv[1]);
     }
-    WebTest(num);
-    return 0;
+    sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine(num);
+    engine.Startup(&Entry);
 }

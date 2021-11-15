@@ -59,19 +59,14 @@ namespace sharpen
             return size;
         }
 
-        sharpen::HttpParser &GetParser() noexcept
-        {
-            return this->parser_;
-        }
-
-        const sharpen::HttpParser &GetParser() const noexcept
-        {
-            return this->parser_;
-        }
-
         void SetCompleted(bool completed)
         {
             this->parser_.SetCompleted(completed);
+        }
+
+        void Bind(sharpen::HttpResponse &res)
+        {
+            res.ConfigParser(this->parser_);
         }
     };
 }

@@ -209,8 +209,3 @@ void sharpen::HttpResponse::ConfigParser(sharpen::HttpParser &parser)
         return 0;
     });
 }
-
-void sharpen::HttpResponse::ConfigDecoder(sharpen::HttpResponseDecoder &decoder)
-{
-    this->ConfigParser(decoder.GetParser());
-}

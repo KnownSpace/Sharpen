@@ -123,8 +123,6 @@ namespace sharpen
         }
 
         void ConfigParser(sharpen::HttpParser &parser);
-
-        void ConfigDecoder(sharpen::HttpRequestDecoder &decoder);
     };
 }
 
