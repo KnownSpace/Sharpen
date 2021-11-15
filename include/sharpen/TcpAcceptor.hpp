@@ -33,7 +33,7 @@ namespace sharpen
 
         inline void Close()
         {
-            this->listener_->Close();
+            this->listener_->Cancel();
         }
     };
 }

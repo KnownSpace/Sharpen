@@ -7,24 +7,10 @@
 #include <sharpen/HttpResponseEncoder.hpp>
 #include <sharpen/IpEndPoint.hpp>
 
+using RestfulClient = sharpen::RpcClient<sharpen::HttpRequest,sharpen::HttpRequestEncoder,sharpen::HttpResponse,sharpen::HttpResponseDecoder>;
 
-using HttpClient = sharpen::RpcClient<sharpen::HttpRequest,sharpen::HttpRequestEncoder,sharpen::HttpResponse,sharpen::HttpResponseDecoder>;
-
-void Entry()
+void PrintResponse(sharpen::HttpResponse &res)
 {
-    sharpen::HttpResponseDecoder decoer;
-    sharpen::StartupNetSupport();
-    sharpen::IpEndPoint addr;
-    addr.SetAddrByString("127.0.0.1");
-    addr.SetPort(0);
-    sharpen::NetStreamChannelPtr conn = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
-    conn->Bind(addr);
-    conn->Register(sharpen::EventEngine::GetEngine());
-    addr.SetPort(8080);
-    conn->ConnectAsync(addr);
-    HttpClient client(conn);
-    sharpen::HttpRequest req(sharpen::HttpMethod::GET,"/",sharpen::HttpVersion::Http1_1);
-    sharpen::HttpResponse &&res = client.InvokeAsync(req);
     std::printf("Status code: %s\n",sharpen::GetHttpStatusCodeName(res.StatusCode()));
     std::printf("Headers:\n");
     for (auto begin = res.Header().Begin(),end = res.Header().End();begin != end;begin++)
@@ -36,6 +22,24 @@ void Entry()
     {
         std::putchar(res.Body()[i]);
     }
+}
+
+void Entry()
+{
+    sharpen::HttpResponseDecoder decoer;
+    sharpen::StartupNetSupport();
+    sharpen::IpEndPoint addr;
+    addr.SetAddrByString("127.0.0.1");
+    addr.SetPort(0);
+    sharpen::NetStreamChannelPtr conn = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
+    conn->Bind(addr);
+    conn->Register(sharpen::EventEngine::GetEngine());
+    addr.SetPort(8081);
+    conn->ConnectAsync(addr);
+    RestfulClient client(conn);
+    sharpen::HttpRequest req(sharpen::HttpMethod::GET,"/Hello",sharpen::HttpVersion::Http1_1);
+    auto &&res = client.InvokeAsync(req);
+    PrintResponse(res);
     sharpen::CleanupNetSupport();
 }
 

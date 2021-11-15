@@ -9,6 +9,9 @@
 template<typename _T>
 using HasFunc = auto(*)()->decltype(std::declval<_T>().Func());
 
+template<typename _T1,typename _T2>
+using HasAdd = auto(*)() -> decltype(std::declval<_T1>() + std::declval<_T2>(),std::declval<_T1>() - std::declval<_T2>());
+
 struct A
 {
     void Func();
@@ -24,6 +27,7 @@ void ValidTest()
     std::printf("int has func? %d\n",tmp);
     assert(tmp == false);
     std::printf("valid test pass\n");
+    sharpen::IsMatches<HasAdd,int,double>::Value;
 }
 
 struct Empty

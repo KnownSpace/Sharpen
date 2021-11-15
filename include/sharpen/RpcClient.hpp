@@ -10,9 +10,19 @@
 #include "SpinLock.hpp"
 #include "AwaitableFuture.hpp"
 #include "Option.hpp"
+#include "RpcConcepts.hpp"
 
 namespace sharpen
 {
+    template<typename _Request,typename _Encoder,typename _Response,typename _Decoder>
+    using RpcClientRequires = sharpen::BoolType<sharpen::IsRpcEncoder<_Request,_Encoder>::Value 
+                                            && sharpen::IsRpcDecoder<_Response,_Decoder>::Value
+                                            && sharpen::IsRpcMessage<_Request>::Value
+                                            && sharpen::IsRpcMessage<_Response>::Value>;
+
+    template<typename _Request,typename _Encoder,typename _Response,typename _Decoder,typename _Checker = void>
+    class InternalRpcClient;
+
     //NOTE:
     //we will send _Request to server
     //and expect to get a _Response as response
@@ -21,7 +31,7 @@ namespace sharpen
     //all requests will be sended in a order
     //all response should be returned in same order or you may get a wrong message
     template<typename _Request,typename _Encoder,typename _Response,typename _Decoder>
-    class RpcClient:public sharpen::Noncopyable,public sharpen::Nonmovable
+    class InternalRpcClient<_Request,_Encoder,_Response,_Decoder,sharpen::EnableIf<sharpen::RpcClientRequires<_Request,_Encoder,_Response,_Decoder>::Value>>:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
         struct Waiter
@@ -34,7 +44,7 @@ namespace sharpen
         using Reader = sharpen::Future<sharpen::Size>;
         using Lock = sharpen::SpinLock;
         using Pair = sharpen::CompressedPair<_Encoder,_Decoder>;
-        using Self = sharpen::RpcClient<_Request,_Encoder,_Response,_Decoder>;
+        using Self = sharpen::InternalRpcClient<_Request,_Encoder,_Response,_Decoder,void>;
 
         Lock lock_;
         bool started_;
@@ -199,15 +209,15 @@ namespace sharpen
             this->FailReceive(sharpen::MakeSystemErrorPtr(err));
         }
     public:
-        explicit RpcClient(sharpen::NetStreamChannelPtr conn)
-            :RpcClient(conn,_Encoder{},_Decoder{})
+        explicit InternalRpcClient(sharpen::NetStreamChannelPtr conn)
+            :InternalRpcClient(conn,_Encoder{},_Decoder{})
         {}
 
-        RpcClient(sharpen::NetStreamChannelPtr conn,_Encoder encoder)
-            :RpcClient(conn,std::move(encoder),_Decoder{})
+        InternalRpcClient(sharpen::NetStreamChannelPtr conn,_Encoder encoder)
+            :InternalRpcClient(conn,std::move(encoder),_Decoder{})
         {}
 
-        RpcClient(sharpen::NetStreamChannelPtr conn,_Encoder encoder,_Decoder decoder)
+        InternalRpcClient(sharpen::NetStreamChannelPtr conn,_Encoder encoder,_Decoder decoder)
             :lock_()
             ,started_(false)
             ,pair_()
@@ -222,7 +232,7 @@ namespace sharpen
             this->pair_.Second() = std::move(decoder);
         }
 
-        virtual ~RpcClient() noexcept
+        virtual ~InternalRpcClient() noexcept
         {
             this->conn_->Close();
             this->DoCancel(sharpen::ErrorConnectionAborted);
@@ -257,6 +267,9 @@ namespace sharpen
             this->DoCancel(sharpen::ErrorCancel);
         }
     };
+
+    template<typename _Request,typename _Encoder,typename _Response,typename _Decoder>
+    using RpcClient = sharpen::InternalRpcClient<_Request,_Encoder,_Response,_Decoder>;
 }
 
 #endif

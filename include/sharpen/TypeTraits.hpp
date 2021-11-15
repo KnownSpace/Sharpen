@@ -346,6 +346,13 @@ namespace sharpen
 
         template<typename _U>
         using Remove = Erase<Find<_U>::Index>;
+
     };
+    
+    template<typename _T>
+    _T &DeclLvalue();
+
+    template<typename _T>
+    _T &&DeclRvalue();
 }
 #endif

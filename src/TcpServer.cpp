@@ -11,9 +11,16 @@ void sharpen::TcpServer::RunAsync()
 {
     while (this->running_)
     {
-        sharpen::NetStreamChannelPtr channel = this->acceptor_.AcceptAsync();
-        channel->Register(*this->engine_);
-        this->engine_->Launch(&sharpen::TcpServer::OnNewChannel,this,channel);
+        try
+        {
+            sharpen::NetStreamChannelPtr channel = this->acceptor_.AcceptAsync();
+            channel->Register(*this->engine_);
+            this->engine_->Launch(&sharpen::TcpServer::OnNewChannel,this,channel);
+        }
+        catch(const std::exception&)
+        {
+            return;
+        }
     }
 }
 
