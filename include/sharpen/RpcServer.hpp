@@ -103,8 +103,8 @@ namespace sharpen
                     sharpen::Size size{0};
                     if(buf.GetMark() == 0)
                     {
-                        //timeout model
                         future.Reset();
+                        //timeout model
                         if(this->timeout_.HasValue())
                         {
                             //init

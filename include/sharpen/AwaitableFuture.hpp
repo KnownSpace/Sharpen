@@ -7,23 +7,16 @@
 
 namespace sharpen
 {
-    struct Awaiter
-    {
-        sharpen::IFiberScheduler *scheduler_;
-        sharpen::SpinLock awaitLock_;
-        sharpen::FiberPtr awaiter_;
-        sharpen::FiberPtr pendingFiber_;
-    };
-
     template <typename _Result>
     class AwaitableFuture : public sharpen::Future<_Result>
     {
     private:
         using MyBase = sharpen::Future<_Result>;
         using Self = sharpen::AwaitableFuture<_Result>;
-        using AwaiterPtr = std::unique_ptr<sharpen::Awaiter>;
 
-        AwaiterPtr awaiter_;
+        sharpen::IFiberScheduler *scheduler_;
+        sharpen::FiberPtr pendingFiber_;
+        sharpen::FiberPtr awaiter_;
 
         void NotifyIfCompleted()
         {
@@ -35,9 +28,9 @@ namespace sharpen
                     this->PrepareAwaiter();
                     return;
                 }
-                fiber = std::move(this->awaiter_->pendingFiber_);
+                fiber = std::move(this->pendingFiber_);
             }
-            this->awaiter_->scheduler_->Schedule(std::move(fiber));
+            this->scheduler_->Schedule(std::move(fiber));
         }
 
     public:
@@ -47,26 +40,29 @@ namespace sharpen
 
         explicit AwaitableFuture(sharpen::IFiberScheduler *scheduler)
             :MyBase()
-            ,awaiter_(new Awaiter{})
-        {
-            if(!awaiter_)
-            {
-                throw std::bad_alloc();
-            }
-            this->awaiter_->scheduler_ = scheduler;
-        }
+            ,scheduler_(scheduler)
+            ,pendingFiber_(nullptr)
+            ,awaiter_(nullptr)
+        {}
 
         AwaitableFuture(Self &&other) noexcept
             :MyBase(std::move(other))
+            ,scheduler_(other.scheduler_)
+            ,pendingFiber_(std::move(other.pendingFiber_))
             ,awaiter_(std::move(other.awaiter_))
-        {}
+        {
+            other.scheduler_ = nullptr;
+        }
 
         Self &operator=(Self &&other) noexcept
         {
             if(this != std::addressof(other))
             {
                 MyBase::operator=(std::move(other));
+                this->scheduler_ = other.scheduler_;
+                this->pendingFiber_ = std::move(other.pendingFiber_);
                 this->awaiter_ = std::move(other.awaiter_);
+                other.scheduler_ = nullptr;
             }
             return *this;
         }
@@ -75,34 +71,31 @@ namespace sharpen
 
         void PreparePending()
         {
-            this->awaiter_->pendingFiber_ = sharpen::Fiber::GetCurrentFiber();
+            this->pendingFiber_ = std::move(sharpen::Fiber::GetCurrentFiber());
         }
 
         void PrepareAwaiter()
         {
-            {
-                std::unique_lock<sharpen::SpinLock> lock(this->awaiter_->awaitLock_);
-                this->awaiter_->awaiter_ = std::move(this->awaiter_->pendingFiber_);
-            }
+            this->awaiter_ = std::move(this->pendingFiber_);
         }
 
         void NotifyAwaiter()
         {
             sharpen::FiberPtr fiber;
             {
-                std::unique_lock<sharpen::SpinLock> lock(this->awaiter_->awaitLock_);
-                fiber = std::move(this->awaiter_->awaiter_);
+                std::unique_lock<sharpen::SpinLock> lock(this->GetCompleteLock());
+                fiber = std::move(this->awaiter_);
             }
             if(fiber)
             {
-                this->awaiter_->scheduler_->Schedule(std::move(fiber));
+                this->scheduler_->Schedule(std::move(fiber));
             }
         }
 
         void WaitAsync()
         {
             //this thread is not a processer
-            if (!this->awaiter_->scheduler_->IsProcesser())
+            if (!this->scheduler_->IsProcesser())
             {
                 this->Wait();
             }
@@ -113,8 +106,8 @@ namespace sharpen
                 {
                     //this->pendingFiber_ = sharpen::Fiber::GetCurrentFiber();
                     this->PreparePending();
-                    this->awaiter_->scheduler_->SetSwitchCallback(std::bind(&sharpen::AwaitableFuture<_Result>::NotifyIfCompleted,this));
-                    this->awaiter_->scheduler_->SwitchToProcesserFiber();
+                    this->scheduler_->SetSwitchCallback(std::bind(&sharpen::AwaitableFuture<_Result>::NotifyIfCompleted,this));
+                    this->scheduler_->SwitchToProcesserFiber();
                 }
             }
         }
