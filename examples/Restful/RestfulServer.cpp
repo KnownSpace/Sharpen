@@ -23,13 +23,14 @@ using Context = typename RestfulServer::Context;
 void Entry()
 {
     sharpen::StartupNetSupport();
-    Option opt(RestfulDispatcher{},std::chrono::seconds(300));
+    Option opt(RestfulDispatcher{},std::chrono::seconds(3));
     sharpen::IpEndPoint addr;
     addr.SetAddrByString("127.0.0.1");
     addr.SetPort(8081);
     RestfulServer server(sharpen::AddressFamily::Ip,addr,sharpen::EventEngine::GetEngine(),std::move(opt));
     server.Register("/Hello",[](Context &ctx)
     {
+        std::printf("call from remote\n");
         sharpen::HttpResponse res(sharpen::HttpVersion::Http1_1,sharpen::HttpStatusCode::OK);
         const char content[] = "Hello world";
         res.Header()["Content-Type"] = "text/plain";
@@ -48,6 +49,14 @@ void Entry()
         thread_local static sharpen::ByteBuffer buf{4096};
         sharpen::Size size = ctx.Encoder().EncodeTo(res,buf);
         ctx.Connection()->WriteAsync(buf.Data(),size);
+    });
+    server.RegisterTimeout([](Context &ctx)
+    {
+        sharpen::IpEndPoint addr;
+        ctx.Connection()->GetRemoteEndPoint(addr);
+        char ip[21] = {0};
+        addr.GetAddrSring(ip,sizeof(ip));
+        std::printf("%s:%u timeout disconnect\n",ip,addr.GetPort());
     });
     sharpen::RegisterCtrlHandler(sharpen::CtrlType::Interrupt,[&server]() mutable
     {
