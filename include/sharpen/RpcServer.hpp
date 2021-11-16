@@ -23,7 +23,7 @@ namespace sharpen
                                                 && sharpen::IsRpcMessage<_Response>::Value
                                                 && sharpen::IsRpcDispatcher<_Request,_Dispatcher>::Value>;
 
-    template<typename _Response,typename _Encoder,typename _Request,typename _Decoder,typename _Dispatcher,typename _Check = void>
+    template<typename _Response,typename _Encoder,typename _Request,typename _Decoder,typename _Dispatcher,typename _Data = void,typename _Check = void>
     class InternalRpcServer;
 
     //Note:
@@ -33,13 +33,13 @@ namespace sharpen
     //_Request should has void Clear() function
     //_Decoder should has size_t Decode(const char *data,size_t size) , bool IsCompleted() and void SetCompleted(bool completed) function
     //_Dispatcher should has std::string GetProcedureName(const _Request &req) function
-    template<typename _Response,typename _Encoder,typename _Request,typename _Decoder,typename _Dispatcher>
-    class InternalRpcServer<_Response,_Encoder,_Request,_Decoder,_Dispatcher,sharpen::EnableIf<sharpen::RpcServerRequires<_Response,_Encoder,_Request,_Decoder,_Dispatcher>::Value>>:public sharpen::TcpServer
+    template<typename _Response,typename _Encoder,typename _Request,typename _Decoder,typename _Dispatcher,typename _Data>
+    class InternalRpcServer<_Response,_Encoder,_Request,_Decoder,_Dispatcher,_Data,sharpen::EnableIf<sharpen::RpcServerRequires<_Response,_Encoder,_Request,_Decoder,_Dispatcher>::Value>>:public sharpen::TcpServer
     {
     private:
         using Base = sharpen::TcpServer;
     public:
-        using Context = sharpen::RpcContext<_Encoder,_Request,_Decoder>;
+        using Context = sharpen::RpcContext<_Encoder,_Request,_Decoder,_Data>;
     private:
         using Handler = std::function<void(Context&)>;
         using Map = std::unordered_map<std::string,Handler>;
@@ -51,6 +51,7 @@ namespace sharpen
         sharpen::Option<std::chrono::milliseconds> timeout_;
         DecoderBuilder decoderBuilder_;
         EncoderBuilder encoderBuilder_;
+        Handler timeoutHandler_;
 
         Map &GetMap() noexcept
         {
@@ -134,6 +135,10 @@ namespace sharpen
                                     future.Get();
                                 }
                                 catch(const std::exception&){}
+                                if(this->timeoutHandler_)
+                                {
+                                    this->timeoutHandler_(ctx);
+                                }
                                 return;
                             }
                             timer->Cancel();
@@ -164,7 +169,7 @@ namespace sharpen
                     }
                 }
                 _Dispatcher &dispatcher = this->GetDispatcher();
-                std::string &&name = dispatcher.GetProcedureName(ctx.Request());
+                const std::string &name = dispatcher.GetProcedureName(ctx.Request());
                 auto ite = this->GetMap().find(name);
                 if(ite != this->GetMap().end())
                 {
@@ -190,11 +195,16 @@ namespace sharpen
             this->GetMap()[name] = std::move(handler);
         }
 
+        void RegisterTimeout(Handler handler)
+        {
+            this->timeoutHandler_ = std::move(handler);
+        }
+
         virtual ~InternalRpcServer() noexcept = default;
     };
 
-    template<typename _Response,typename _Encoder,typename _Request,typename _Decoder,typename _Dispatcher>
-    using RpcServer = sharpen::InternalRpcServer<_Response,_Encoder,_Request,_Decoder,_Dispatcher>;
+    template<typename _Response,typename _Encoder,typename _Request,typename _Decoder,typename _Dispatcher,typename _Data = void>
+    using RpcServer = sharpen::InternalRpcServer<_Response,_Encoder,_Request,_Decoder,_Dispatcher,_Data>;
 }
 
 #endif

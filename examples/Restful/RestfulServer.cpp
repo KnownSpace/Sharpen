@@ -8,7 +8,7 @@
 
 struct RestfulDispatcher
 {
-    static std::string GetProcedureName(const sharpen::HttpRequest &req)
+    static const std::string &GetProcedureName(const sharpen::HttpRequest &req)
     {
         return req.Url();
     }
