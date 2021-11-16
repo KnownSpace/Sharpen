@@ -1,4 +1,5 @@
 #include <sharpen/AsyncBarrier.hpp>
+#include <cassert>
 
 sharpen::AsyncBarrier::AsyncBarrier(sharpen::Uint64 counter)
     :counter_(counter)

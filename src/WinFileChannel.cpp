@@ -3,6 +3,7 @@
 #ifdef SHARPEN_HAS_WINFILE
 
 #include <cstring>
+#include <cassert>
 
 #include <Windows.h>
 

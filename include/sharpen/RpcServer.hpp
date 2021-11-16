@@ -73,21 +73,12 @@ namespace sharpen
             return this->pair_.Second();
         }
 
-        static void TimeoutCallback(sharpen::Future<void> &timeout,std::atomic_flag *token,sharpen::Future<void> *continuation)
-        {
-            (void)timeout;
-            if(!token->test_and_set())
-            {
-                continuation->Complete();
-            }
-        }
 
-        static void TimeoutCallback(sharpen::Future<sharpen::Size> &recv,std::atomic_flag *token,sharpen::Future<void> *continuation)
+        static void TimeoutCallback(sharpen::Future<void> &,sharpen::Future<sharpen::Size> *future,Context *ctx)
         {
-            (void)recv;
-            if(!token->test_and_set())
+            if(future->IsPending())
             {
-                continuation->Complete();
+                ctx->Connection()->Cancel();
             }
         }
     protected:
@@ -96,9 +87,8 @@ namespace sharpen
             Context ctx(std::move(channel),this->encoderBuilder_ ? this->encoderBuilder_():_Encoder{},this->decoderBuilder_? this->decoderBuilder_():_Decoder{});
             sharpen::ByteBuffer buf{4096};
             sharpen::TimerPtr timer;
-            sharpen::Future<void> timeout;
-            sharpen::AwaitableFuture<void> continuation;
-            std::atomic_flag token;
+            sharpen::AwaitableFuture<void> timeout;
+            sharpen::AwaitableFuture<sharpen::Size> future;
             if(this->timeout_.HasValue())
             {
                 timer = sharpen::MakeTimer(*this->engine_);
@@ -114,39 +104,41 @@ namespace sharpen
                     if(buf.GetMark() == 0)
                     {
                         //timeout model
+                        future.Reset();
                         if(this->timeout_.HasValue())
                         {
-                            using TimeoutFnPtr = void(*)(sharpen::Future<void>&,std::atomic_flag*,sharpen::Future<void>*);
-                            using RecvFnPtr = void(*)(sharpen::Future<sharpen::Size>&,std::atomic_flag*,sharpen::Future<void>*);
-                            token.clear();
+                            //init
                             timeout.Reset();
-                            continuation.Reset();
-                            sharpen::Future<sharpen::Size> future;
-                            future.SetCallback(std::bind(static_cast<RecvFnPtr>(&TimeoutCallback),std::placeholders::_1,&token,&continuation));
-                            timeout.SetCallback(std::bind(static_cast<TimeoutFnPtr>(&TimeoutCallback),std::placeholders::_1,&token,&continuation));
+                            //begin request
                             timer->WaitAsync(timeout,this->timeout_.Get());
+                            using FnPtr = void(*)(sharpen::Future<void>&,sharpen::Future<sharpen::Size>*,Context*);
+                            timeout.SetCallback(std::bind(static_cast<FnPtr>(&TimeoutCallback),std::placeholders::_1,&future,&ctx));
                             ctx.Connection()->ReadAsync(buf,0,future);
-                            continuation.Await();
-                            if(timeout.CompletedOrError())
+                            try
                             {
-                                ctx.Connection()->Cancel();
-                                try
+                                size = future.Await();
+                                timer->Cancel();
+                            }
+                            catch(const std::exception&)
+                            {
+                                //socket error
+                                if(timeout.IsPending())
                                 {
-                                    future.Get();
+                                    timer->Cancel();
+                                    return;
                                 }
-                                catch(const std::exception&){}
+                                //timeout
                                 if(this->timeoutHandler_)
                                 {
                                     this->timeoutHandler_(ctx);
+                                    return;
                                 }
-                                return;
                             }
-                            timer->Cancel();
-                            size = future.Get();
                         }
                         else
                         {
-                            size = ctx.Connection()->ReadAsync(buf);
+                            ctx.Connection()->ReadAsync(buf,0,future);
+                            size = future.Await();
                         }
                         if(size == 0)
                         {

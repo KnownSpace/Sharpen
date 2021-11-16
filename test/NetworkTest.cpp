@@ -77,23 +77,30 @@ void CancelTest()
     server->Listen(65535);
     std::printf("cancel test begin\n");
     int flag = 0;
-    sharpen::AwaitableFuture<sharpen::Size> future;
+    sharpen::AwaitableFuture<sharpen::Size> future[10];
     addr.SetPort(8080);
     client->ConnectAsync(addr);
     char buf[512];
-    client->ReadAsync(buf,512,future);
-    try
+    for (size_t i = 0; i < 10; i++)
     {
-        client->Cancel();
-        future.Await();
+        client->ReadAsync(buf,512,future[i]);
     }
-    catch(const std::system_error& e)
+    client->Cancel();
+    for (size_t i = 0; i < 10; i++)
     {
-        std::printf("code: %d\nerror: %s\n",e.code().value(),e.what());
-        flag = 1;
+        try
+        {
+            future[i].Await();
+        }
+        catch(const std::system_error& e)
+        {
+            std::printf("%zu code: %d\nerror: %s\n",i,e.code().value(),e.what());
+            flag += 1;
+        }
+        
     }
     std::printf("cancel test end\n");
-    assert(flag == 1);
+    assert(flag == 10);
 }
 
 void NetworkTest()

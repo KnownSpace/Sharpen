@@ -9,7 +9,7 @@
 #define SHARPEN_FORCEINLINE __forceinline
 //GCC & clang
 #elif defined(SHARPEN_COMPILER_GCC) || defined(SHARPEN_COMPILER_CLANG)
-#define SHARPEN_FORCEINLINE __attribute__((always_inline))
+#define SHARPEN_FORCEINLINE inline __attribute__((__always_inline__))
 #else
 #define SHARPEN_FORCEINLINE inline
 #endif

@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <sharpen/TimeWheel.hpp>
 #include <sharpen/StopWatcher.hpp>
+#include <cassert>
 
 void TimeWheelTest()
 {
