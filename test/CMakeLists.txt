@@ -21,6 +21,10 @@ add_executable(networktest "${PROJECT_SOURCE_DIR}/test/NetworkTest.cpp")
 add_executable(optiontest "${PROJECT_SOURCE_DIR}/test/OptionTest.cpp")
 #arena test
 add_executable(arenatest "${PROJECT_SOURCE_DIR}/test/ArenaTest.cpp")
+#dummy type test
+add_executable(dummytypetest "${PROJECT_SOURCE_DIR}/test/DummyTypeTest.cpp")
+#micro rpc test
+add_executable(microrpctest "${PROJECT_SOURCE_DIR}/test/MicroRpcTest.cpp")
 #link
 target_link_libraries(awaittest sharpen)
 target_link_libraries(timertest sharpen)
@@ -31,6 +35,8 @@ target_link_libraries(filetest sharpen)
 target_link_libraries(networktest sharpen)
 target_link_libraries(optiontest sharpen)
 target_link_libraries(arenatest sharpen)
+target_link_libraries(dummytypetest sharpen)
+target_link_libraries(microrpctest sharpen)
 #test
 enable_testing()
 #tests
@@ -48,3 +54,5 @@ add_test(NAME file_test COMMAND "./filetest${extname}")
 add_test(NAME network_test COMMAND "./networktest${extname}")
 add_test(NAME option_test COMMAND "./optiontest${extname}")
 add_test(NAME arena_test COMMAND "./arenatest${extname}")
+add_test(NAME dummy_type_test COMMAND "./dummytypetest${extname}")
+add_test(NAME microrpc_test COMMAND "./microrpctest${extname}")

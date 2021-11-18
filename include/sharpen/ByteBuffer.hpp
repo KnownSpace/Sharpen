@@ -100,6 +100,10 @@ namespace sharpen
 
         void Extend(sharpen::Size size,sharpen::Char defaultValue);
 
+        void ExtendTo(sharpen::Size size);
+
+        void ExtendTo(sharpen::Size size,sharpen::Char defaultValue);
+
         void Shrink();
 
         void Append(const sharpen::Char *p,sharpen::Size size);

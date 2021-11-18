@@ -73,7 +73,6 @@ namespace sharpen
             return this->pair_.Second();
         }
 
-
         static void TimeoutCallback(sharpen::Future<void> &,sharpen::Future<sharpen::Size> *future,Context *ctx)
         {
             if(future->IsPending())

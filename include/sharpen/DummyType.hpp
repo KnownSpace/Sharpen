@@ -226,6 +226,20 @@ namespace sharpen
             return *this;
         }
 
+        template<typename _U,typename _Contain =  Contain<_U>,typename _Check = sharpen::EnableIf<_Contain::Value>>
+        Self &operator=(const _U &val) SHARPEN_NOEXCEPT_IF(new (nullptr) _U(std::declval<const _U&>()))
+        {
+            this->Construct<_U>(val);
+            return *this;
+        }
+
+        template<typename _U,typename _Contain =  Contain<_U>,typename _Check = sharpen::EnableIf<_Contain::Value>>
+        Self &operator=(_U &&val) SHARPEN_NOEXCEPT_IF(new (nullptr) _U(std::declval<_U&&>()))
+        {
+            this->Construct<_U>(std::move(val));
+            return *this;
+        }
+
         ~DummyType() noexcept
         {
             this->Release();
