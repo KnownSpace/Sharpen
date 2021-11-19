@@ -80,11 +80,11 @@ void StackEncodeTest()
     {
         sharpen::MicroRpcStack stack;
         stack.Push(1);
-        sharpen::MicroRpcFieldHeader &header = stack.Fields().front().Header();
+        sharpen::MicroRpcFieldHeader &header = stack.Top().Header();
         assert(header.end_ == 0);
         assert(header.sizeSpace_ == 0);
         assert(header.type_ == static_cast<unsigned char>(sharpen::MicroRpcVariableType::Int32));
-        assert(*reinterpret_cast<sharpen::Int32*>(stack.Fields().front().RawData().Data() + 1) == 1);
+        assert(*reinterpret_cast<sharpen::Int32*>(stack.Top().RawData().Data() + 1) == 1);
     }
     std::printf("pass\n");
     std::printf("collection encode\n");
@@ -92,16 +92,16 @@ void StackEncodeTest()
         const char arr[65535] = "this is code";
         sharpen::MicroRpcStack stack;
         stack.Push(arr,arr + sizeof(arr));
-       sharpen::MicroRpcFieldHeader &header = stack.Fields().front().Header();
+       sharpen::MicroRpcFieldHeader &header = stack.Top().Header();
         assert(header.end_ == 0);
         assert(header.sizeSpace_ == sizeof(sharpen::Uint16));
         assert(header.type_ == static_cast<unsigned char>(sharpen::MicroRpcVariableType::Char));
         {
-            sharpen::Size size = stack.Fields().front().GetSize();
+            sharpen::Size size = stack.Top().GetSize();
             assert(sizeof(arr) == size);
             std::printf("collection has %zu elements\n",size);
         }
-        char *data = stack.Fields().front().Data<char>();
+        char *data = stack.Top().Data<char>();
         for (size_t i = 0; i < sizeof(arr); i++)
         {
             assert(arr[i] == data[i]);

@@ -15,6 +15,7 @@ namespace sharpen
     //end flag 1 bit
     //size space 3 bit
     //type 4 bit
+    //only 1 byte
     struct MicroRpcFieldHeader
     {
         unsigned char end_:1;
