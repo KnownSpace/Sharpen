@@ -23,22 +23,26 @@ void sharpen::MicroRpcStack::UnsafeCopyTo(char *data) const noexcept
     }
 }
 
-void sharpen::MicroRpcStack::CopyTo(sharpen::ByteBuffer &buf, sharpen::Size offset) const
+sharpen::Size sharpen::MicroRpcStack::CopyTo(sharpen::ByteBuffer &buf, sharpen::Size offset) const
 {
-    if (buf.GetSize() < this->ComputeSize() + offset)
+    sharpen::Size size{this->ComputeSize()};
+    if (buf.GetSize() < size + offset)
     {
-        buf.ExtendTo(this->ComputeSize() + offset);
+        buf.ExtendTo(size + offset);
     }
     this->UnsafeCopyTo(buf.Data());
+    return size;
 }
 
-void sharpen::MicroRpcStack::CopyTo(char *data, sharpen::Size size) const
+sharpen::Size sharpen::MicroRpcStack::CopyTo(char *data, sharpen::Size size) const
 {
-    if (size < this->ComputeSize())
+    sharpen::Size tmp{this->ComputeSize()};
+    if (size < tmp)
     {
         throw std::length_error("buf too small");
     }
     this->UnsafeCopyTo(data);
+    return tmp;
 }
 
 sharpen::Size sharpen::MicroRpcStack::ComputeSize() const noexcept

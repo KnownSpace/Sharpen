@@ -30,6 +30,12 @@ namespace sharpen
 #endif
         return sizeof(_T);
     }
+
+    template<typename _T1,typename _T2>
+    constexpr inline auto Max(_T1 a,_T2 b) noexcept -> decltype(false?a:b)
+    {
+        return a>b?a:b;
+    }
 }
 
 #endif

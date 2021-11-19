@@ -117,6 +117,31 @@ namespace sharpen
         static constexpr sharpen::MicroRpcVariableType TypeEnum_ = sharpen::MicroRpcVariableType::Float;
         static constexpr sharpen::Size Size_ = 4;
     };
+
+    inline sharpen::Size GetMicroRpcTypeSize(sharpen::MicroRpcVariableType type) noexcept
+    {
+        switch (type)
+        {
+        case sharpen::MicroRpcVariableType::Void:
+            return 0;
+        case sharpen::MicroRpcVariableType::Char:
+        case sharpen::MicroRpcVariableType::Uchar:
+            return 1;
+        case sharpen::MicroRpcVariableType::Int16:
+        case sharpen::MicroRpcVariableType::Uint16:
+            return 2;
+        case sharpen::MicroRpcVariableType::Int32:
+        case sharpen::MicroRpcVariableType::Uint32:
+        case sharpen::MicroRpcVariableType::Float:
+            return 4;
+        case sharpen::MicroRpcVariableType::Int64:
+        case sharpen::MicroRpcVariableType::Uint64:
+        case sharpen::MicroRpcVariableType::Double:
+            return 8;
+        default:
+            return 0;
+        }
+    }
     
     template<typename _T,typename _Check = void>
     class InternalMicroRpcVariable;

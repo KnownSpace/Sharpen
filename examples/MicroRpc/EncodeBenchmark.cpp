@@ -8,7 +8,7 @@
 #include <sharpen/MicroRpcEncoder.hpp>
 
 #define TEST_COUNT static_cast<sharpen::Size>(1e6)
-#define TEST_ARG 4
+#define TEST_ARG 3
 
 int main(int argc, char const *argv[])
 {
@@ -20,6 +20,7 @@ int main(int argc, char const *argv[])
         for (size_t i = 0; i < TEST_COUNT; i++)
         {
             sharpen::HttpRequest req(sharpen::HttpMethod::GET, "/Hello", sharpen::HttpVersion::Http1_1);
+            req.Header()["Connection"] = "keep-alive";
             sharpen::ByteBuffer &&buf = sharpen::HttpRequestEncoder::Encode(req);
             sum += buf.GetSize();
         }
@@ -48,14 +49,15 @@ int main(int argc, char const *argv[])
         sharpen::Size sum{0};
         for (size_t i = 0; i < TEST_COUNT; i++)
         {
-            sharpen::HttpRequest req(sharpen::HttpMethod::GET, "/Hello", sharpen::HttpVersion::Http1_1);
+            sharpen::HttpRequest req(sharpen::HttpMethod::POST, "/Hello", sharpen::HttpVersion::Http1_1);
             for (size_t j = 0; j < TEST_ARG; ++j)
             {
-                int ran = rand();
                 char buf[1024] = {0};
-                snprintf(buf, 1024, "{%zu:%d}\n",j,ran);
+                snprintf(buf, 1024, "%d\n",rand());
                 req.Body().Append(buf, strlen(buf));
             }
+            req.Header()["Connection"] = "keep-alive";
+            req.Header()["Content-Length"] = std::to_string(req.Body().GetSize());
             sharpen::ByteBuffer &&buf = sharpen::HttpRequestEncoder::Encode(req);
             sum += buf.GetSize();
         }

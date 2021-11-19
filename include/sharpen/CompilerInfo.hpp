@@ -5,7 +5,7 @@
 #ifdef _MSC_VER
 #define SHARPEN_COMPILER_MSVC
 #endif
-#ifdef __GUNC__
+#ifdef __GNUC__
 #define SHARPEN_COMPILER_GCC
 #endif
 #ifdef __clang_

@@ -18,9 +18,9 @@ namespace sharpen
             return buf;
         }
 
-        inline static void EncodeTo(const sharpen::MicroRpcStack &stack,sharpen::ByteBuffer &buf)
+        inline static sharpen::Size EncodeTo(const sharpen::MicroRpcStack &stack,sharpen::ByteBuffer &buf)
         {
-            stack.CopyTo(buf);
+            return stack.CopyTo(buf);
         }
     };   
 }

@@ -1,5 +1,6 @@
 #include <sharpen/MicroRpcField.hpp>
 #include <sharpen/MicroRpcStack.hpp>
+#include <sharpen/MicroRpcDecoder.hpp>
 
 void VariableEncodeTest()
 {
@@ -110,6 +111,71 @@ void StackEncodeTest()
     std::printf("pass\n");
 }
 
+void DecodeVariableTest()
+{
+    sharpen::ByteBuffer buf;
+    {
+        sharpen::MicroRpcStack stack;
+        stack.Push(1);
+        stack.CopyTo(buf);
+    }
+    sharpen::MicroRpcStack stack;
+    sharpen::MicroRpcDecoder decoder;
+    decoder.Bind(stack);
+    decoder.Decode(buf.Data(),buf.GetSize());
+    for (size_t i = 0; i < buf.GetSize(); i++)
+    {
+        assert(stack.Top().RawData()[i] == buf[i]);
+    }
+    std::printf("pass\n");
+}
+
+void DecodeCollectionTest()
+{
+    sharpen::ByteBuffer buf;
+    {
+        sharpen::MicroRpcStack stack;
+        const char str[] = "Hello";
+        stack.Push(str,str + sizeof(str));
+        stack.CopyTo(buf);
+    }
+    sharpen::MicroRpcStack stack;
+    sharpen::MicroRpcDecoder decoder;
+    decoder.Bind(stack);
+    decoder.Decode(buf.Data(),buf.GetSize());
+    for (size_t i = 0; i < buf.GetSize(); i++)
+    {
+        assert(stack.Top().RawData()[i] == buf[i]);
+    }
+    std::printf("pass\n");
+}
+
+void MultiDecodeTest()
+{
+    sharpen::ByteBuffer buf;
+    {
+        sharpen::MicroRpcStack stack;
+        const char str[] = "Hello";
+        stack.Push(str,str + sizeof(str));
+        stack.Push(1);
+        stack.CopyTo(buf);
+    }
+    sharpen::MicroRpcStack stack;
+    sharpen::MicroRpcDecoder decoder;
+    decoder.Bind(stack);
+    decoder.Decode(buf.Data(),buf.GetSize());
+    const char *data = buf.Data();
+    for (auto begin = stack.Begin(),end = stack.End();begin != end;++begin)
+    {
+        for (size_t i = 0; i < begin->GetRawSize(); i++)
+        {
+            assert(*data == begin->RawData()[i]);
+            ++data;   
+        }
+    }
+    std::printf("pass\n");
+}
+
 int main(int argc, char const *argv[])
 {
     std::printf("encode variable test\n");
@@ -118,5 +184,11 @@ int main(int argc, char const *argv[])
     FieldEncodeTest();
     std::printf("encode stack test\n");
     StackEncodeTest();
+    std::printf("decode variable test\n");
+    DecodeVariableTest();
+    std::printf("decode collection test\n");
+    DecodeCollectionTest();
+    std::printf("multi decode test\n");
+    MultiDecodeTest();
     return 0;
 }

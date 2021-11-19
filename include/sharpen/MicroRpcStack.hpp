@@ -9,8 +9,6 @@
 namespace sharpen
 {
     /*
-    argument should be pushed from right to left
-    proc name should be pushed in last
     stack view:
     +++++++++++++++++++++
     |ProcName|TypeName  |
@@ -50,14 +48,14 @@ namespace sharpen
 
         sharpen::Size ComputeSize() const noexcept;
 
-        void CopyTo(char *data,sharpen::Size size) const;
+        sharpen::Size CopyTo(char *data,sharpen::Size size) const;
 
-        inline void CopyTo(sharpen::ByteBuffer &buf) const
+        inline sharpen::Size CopyTo(sharpen::ByteBuffer &buf) const
         {
-            this->CopyTo(buf,0);
+            return this->CopyTo(buf,0);
         }
 
-        void CopyTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
+        sharpen::Size CopyTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
 
         template<typename ..._Args,typename _Check = decltype(sharpen::MicroRpcField{std::declval<_Args>()...})>
         void Push(_Args &&...args)
@@ -110,6 +108,11 @@ namespace sharpen
         const Field &Top() const
         {
             return this->fields_.front();
+        }
+
+        void Reverse()
+        {
+            this->fields_.reverse();
         }
     };
 }
