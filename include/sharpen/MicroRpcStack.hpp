@@ -45,12 +45,12 @@ namespace sharpen
 
         void CopyTo(char *data,sharpen::Size size) const;
 
-        inline void CopyTo(sharpen::ByteBuffer &buf)
+        inline void CopyTo(sharpen::ByteBuffer &buf) const
         {
             this->CopyTo(buf,0);
         }
 
-        void CopyTo(sharpen::ByteBuffer &buf,sharpen::Size offset);
+        void CopyTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
 
         template<typename ..._Args,typename _Check = decltype(sharpen::MicroRpcField{std::declval<_Args>()...})>
         void Push(_Args &&...args)

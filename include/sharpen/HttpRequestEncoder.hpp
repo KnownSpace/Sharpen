@@ -12,14 +12,14 @@ namespace sharpen
     private:
         
     public:
-        static sharpen::ByteBuffer Encode(const sharpen::HttpRequest &req)
+        inline static sharpen::ByteBuffer Encode(const sharpen::HttpRequest &req)
         {
             sharpen::ByteBuffer buf;
             req.CopyTo(buf);
             return std::move(buf);
         }
 
-        static sharpen::Size EncodeTo(const sharpen::HttpRequest &req,sharpen::ByteBuffer &buf)
+        inline static sharpen::Size EncodeTo(const sharpen::HttpRequest &req,sharpen::ByteBuffer &buf)
         {
             return req.CopyTo(buf);
         }

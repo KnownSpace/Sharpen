@@ -5,6 +5,7 @@
 #include <sharpen/HttpRequestEncoder.hpp>
 #include <sharpen/StopWatcher.hpp>
 #include <sharpen/MicroRpcStack.hpp>
+#include <sharpen/MicroRpcEncoder.hpp>
 
 #define TEST_COUNT static_cast<sharpen::Size>(1e6)
 #define TEST_ARG 4
@@ -34,8 +35,7 @@ int main(int argc, char const *argv[])
             char proc[] = "Hello";
             sharpen::MicroRpcStack stack;
             stack.Push(proc,proc + sizeof(proc) - 1);
-            sharpen::ByteBuffer buf;
-            stack.CopyTo(buf);
+            sharpen::ByteBuffer &&buf = sharpen::MicroRpcEncoder::Encode(stack);
             sum += buf.GetSize();
         }
         sw.Stop();
@@ -76,8 +76,7 @@ int main(int argc, char const *argv[])
             {
                 stack.Push(rand());
             }
-            sharpen::ByteBuffer buf;
-            stack.CopyTo(buf);
+            sharpen::ByteBuffer &&buf = sharpen::MicroRpcEncoder::Encode(stack);
             sum += buf.GetSize();
         }
         sw.Stop();

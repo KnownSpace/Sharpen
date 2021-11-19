@@ -11,7 +11,7 @@ void sharpen::MicroRpcStack::UnsafeCopyTo(char *data) const noexcept
     }
 }
 
-void sharpen::MicroRpcStack::CopyTo(sharpen::ByteBuffer &buf, sharpen::Size offset)
+void sharpen::MicroRpcStack::CopyTo(sharpen::ByteBuffer &buf, sharpen::Size offset) const
 {
     if (buf.GetSize() < this->ComputeSize() + offset)
     {
