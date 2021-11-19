@@ -57,3 +57,32 @@ sharpen::Uint64 sharpen::MicroRpcField::GetSize() const
 #endif
     return count;
 }
+
+void sharpen::MicroRpcField::CopyTo(bool last, char *buf, sharpen::Size size) const
+{
+    if (size < this->GetRawSize())
+    {
+        throw std::length_error("buf too small");
+    }
+    std::memcpy(buf, this->RawData().Data(), this->GetRawSize());
+    if (last)
+    {
+        sharpen::MicroRpcFieldHeader *header = reinterpret_cast<sharpen::MicroRpcFieldHeader *>(buf);
+        header->end_ = 1;
+    }
+}
+
+sharpen::Size sharpen::MicroRpcField::ComputeSizeSpace(sharpen::Size size) noexcept
+{
+    sharpen::Size sizeSpace{0};
+    if (size > 1)
+    {
+        sizeSpace = sharpen::MinSizeof(size);
+        assert(sizeSpace <= 8);
+        if (sizeSpace == 8)
+        {
+            sizeSpace -= 1;
+        }
+    }
+    return sizeSpace;
+}

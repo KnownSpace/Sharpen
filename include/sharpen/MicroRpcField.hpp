@@ -8,6 +8,7 @@
 #include "ByteBuffer.hpp"
 #include "MicroRpcVariable.hpp"
 #include "IntOps.hpp"
+#include "IteratorOps.hpp"
 
 namespace sharpen
 {
@@ -47,6 +48,8 @@ namespace sharpen
         char *ComputeDataBody() noexcept;
 
         const char *ComputeDataBody() const noexcept;
+
+        static sharpen::Size ComputeSizeSpace(sharpen::Size size) noexcept;
     public:
         MicroRpcField() = default;
 
@@ -57,17 +60,8 @@ namespace sharpen
             //init header
             this->InitHeader(sharpen::MicroRpcVariableTypeTrait<_T>::TypeEnum_);
             //compute size space
-            sharpen::Size sizeSpace{0};
             sharpen::Size size{variable.GetSize()};
-            if(size > 1)
-            {
-                sizeSpace = sharpen::MinSizeof(size);
-                assert(sizeSpace <= 8);
-                if (sizeSpace == 8)
-                {
-                    sizeSpace -= 1;
-                }
-            }
+            sharpen::Size sizeSpace{sharpen::MicroRpcField::ComputeSizeSpace(size)};
             this->Header().sizeSpace_ = static_cast<unsigned char>(sizeSpace);
             //compute total size and extend buffer
             if (sizeSpace == 7)
@@ -84,8 +78,19 @@ namespace sharpen
             variable.CopyTo(this->data_.Data() + 1 + sizeSpace,totalSize);
         }
 
+        template<typename _T,typename _Check = typename sharpen::MicroRpcVariableTypeTrait<_T>::Type>
+        explicit MicroRpcField(const _T &val)
+        {
+            this->data_.Reserve(1 + sizeof(val));
+            //init header
+            this->InitHeader(sharpen::MicroRpcVariableTypeTrait<_T>::TypeEnum_);
+            //copy data
+            this->data_.ExtendTo(1 + sizeof(val));
+            sharpen::InternalMicroRpcVariableCopyTo<sizeof(val)>(this->RawData().Data() + 1,reinterpret_cast<const char*>(&val));
+        }
+
         explicit MicroRpcField(const sharpen::MicroRpcVariable<void> &)
-            :data_()
+            :data_(1)
         {
             //init header
             this->InitHeader(sharpen::MicroRpcVariableType::Void);
@@ -99,6 +104,35 @@ namespace sharpen
             std::memcpy(this->data_.Data() + 1,data,size);
         }
 
+        template<typename _Iterator,typename _T = typename std::decay<decltype(*std::declval<_Iterator>())>::type,typename _Check = typename sharpen::MicroRpcVariableTypeTrait<_T>::Type>
+        MicroRpcField(_Iterator begin,_Iterator end)
+            :data_(1)
+        {
+            //init header
+            this->InitHeader(sharpen::MicroRpcVariableTypeTrait<_T>::TypeEnum_);
+            //compute size space
+            sharpen::Size size{sharpen::GetRangeSize(begin,end)};
+            sharpen::Size sizeSpace{sharpen::MicroRpcField::ComputeSizeSpace(size)};
+            this->Header().sizeSpace_ = static_cast<unsigned char>(sizeSpace);
+            //compute total size and extend buffer
+            constexpr sharpen::Size typeSize{sharpen::MicroRpcVariableTypeTrait<_T>::Size_};
+            if (sizeSpace == 7)
+            {
+                sizeSpace += 1;
+            }
+            this->data_.ExtendTo(sizeSpace + size*typeSize + 1);
+            //copy size
+            std::memcpy(this->data_.Data() + 1,&size,sizeSpace);
+            char *data = this->RawData().Data() + 1 + sizeSpace;
+            //copy data
+            while (begin != end)
+            {
+                sharpen::InternalMicroRpcVariableCopyTo<typeSize>(data,reinterpret_cast<const char*>(&*begin));
+                ++begin;
+                data += typeSize;
+            }
+        }
+
         MicroRpcField(const Self &other) = default;
 
         MicroRpcField(Self &&other) noexcept = default;
@@ -109,7 +143,7 @@ namespace sharpen
 
         ~MicroRpcField() noexcept = default;
 
-        void CopyTo(bool last,char *buf,sharpen::Size size);
+        void CopyTo(bool last,char *buf,sharpen::Size size) const;
 
         sharpen::ByteBuffer &RawData() noexcept
         {
@@ -121,7 +155,7 @@ namespace sharpen
         {
             if (this->Header().type_ != static_cast<unsigned char>(_TypeEnum))
             {
-                throw std::bad_cast();
+                throw std::logic_error("bad cast");
             }
             return reinterpret_cast<_T*>(this->ComputeDataBody());
         }
