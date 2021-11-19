@@ -7,7 +7,7 @@
 
 namespace sharpen
 {
-    class HttpResponseDecoder
+    class HttpResponseDecoder:public sharpen::Noncopyable
     {
     private:
         using Self = sharpen::HttpResponseDecoder;
@@ -18,12 +18,7 @@ namespace sharpen
             :parser_(sharpen::HttpParser::ParserModel::Response)
         {}
 
-        HttpResponseDecoder(const Self &other)
-            :parser_(sharpen::HttpParser::ParserModel::Response)
-        {
-            (void)other;
-        }
-
+        //fake move
         HttpResponseDecoder(Self &&other) noexcept
             :parser_(sharpen::HttpParser::ParserModel::Response)
         {
@@ -32,12 +27,7 @@ namespace sharpen
 
         ~HttpResponseDecoder() noexcept = default;
 
-        Self &operator=(const Self &other)
-        {
-            (void)other;
-            return *this;
-        }
-
+        //fake move
         Self &operator=(Self &&other) noexcept
         {
             (void)other;

@@ -7,7 +7,7 @@
 
 namespace sharpen
 {
-    class HttpRequestDecoder
+    class HttpRequestDecoder:public sharpen::Noncopyable
     {
     private:
         using Self = sharpen::HttpRequestDecoder;
@@ -18,12 +18,7 @@ namespace sharpen
             :parser_(sharpen::HttpParser::ParserModel::Request)
         {}
 
-        HttpRequestDecoder(const Self &other)
-            :parser_(sharpen::HttpParser::ParserModel::Request)
-        {
-            (void)other;
-        }
-
+        //fake move
         HttpRequestDecoder(Self &&other) noexcept
             :parser_(sharpen::HttpParser::ParserModel::Request)
         {
@@ -32,12 +27,7 @@ namespace sharpen
 
         ~HttpRequestDecoder() noexcept = default;
 
-        Self &operator=(const Self &other)
-        {
-            (void)other;
-            return *this;
-        }
-
+        //fake move
         Self &operator=(Self &&other) noexcept
         {
             (void)other;
