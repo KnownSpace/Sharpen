@@ -5,23 +5,28 @@
 
 sharpen::MicroRpcDecoder::MicroRpcDecoder() noexcept
     :stack_(nullptr)
-    ,begin_(0)
-    ,end_(0)
+    ,ite_(0)
     ,step_(Step::WaitMetadata)
+    ,typeSize_(0)
+    ,record_(0)
     ,completed_(false)
     ,error_(nullptr)
 {}
 
 sharpen::MicroRpcDecoder::MicroRpcDecoder(Self &&other) noexcept
     :stack_(other.stack_)
-    ,begin_(other.begin_)
-    ,end_(other.end_)
+    ,ite_(other.ite_)
     ,step_(other.step_)
+    ,typeSize_(other.typeSize_)
+    ,record_(other.record_)
+    ,completed_(other.completed_)
 {
     other.stack_ = nullptr;
-    other.begin_ = 0;
-    other.end_ = 0;
+    other.ite_ = 0;
     other.step_ = Step::WaitMetadata;
+    other.typeSize_ = 0;
+    other.record_ = 0;
+    other.completed_ = false;
 }
 
 sharpen::MicroRpcDecoder &sharpen::MicroRpcDecoder::operator=(Self &&other) noexcept
@@ -29,13 +34,17 @@ sharpen::MicroRpcDecoder &sharpen::MicroRpcDecoder::operator=(Self &&other) noex
     if (this != std::addressof(other))
     {
         this->stack_ = other.stack_;
-        this->begin_ = other.begin_;
-        this->end_ = other.end_;
+        this->ite_ = other.ite_;
         this->step_ = other.step_;
+        this->typeSize_ = other.typeSize_;
+        this->record_ = other.record_;
+        this->completed_ = other.completed_;
         other.stack_ = nullptr;
-        other.begin_ = 0;
-        other.end_ = 0;
+        other.ite_ = 0;
         other.step_ = Step::WaitMetadata;
+        other.typeSize_ = 0;
+        other.record_ = 0;
+        other.completed_ = false;
     }
     return *this;
 }
@@ -60,79 +69,71 @@ const char *sharpen::MicroRpcDecoder::RunStateMachine(const char *begin,const ch
         switch (this->step_)
         {
         case Step::WaitMetadata:
+        WaitMetadataLab:
             this->stack_->Push();
+            this->stack_->Top().RawData().Reserve(16);
             this->stack_->Top().RawData().PushBack(*begin);
             ++begin;
             if (this->stack_->Top().Header().type_ == static_cast<unsigned char>(sharpen::MicroRpcVariableType::Void))
             {
                 this->step_ = Step::Completed;
-                return begin;
+                goto CompletedLab;
             }
-            this->end_ = this->stack_->Top().Header().sizeSpace_;
-            if (this->end_ == 7)
-            {
-                this->end_ += 1;
-            }
-            this->begin_ = 0;
-            this->stack_->Top().RawData().Reserve(this->end_ + sharpen::GetMicroRpcTypeSize(static_cast<sharpen::MicroRpcVariableType>(this->stack_->Top().Header().type_)));
-            if (this->end_ == 0)
+            this->typeSize_ = sharpen::GetMicroRpcTypeSize(static_cast<sharpen::MicroRpcVariableType>(this->stack_->Top().Header().type_));
+            this->record_ = 0;
+            this->ite_ = this->stack_->Top().Header().sizeSpace_;
+            if (this->ite_ == 0)
             {
                 this->step_ = Step::WaitData;
-                this->end_ = 1;
+                this->ite_ = 1;
                 goto WaitDataLab;
             }
+            this->ite_ = this->ite_ == 7 ? 8: this->ite_;
             this->step_ = Step::WaitSize;
-    case Step::WaitSize:
-            while (this->begin_ != this->end_)
+        case Step::WaitSize:
+            if (this->ite_)
             {
                 this->stack_->Top().RawData().PushBack(*begin);
                 ++begin;
-                ++this->begin_;
-                if(begin != end)
-                {
-                    continue;
-                }
-                return begin;
+                --this->ite_;
+                continue;
             }
-#ifdef SHARPEN_IS_BIG_ENDIAN
-            sharpen::ConvertEndian(this->stack_.Top().RawData().Data() + 1, this->end_);
-#endif
             this->step_ = Step::WaitData;
-            {
-                std::memcpy(&this->end_, this->stack_->Top().RawData().Data() + 1, this->end_);
-                this->begin_ = 0;
-                this->stack_->Top().RawData().Reserve(this->end_);
-            }
-    case Step::WaitData:
-    WaitDataLab:
-            {
-                sharpen::Size record{0};
-                sharpen::Size typeSize{sharpen::GetMicroRpcTypeSize(static_cast<sharpen::MicroRpcVariableType>(this->stack_->Top().Header().type_))};
-                while (begin != end)
-                {
-                    this->stack_->Top().RawData().PushBack(*begin);
-                    ++begin;
-                    if(++record == typeSize)
-                    {
-                        record = 0;
+            std::memcpy(&this->ite_, this->stack_->Top().RawData().Data() + 1, this->stack_->Top().RawData().GetSize() - 1);
 #ifdef SHARPEN_IS_BIG_ENDIAN
-                sharpen::ConvertEndian(&*this->stack_.Top().RawData().End() - typeSize,typeSize);
+            sharpen::ConvertEndian(this->stack_.Top().RawData().Data() + 1, this->ite_);
 #endif
-                        if(++this->begin_ == this->end_)
-                        {
-                            this->step_ = Step::Completed;
-                            return begin;
-                        }
-                    }
+            this->stack_->Top().RawData().Reserve(this->ite_ * this->typeSize_);
+        case Step::WaitData:
+        WaitDataLab:
+            this->stack_->Top().RawData().PushBack(*begin);
+            ++begin;
+            if(this->typeSize_ == 1 || (++this->record_ == this->typeSize_ && (this->record_ = 0,true)))
+            {
+                if(!--this->ite_)
+                {
+                    this->step_ = Step::Completed;
+                    goto CompletedLab;
                 }
+#ifdef SHARPEN_IS_BIG_ENDIAN
+                sharpen::ConvertEndian(&*this->stack_.Top().RawData().End() - this->typeSize_,this->typeSize_);
+#endif
+            }
+            continue;
+        case Step::Error:
+        case Step::Completed:
+        CompletedLab:
+            this->step_ = Step::WaitMetadata;
+            if(this->stack_->Top().Header().end_)
+            {
+                this->stack_->Reverse();
+                this->completed_ = true;
                 return begin;
             }
-        case Step::Completed:
-        case Step::Error:
-            return begin;
+            goto WaitMetadataLab;
         }
     }
-    return nullptr;
+    return begin;
 }
 
 #ifdef SHARPEN_COMPILER_GCC
@@ -148,20 +149,6 @@ sharpen::Size sharpen::MicroRpcDecoder::Decode(const char *data, sharpen::Size s
     assert(this->stack_);
     const char *begin = data;
     const char *end = data + size;
-    while (begin != end)
-    {
-        begin = this->RunStateMachine(begin,end);
-        if(this->step_ == Step::Completed)
-        {
-            this->step_ = Step::WaitMetadata;
-            if(this->stack_->Top().Header().end_)
-            {
-                //set completed
-                this->completed_ = true;
-                this->stack_->Reverse();
-                break;
-            }
-        }
-    }
+    begin = this->RunStateMachine(begin,end);
     return begin - data;
 }

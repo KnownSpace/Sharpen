@@ -23,9 +23,10 @@ namespace sharpen
         };
 
         sharpen::MicroRpcStack *stack_;
-        sharpen::Size begin_;
-        sharpen::Size end_;
+        sharpen::Size ite_;
         Step step_;
+        sharpen::Size typeSize_;
+        sharpen::Size record_;
         bool completed_;
         const char *error_;
 
