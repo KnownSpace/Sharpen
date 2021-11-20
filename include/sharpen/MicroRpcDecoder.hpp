@@ -29,7 +29,7 @@ namespace sharpen
         bool completed_;
         const char *error_;
 
-        void RunStateMachine(char data);
+        const char *RunStateMachine(const char *begin,const char *end);
     public:
         MicroRpcDecoder() noexcept;
 

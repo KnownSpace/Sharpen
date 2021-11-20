@@ -118,6 +118,17 @@ namespace sharpen
         static constexpr sharpen::Size Size_ = 4;
     };
 
+//[fallthrough]
+#ifdef SHARPEN_COMPILER_GCC
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+#elif (defined SHARPEN_COMPILER_MSVC)
+#pragma warning(push)
+#pragma warning(disable:26819)
+#elif (defined SHARPEN_COMPILER_CLANG)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wimplicit-fallthrough"
+#endif
     inline sharpen::Size GetMicroRpcTypeSize(sharpen::MicroRpcVariableType type) noexcept
     {
         switch (type)
@@ -142,6 +153,13 @@ namespace sharpen
             return 0;
         }
     }
+#ifdef SHARPEN_COMPILER_GCC
+#pragma GCC diagnostic push
+#elif (defined SHARPEN_COMPILER_MSVC)
+#pragma warning(pop)
+#elif (defined SHARPEN_COMPILER_CLANG)
+#pragma clang diagnostic pop
+#endif
     
     template<typename _T,typename _Check = void>
     class InternalMicroRpcVariable;

@@ -74,7 +74,7 @@ add_library(sharpen::sharpen ALIAS sharpen)
 if(MSVC)
   target_compile_options(sharpen PRIVATE /W4 /WX)
 else()
-  target_compile_options(sharpen PRIVATE -Wall -Wextra -pedantic -Werror)
+  target_compile_options(sharpen PRIVATE -Wall -Wextra -pedantic -Werror -Wimplicit-fallthrough)
 endif()
 
 if(UNIX)

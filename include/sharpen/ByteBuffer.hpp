@@ -193,6 +193,11 @@ namespace sharpen
         {
             return std::search(this->Begin(),this->End(),begin,end);
         }
+
+        inline void Clear()
+        {
+            this->vector_.clear();
+        }
     };
 } 
 

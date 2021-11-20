@@ -57,6 +57,26 @@ namespace sharpen
         const char *ComputeDataBody() const noexcept;
 
         static sharpen::Size ComputeSizeSpace(sharpen::Size size) noexcept;
+
+        template<typename _T,sharpen::MicroRpcVariableType _TypeEnum = sharpen::MicroRpcVariableTypeTrait<_T>::TypeEnum_,typename _Check = sharpen::EnableIf<!std::is_same<void,_T>::value>>
+        sharpen::MicroRpcVariable<_T> InternalAsVariable(int) const
+        {
+            if (this->Header().type_ != static_cast<unsigned char>(_TypeEnum))
+            {
+                throw std::logic_error("bad cast");
+            }
+            return sharpen::MicroRpcVariable<_T>{this->Data<_T>,reinterpret_cast<_T*>(&*this->RawData().End())};
+        }
+
+        template<typename _T,sharpen::MicroRpcVariableType _TypeEnum = sharpen::MicroRpcVariableTypeTrait<_T>::TypeEnum_,typename _Check = sharpen::EnableIf<std::is_same<void,_T>::value>>
+        sharpen::MicroRpcVariable<void> InternalAsVariable(...) const
+        {
+            if (this->Header().type_ != static_cast<unsigned char>(_TypeEnum))
+            {
+                throw std::logic_error("bad cast");
+            }
+            return sharpen::MicroRpcVariable<void>{};
+        }
     public:
         MicroRpcField() = default;
 
@@ -168,11 +188,11 @@ namespace sharpen
         }
 
         template<typename _T,sharpen::MicroRpcVariableType _TypeEnum = sharpen::MicroRpcVariableTypeTrait<_T>::TypeEnum_>
-        const _T *Data() const noexcept
+        const _T *Data() const
         {
             if (this->Header().type_ != static_cast<unsigned char>(_TypeEnum))
             {
-                throw std::bad_cast();
+                throw std::logic_error("bad cast");
             }
             return reinterpret_cast<_T*>(this->ComputeDataBody());
         }
@@ -198,6 +218,12 @@ namespace sharpen
         }
 
         sharpen::Uint64 GetSize() const;
+
+        template<typename _T,sharpen::MicroRpcVariableType _TypeEnum = sharpen::MicroRpcVariableTypeTrait<_T>::TypeEnum_>
+        sharpen::MicroRpcVariable<_T> AsVariable() const
+        {
+            return this->InternalAsVariable<_T>(0);
+        }
     };
 }
 

@@ -80,5 +80,39 @@ namespace sharpen
             buf[i - t] = tmp;
         }
     }
+
+    template<typename _T,typename _RawType = typename std::remove_const<typename std::remove_reference<_T>::type>::type,typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value>::type>
+    _T Atoi(const char *str,sharpen::Size size,sharpen::Size radix = 10)
+    {
+        _T data{0};
+        bool n{false};
+        const char *end = str + size;
+        while (str != end)
+        {
+            data *= radix;
+            if(*str == '-')
+            {
+                n = true;
+            }
+            else if(*str >= 'A' && *str <= 'F')
+            {
+                data += *str - 'A' + 10;
+            }
+            else if(*str >= 'a' && *str <= 'f')
+            {
+                data += *str - 'a' + 10;
+            }
+            else
+            {
+                data += *str - '0';
+            }
+            ++str;
+        }
+        if(n)
+        {
+            data = -data;
+        }
+        return data;
+    }
 }
 #endif
