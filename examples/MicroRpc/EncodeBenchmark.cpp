@@ -53,8 +53,8 @@ int main(int argc, char const *argv[])
             for (size_t j = 0; j < TEST_ARG; ++j)
             {
                 char buf[1024] = {0};
-                snprintf(buf, 1024, "%d\n",rand());
-                req.Body().Append(buf, strlen(buf));
+                snprintf(buf, 1024, "%d\n",std::rand());
+                req.Body().Append(buf, std::strlen(buf));
             }
             req.Header()["Connection"] = "keep-alive";
             req.Header()["Content-Length"] = std::to_string(req.Body().GetSize());
@@ -76,7 +76,7 @@ int main(int argc, char const *argv[])
             stack.Push(proc,proc + sizeof(proc) - 1);
             for (size_t j = 0; j < TEST_ARG; j++)
             {
-                stack.Push(rand());
+                stack.Push(std::rand());
             }
             sharpen::ByteBuffer &&buf = sharpen::MicroRpcEncoder::Encode(stack);
             sum += buf.GetSize();

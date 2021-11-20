@@ -68,8 +68,8 @@ int main(int argc, char const *argv[])
         sharpen::Size sum{0};
         for (size_t i = 0; i < TEST_ARGS; i++)
         {
-            char body[1024];
-            std::snprintf(body,1024,"%d\n",rand());
+            char body[1024] = {0};
+            std::snprintf(body,1024,"%d\n",std::rand());
             sharpen::Size size = std::strlen(body);
             req.Body().Append(body,size);
             sum += size;
@@ -116,7 +116,7 @@ int main(int argc, char const *argv[])
         char proc[] = "Hello";
         for (size_t i = 0; i < TEST_ARGS; i++)
         {
-            stack.Push(rand());
+            stack.Push(std::rand());
         }
         stack.Push(proc,proc + sizeof(proc) - 1);
         stack.CopyTo(buf);
