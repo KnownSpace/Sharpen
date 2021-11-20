@@ -72,6 +72,7 @@ namespace sharpen
 
         inline void Clear()
         {
+            this->size_ = 0;
             this->fields_.clear();
         }
 

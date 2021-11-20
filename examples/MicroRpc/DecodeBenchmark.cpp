@@ -7,7 +7,7 @@
 #include <sharpen/StopWatcher.hpp>
 #include <sharpen/Converter.hpp>
 
-#define TEST_COUNT static_cast<sharpen::Size>(1e6)
+#define TEST_COUNT static_cast<sharpen::Size>(1e7)
 #define TEST_ARGS 3
 
 int main(int argc, char const *argv[])
@@ -55,6 +55,7 @@ int main(int argc, char const *argv[])
             sharpen::Size size = decoder.Decode(buf.Data(),buf.GetSize());
             assert(size == buf.GetSize());
             sum += size;
+            decoder.Decode(buf.Data(),buf.GetSize());
         }
         sw.Stop();
         std::printf("micro rpc using %d tu with %zu bytes\n",sw.Compute(),sum);
@@ -110,7 +111,7 @@ int main(int argc, char const *argv[])
     }
     //micro rpc arg
     buf.Clear();
-    srand(0);
+    std::srand(0);
     {
         sharpen::MicroRpcStack stack;
         char proc[] = "Hello";
@@ -118,6 +119,7 @@ int main(int argc, char const *argv[])
         {
             stack.Push(std::rand());
         }
+        stack.Reverse();
         stack.Push(proc,proc + sizeof(proc) - 1);
         stack.CopyTo(buf);
     }

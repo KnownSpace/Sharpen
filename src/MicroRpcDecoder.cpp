@@ -153,6 +153,7 @@ sharpen::Size sharpen::MicroRpcDecoder::Decode(const char *data, sharpen::Size s
         begin = this->RunStateMachine(begin,end);
         if(this->step_ == Step::Completed)
         {
+            this->step_ = Step::WaitMetadata;
             if(this->stack_->Top().Header().end_)
             {
                 //set completed
@@ -160,7 +161,6 @@ sharpen::Size sharpen::MicroRpcDecoder::Decode(const char *data, sharpen::Size s
                 this->stack_->Reverse();
                 break;
             }
-            this->step_ = Step::WaitMetadata;
         }
     }
     return begin - data;

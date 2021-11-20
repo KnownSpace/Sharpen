@@ -25,12 +25,12 @@ void sharpen::MicroRpcStack::UnsafeCopyTo(char *data) const noexcept
 
 sharpen::Size sharpen::MicroRpcStack::CopyTo(sharpen::ByteBuffer &buf, sharpen::Size offset) const
 {
-    sharpen::Size size{this->ComputeSize()};
-    if (buf.GetSize() < size + offset)
+    sharpen::Size size{this->ComputeSize() + offset};
+    if (buf.GetSize() < size)
     {
-        buf.ExtendTo(size + offset);
+        buf.ExtendTo(size);
     }
-    this->UnsafeCopyTo(buf.Data());
+    this->UnsafeCopyTo(buf.Data() + offset);
     return size;
 }
 

@@ -176,6 +176,46 @@ void MultiDecodeTest()
     std::printf("pass\n");
 }
 
+void MulitiStackTest()
+{
+    sharpen::ByteBuffer buf;
+    {
+        sharpen::MicroRpcStack stack;
+        const char str[] = "Hello";
+        stack.Push(str,str + sizeof(str));
+        stack.CopyTo(buf);
+        stack.CopyTo(buf,buf.GetSize());
+    }
+    sharpen::MicroRpcStack stack;
+    sharpen::MicroRpcDecoder decoder;
+    decoder.Bind(stack);
+    sharpen::Size size = decoder.Decode(buf.Data(),buf.GetSize());
+    assert(size*2 == buf.GetSize());
+    const char *data = buf.Data();
+    for (auto begin = stack.Begin(),end = stack.End();begin != end;++begin)
+    {
+        for (size_t i = 0; i < size; i++)
+        {
+            assert(*data == begin->RawData()[i]);
+            ++data;   
+        }
+    }
+    decoder.SetCompleted(false);
+    stack.Clear();
+    sharpen::Size ssize = decoder.Decode(buf.Data() + size,buf.GetSize() - size);
+    assert(ssize*2 == buf.GetSize());
+    data = buf.Data();
+    for (auto begin = stack.Begin(),end = stack.End();begin != end;++begin)
+    {
+        for (size_t i = size; i < buf.GetSize(); i++)
+        {
+            assert(*data == begin->RawData()[i - size]);
+            ++data;   
+        }
+    }
+    std::printf("pass\n");
+}
+
 int main(int argc, char const *argv[])
 {
     std::printf("encode variable test\n");
@@ -190,5 +230,7 @@ int main(int argc, char const *argv[])
     DecodeCollectionTest();
     std::printf("multi decode test\n");
     MultiDecodeTest();
+    std::printf("multi stack decode test\n");
+    MulitiStackTest();
     return 0;
 }

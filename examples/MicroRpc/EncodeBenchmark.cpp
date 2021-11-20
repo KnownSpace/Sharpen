@@ -7,7 +7,7 @@
 #include <sharpen/MicroRpcStack.hpp>
 #include <sharpen/MicroRpcEncoder.hpp>
 
-#define TEST_COUNT static_cast<sharpen::Size>(1e6)
+#define TEST_COUNT static_cast<sharpen::Size>(1e7)
 #define TEST_ARG 3
 
 int main(int argc, char const *argv[])

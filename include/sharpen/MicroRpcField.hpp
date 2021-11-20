@@ -194,7 +194,7 @@ namespace sharpen
             {
                 throw std::logic_error("bad cast");
             }
-            return reinterpret_cast<_T*>(this->ComputeDataBody());
+            return reinterpret_cast<const _T*>(this->ComputeDataBody());
         }
 
         const sharpen::ByteBuffer &RawData() const noexcept
