@@ -2,6 +2,8 @@
 #ifndef _SHARPEN_AWAITABLEFUTURE_HPP
 #define _SHARPEN_AWAITABLEFUTURE_HPP
 
+#include <cassert>
+
 #include "Future.hpp"
 #include "EventEngine.hpp"
 
@@ -14,9 +16,15 @@ namespace sharpen
         using MyBase = sharpen::Future<_Result>;
         using Self = sharpen::AwaitableFuture<_Result>;
 
-        sharpen::IFiberScheduler *scheduler_;
         sharpen::FiberPtr pendingFiber_;
         sharpen::FiberPtr awaiter_;
+
+        void ScheduleFiber(sharpen::FiberPtr &&fiber)
+        {
+            sharpen::IFiberScheduler *scheduler = fiber->GetScheduler();
+            assert(scheduler);
+            scheduler->Schedule(std::move(fiber));
+        }
 
         void NotifyIfCompleted()
         {
@@ -25,59 +33,39 @@ namespace sharpen
                 std::unique_lock<sharpen::SpinLock> lock(this->GetCompleteLock());
                 if(!this->CompletedOrError())
                 {
-                    this->PrepareAwaiter();
+                    this->awaiter_ = std::move(this->pendingFiber_);
                     return;
                 }
                 fiber = std::move(this->pendingFiber_);
             }
-            this->scheduler_->Schedule(std::move(fiber));
+            this->ScheduleFiber(std::move(fiber));
         }
 
     public:
         AwaitableFuture()
-            :AwaitableFuture(&sharpen::EventEngine::GetEngine())
-        {}
-
-        explicit AwaitableFuture(sharpen::IFiberScheduler *scheduler)
             :MyBase()
-            ,scheduler_(scheduler)
             ,pendingFiber_(nullptr)
             ,awaiter_(nullptr)
         {}
 
         AwaitableFuture(Self &&other) noexcept
             :MyBase(std::move(other))
-            ,scheduler_(other.scheduler_)
             ,pendingFiber_(std::move(other.pendingFiber_))
             ,awaiter_(std::move(other.awaiter_))
-        {
-            other.scheduler_ = nullptr;
-        }
+        {}
 
         Self &operator=(Self &&other) noexcept
         {
             if(this != std::addressof(other))
             {
                 MyBase::operator=(std::move(other));
-                this->scheduler_ = other.scheduler_;
                 this->pendingFiber_ = std::move(other.pendingFiber_);
                 this->awaiter_ = std::move(other.awaiter_);
-                other.scheduler_ = nullptr;
             }
             return *this;
         }
 
         virtual ~AwaitableFuture() noexcept = default;
-
-        void PreparePending()
-        {
-            this->pendingFiber_ = std::move(sharpen::Fiber::GetCurrentFiber());
-        }
-
-        void PrepareAwaiter()
-        {
-            this->awaiter_ = std::move(this->pendingFiber_);
-        }
 
         void NotifyAwaiter()
         {
@@ -88,14 +76,17 @@ namespace sharpen
             }
             if(fiber)
             {
-                this->scheduler_->Schedule(std::move(fiber));
+                //this->scheduler_->Schedule(std::move(fiber));
+                this->ScheduleFiber(std::move(fiber));
             }
         }
 
         void WaitAsync()
         {
+            sharpen::FiberPtr current = sharpen::Fiber::GetCurrentFiber();
+            sharpen::IFiberScheduler *scheduler = current->GetScheduler();
             //this thread is not a processer
-            if (!this->scheduler_->IsProcesser())
+            if (!scheduler || !scheduler->IsProcesser())
             {
                 this->Wait();
             }
@@ -105,9 +96,9 @@ namespace sharpen
                 if (this->IsPending())
                 {
                     //this->pendingFiber_ = sharpen::Fiber::GetCurrentFiber();
-                    this->PreparePending();
-                    this->scheduler_->SetSwitchCallback(std::bind(&sharpen::AwaitableFuture<_Result>::NotifyIfCompleted,this));
-                    this->scheduler_->SwitchToProcesserFiber();
+                    this->pendingFiber_ = std::move(current);
+                    scheduler->SetSwitchCallback(std::bind(&sharpen::AwaitableFuture<_Result>::NotifyIfCompleted,this));
+                    scheduler->SwitchToProcesserFiber();
                 }
             }
         }
@@ -136,12 +127,6 @@ namespace sharpen
     inline sharpen::AwaitableFuturePtr<_T> MakeAwaitableFuture()
     {
         return std::make_shared<sharpen::AwaitableFuture<_T>>();
-    }
-
-    template <typename _T>
-    inline sharpen::AwaitableFuturePtr<_T> MakeAwaitableFuture(sharpen::IFiberScheduler *scheduler)
-    {
-        return std::make_shared<sharpen::AwaitableFuture<_T>>(scheduler);
     }
 }
 

@@ -21,6 +21,7 @@ sharpen::Fiber::Fiber() noexcept
     ,task_()
     ,callback_()
     ,inited_(false)
+    ,scheduler_(nullptr)
 {}
 
 sharpen::Fiber::~Fiber() noexcept
@@ -93,4 +94,14 @@ void sharpen::Fiber::InitFiber()
     this->handle_ = ::make_fcontext(stack.Top(),stack.Size(),&sharpen::Fiber::FiberEntry);
     this->handle_ = ::jump_fcontext(this->handle_,nullptr).fctx;
     this->stack_ = std::move(stack);
+}
+
+sharpen::IFiberScheduler *sharpen::Fiber::GetScheduler() const noexcept
+{
+    return this->scheduler_;
+}
+
+void sharpen::Fiber::SetScheduler(sharpen::IFiberScheduler *scheduler) noexcept
+{
+    this->scheduler_ = scheduler;
 }

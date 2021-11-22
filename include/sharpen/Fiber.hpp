@@ -31,6 +31,8 @@ namespace sharpen
 
     using FiberPtr = std::shared_ptr<sharpen::Fiber>;
 
+    class IFiberScheduler;
+
     class Fiber:public sharpen::Noncopyable,public sharpen::Nonmovable,public std::enable_shared_from_this<sharpen::Fiber>
     {
     private:
@@ -53,6 +55,9 @@ namespace sharpen
         //inited
         bool inited_;
 
+        //scheduler
+        sharpen::IFiberScheduler *scheduler_;
+
         thread_local static FiberPtr currentFiber_;
 
         static void FiberEntry(transfer_t from);
@@ -72,6 +77,10 @@ namespace sharpen
         static sharpen::FiberPtr GetCurrentFiber();
 
         void Release() noexcept;
+
+        sharpen::IFiberScheduler *GetScheduler() const noexcept;
+
+        void SetScheduler(sharpen::IFiberScheduler *scheduler) noexcept;
 
         template<typename _Fn,typename ..._Args>
         static sharpen::FiberPtr MakeFiber(sharpen::Size stackSize,_Fn &&fn,_Args &&...args)

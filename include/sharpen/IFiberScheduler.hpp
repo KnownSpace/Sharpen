@@ -33,6 +33,7 @@ namespace sharpen
         void LaunchSpecial(sharpen::Size stackSize,_Fn &&fn,_Args &&...args)
         {
             sharpen::FiberPtr fiber = sharpen::Fiber::MakeFiber(stackSize,std::forward<_Fn>(fn),std::forward<_Args>(args)...);
+            fiber->SetScheduler(this);
             this->Schedule(std::move(fiber));
         }
 
