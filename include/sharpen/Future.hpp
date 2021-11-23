@@ -179,6 +179,11 @@ namespace sharpen
             return this->state_ == sharpen::FutureState::Pending;
         }
 
+        bool IsError() const
+        {
+            return this->state_ == sharpen::FutureState::Error;
+        }
+
         void SetCallback(Callback &&callback)
         {
             if (!callback)
@@ -396,6 +401,11 @@ namespace sharpen
         {
             std::unique_lock<sharpen::SpinLock> lock(*this->lock_);
             this->ResetWithoutLock();
+        }
+
+        bool IsError() const
+        {
+            return this->state_ == sharpen::FutureState::Error;
         }
     protected:
         virtual void ResetWithoutLock()

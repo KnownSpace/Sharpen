@@ -23,6 +23,11 @@ void sharpen::LinuxTimer::WaitAsync(sharpen::Future<void> &future,sharpen::Uint6
 {
     assert(this->handle_ != -1);
     using FnPtr = void(*)(sharpen::Future<void>*);
+    if(waitMs == 0)
+    {
+        future.Complete();
+        return;
+    }
     this->cb_ = std::bind(static_cast<FnPtr>(&sharpen::LinuxTimer::CompleteFuture),&future);
     itimerspec time;
     std::memset(&(time.it_interval),0,sizeof(time.it_interval));

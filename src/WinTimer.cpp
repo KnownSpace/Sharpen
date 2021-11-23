@@ -41,6 +41,11 @@ void sharpen::WinTimer::CompleteFuture(void *arg,DWORD,DWORD)
 void sharpen::WinTimer::WaitAsync(sharpen::Future<void> &future,sharpen::Uint64 waitMs)
 {
     assert(this->handle_ != INVALID_HANDLE_VALUE);
+    if(waitMs == 0)
+    {
+        future.Complete();
+        return;
+    }
     LARGE_INTEGER li;
     li.QuadPart = -10*1000*waitMs;
     this->future_ = &future;
