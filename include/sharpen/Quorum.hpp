@@ -15,14 +15,10 @@
 
 namespace sharpen
 {
-    template<typename _Prposal,typename _Proposer,typename _Check = void>
-    class InternalQuorum;
-
-    template<typename _Proposal,typename _Proposer>
-    class InternalQuorum<_Proposal,_Proposer,sharpen::EnableIf<sharpen::IsQuorumProposer<_Proposer,_Proposal>::Value>>:public sharpen::Noncopyable,public sharpen::Nonmovable
+    class Quorum
     {
     private:
-        using Self = sharpen::InternalQuorum<_Proposal,_Proposer,sharpen::EnableIf<sharpen::IsQuorumProposer<_Proposer,_Proposal>::Value>>;
+        using Self = sharpen::Quorum;
 
         struct Waiter
         {
@@ -64,8 +60,8 @@ namespace sharpen
         }
 
     public:
-        template<typename _Iterator>
-        void ProposeAsync(_Iterator begin,_Iterator end,const _Proposal &proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> &finish)
+        template<typename _Iterator,typename _Proposal,typename _Check = sharpen::EnableIf<sharpen::IsQuorumProposerIterator<_Iterator,_Proposal>::Value>>
+        static void ProposeAsync(_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> &finish)
         {
             using FnPtr = void(*)(sharpen::Future<bool>&,std::shared_ptr<Waiter>);
             //init waiter
@@ -88,9 +84,6 @@ namespace sharpen
             }
         }
     };
-
-    template<typename _Proposal,typename _Proposer>
-    using Quorum = sharpen::InternalQuorum<_Proposal,_Proposer>;
 }
 
 #endif

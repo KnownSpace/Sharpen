@@ -106,8 +106,7 @@ public:
 void StatelessQuorumTest()
 {
     std::printf("stateless quorum\n");
-    using Quorum = sharpen::Quorum<int,StatelessProposer>;
-    Quorum quorum;
+    sharpen::Quorum quorum;
     std::vector<StatelessProposer> proposers{10};
     sharpen::AwaitableFuture<bool> continuation;
     sharpen::AwaitableFuture<void> finish;
@@ -123,8 +122,7 @@ void StatelessQuorumTest()
 void StatefulQuorumTest()
 {
     std::printf("stateful quorum\n");
-    using Quorum = sharpen::Quorum<int,StatefulProposer>;
-    Quorum quorum;
+    sharpen::Quorum quorum;
     std::vector<StatefulProposer> proposers;
     for (size_t i = 0; i < 10; i++)
     {
@@ -149,8 +147,7 @@ void StatefulQuorumTest()
 void ErrorQuorumTest()
 {
     std::printf("error quorum\n");
-    using Quorum = sharpen::Quorum<int,StatefulProposer>;
-    Quorum quorum;
+    sharpen::Quorum quorum;
     std::vector<StatefulProposer> proposers;
     for (size_t i = 0; i < 10; i++)
     {
@@ -175,8 +172,7 @@ void ErrorQuorumTest()
 void RandomQuorumTest()
 {
     std::printf("random stateful quorum\n");
-    using Quorum = sharpen::Quorum<int,RandomProposer>;
-    Quorum quorum;
+    sharpen::Quorum quorum;
     std::vector<RandomProposer> proposers;
     for (size_t i = 0; i < 10; i++)
     {
