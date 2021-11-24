@@ -24,6 +24,7 @@ namespace sharpen
         {
             std::atomic_size_t finishCounter_;
             std::atomic_size_t successCounter_;
+            std::atomic_size_t errorCounter_;
             sharpen::Future<bool>* continuation_;
             sharpen::Future<void>* finish_;
             sharpen::Size majority_;
@@ -47,15 +48,22 @@ namespace sharpen
                     }
                 }
             }
+            else
+            {
+                sharpen::Size errorCount = waiterPtr->errorCounter_.fetch_add(1);
+                if(errorCount == waiterPtr->majority_)
+                {
+                    sharpen::Future<bool> *continuation{nullptr};
+                    std::swap(continuation,waiterPtr->continuation_);
+                    if(continuation)
+                    {
+                        continuation->Complete(false);
+                    }
+                }
+            }
             if(finishCounter == 0)
             {
                 waiterPtr->finish_->Complete();
-                sharpen::Future<bool> *continuation{nullptr};
-                std::swap(continuation,waiterPtr->continuation_);
-                if(continuation)
-                {
-                    continuation->Complete(false);
-                }
             }
         }
 
@@ -73,6 +81,7 @@ namespace sharpen
             waiterPtr->successCounter_.store(0);
             waiterPtr->majority_ = (size + 1)/2;
             waiterPtr->futures_.resize(size);
+            waiterPtr->errorCounter_.store(0);
             sharpen::Size index{0};
             //launch operations
             while (begin != end)
