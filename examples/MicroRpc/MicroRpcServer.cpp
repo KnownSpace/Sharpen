@@ -24,7 +24,7 @@ void Entry(sharpen::UintPort port)
     sharpen::IpEndPoint addr;
     addr.SetAddrByString("127.0.0.1");
     addr.SetPort(port);
-    Option opt(sharpen::MicroRpcDispatcher{});
+    Option opt(sharpen::MicroRpcDispatcher{},std::chrono::seconds(3));
     MicroRpcServer server(sharpen::AddressFamily::Ip,addr,sharpen::EventEngine::GetEngine(),std::move(opt));
     server.RegisterTimeout([](Context &ctx)
     {
