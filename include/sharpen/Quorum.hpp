@@ -87,7 +87,7 @@ namespace sharpen
             while (begin != end)
             {
                 waiterPtr->futures_[index].SetCallback(std::bind(static_cast<FnPtr>(&Self::CompletedCallback),std::placeholders::_1,waiterPtr));
-                begin->ProposeAsync(proposal,waiterPtr->futures_[index]);
+                begin->ProposeAsync(std::forward<_Proposal>(proposal),waiterPtr->futures_[index]);
                 ++index;
                 ++begin;
             }
