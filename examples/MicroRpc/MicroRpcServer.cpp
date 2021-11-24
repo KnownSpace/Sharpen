@@ -9,6 +9,7 @@
 #include <sharpen/MicroRpcDispatcher.hpp>
 #include <sharpen/RpcServer.hpp>
 #include <sharpen/CtrlHandler.hpp>
+#include <sharpen/Converter.hpp>
 
 using MicroRpcServer = sharpen::RpcServer<sharpen::MicroRpcStack,sharpen::MicroRpcEncoder,sharpen::MicroRpcStack,sharpen::MicroRpcDecoder,sharpen::MicroRpcDispatcher>;
 
@@ -16,14 +17,14 @@ using Option = typename MicroRpcServer::Option;
 
 using Context = typename MicroRpcServer::Context;
 
-void Entry()
+void Entry(sharpen::UintPort port)
 {
     sharpen::StartupNetSupport();
     sharpen::EventEngine &engine = sharpen::EventEngine::GetEngine();
     sharpen::IpEndPoint addr;
     addr.SetAddrByString("127.0.0.1");
-    addr.SetPort(8082);
-    Option opt(sharpen::MicroRpcDispatcher{},std::chrono::seconds(3));
+    addr.SetPort(port);
+    Option opt(sharpen::MicroRpcDispatcher{});
     MicroRpcServer server(sharpen::AddressFamily::Ip,addr,sharpen::EventEngine::GetEngine(),std::move(opt));
     server.RegisterTimeout([](Context &ctx)
     {
@@ -35,6 +36,7 @@ void Entry()
     });
     server.Register("Hello",[](Context &ctx)
     {
+        std::printf("recv req\n");
         sharpen::MicroRpcStack res;
         res.Push(std::rand());
         ctx.Connection()->WriteAsync(ctx.Encoder().Encode(res));
@@ -51,6 +53,11 @@ void Entry()
 int main(int argc, char const *argv[])
 {
     sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine();
-    engine.Startup(&Entry);
+    sharpen::UintPort port = 8080;
+    if(argc > 1)
+    {
+        port = sharpen::Atoi<sharpen::UintPort>(argv[1],std::strlen(argv[1]));
+    }
+    engine.Startup(&Entry,port);
     return 0;
 }

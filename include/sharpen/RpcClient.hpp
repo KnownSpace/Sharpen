@@ -38,6 +38,7 @@ namespace sharpen
         {
             sharpen::Option<sharpen::Future<sharpen::Size>> sender_;
             sharpen::Future<_Response> *invoker_;
+            sharpen::ByteBuffer buf_;
         };
 
         using WaiterList = std::list<Waiter>;
@@ -251,8 +252,9 @@ namespace sharpen
                 this->waiters_.push_back(std::move(waiter));
                 waiterPtr = &this->waiters_.back();
             }
+            this->Encoder().EncodeTo(package,waiterPtr->buf_);
             waiterPtr->sender_.Get().SetCallback(std::bind(&Self::SendCallback,this,std::ref(future),std::placeholders::_1));
-            this->conn_->WriteAsync(this->Encoder().Encode(package),0,waiterPtr->sender_.Get());
+            this->conn_->WriteAsync(waiterPtr->buf_,0,waiterPtr->sender_.Get());
         }
 
         _Response InvokeAsync(const _Request &package)

@@ -98,7 +98,7 @@ namespace sharpen
                 ctx.Decoder().SetCompleted(false);
                 sharpen::Size lastSize{0};
                 while (!ctx.Decoder().IsCompleted())
-                {
+                {                  
                     sharpen::Size size{0};
                     if(buf.GetMark() == 0)
                     {
