@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include <sharpen/MicroRpcStack.hpp>
+#include "MicroRpcStack.hpp"
 
 namespace sharpen
 {

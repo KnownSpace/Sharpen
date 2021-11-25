@@ -53,11 +53,6 @@ void Entry(sharpen::UintPort port)
 int main(int argc, char const *argv[])
 {
     sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine();
-    sharpen::UintPort port = 8080;
-    if(argc > 1)
-    {
-        port = sharpen::Atoi<sharpen::UintPort>(argv[1],std::strlen(argv[1]));
-    }
-    engine.Startup(&Entry,port);
+    engine.Startup(&Entry,8082);
     return 0;
 }
