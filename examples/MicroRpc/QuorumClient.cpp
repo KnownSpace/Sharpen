@@ -11,11 +11,18 @@
 
 using MicroRpcClient = sharpen::RpcClient<sharpen::MicroRpcStack,sharpen::MicroRpcEncoder,sharpen::MicroRpcStack,sharpen::MicroRpcDecoder>;
 
-struct TestQuorumProposer
+class TestQuorumProposer
 {
+private:
     std::unique_ptr<MicroRpcClient> client_;
+public:
+    explicit TestQuorumProposer(std::unique_ptr<MicroRpcClient> client)
+        :client_(std::move(client))
+    {}
 
-    TestQuorumProposer() = default;
+    TestQuorumProposer(TestQuorumProposer &&other) noexcept
+        :client_(std::move(other.client_))
+    {}
 
     void ProposeAsync(sharpen::MicroRpcStack stack,sharpen::Future<bool> &future)
     {
@@ -46,7 +53,7 @@ void Entry()
     sharpen::EventEngine &engine = sharpen::EventEngine::GetEngine();
     sharpen::IpEndPoint addr;
     addr.SetAddrByString("127.0.0.1");
-    std::vector<TestQuorumProposer> proposers{3};
+    std::vector<TestQuorumProposer> proposers;
     for (size_t i = 0; i < 3; i++)
     {
         addr.SetPort(0);
@@ -55,11 +62,10 @@ void Entry()
         conn->Register(engine);
         addr.SetPort(8080 + i);
         conn->ConnectAsync(addr);
-        proposers[i].client_.reset(new MicroRpcClient{conn});
+        proposers.emplace_back(std::unique_ptr<MicroRpcClient>{new MicroRpcClient{conn}});
     }
     sharpen::MicroRpcStack req;
     char proc[] = "Hello";
-    //req.Push(1);
     req.Push(proc,proc + sizeof(proc) - 1);
     sharpen::AwaitableFuture<void> finish;
     sharpen::AwaitableFuture<bool> continuation;
