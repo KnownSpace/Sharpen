@@ -29,7 +29,7 @@ namespace sharpen
         template<typename ..._Args>
         int ScanfAsync(const char *format,_Args &&...args)
         {
-            sharpen::ByteBuffer buf(128);
+            sharpen::ByteBuffer buf(16);
             sharpen::Size size = this->ReadAsync(buf);
             while (size == buf.GetSize())
             {
@@ -42,9 +42,17 @@ namespace sharpen
             }
             return std::sscanf(buf.Data(),format,std::forward<_Args>(args)...);
         }
+
+        int GetcharAsync();
+
+        sharpen::Size GetsAsync(char *buf,sharpen::Size bufSize);
+
+        std::string GetsAsync();
     };
 
     using InputPipeChannelPtr = std::shared_ptr<sharpen::IInputPipeChannel>;
+
+    sharpen::InputPipeChannelPtr MakeStdinPipe();
 }
 
 #endif
