@@ -15,6 +15,9 @@ namespace sharpen
 
     template<typename _ProposerIterator,typename _Proposal>
     using IsQuorumProposerIterator = sharpen::IsQuorumProposer<decltype(*std::declval<_ProposerIterator>()),_Proposal>;
+
+    template<typename _ProposerMapIterator,typename _Proposal>
+    using IsQuorumProposerMapIterator = sharpen::IsQuorumProposer<decltype(*std::declval<_ProposerMapIterator>()->second),_Proposal>;
 }
 
 #endif

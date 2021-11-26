@@ -15,6 +15,8 @@ class TestQuorumProposer
 {
 private:
     std::unique_ptr<MicroRpcClient> client_;
+
+    
 public:
     explicit TestQuorumProposer(std::unique_ptr<MicroRpcClient> client)
         :client_(std::move(client))
