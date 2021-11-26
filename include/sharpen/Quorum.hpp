@@ -98,7 +98,7 @@ namespace sharpen
         }
 
         template<typename _Iterator,typename _Proposal,typename _Check = sharpen::EnableIf<sharpen::IsQuorumProposerMapIterator<_Iterator,_Proposal>::Value>>
-        static void InternalProposeAsync(_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> *finish,int)
+        static void InternalProposeAsync(_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> *finish,int,...)
         {
             using FnPtr = void(*)(sharpen::Future<bool>&,std::shared_ptr<Waiter>);
             //init waiter
@@ -116,17 +116,36 @@ namespace sharpen
             }
         }
 
+        template<typename _Iterator,typename _Proposal,typename _Check = sharpen::EnableIf<sharpen::IsCallable<decltype(*std::declval<_Iterator>()),_Proposal,sharpen::Future<bool>&>::Value>>
+        static void InternalProposeAsync(_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> *finish,int,int)
+        {
+            using FnPtr = void(*)(sharpen::Future<bool>&,std::shared_ptr<Waiter>);
+            //init waiter
+            std::shared_ptr<Waiter> waiterPtr = std::make_shared<Waiter>();
+            sharpen::Size size = sharpen::GetRangeSize(begin,end);
+            InitWaiter(waiterPtr,size,&continuation,finish);
+            sharpen::Size index{0};
+            //launch operations
+            while (begin != end)
+            {
+                waiterPtr->futures_[index].SetCallback(std::bind(static_cast<FnPtr>(&Self::CompletedCallback),std::placeholders::_1,waiterPtr));
+                (*begin)(std::forward<_Proposal>(proposal),waiterPtr->futures_[index]);
+                ++index;
+                ++begin;
+            }
+        }
+
     public:
         template<typename _Iterator,typename _Proposal>
-        static auto ProposeAsync(_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> &finish) ->decltype(Self::InternalProposeAsync(begin,end,proposal,continuation,&finish,0))
+        static auto ProposeAsync(_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> &finish) ->decltype(Self::InternalProposeAsync(begin,end,proposal,continuation,&finish,0,0))
         {
-            return Self::InternalProposeAsync(begin,end,proposal,continuation,&finish,0);
+            return Self::InternalProposeAsync(begin,end,proposal,continuation,&finish,0,0);
         }
 
         template<typename _Iterator,typename _Proposal>
-        static auto ProposeAsync(_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation) ->decltype(Self::InternalProposeAsync(begin,end,proposal,continuation,nullptr,0))
+        static auto ProposeAsync(_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation) ->decltype(Self::InternalProposeAsync(begin,end,proposal,continuation,nullptr,0,0))
         {
-            return Self::InternalProposeAsync(begin,end,proposal,continuation,nullptr,0);
+            return Self::InternalProposeAsync(begin,end,proposal,continuation,nullptr,0,0);
         }
     };
 }
