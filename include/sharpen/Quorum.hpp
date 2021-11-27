@@ -117,7 +117,7 @@ namespace sharpen
         }
 
         template<typename _Iterator,typename _Proposal,typename _Check = sharpen::EnableIf<sharpen::IsCallable<decltype(*std::declval<_Iterator>()),_Proposal,sharpen::Future<bool>&>::Value>>
-        static void InternalProposeAsync(_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> *finish,int,int)
+        static void InternalProposeAsync(_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> *finish,int,int,...)
         {
             using FnPtr = void(*)(sharpen::Future<bool>&,std::shared_ptr<Waiter>);
             //init waiter

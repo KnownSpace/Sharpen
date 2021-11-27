@@ -32,20 +32,17 @@ namespace sharpen
     struct InternalIsCallable
     {
     private:
-        template<typename _Check = decltype(std::declval<_Fn>()(std::declval<_Args>()...))>
-        constexpr static sharpen::TrueType Test(int) noexcept
-        {
-            return sharpen::TrueType();
-        }
+        class TestFalse;
 
-        constexpr static sharpen::FalseType Test(...) noexcept
-        {
-            return sharpen::FalseType();
-        }
+        using Self = sharpen::InternalIsCallable<_Fn,_Args...>;
+
+        template<typename _U>
+        constexpr static auto Test(int) noexcept -> decltype(std::declval<_U>()(std::declval<_Args>()...));
+
+        template<typename _U>
+        constexpr static TestFalse Test(...) noexcept;
     public:
-        using Type = decltype(sharpen::InternalIsCallable<_Fn,_Args...>::Test(0));
-
-        static constexpr bool Value = Type::Value;
+        using Type = sharpen::BoolType<!std::is_same<decltype(Self::Test<_Fn>(0)),TestFalse>::value>;
     };
 
     template<typename _Fn,typename ..._Args>
