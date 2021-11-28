@@ -4,7 +4,7 @@
 
 #ifdef SHARPEN_IS_WIN
 #include <io.h>
-#include <WinBase.h>
+#include <Windows.h>
 #else
 #include <unistd.h>
 #endif

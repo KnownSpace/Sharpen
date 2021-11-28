@@ -140,7 +140,7 @@ void StatefulQuorumTest()
     std::printf("proposer status\n");
     for (size_t i = 0; i < 10; i++)
     {
-        std::printf("%d        %d\n",i,proposers[i].Success());
+        std::printf("%zu        %d\n",i,proposers[i].Success());
     }
 }
 
@@ -165,7 +165,7 @@ void ErrorQuorumTest()
     std::printf("proposer status\n");
     for (size_t i = 0; i < 10; i++)
     {
-        std::printf("%d        %d\n",i,proposers[i].Success());
+        std::printf("%zu        %d\n",i,proposers[i].Success());
     }
 }
 

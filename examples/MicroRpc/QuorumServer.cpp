@@ -29,7 +29,7 @@ void Entry()
     std::vector<std::unique_ptr<MicroRpcServer>> servers;
     for (size_t i = 0; i < 3; i++)
     {
-        addr.SetPort(8080 + i);
+        addr.SetPort(static_cast<sharpen::UintPort>(8080 + i));
         servers.emplace_back(new MicroRpcServer{sharpen::AddressFamily::Ip,addr,sharpen::EventEngine::GetEngine(),opt});
         servers.back()->RegisterTimeout([](Context &ctx)
         {

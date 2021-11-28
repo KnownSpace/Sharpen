@@ -89,7 +89,7 @@ namespace sharpen
         const char *end = str + size;
         while (str != end)
         {
-            data *= radix;
+            data *= static_cast<_T>(radix);
             if(*str == '-')
             {
                 n = true;

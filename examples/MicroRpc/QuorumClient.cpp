@@ -62,7 +62,7 @@ void Entry()
         sharpen::NetStreamChannelPtr conn = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
         conn->Bind(addr);
         conn->Register(engine);
-        addr.SetPort(8080 + i);
+        addr.SetPort(static_cast<sharpen::UintPort>(8080 + i));
         conn->ConnectAsync(addr);
         proposers.emplace_back(std::unique_ptr<MicroRpcClient>{new MicroRpcClient{conn}});
     }
