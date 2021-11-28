@@ -10,7 +10,6 @@ sharpen::MicroRpcDecoder::MicroRpcDecoder() noexcept
     ,typeSize_(0)
     ,record_(0)
     ,completed_(false)
-    ,error_(nullptr)
 {}
 
 sharpen::MicroRpcDecoder::MicroRpcDecoder(Self &&other) noexcept
@@ -74,6 +73,10 @@ const char *sharpen::MicroRpcDecoder::RunStateMachine(const char *begin,const ch
             this->stack_->Top().RawData().Reserve(16);
             this->stack_->Top().RawData().PushBack(*begin);
             ++begin;
+            if (this->stack_->Top().Header().type_ > 10)
+            {
+                throw sharpen::MicroRpcParseException("unknown type");
+            }
             if (this->stack_->Top().Header().type_ == static_cast<unsigned char>(sharpen::MicroRpcVariableType::Void))
             {
                 this->step_ = Step::Completed;
@@ -120,7 +123,6 @@ const char *sharpen::MicroRpcDecoder::RunStateMachine(const char *begin,const ch
 #endif
             }
             continue;
-        case Step::Error:
         case Step::Completed:
         CompletedLab:
             this->step_ = Step::WaitMetadata;

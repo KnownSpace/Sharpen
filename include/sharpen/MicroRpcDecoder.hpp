@@ -4,6 +4,7 @@
 
 #include "MicroRpcStack.hpp"
 #include "Noncopyable.hpp"
+#include "MicroRpcParseException.hpp"
 
 namespace sharpen
 {
@@ -18,8 +19,7 @@ namespace sharpen
             WaitMetadata = 0,
             WaitSize = 1,
             WaitData = 2,
-            Completed = 3,
-            Error = 4
+            Completed = 3
         };
 
         sharpen::MicroRpcStack *stack_;
@@ -28,7 +28,6 @@ namespace sharpen
         sharpen::Size typeSize_;
         sharpen::Size record_;
         bool completed_;
-        const char *error_;
 
         const char *RunStateMachine(const char *begin,const char *end);
     public:
