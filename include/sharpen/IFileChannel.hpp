@@ -25,6 +25,10 @@ namespace sharpen
         IFileChannel(Self &&other) noexcept = default;
 
         virtual sharpen::Uint64 GetFileSize() const = 0;
+
+        void ZeroMemoryAsync(sharpen::Future<sharpen::Size> &future,sharpen::Size size,sharpen::Uint64 offset);
+
+        sharpen::Size ZeroMemoryAsync(sharpen::Size size,sharpen::Uint64 offset);
     };
 
     using FileChannelPtr = std::shared_ptr<sharpen::IFileChannel>;

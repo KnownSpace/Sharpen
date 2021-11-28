@@ -4,6 +4,7 @@
 #include <cassert>
 
 #include <sharpen/EventLoop.hpp>
+#include <sharpen/AwaitableFuture.hpp>
 
 #ifdef SHARPEN_IS_NIX
 #include <unistd.h>
@@ -97,4 +98,16 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
     channel = std::make_shared<sharpen::PosixFileChannel>(handle);
 #endif
     return channel;
+}
+
+void sharpen::IFileChannel::ZeroMemoryAsync(sharpen::Future<sharpen::Size> &future,sharpen::Size size,sharpen::Uint64 offset)
+{
+    this->WriteAsync("",1,offset + size - 1,future);
+}
+
+sharpen::Size sharpen::IFileChannel::ZeroMemoryAsync(sharpen::Size size,sharpen::Uint64 offset)
+{
+    sharpen::AwaitableFuture<sharpen::Size> future;
+    this->ZeroMemoryAsync(future,size,offset);
+    return future.Await();
 }
