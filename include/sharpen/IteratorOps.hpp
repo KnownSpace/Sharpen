@@ -78,6 +78,20 @@ namespace sharpen
     {
         return sharpen::InternalGetRangeSize(begin,end,0);
     }
+
+    template<typename _Iterator,typename _Finder,typename _Check = decltype(false == std::declval<_Finder>()(*std::declval<_Iterator>()))>
+    inline auto Find(_Iterator begin,_Iterator end,_Finder &&finder) -> decltype(++begin)
+    {
+        while (begin != end)
+        {
+            if(finder(*begin))
+            {
+                break;
+            }
+            ++begin;
+        }
+        return begin;
+    }
 }
 
 #endif

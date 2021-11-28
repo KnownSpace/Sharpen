@@ -16,7 +16,7 @@ namespace sharpen
         std::string GetProcedureName(const sharpen::MicroRpcStack &stack)
         {
             const auto &top = stack.Top();
-            return {top.Data<char>(),top.GetSize()};
+            return {top.Data<char>(),static_cast<sharpen::Size>(top.GetSize())};
         }
     };
 }

@@ -71,7 +71,9 @@ int main()
             assert(false);
         }
         catch(const sharpen::BadOptionException &e)
-        {}
+        {
+            (void)e;
+        }
         opt = GetInt(true);
         std::puts("option<int> value test\n");
         std::printf("opt<int> has value? %d\n",opt.HasValue());
@@ -83,6 +85,7 @@ int main()
         }
         catch(const sharpen::BadOptionException &e)
         {
+            (void)e;
             assert(false);
         }
     }
@@ -97,7 +100,9 @@ int main()
             assert(false);
         }
         catch(const sharpen::BadOptionException &e)
-        {}
+        {
+            (void)e;
+        }
         std::puts("option<Test> value test\n");
         opt = GetTest(true);
         std::printf("opt has value? %d\n",opt.HasValue());
@@ -108,6 +113,7 @@ int main()
         }
         catch(const sharpen::BadOptionException &e)
         {
+            (void)e;
             assert(false);
         }
     }

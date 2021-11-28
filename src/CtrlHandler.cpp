@@ -8,7 +8,7 @@ std::once_flag sharpen::CtrlHelper::flag_;
 
 #ifdef SHARPEN_IS_WIN
 
-BOOL sharpen::CtrlHelper::CtrlHandler(DWORD ctrlType)
+BOOL WINAPI sharpen::CtrlHelper::CtrlHandler(DWORD ctrlType)
 {
     if (ctrlType == CTRL_C_EVENT)
     {
@@ -65,7 +65,7 @@ void sharpen::RegisterCtrlHandler(sharpen::CtrlType type,sharpen::CtrlHelper::Ha
     std::call_once(sharpen::CtrlHelper::flag_,[]()
     {
 #ifdef SHARPEN_IS_WIN
-        using FnPtr = BOOL(*)(DWORD);
+        using FnPtr = BOOL(WINAPI *)(DWORD);
         ::SetConsoleCtrlHandler(static_cast<FnPtr>(&sharpen::CtrlHelper::CtrlHandler),TRUE);
 #else
         using FnPtr = void(*)(int);

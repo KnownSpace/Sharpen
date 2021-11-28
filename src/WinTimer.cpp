@@ -26,7 +26,7 @@ sharpen::WinTimer::~WinTimer() noexcept
     }
 }
 
-void sharpen::WinTimer::CompleteFuture(void *arg,DWORD,DWORD)
+void WINAPI sharpen::WinTimer::CompleteFuture(void *arg,DWORD,DWORD)
 {
     assert(arg);
     sharpen::Future<void> *future = nullptr;

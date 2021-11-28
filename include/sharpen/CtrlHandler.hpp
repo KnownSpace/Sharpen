@@ -34,7 +34,7 @@ namespace sharpen
         static Handlers onQuite_;
 
 #ifdef SHARPEN_IS_WIN
-        static BOOL CtrlHandler(DWORD ctrlType);
+        static BOOL WINAPI CtrlHandler(DWORD ctrlType);
 #else
         static void CtrlHandler(int signalType);
 #endif

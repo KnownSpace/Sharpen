@@ -21,7 +21,7 @@ namespace sharpen
           Myhandle handle_;
           sharpen::Future<void> *future_;
 
-          static void CompleteFuture(void *arg, DWORD, DWORD);
+          static void WINAPI CompleteFuture(void *arg, DWORD, DWORD);
      public:
           WinTimer();
 
