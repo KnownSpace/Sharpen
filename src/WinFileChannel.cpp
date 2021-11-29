@@ -6,12 +6,24 @@
 #include <cassert>
 
 #include <Windows.h>
+#include <io.h>
 
 sharpen::WinFileChannel::WinFileChannel(sharpen::FileHandle handle)
     :Mybase()
+    ,mappingFlag_()
+    ,mappingHandle_(INVALID_HANDLE_VALUE)
 {
     assert(handle != INVALID_HANDLE_VALUE);
     this->handle_ = handle;
+}
+
+void sharpen::WinFileChannel::Closer(sharpen::FileHandle file,sharpen::FileHandle mapping) noexcept
+{
+    if(mapping != INVALID_HANDLE_VALUE)
+    {
+        ::CloseHandle(mapping);
+    }
+    ::CloseHandle(file);
 }
 
 void sharpen::WinFileChannel::InitOverlapped(OVERLAPPED &ol,sharpen::Uint64 offset)
@@ -135,6 +147,37 @@ sharpen::Uint64 sharpen::WinFileChannel::GetFileSize() const
         sharpen::ThrowLastError();
     }
     return li.QuadPart;
+}
+
+void sharpen::WinFileChannel::DoInitFileMapping()
+{
+    //only support read write
+    //should open with FileAccessModel::All
+    this->mappingHandle_ = ::CreateFileMappingA(this->handle_,nullptr,PAGE_READWRITE,0,0,nullptr);
+    if(this->mappingHandle_ == INVALID_HANDLE_VALUE)
+    {
+        sharpen::ThrowLastError();
+    }
+    using FnPtr = void(*)(sharpen::FileHandle,sharpen::FileHandle);
+    this->closer_ = std::bind(static_cast<FnPtr>(&sharpen::WinFileChannel::Closer),std::placeholders::_1,this->mappingHandle_);
+}
+
+void sharpen::WinFileChannel::InitFileMapping()
+{
+    std::call_once(this->mappingFlag_,std::bind(&sharpen::WinFileChannel::DoInitFileMapping,this));
+}
+
+sharpen::FileMemory sharpen::WinFileChannel::MapMemory(sharpen::Size size,sharpen::Uint64 offset)
+{
+    this->InitFileMapping();
+    LARGE_INTEGER li;
+    li.QuadPart = offset;
+    void *addr = ::MapViewOfFile(this->mappingHandle_,FILE_MAP_ALL_ACCESS,li.LowPart,li.HighPart,size);
+    if(addr == nullptr)
+    {
+        sharpen::ThrowLastError();
+    }
+    return {this->handle_,addr,size};
 }
 
 #endif

@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/mman.h>
 
 #include <cassert>
 
@@ -94,6 +95,16 @@ sharpen::Uint64 sharpen::PosixFileChannel::GetFileSize() const
 void sharpen::PosixFileChannel::Register(sharpen::EventLoop *loop)
 {
     this->loop_ = loop;
+}
+
+sharpen::FileMemory sharpen::PosixFileChannel::MapMemory(sharpen::Size size,sharpen::Uint64 offset)
+{
+    void *addr = ::mmap64(nullptr,size,PROT_READ|PROT_WRITE,MAP_SHARED,this->handle_,offset);
+    if(addr == MAP_FAILED)
+    {
+        sharpen::ThrowLastError();
+    }
+    return {addr,size};
 }
 
 #endif

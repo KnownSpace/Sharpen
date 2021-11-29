@@ -43,7 +43,7 @@ namespace sharpen
         _PersistenceStorage pm_;
 
         //volatile status
-        //current and commiter
+        //current role and commiter
         sharpen::CompressedPair<_Commiter,sharpen::RaftRole> rolePair_;
         //commit index
         sharpen::Uint64 commitIndex_;
@@ -249,7 +249,7 @@ namespace sharpen
         //return true if we continue
         //this impl is optional
         template<typename _UCommiter = _Commiter,typename _Check = decltype(std::declval<_UCommiter>().InstallSnapshot(std::declval<_PersistenceStorage>(),0,0,0,0,nullptr,false))>
-        bool InstallSnapshot(sharpen::Uint64 leaderTerm,sharpen::Uint64 lastIncludedIndex,sharpen::Uint64 lastIncludedTerm,sharpen::Uint64 offset,const char *data,bool done)
+        bool InstallSnapshot(const _Id &leaderId,sharpen::Uint64 leaderTerm,sharpen::Uint64 lastIncludedIndex,sharpen::Uint64 lastIncludedTerm,sharpen::Uint64 offset,const char *data,bool done)
         {
             if (this->CurrentTerm() > leaderTerm)
             {
@@ -260,6 +260,7 @@ namespace sharpen
                 this->ConvertFollower();
                 this->SetCurrentTerm(leaderTerm);
             }
+            this->leaderId_.Construct(leaderId);
             this->Commiter().InstallSnapshot(this->PersistenceStorage(),leaderTerm,lastIncludedIndex,lastIncludedTerm,offset,data,done);
             return !done;
         }

@@ -6,6 +6,8 @@
 #include "Noncopyable.hpp"
 #include "IAsyncRandomWritable.hpp"
 #include "IAsyncRandomReadable.hpp"
+#include "FileMemory.hpp"
+#include "SystemMacro.hpp"
 
 namespace sharpen
 {
@@ -15,6 +17,12 @@ namespace sharpen
         using Self = sharpen::IFileChannel;
 
     public:
+
+#ifdef SHARPEN_IS_WIN
+        constexpr static sharpen::Size AllocationGranularity = 64*1024;
+#else
+        constexpr static sharpen::Size AllocationGranularity = 4*1024;
+#endif
         
         IFileChannel() = default;
         
@@ -29,6 +37,13 @@ namespace sharpen
         void ZeroMemoryAsync(sharpen::Future<sharpen::Size> &future,sharpen::Size size,sharpen::Uint64 offset);
 
         sharpen::Size ZeroMemoryAsync(sharpen::Size size,sharpen::Uint64 offset);
+
+        inline sharpen::Size ZeroMemoryAsync(sharpen::Size size)
+        {
+            return this->ZeroMemoryAsync(size,0);
+        }
+
+        virtual sharpen::FileMemory MapMemory(sharpen::Size size,sharpen::Uint64 offset) = 0;
     };
 
     using FileChannelPtr = std::shared_ptr<sharpen::IFileChannel>;

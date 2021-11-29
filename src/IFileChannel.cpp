@@ -90,7 +90,7 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
     default:
         throw std::logic_error("unknow open model");
     }
-    sharpen::FileHandle handle = ::open(filename,accessModel | openModel | O_CLOEXEC);
+    sharpen::FileHandle handle = ::open(filename,accessModel | openModel | O_CLOEXEC,S_IRWXU|S_IRWXG);
     if (handle == -1)
     {
         sharpen::ThrowLastError();

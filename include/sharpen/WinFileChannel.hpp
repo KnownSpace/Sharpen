@@ -8,6 +8,8 @@
 
 #define SHARPEN_HAS_WINFILE
 
+#include <mutex>
+
 #include "IFileChannel.hpp"
 #include "AwaitableFuture.hpp"
 #include "IocpSelector.hpp"
@@ -23,7 +25,17 @@ namespace sharpen
         
         static void InitOverlapped(OVERLAPPED &ol,sharpen::Uint64 offset);
 
+        static void Closer(sharpen::FileHandle file,sharpen::FileHandle mapping) noexcept;
+
         void InitOverlappedStruct(sharpen::IocpOverlappedStruct &event,sharpen::Uint64 offset);
+
+        void DoInitFileMapping();
+
+        void InitFileMapping();
+
+        std::once_flag mappingFlag_;
+
+        sharpen::FileHandle mappingHandle_;
 
     public:
 
@@ -42,6 +54,8 @@ namespace sharpen
         virtual void OnEvent(sharpen::IoEvent *event) override;
 
         virtual sharpen::Uint64 GetFileSize() const override;
+
+        virtual sharpen::FileMemory MapMemory(sharpen::Size size,sharpen::Uint64 offset) override;
     };
 }
 

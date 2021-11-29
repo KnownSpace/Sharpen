@@ -36,6 +36,8 @@ namespace sharpen
         virtual void Register(sharpen::EventLoop *loop) override;
 
         virtual sharpen::Uint64 GetFileSize() const override;
+
+        virtual sharpen::FileMemory MapMemory(sharpen::Size size,sharpen::Uint64 offset) override;
     };
     
 }
