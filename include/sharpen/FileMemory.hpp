@@ -22,7 +22,7 @@ namespace sharpen
     public:
 
 #ifdef SHARPEN_IS_WIN
-        FileMemory(sharpen::FileHandle file,void *address,sharpen::Size size);
+        FileMemory(sharpen::FileHandle file,void *address,sharpen::Size size) noexcept;
 #else
         FileMemory(void *address,sharpen::Size size) noexcept;
 #endif

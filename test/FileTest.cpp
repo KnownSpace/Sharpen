@@ -53,9 +53,9 @@ void Test()
     std::printf("map file test\n");
     channel = sharpen::MakeFileChannel("./buf.log", sharpen::FileAccessModel::All, sharpen::FileOpenModel::CreateNew);
     channel->Register(engine);
-    channel->ZeroMemoryAsync(64 * 1024, 0);
+    channel->ZeroMemoryAsync(64*1024, 0);
     {
-        auto mem = channel->MapMemory(64 * 1024, 0);
+        auto mem = channel->MapMemory(12, 0);
         std::memcpy(mem.Get(), "Hello World", 11);
         mem.Flush();
         channel->Close();
