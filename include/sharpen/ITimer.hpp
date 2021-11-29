@@ -18,7 +18,7 @@ namespace sharpen
     {
     private:
         using Self = sharpen::ITimer;
-        using WaitFuture = sharpen::Future<void>;
+        using WaitFuture = sharpen::Future<bool>;
 
     public:
         ITimer() = default;
@@ -42,7 +42,7 @@ namespace sharpen
         template<typename _Rep,typename _Period>
         void Await(const std::chrono::duration<_Rep,_Period> &time)
         {
-            sharpen::AwaitableFuture<void> future;
+            sharpen::AwaitableFuture<bool> future;
             this->WaitAsync(future,time);
             future.Await();
         }

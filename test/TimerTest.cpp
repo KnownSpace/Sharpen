@@ -26,7 +26,7 @@ void TimeWheelTest()
         });
         wheel.RunAsync();
         std::printf("test cancel\n");
-        sharpen::AwaitableFuture<void> future;
+        sharpen::AwaitableFuture<bool> future;
         sharpen::StopWatcher sw;
         sw.Begin();
         timer->WaitAsync(future,std::chrono::seconds(3));

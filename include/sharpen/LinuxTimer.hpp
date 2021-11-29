@@ -23,11 +23,8 @@ namespace sharpen
     private:
         using Mybase = sharpen::IChannel;
         using MyTimerBase = sharpen::ITimer;
-        using Callback = std::function<void()>;
 
-        Callback cb_;
-
-        static void CompleteFuture(sharpen::Future<void> *future);
+        sharpen::Future<bool> *future_;
     public:
         LinuxTimer();
 
@@ -35,7 +32,7 @@ namespace sharpen
 
         virtual void OnEvent(sharpen::IoEvent *event) override;
 
-        virtual void WaitAsync(sharpen::Future<void> &future,sharpen::Uint64 waitMs);
+        virtual void WaitAsync(sharpen::Future<bool> &future,sharpen::Uint64 waitMs);
 
         virtual void Cancel() override;
     };

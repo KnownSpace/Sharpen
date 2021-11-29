@@ -172,13 +172,25 @@ namespace sharpen
                     }
                     this->PersistenceStorage().EraseLogAfter(preLogIndex);
                 }
+                else
+                {
+                    return false;
+                }
+            }
+            else if(preLogIndex != 0)
+            {
+                return false;
             }
             for (auto ite = begin; ite != end; ++ite)
             {
-                this->PersistenceStorage().PushLog(*begin);
+                if(ite->GetIndex() > this->commitIndex_)
+                {
+                    this->PersistenceStorage().PushLog(*begin);
+                }
             }
             //update commit index
             //prepare to commit
+            sharpen::Uint64 oldCommit = this->commitIndex_;
             if(leaderCommit > this->commitIndex_)
             {
                 this->commitIndex_ = leaderCommit;
@@ -186,7 +198,10 @@ namespace sharpen
             //commit logs
             while (begin != end)
             {
-                this->Commiter().Commit(*begin);
+                if(begin->GetIndex() > oldCommit)
+                {
+                    this->Commiter().Commit(*begin);
+                }
                 ++begin;
             }
             return true;

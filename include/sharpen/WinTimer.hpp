@@ -19,7 +19,7 @@ namespace sharpen
           using Mybase = sharpen::ITimer;
           
           Myhandle handle_;
-          sharpen::Future<void> *future_;
+          sharpen::Future<bool> *future_;
 
           static void WINAPI CompleteFuture(void *arg, DWORD, DWORD);
      public:
@@ -27,7 +27,7 @@ namespace sharpen
 
           virtual ~WinTimer() noexcept;
 
-          virtual void WaitAsync(sharpen::Future<void> &future, sharpen::Uint64 waitMs) override;
+          virtual void WaitAsync(sharpen::Future<bool> &future, sharpen::Uint64 waitMs) override;
 
           virtual void Cancel() override;
      };

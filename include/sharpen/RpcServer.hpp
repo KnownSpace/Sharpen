@@ -73,7 +73,7 @@ namespace sharpen
             return this->pair_.Second();
         }
 
-        static void TimeoutCallback(sharpen::Future<void> &,sharpen::Future<sharpen::Size> *future,Context *ctx)
+        static void TimeoutCallback(sharpen::Future<bool> &,sharpen::Future<sharpen::Size> *future,Context *ctx)
         {
             if(future->IsPending())
             {
@@ -86,7 +86,7 @@ namespace sharpen
             Context ctx(std::move(channel),this->encoderBuilder_ ? this->encoderBuilder_():_Encoder{},this->decoderBuilder_? this->decoderBuilder_():_Decoder{});
             sharpen::ByteBuffer buf{4096};
             sharpen::TimerPtr timer;
-            sharpen::AwaitableFuture<void> timeout;
+            sharpen::AwaitableFuture<bool> timeout;
             sharpen::AwaitableFuture<sharpen::Size> future;
             if(this->timeout_.HasValue())
             {
@@ -110,7 +110,7 @@ namespace sharpen
                             timeout.Reset();
                             //begin request
                             timer->WaitAsync(timeout,this->timeout_.Get());
-                            using FnPtr = void(*)(sharpen::Future<void>&,sharpen::Future<sharpen::Size>*,Context*);
+                            using FnPtr = void(*)(sharpen::Future<bool>&,sharpen::Future<sharpen::Size>*,Context*);
                             timeout.SetCallback(std::bind(static_cast<FnPtr>(&TimeoutCallback),std::placeholders::_1,&future,&ctx));
                             ctx.Connection()->ReadAsync(buf,0,future);
                             try

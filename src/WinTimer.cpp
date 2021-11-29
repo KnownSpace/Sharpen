@@ -29,21 +29,21 @@ sharpen::WinTimer::~WinTimer() noexcept
 void WINAPI sharpen::WinTimer::CompleteFuture(void *arg,DWORD,DWORD)
 {
     assert(arg);
-    sharpen::Future<void> *future = nullptr;
+    sharpen::Future<bool> *future = nullptr;
     sharpen::WinTimer *thiz = reinterpret_cast<sharpen::WinTimer*>(arg);
     std::swap(future,thiz->future_);
     if(future)
     {
-        future->Complete();
+        future->Complete(true);
     }
 }
 
-void sharpen::WinTimer::WaitAsync(sharpen::Future<void> &future,sharpen::Uint64 waitMs)
+void sharpen::WinTimer::WaitAsync(sharpen::Future<bool> &future,sharpen::Uint64 waitMs)
 {
     assert(this->handle_ != INVALID_HANDLE_VALUE);
     if(waitMs == 0)
     {
-        future.Complete();
+        future.Complete(true);
         return;
     }
     LARGE_INTEGER li;
@@ -60,11 +60,11 @@ void sharpen::WinTimer::Cancel()
 {
     assert(this->handle_ != INVALID_HANDLE_VALUE);
     ::CancelWaitableTimer(this->handle_);
-    sharpen::Future<void> *future = nullptr;
+    sharpen::Future<bool> *future = nullptr;
     std::swap(future,this->future_);
     if(future)
     {
-        future->Complete();
+        future->Complete(false);
     }
 }
 

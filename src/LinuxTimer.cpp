@@ -10,7 +10,7 @@
 sharpen::LinuxTimer::LinuxTimer()
     :MyTimerBase()
     ,Mybase()
-    ,cb_()
+    ,future_(nullptr)
 {
     this->handle_ = ::timerfd_create(CLOCK_REALTIME,TFD_NONBLOCK | TFD_CLOEXEC);
     if(this->handle_ == -1)
@@ -19,16 +19,15 @@ sharpen::LinuxTimer::LinuxTimer()
     }
 }
 
-void sharpen::LinuxTimer::WaitAsync(sharpen::Future<void> &future,sharpen::Uint64 waitMs)
+void sharpen::LinuxTimer::WaitAsync(sharpen::Future<bool> &future,sharpen::Uint64 waitMs)
 {
     assert(this->handle_ != -1);
-    using FnPtr = void(*)(sharpen::Future<void>*);
     if(waitMs == 0)
     {
-        future.Complete();
+        future.Complete(true);
         return;
     }
-    this->cb_ = std::bind(static_cast<FnPtr>(&sharpen::LinuxTimer::CompleteFuture),&future);
+    this->future_ = &future;
     itimerspec time;
     std::memset(&(time.it_interval),0,sizeof(time.it_interval));
     time.it_value.tv_sec = waitMs / 1000;
@@ -46,18 +45,12 @@ void sharpen::LinuxTimer::OnEvent(sharpen::IoEvent *event)
     {
         return;
     }
-    Callback cb;
-    std::swap(cb,this->cb_);
-    if(cb)
+    sharpen::Future<bool> *future(nullptr);
+    std::swap(future,this->future_);
+    if(future)
     {
-        cb();
+        future->Complete(true);
     }
-}
-
-void sharpen::LinuxTimer::CompleteFuture(sharpen::Future<void> *future)
-{
-    assert(future);
-    future->Complete();
 }
 
 void sharpen::LinuxTimer::Cancel()
@@ -67,11 +60,11 @@ void sharpen::LinuxTimer::Cancel()
     std::memset(&(time.it_interval),0,sizeof(time.it_interval));
     std::memset(&(time.it_value),0,sizeof(time.it_value));
     ::timerfd_settime(this->handle_,0,&time,nullptr);
-    Callback cb;
-    std::swap(cb,this->cb_);
-    if(cb)
+    sharpen::Future<bool> *future(nullptr);
+    std::swap(future,this->future_);
+    if(future)
     {
-        cb();
+        future->Complete(false);
     }
 }
 
