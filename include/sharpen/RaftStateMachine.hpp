@@ -209,6 +209,7 @@ namespace sharpen
 
         sharpen::Uint64 RaiseElection()
         {
+            this->ResetLeader();
             this->votes_ = 0;
             this->SetRole(sharpen::RaftRole::Candidate);
             this->PersistenceStorage().SetVotedFor(this->selfId_);
@@ -232,7 +233,7 @@ namespace sharpen
 
         bool RequestVote(sharpen::Uint64 candidateTerm,const _Id &candidateId,sharpen::Uint64 lastLogIndex,sharpen::Uint64 lastLogTerm)
         {
-            if(this->CurrentTerm() > candidateTerm)
+            if(this->CurrentTerm() > candidateTerm || this->KnowLeader())
             {
                 return false;
             }
