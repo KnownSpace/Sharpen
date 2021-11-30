@@ -51,7 +51,7 @@ namespace sharpen
     }
 
 #ifdef SHARPEN_IS_WIN
-    constexpr sharpen::ErrorCode ErrorCancel = ERROR_CANCELLED;
+    constexpr sharpen::ErrorCode ErrorCancel = ERROR_OPERATION_ABORTED;
     constexpr sharpen::ErrorCode ErrorConnectionAborted = ERROR_CONNECTION_ABORTED;
 #else
     constexpr sharpen::ErrorCode ErrorCancel = ECANCELED;

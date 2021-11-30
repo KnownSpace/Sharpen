@@ -39,7 +39,6 @@ namespace sharpen
             _ProposerIterator iterator_;
             sharpen::Future<bool> timeoutFuture_;
             sharpen::TimerPtr timer_;
-            std::atomic_flag flag_;
         };
 
         template<typename _T,typename ..._Args>
@@ -106,11 +105,8 @@ namespace sharpen
                 }
                 if(finishCounter == 0)
                 {
-                    if(!this->waiterPtr_->flag_.test_and_set())
-                    {
-                        this->waiterPtr_->timer_->Cancel();
-                        CompleteFuture(this->waiterPtr_->finish_);
-                    }
+                    this->waiterPtr_->timer_->Cancel();
+                    CompleteFuture(this->waiterPtr_->finish_);
                 }
             }
         };
@@ -122,18 +118,17 @@ namespace sharpen
 
             void operator()(sharpen::Future<bool> &future)
             {
-                if(future.Get() && !this->waiter_->flag_.test_and_set())
+                if(future.Get())
                 {
                     _Iterator begin = this->waiter_->iterator_;
                     for (sharpen::Size i = 0; i < this->waiter_->futures_.size(); i++)
                     {
+                        _Iterator copy = begin++;
                         if(this->waiter_->futures_[i].IsPending())
                         {
-                            begin->Cancel();
+                            copy->Cancel();
                         }
-                        ++begin;
                     }
-                    CompleteFuture(this->waiter_->finish_);
                 }
             }
         };
@@ -252,7 +247,7 @@ namespace sharpen
         template<typename _MapIterator,typename _Proposal,typename _Rep,typename _Period,typename _Check = sharpen::EnableIf<sharpen::IsCancelableQuorumProposerMapIterator<_MapIterator,_Proposal>::Value>>
         static void InternalTimeLimitedProposeAsync(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,_MapIterator begin,_MapIterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> *finish,int)
         {
-            using WaiterType = TimeLimitedWaiter<_Iterator>;
+            using WaiterType = TimeLimitedWaiter<_MapIterator>;
             //init waiter
             std::shared_ptr<WaiterType> waiterPtr = std::make_shared<WaiterType>();
             sharpen::Size size = sharpen::GetRangeSize(begin,end);

@@ -36,26 +36,26 @@ namespace sharpen
     private:
         struct Waiter
         {
-            sharpen::Option<sharpen::Future<sharpen::Size>> sender_;
-            sharpen::Future<_Response> *invoker_;
+            sharpen::Future<_Response> *invokeFuture_;
             sharpen::ByteBuffer buf_;
+            sharpen::Future<sharpen::Size> writeFuture_;
         };
 
-        using WaiterList = std::list<Waiter>;
-        using Reader = sharpen::Future<sharpen::Size>;
+        using WaiterList = std::list<sharpen::Future<_Response>*>;
         using Lock = sharpen::SpinLock;
         using Pair = sharpen::CompressedPair<_Encoder,_Decoder>;
         using Self = sharpen::InternalRpcClient<_Request,_Encoder,_Response,_Decoder,void>;
 
         Lock lock_;
-        bool started_;
+        bool startReaded_;
         Pair pair_;
-        Reader reader_;
+        sharpen::Future<sharpen::Size> readFuture_;
         sharpen::NetStreamChannelPtr conn_;
         sharpen::ByteBuffer readBuf_;
         WaiterList waiters_;
         _Response res_;
         sharpen::Size lastRead_;
+        std::shared_ptr<bool> token_;
 
         _Decoder &Decoder() noexcept
         {
@@ -77,137 +77,128 @@ namespace sharpen
             return this->pair_.First();
         }
 
-        void StartReceive()
+        void ReturnResponse()
         {
-            this->reader_.Reset();
-            this->Decoder().Bind(this->res_);
-            if (this->lastRead_ && this->readBuf_.GetMark() != 0)
+            if(this->Decoder().IsCompleted())
             {
-                HandleData(this->lastRead_);
-                HandleCallback();
-                return;
+                this->Decoder().SetCompleted(false);
+                sharpen::Future<_Response> *waiter;
+                _Response res;
+                {
+                    std::unique_lock<Lock> lock(this->lock_);
+                    if(this->waiters_.empty())
+                    {
+                        return;
+                    }
+                    waiter = std::move(this->waiters_.front());
+                    this->waiters_.pop_front();
+                    std::swap(res,this->res_);
+                }
+                if(waiter)
+                {
+                    waiter->Complete(std::move(res));
+                }
             }
-            this->reader_.SetCallback(std::bind(&Self::ReceiveCallback,this,std::placeholders::_1));
-            this->conn_->ReadAsync(this->readBuf_,0,this->reader_);
         }
 
-        void FailReceive(std::exception_ptr err)
+        void DealWithData()
+        {
+            if(this->lastRead_ != 0)
+            {
+                sharpen::Size size = this->Decoder().Decode(this->readBuf_.Data() + this->readBuf_.GetMark(),this->lastRead_ - this->readBuf_.GetMark());
+                this->readBuf_.Mark(this->readBuf_.GetMark() + size);
+                if(this->readBuf_.GetMark() == this->lastRead_)
+                {
+                    this->readBuf_.Mark(0);
+                    this->lastRead_ = 0;
+                }
+                this->ReturnResponse();
+            }
+        }
+
+        void DealWithError(std::exception_ptr err)
         {
             WaiterList waiters;
             {
                 std::unique_lock<Lock> lock(this->lock_);
-                auto begin = this->waiters_.begin(),end = this->waiters_.end();
-                for (;begin != end;++begin)
-                {
-                    if(begin->sender_.Get().IsPending())
-                    {
-                        break;
-                    }
-                }
-                waiters.assign(std::make_move_iterator(begin),std::make_move_iterator(end));
-                this->waiters_.erase(begin,end);
-                this->started_ = false;
+                waiters.assign(std::make_move_iterator(this->waiters_.begin()),std::make_move_iterator(this->waiters_.end()));
+                this->waiters_.erase(this->waiters_.begin(),this->waiters_.end());
             }
-            for (auto begin = waiters.begin(),end = waiters.end(); begin != end; begin++)
+            for (auto begin = waiters.begin(),end = waiters.end(); begin != end; ++begin)
             {
-                begin->invoker_->Fail(err);   
+                if(*begin)
+                {
+                    (*begin)->Fail(err);
+                }   
             }
         }
 
-        void HandleCallback()
+        void ReadCallback(std::shared_ptr<bool> token,sharpen::Future<sharpen::Size> &readFuture)
         {
-            bool complete = this->Decoder().IsCompleted();
-            this->Decoder().SetCompleted(false);
-            Waiter last;
-            last.invoker_ = nullptr;
-            _Response res;
-            if(complete)
+            if(!*token)
             {
-                res = std::move(this->res_);
-                //notify future
-                std::unique_lock<Lock> lock(this->lock_);
-                assert(!this->waiters_.empty());
-                last = std::move(this->waiters_.front());
-                this->waiters_.pop_front();
-                if(!this->waiters_.empty())
-                {
-                    //continue request
-                    this->StartReceive();
-                }
-                else
-                {
-                    this->started_ = false;
-                }
-            }
-            if(last.invoker_)
-            {
-                last.invoker_->Complete(std::move(res));
-            }
-        }
-
-        void HandleData(sharpen::Size size)
-        {
-            size -= this->readBuf_.GetMark();
-            //try decode message
-            sharpen::Size dSize = this->Decoder().Decode(this->readBuf_.Data() + this->readBuf_.GetMark(),size);
-            //more than a request
-            if(dSize != size)
-            {
-                //move mark
-                this->readBuf_.Mark(dSize + this->readBuf_.GetMark());
-            }
-            else
-            {
-                //set mark to 0
-                this->readBuf_.Mark(0);
-            }
-        }
-
-        void ReceiveCallback(sharpen::Future<sharpen::Size> &future)
-        {
-            try
-            {
-                this->lastRead_ = future.Get();
-                if(this->lastRead_ == 0)
-                {
-                    sharpen::ThrowSystemError(sharpen::ErrorConnectionAborted);
-                }
-                this->HandleData(this->lastRead_);
-            }
-            catch(const std::exception &)
-            {
-                this->FailReceive(std::current_exception());
                 return;
             }
-            this->HandleCallback();
+            if(readFuture.IsError())
+            {
+                this->DealWithError(readFuture.Error());
+                return;
+            }
+            sharpen::Size size = readFuture.Get();
+            if(size == 0)
+            {
+                //disconnect
+                this->DealWithError(sharpen::MakeSystemErrorPtr(sharpen::ErrorConnectionAborted));
+                return;
+            }
+            this->lastRead_ = size;
+            this->DealWithData();
+            this->StartRead();
         }
 
-        void SendCallback(sharpen::Future<_Response> &invoker,sharpen::Future<sharpen::Size> &future)
+        void StartRead()
         {
-            try
+            bool need{false};
             {
-                future.Get();
+                std::unique_lock<Lock> lock(this->lock_);
+                need = !this->waiters_.empty();
+                if(!need)
+                {
+                    this->startReaded_ = false;
+                    return;
+                }
+                this->Decoder().Bind(this->res_);
             }
-            catch(const std::exception&)
+            if(need)
             {
-                invoker.Fail(std::current_exception());
+                this->readFuture_.Reset();
+                this->readFuture_.SetCallback(std::bind(&Self::ReadCallback,this,this->token_,std::placeholders::_1));
+                this->conn_->ReadAsync(this->readBuf_,0,this->readFuture_);
+            }
+        }
+
+        void WriteRequestCallback(Waiter *waiter,sharpen::Future<sharpen::Size> &writeFuture)
+        {
+            std::unique_ptr<Waiter> wp{waiter};
+            if(writeFuture.IsError())
+            {
+                if(wp->invokeFuture_)
+                {
+                    wp->invokeFuture_->Fail(std::move(writeFuture.Error()));
+                }
                 return;
             }
             bool started{true};
             {
                 std::unique_lock<Lock> lock(this->lock_);
-                std::swap(started,this->started_);
+                this->waiters_.push_back(std::move(wp->invokeFuture_));
+                std::swap(started,this->startReaded_);
             }
             if(!started)
             {
-                this->StartReceive();
+                this->DealWithData();
+                this->StartRead();
             }
-        }
-
-        void DoCancel(sharpen::ErrorCode err) noexcept
-        {
-            this->conn_->Cancel();
-            this->FailReceive(sharpen::MakeSystemErrorPtr(err));
         }
     public:
         explicit InternalRpcClient(sharpen::NetStreamChannelPtr conn)
@@ -220,53 +211,47 @@ namespace sharpen
 
         InternalRpcClient(sharpen::NetStreamChannelPtr conn,_Encoder encoder,_Decoder decoder)
             :lock_()
-            ,started_(false)
+            ,startReaded_(false)
             ,pair_()
-            ,reader_()
+            ,readFuture_()
             ,conn_(std::move(conn))
             ,readBuf_(4096)
             ,waiters_()
             ,res_()
             ,lastRead_(0)
+            ,token_(std::make_shared<bool>(true))
         {
             this->pair_.First() = std::move(encoder);
             this->pair_.Second() = std::move(decoder);
         }
 
-        virtual ~InternalRpcClient() noexcept
-        {
-            this->conn_->Close();
-            this->DoCancel(sharpen::ErrorConnectionAborted);
-        }
+        virtual ~InternalRpcClient() noexcept = default;
 
         //send a package to rpc server
         //and receive a return package
         void InvokeAsync(sharpen::Future<_Response> &future,const _Request &package)
         {
-            Waiter waiter;
-            waiter.invoker_ = &future;
-            waiter.sender_.Construct();
-            Waiter *waiterPtr = nullptr;
+            Waiter *waiter = new Waiter{};
+            waiter->invokeFuture_ = &future;
+            if(!waiter)
             {
-                std::unique_lock<Lock> lock(this->lock_);
-                this->waiters_.push_back(std::move(waiter));
-                waiterPtr = &this->waiters_.back();
+                throw std::bad_alloc();
             }
-            this->Encoder().EncodeTo(package,waiterPtr->buf_);
-            waiterPtr->sender_.Get().SetCallback(std::bind(&Self::SendCallback,this,std::ref(future),std::placeholders::_1));
-            this->conn_->WriteAsync(waiterPtr->buf_,0,waiterPtr->sender_.Get());
+            this->Encoder().EncodeTo(package,waiter->buf_);
+            waiter->writeFuture_.SetCallback(std::bind(&Self::WriteRequestCallback,this,waiter,std::placeholders::_1));
+            this->conn_->WriteAsync(waiter->buf_,0,waiter->writeFuture_);
         }
 
         _Response InvokeAsync(const _Request &package)
         {
             sharpen::AwaitableFuture<_Response> invoker;
             this->InvokeAsync(invoker,package);
-            return invoker.Await();
+            return std::move(invoker.Await());
         }
 
         void Cancel() noexcept
         {
-            this->DoCancel(sharpen::ErrorCancel);
+            this->conn_->Cancel();
         }
     };
 

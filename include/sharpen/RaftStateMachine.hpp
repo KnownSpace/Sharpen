@@ -226,6 +226,7 @@ namespace sharpen
             if (this->GetRole() == sharpen::RaftRole::Candidate && this->votes_ >= this->Members().size()/2)
             {
                 this->SetRole(sharpen::RaftRole::Leader);
+                this->leaderId_.Construct(this->selfId_);
                 return true;
             }
             return false;

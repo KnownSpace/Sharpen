@@ -226,15 +226,25 @@ public:
         TestStateMachine *sm = this->sm_;
         sharpen::Launch([&stack,&future,client,sm]()
         {
-            auto &&res = client->InvokeAsync(stack);
-            if(*res.Top().Data<char>() == 1)
+            try
             {
-                sm->GetVote(1);
-                future.Complete(true);
-                return;
+                auto &&res = client->InvokeAsync(stack);
+                if(*res.Top().Data<char>() == 1)
+                {
+                    sm->GetVote(1);
+                    future.Complete(true);
+                    return;
+                }
             }
+            catch(...){}
             future.Complete(false);
         });
+    }
+
+    void Cancel()
+    {
+        std::printf("cancel\n");
+        this->client_->Cancel();
     }
 };
 
@@ -269,14 +279,25 @@ public:
         TestStateMachine *sm = this->sm_;
         sharpen::Launch([&stack,&future,client,sm]()
         {
-            auto &&res = client->InvokeAsync(stack);
-            if(*res.Top().Data<char>() == 1)
+            try
             {
-                future.Complete(true);
-                return;
+                auto &&res = client->InvokeAsync(stack);
+                if(*res.Top().Data<char>() == 1)
+                {
+                    future.Complete(true);
+                    return;
+                }
             }
+            catch(...)
+            {}
             future.Complete(false);
         });
+    }
+
+    void Cancel()
+    {
+        std::printf("cancel\n");
+        this->client_->Cancel();
     }
 };
 
@@ -343,17 +364,18 @@ void Test(sharpen::UintPort n,sharpen::Size size,sharpen::AsyncBarrier &barrier,
     {
         //election
         bool flag = false;
+        sharpen::TimerPtr eTimer = sharpen::MakeTimer(sharpen::EventEngine::GetEngine());
         while(!sm.KnowLeader())
         {
             if (!flag)
             {
                 flag = true;
-                sharpen::Delay(std::chrono::seconds(12));
+                sharpen::Delay(std::chrono::seconds(5));
             }
             else
             {
                 std::mt19937 random(std::clock() + n);
-                std::uniform_int_distribution<int> uni(12,25);
+                std::uniform_int_distribution<int> uni(5,10);
                 sharpen::Delay(std::chrono::seconds(uni(random)));
             }
             if(sm.KnowLeader())
@@ -388,8 +410,10 @@ void Test(sharpen::UintPort n,sharpen::Size size,sharpen::AsyncBarrier &barrier,
             req.Push(name,name + sizeof(name) - 1);
             sharpen::AwaitableFuture<bool> continuation;
             sharpen::AwaitableFuture<void> finish;
-            sharpen::Quorum::ProposeAsync(proposers.begin(),proposers.end(),req,continuation,finish);
+            //sharpen::Quorum::ProposeAsync(proposers.begin(),proposers.end(),req,continuation,finish);
+            sharpen::Quorum::TimeLimitedProposeAsync(eTimer,std::chrono::seconds(1),proposers.begin(),proposers.end(),req,continuation,finish);
             bool success = continuation.Await();
+            std::printf("continue\n");
             finish.Await();
             if(!sm.StopElection())
             {
@@ -427,14 +451,15 @@ void Test(sharpen::UintPort n,sharpen::Size size,sharpen::AsyncBarrier &barrier,
             req.Push(name,name + sizeof(name) - 1);
             sharpen::AwaitableFuture<bool> continuation;
             sharpen::AwaitableFuture<void> finish;
-            sharpen::Quorum::ProposeAsync(logers.begin(),logers.end(),req,continuation,finish);
+            // sharpen::Quorum::ProposeAsync(logers.begin(),logers.end(),req,continuation,finish);
+            sharpen::Quorum::TimeLimitedProposeAsync(timer,std::chrono::milliseconds(100),logers.begin(),logers.end(),req,continuation,finish);
             bool success = continuation.Await();
             if(!success)
             {
                 std::printf("%u keep alive fail\n",8080 + n);
             }
             finish.Await();
-            timer->Await(std::chrono::seconds(10));
+            timer->Await(std::chrono::seconds(1));
         }
     });
     server.RunAsync();

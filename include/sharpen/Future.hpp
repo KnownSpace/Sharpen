@@ -169,19 +169,24 @@ namespace sharpen
             std::rethrow_exception(this->error_);
         }
 
-        bool CompletedOrError() const
+        bool CompletedOrError() const noexcept
         {
             return this->state_ != sharpen::FutureState::Pending;
         }
 
-        bool IsPending() const
+        bool IsPending() const noexcept
         {
             return this->state_ == sharpen::FutureState::Pending;
         }
 
-        bool IsError() const
+        bool IsError() const noexcept
         {
             return this->state_ == sharpen::FutureState::Error;
+        }
+
+        bool IsCompleted() const noexcept
+        {
+            return this->state_ == sharpen::FutureState::Completed;
         }
 
         void SetCallback(Callback &&callback)
@@ -210,6 +215,11 @@ namespace sharpen
         {
             std::unique_lock<sharpen::SpinLock> lock(*this->lock_);
             this->ResetWithoutLock();
+        }
+
+        std::exception_ptr Error() const
+        {
+            return this->error_;
         }
         
     protected:
@@ -365,14 +375,24 @@ namespace sharpen
             std::rethrow_exception(this->error_);
         }
 
-        bool CompletedOrError() const
+        bool CompletedOrError() const noexcept
         {
             return this->state_ != sharpen::FutureState::Pending;
         }
 
-        bool IsPending() const
+        bool IsPending() const noexcept
         {
             return this->state_ == sharpen::FutureState::Pending;
+        }
+
+        bool IsError() const noexcept
+        {
+            return this->state_ == sharpen::FutureState::Error;
+        }
+
+        bool IsCompleted() const noexcept
+        {
+            return this->state_ == sharpen::FutureState::Completed;
         }
 
         void SetCallback(Callback &&callback)
@@ -403,9 +423,9 @@ namespace sharpen
             this->ResetWithoutLock();
         }
 
-        bool IsError() const
+        std::exception_ptr Error() const
         {
-            return this->state_ == sharpen::FutureState::Error;
+            return this->error_;
         }
     protected:
         virtual void ResetWithoutLock()
