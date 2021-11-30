@@ -103,6 +103,34 @@ public:
     }
 };
 
+class CancelableProposer
+{
+private:
+    using Self = CancelableProposer;
+
+    sharpen::Future<bool> *future_;
+public:
+    CancelableProposer() noexcept = default;
+
+    CancelableProposer(Self &&other) noexcept = default;
+
+    ~CancelableProposer() noexcept = default;
+
+    Self &operator=(Self &&other) noexcept = default;
+
+    void ProposeAsync(int propose,sharpen::Future<bool> &future)
+    {
+        this->future_ = &future;
+        std::printf("proposing %d but never finish,please cancel me\n",propose);
+    }
+
+    void Cancel()
+    {
+        std::printf("cancel\n");
+        this->future_->Complete(false);
+    }
+};
+
 void StatelessQuorumTest()
 {
     std::printf("stateless quorum\n");
@@ -197,12 +225,32 @@ void RandomQuorumTest()
     assert(status == (success >= 5));
 }
 
+void CancelableQuorumTest()
+{
+    std::printf("time limited quorum\n");
+    sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::EventEngine::GetEngine());
+    std::vector<CancelableProposer> proposers;
+    for (size_t i = 0; i < 10; i++)
+    {
+        proposers.emplace_back();
+    }
+    sharpen::AwaitableFuture<bool> continuation;
+    sharpen::AwaitableFuture<void> finish;
+    sharpen::Quorum::TimeLimitedProposeAsync(timer,std::chrono::seconds(1),proposers.begin(),proposers.end(),1,continuation,finish);
+    bool status = continuation.Await();
+    std::printf("continue\n");
+    std::printf("status is %d\n",status);
+    finish.Await();
+    std::printf("finish\n");
+}
+
 void QuorumTest()
 {
     StatelessQuorumTest();
     StatefulQuorumTest();
     ErrorQuorumTest();
     RandomQuorumTest();
+    CancelableQuorumTest();
 }
 
 int main(int argc, char const *argv[])
