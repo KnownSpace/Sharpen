@@ -502,7 +502,7 @@ void sharpen::PosixNetStreamChannel::DoCancel(sharpen::ErrorCode err) noexcept
 
 void sharpen::PosixNetStreamChannel::Cancel() noexcept
 {
-    this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::DoCancel,this,ECANCELED));
+    this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixNetStreamChannel::DoCancel,this,ECANCELED));
 }
 
 #endif

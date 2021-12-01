@@ -123,6 +123,7 @@ namespace sharpen
                 std::unique_lock<Lock> lock(this->lock_);
                 waiters.assign(std::make_move_iterator(this->waiters_.begin()),std::make_move_iterator(this->waiters_.end()));
                 this->waiters_.erase(this->waiters_.begin(),this->waiters_.end());
+                this->startReaded_ = false;
             }
             for (auto begin = waiters.begin(),end = waiters.end(); begin != end; ++begin)
             {

@@ -121,13 +121,24 @@ namespace sharpen
                 if(future.Get())
                 {
                     _Iterator begin = this->waiter_->iterator_;
+                    _Iterator end = sharpen::IteratorForward(begin,this->waiter_->futures_.size());
+                    _Iterator ite = end;
                     for (sharpen::Size i = 0; i < this->waiter_->futures_.size(); i++)
                     {
-                        _Iterator copy = begin++;
                         if(this->waiter_->futures_[i].IsPending())
                         {
-                            copy->Cancel();
+                            _Iterator copy = begin;
+                            std::swap(copy,ite);
+                            if(copy != end)
+                            {
+                                copy->Cancel();
+                            }
                         }
+                        ++begin;
+                    }
+                    if(ite != end)
+                    {
+                        ite->Cancel();
                     }
                 }
             }
@@ -143,15 +154,25 @@ namespace sharpen
                 if(future.Get() && !this->waiter_->flag_.test_and_set())
                 {
                     _Iterator begin = waiter_->iterator_;
+                    _Iterator end = sharpen::IteratorForward(begin,this->waiter_->futures_.size());
+                    _Iterator ite = end;
                     for (sharpen::Size i = 0; i < waiter_->futures_.size(); i++)
                     {
                         if(waiter_->futures_[i].IsPending())
                         {
-                            begin->second.Cancel();
+                            _Iterator copy = begin;
+                            std::swap(copy,ite);
+                            if(copy != end)
+                            {
+                                copy->second.Cancel();
+                            }
                         }
                         ++begin;
                     }
-                    CompleteFuture(this->waiter_->finish_);
+                    if(ite != end)
+                    {
+                        ite->second.Cancel();
+                    }
                 }
             }
         };

@@ -5,6 +5,9 @@ sharpen::TcpAcceptor::TcpAcceptor(sharpen::AddressFamily af,const sharpen::IEndP
 {
     this->listener_ = sharpen::MakeTcpStreamChannel(af);
     this->listener_->Register(engine);
+#ifdef SHARPEN_IS_NIX
+    this->listener_->SetReuseAddress(true);
+#endif
     this->listener_->Bind(endpoint);
     this->listener_->Listen(65535);
 }

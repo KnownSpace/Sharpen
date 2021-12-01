@@ -296,7 +296,7 @@ public:
 
     void Cancel()
     {
-        std::printf("cancel\n");
+        std::printf("cancel log\n");
         this->client_->Cancel();
     }
 };
@@ -452,13 +452,16 @@ void Test(sharpen::UintPort n,sharpen::Size size,sharpen::AsyncBarrier &barrier,
             sharpen::AwaitableFuture<bool> continuation;
             sharpen::AwaitableFuture<void> finish;
             // sharpen::Quorum::ProposeAsync(logers.begin(),logers.end(),req,continuation,finish);
+            std::printf("logging\n");
             sharpen::Quorum::TimeLimitedProposeAsync(timer,std::chrono::milliseconds(100),logers.begin(),logers.end(),req,continuation,finish);
             bool success = continuation.Await();
+            std::printf("continue log\n");
             if(!success)
             {
                 std::printf("%u keep alive fail\n",8080 + n);
             }
             finish.Await();
+            std::printf("finish log\n");
             timer->Await(std::chrono::seconds(1));
         }
     });

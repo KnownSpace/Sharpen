@@ -140,6 +140,7 @@ sharpen::Size sharpen::IPosixIoOperator::ComputePendingSize() const
 
 void sharpen::IPosixIoOperator::CancelAllIo(sharpen::ErrorCode err) noexcept
 {
+    this->FillBufferAndCallback();
     Callback *cbs = this->GetFirstCallback();
     sharpen::Size size = this->GetRemainingSize();
     errno = err;
