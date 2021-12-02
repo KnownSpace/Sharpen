@@ -3,8 +3,10 @@
 #define _SHARPEN_ALIGNEDALLOC_HPP
 
 #include <cstring>
+#include <cassert>
 
 #include "TypeDef.hpp"
+#include "IntOps.hpp"
 
 namespace sharpen
 {
@@ -14,6 +16,7 @@ namespace sharpen
 
     inline void *AlignedCalloc(sharpen::Size count,sharpen::Size size,sharpen::Size alignment) noexcept
     {
+        assert(sharpen::CheckOverflow(size,count,sharpen::Multiplier<sharpen::Size>{}));
         void *mem = sharpen::AlignedAlloc(size*count,alignment);
         if(mem != nullptr)
         {
