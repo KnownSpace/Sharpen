@@ -22,7 +22,7 @@ namespace sharpen
     using InternalIsRaftPersistenceStorage = auto(*)()->decltype(std::declval<_PersistenceStorage>().PushLog(std::declval<const _Log&>())
                                                                 ,std::declval<_PersistenceStorage>().SetVotedFor(std::declval<const _Id&>())
                                                                 ,std::declval<_PersistenceStorage>().SetCurrentTerm(0)
-                                                                ,std::declval<sharpen::Uint64&>() = std::declval<_PersistenceStorage>().AddCurrentTerm()
+                                                                ,std::declval<_PersistenceStorage>().AddCurrentTerm()
                                                                 ,std::declval<sharpen::Uint64&>() = std::declval<const _PersistenceStorage&>().GetCurrentTerm()
                                                                 ,std::declval<_Id&>() = std::declval<const _PersistenceStorage&>().GetVotedFor()
                                                                 ,std::declval<bool&>() = std::declval<const _PersistenceStorage&>().IsVotedFor()

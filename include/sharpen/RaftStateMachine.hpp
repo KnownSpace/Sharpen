@@ -146,21 +146,46 @@ namespace sharpen
             return this->rolePair_.First();
         }
 
+        sharpen::Size MemberMajority() const noexcept
+        {
+            return (this->Members().size())/2;
+        }
+
         template<typename _LogIterator,typename _Check = sharpen::EnableIf<sharpen::IsRaftLogIterator<_LogIterator>::Value>>
         bool AppendEntries(_LogIterator begin,_LogIterator end,const _Id &leaderId,sharpen::Uint64 leaderTerm,sharpen::Uint64 preLogIndex,sharpen::Uint64 preLogTerm,sharpen::Uint64 leaderCommit)
         {
+            //if is old leader
+            //or this is leader
             if(leaderTerm < this->CurrentTerm())
             {
                 return false;
             }
+            //update term
             if(this->CurrentTerm() < leaderTerm)
             {
                 this->ConvertFollower();
                 this->SetCurrentTerm(leaderTerm);
             }
+            else if(this->GetRole() == sharpen::RaftRole::Leader)
+            {
+                return false;
+            }
+            //access denied
+            else if(this->KnowLeader())
+            {
+                if(this->LeaderId() != leaderId)
+                {
+                    return false;
+                }
+            }
+            //new leader
+            else
+            {
+                this->leaderId_.Construct(leaderId);
+            }
             //reset voted for
             this->PersistenceStorage().ResetVotedFor();
-            this->leaderId_.Construct(leaderId);
+            //check logs
             if(!this->PersistenceStorage().LogIsEmpty())
             {
                 if(this->PersistenceStorage().ContainLog(preLogIndex))
@@ -181,6 +206,7 @@ namespace sharpen
             {
                 return false;
             }
+            //commit log
             for (auto ite = begin; ite != end; ++ite)
             {
                 if(ite->GetIndex() > this->commitIndex_)
@@ -207,13 +233,18 @@ namespace sharpen
             return true;
         }
 
-        sharpen::Uint64 RaiseElection()
+        void RaiseElection()
         {
+            //reset leader
             this->ResetLeader();
+            //set votes
             this->votes_ = 0;
+            //increase term
+            //and set role to candidate
             this->SetRole(sharpen::RaftRole::Candidate);
+            this->PersistenceStorage().AddCurrentTerm();
+            //vote to self
             this->PersistenceStorage().SetVotedFor(this->selfId_);
-            return this->PersistenceStorage().AddCurrentTerm();
         }
 
         void GetVote(sharpen::Uint64 vote)
@@ -223,7 +254,7 @@ namespace sharpen
 
         bool StopElection()
         {
-            if (this->GetRole() == sharpen::RaftRole::Candidate && this->votes_ >= this->Members().size()/2)
+            if (this->GetRole() == sharpen::RaftRole::Candidate && this->votes_ >= this->MemberMajority())
             {
                 this->SetRole(sharpen::RaftRole::Leader);
                 this->leaderId_.Construct(this->selfId_);
@@ -234,15 +265,23 @@ namespace sharpen
 
         bool RequestVote(sharpen::Uint64 candidateTerm,const _Id &candidateId,sharpen::Uint64 lastLogIndex,sharpen::Uint64 lastLogTerm)
         {
-            if(this->CurrentTerm() > candidateTerm || this->KnowLeader())
+            //check term
+            if(this->CurrentTerm() > candidateTerm)
             {
                 return false;
             }
+            //update term
             if(this->CurrentTerm() < candidateTerm)
             {
                 this->ConvertFollower();
                 this->SetCurrentTerm(candidateTerm);
                 this->PersistenceStorage().ResetVotedFor();
+            }
+            //if leader alive
+            //reject request
+            else if(this->KnowLeader())
+            {
+                return false;
             }
             if((!this->PersistenceStorage().IsVotedFor() || this->PersistenceStorage().GetVotedFor() == candidateId) && lastLogIndex >= this->LastIndex() && lastLogTerm >= this->LastTerm())
             {
@@ -268,6 +307,7 @@ namespace sharpen
         template<typename _UCommiter = _Commiter,typename _Check = decltype(std::declval<_UCommiter>().InstallSnapshot(std::declval<_PersistenceStorage>(),0,0,0,0,nullptr,false))>
         bool InstallSnapshot(const _Id &leaderId,sharpen::Uint64 leaderTerm,sharpen::Uint64 lastIncludedIndex,sharpen::Uint64 lastIncludedTerm,sharpen::Uint64 offset,const char *data,bool done)
         {
+            //check term
             if (this->CurrentTerm() > leaderTerm)
             {
                 return false;
@@ -276,6 +316,23 @@ namespace sharpen
             {
                 this->ConvertFollower();
                 this->SetCurrentTerm(leaderTerm);
+            }
+            else if(this->GetRole() == sharpen::RaftRole::Leader)
+            {
+                return false;
+            }
+            //access denied
+            else if(this->KnowLeader())
+            {
+                if(this->LeaderId() != leaderId)
+                {
+                    return false;
+                }
+            }
+            //new leader
+            else
+            {
+                this->leaderId_.Construct(leaderId);
             }
             this->leaderId_.Construct(leaderId);
             this->Commiter().InstallSnapshot(this->PersistenceStorage(),leaderTerm,lastIncludedIndex,lastIncludedTerm,offset,data,done);
@@ -289,7 +346,7 @@ namespace sharpen
 
         const _Id &LeaderId() const noexcept
         {
-            return this->leaderId_;
+            return this->leaderId_.Get();
         }
 
         void ResetLeader()
