@@ -2,6 +2,8 @@
 #ifndef _SHARPEN_INTOPS_HPP
 #define _SHARPEN_INTOPS_HPP
 
+#include <utility>
+
 #include "TypeTraits.hpp"
 #include "ByteOrder.hpp"
 

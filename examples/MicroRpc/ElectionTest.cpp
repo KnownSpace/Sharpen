@@ -410,7 +410,6 @@ void Test(sharpen::UintPort n,sharpen::Size size,sharpen::AsyncBarrier &barrier,
             req.Push(name,name + sizeof(name) - 1);
             sharpen::AwaitableFuture<bool> continuation;
             sharpen::AwaitableFuture<void> finish;
-            //sharpen::Quorum::ProposeAsync(proposers.begin(),proposers.end(),req,continuation,finish);
             sharpen::Quorum::TimeLimitedProposeAsync(eTimer,std::chrono::seconds(1),proposers.begin(),proposers.end(),req,continuation,finish);
             bool success = continuation.Await();
             std::printf("continue\n");
@@ -451,7 +450,6 @@ void Test(sharpen::UintPort n,sharpen::Size size,sharpen::AsyncBarrier &barrier,
             req.Push(name,name + sizeof(name) - 1);
             sharpen::AwaitableFuture<bool> continuation;
             sharpen::AwaitableFuture<void> finish;
-            // sharpen::Quorum::ProposeAsync(logers.begin(),logers.end(),req,continuation,finish);
             std::printf("logging\n");
             sharpen::Quorum::TimeLimitedProposeAsync(timer,std::chrono::milliseconds(100),logers.begin(),logers.end(),req,continuation,finish);
             bool success = continuation.Await();
