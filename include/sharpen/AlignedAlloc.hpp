@@ -4,9 +4,9 @@
 
 #include <cstring>
 #include <cassert>
+#include <limits>
 
 #include "TypeDef.hpp"
-#include "IntOps.hpp"
 
 namespace sharpen
 {
@@ -16,7 +16,8 @@ namespace sharpen
 
     inline void *AlignedCalloc(sharpen::Size count,sharpen::Size size,sharpen::Size alignment) noexcept
     {
-        assert(sharpen::CheckOverflow(size,count,sharpen::Multiplier<sharpen::Size>{}));
+        assert(count != 0 && size != 0);
+        assert(std::numeric_limits<sharpen::Size>::max()/size >= count);
         void *mem = sharpen::AlignedAlloc(size*count,alignment);
         if(mem != nullptr)
         {

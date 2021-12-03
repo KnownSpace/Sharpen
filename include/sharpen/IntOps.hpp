@@ -38,63 +38,6 @@ namespace sharpen
     {
         return a>b?a:b;
     }
-
-    template<typename _T,typename _Check = sharpen::EnableIf<std::is_integral<_T>::value>>
-    struct Adder
-    {
-        constexpr _T operator()(_T a,_T b) const noexcept
-        {
-            return a + b;
-        }
-    };
-
-
-    template<typename _T,typename _Check = sharpen::EnableIf<std::is_integral<_T>::value>>
-    struct Multiplier
-    {
-        constexpr _T operator()(_T a,_T b) const noexcept
-        {
-            return a * b;
-        }
-    };
-
-    template<typename _T,typename _Check = sharpen::EnableIf<std::is_integral<_T>::value>>
-    struct Suber
-    {
-        constexpr _T operator()(_T a,_T b) const noexcept
-        {
-            return a - b;
-        }
-    };
-
-    template<typename _T,typename _Check = sharpen::EnableIf<std::is_integral<_T>::value>>
-    struct Diver
-    {
-        constexpr _T operator()(_T a,_T b) const noexcept
-        {
-            return a / b;
-        }
-    };
-
-    template<typename _T,typename _Adder,typename _Check = sharpen::EnableIf<std::is_integral<_T>::value && sharpen::IsCallable<_Adder,_T,_T>::Value && std::is_unsigned<_T>::value>>
-    bool InternalCheckOverflow(_T a,_T b,_Adder &&adder,int) noexcept
-    {
-        _T r = adder(a,b);
-        return r > a && r > b;
-    }
-
-    template<typename _T,typename _Adder,typename _Check = sharpen::EnableIf<std::is_integral<_T>::value && sharpen::IsCallable<_Adder,_T,_T>::Value>>
-    bool InternalCheckOverflow(_T a,_T b,_Adder &&adder,...) noexcept
-    {
-        _T r = adder(a,b);
-        return !((r^a) < 0 && (r^b) < 0);
-    }
-
-    template<typename _T,typename _Adder,typename _Check = sharpen::EnableIf<std::is_integral<_T>::value && sharpen::IsCallable<_Adder,_T,_T>::Value>>
-    bool CheckOverflow(_T a,_T b,_Adder &&adder) noexcept
-    {
-        return sharpen::InternalCheckOverflow(a,b,std::forward<_Adder>(adder),0);
-    }
 }
 
 #endif

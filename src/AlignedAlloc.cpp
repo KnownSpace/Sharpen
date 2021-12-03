@@ -10,6 +10,7 @@
 
 void *sharpen::AlignedAlloc(sharpen::Size size,sharpen::Size alignment) noexcept
 {
+    assert(size != 0);
 #ifdef SHARPEN_IS_WIN
     return _aligned_malloc(size,alignment);
 #else

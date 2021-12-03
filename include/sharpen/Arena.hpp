@@ -6,6 +6,7 @@
 #include <atomic>
 #include <memory>
 #include <cassert>
+#include <limits>
 
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
@@ -13,7 +14,6 @@
 #include "NoexceptIf.hpp"
 #include "TypeTraits.hpp"
 #include "SpinLock.hpp"
-#include "IntOps.hpp"
 
 namespace sharpen
 {
@@ -57,6 +57,7 @@ namespace sharpen
 
         inline void *Alloc(sharpen::Size size) noexcept
         {
+            assert(size != 0);
             if (size > maxAlloc_)
             {
                 return this->AllocLarge(size);
@@ -78,7 +79,8 @@ namespace sharpen
         template<typename _T,typename ..._Args>
         inline auto ConstructArray(sharpen::Size count,_Args &&...args) SHARPEN_NOEXCEPT_IF(new (nullptr) _T{std::declval<_Args>()...}) -> decltype(new (nullptr) _T{std::declval<_Args>()...})
         {
-            assert(sharpen::CheckOverflow(sizeof(_T),count,sharpen::Multiplier<sharpen::Size>{}));
+            assert(count != 0);
+            assert(std::numeric_limits<sharpen::Size>::max()/sizeof(_T) >= count);
             _T *p = reinterpret_cast<_T*>(this->Alloc(sizeof(_T) * count));
             if(p == nullptr)
             {
