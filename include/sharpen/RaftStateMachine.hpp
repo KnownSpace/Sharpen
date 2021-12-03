@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <vector>
 #include <iterator>
+#include <memory>
 
 #include "RaftRole.hpp"
 #include "TypeDef.hpp"
@@ -88,20 +89,19 @@ namespace sharpen
             this->SetRole(sharpen::RaftRole::Follower);
         }
     public:
-        explicit InternalRaftStateMachine(_Id id,_PersistenceStorage pm)
+        InternalRaftStateMachine(_Id id,_PersistenceStorage pm)
+            :InternalRaftStateMachine(std::move(id),std::move(pm),_Commiter{})
+        {}
+
+        InternalRaftStateMachine(_Id id,_PersistenceStorage pm,_Commiter commiter)
             :selfId_(std::move(id))
             ,pm_(std::move(pm))
-            ,rolePair_()
+            ,rolePair_(std::move(commiter),sharpen::RaftRole::Follower)
             ,commitIndex_(0)
             ,lastApplied_(0)
             ,members_()
             ,votes_(0)
-        {
-            //set role
-            this->SetRole(sharpen::RaftRole::Follower);
-            //set pm
-            this->PersistenceStorage() = std::move(pm);
-        }
+        {}
 
         sharpen::Uint64 LastIndex() const noexcept
         {
@@ -359,6 +359,21 @@ namespace sharpen
 
     template<typename _Id,typename  _Log,typename _Commiter,typename _PersistenceStorage,typename _Member>
     using RaftStateMachine = sharpen::InternalRaftStateMachine<_Id,_Log,_Commiter,_PersistenceStorage,_Member>;
+
+    template<typename _Id,typename  _Log,typename _Commiter,typename _PersistenceStorage,typename _Member>
+    using RaftStateMachinePtr = std::shared_ptr<sharpen::RaftStateMachine<_Id,_Log,_Commiter,_PersistenceStorage,_Member>>;
+
+    template<typename _Id,typename  _Log,typename _Commiter,typename _PersistenceStorage,typename _Member,typename _StateMachine = sharpen::RaftStateMachine<_Id,_Log,_Commiter,_PersistenceStorage,_Member>,typename _Check = sharpen::IsCompletedType<_StateMachine>>
+    std::shared_ptr<_StateMachine> MakeRaftStateMachine(_Id id,_PersistenceStorage pm)
+    {
+        return std::make_shared<_StateMachine>(std::move(id),std::move(pm));
+    }
+
+    template<typename _Id,typename  _Log,typename _Commiter,typename _PersistenceStorage,typename _Member,typename _StateMachine = sharpen::RaftStateMachine<_Id,_Log,_Commiter,_PersistenceStorage,_Member>,typename _Check = sharpen::IsCompletedType<_StateMachine>>
+    std::shared_ptr<_StateMachine> MakeRaftStateMachine(_Id id,_PersistenceStorage pm,_Commiter commiter)
+    {
+        return std::make_shared<_StateMachine>(std::move(id),std::move(pm),std::move(commiter));
+    }
 }
 
 #endif
