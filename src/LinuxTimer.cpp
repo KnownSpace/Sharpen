@@ -55,6 +55,10 @@ void sharpen::LinuxTimer::OnEvent(sharpen::IoEvent *event)
 
 void sharpen::LinuxTimer::Cancel()
 {
+    if(!this->future_)
+    {
+        return;
+    }
     assert(this->handle_ != -1);
     itimerspec time;
     std::memset(&(time.it_interval),0,sizeof(time.it_interval));

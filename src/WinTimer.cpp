@@ -59,6 +59,10 @@ void sharpen::WinTimer::WaitAsync(sharpen::Future<bool> &future,sharpen::Uint64 
 void sharpen::WinTimer::Cancel()
 {
     assert(this->handle_ != INVALID_HANDLE_VALUE);
+    if(!this->future_)
+    {
+        return;
+    }
     ::CancelWaitableTimer(this->handle_);
     sharpen::Future<bool> *future = nullptr;
     std::swap(future,this->future_);

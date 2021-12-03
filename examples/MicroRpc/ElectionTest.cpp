@@ -11,8 +11,9 @@
 #include <sharpen/AsyncOps.hpp>
 #include <sharpen/AsyncBarrier.hpp>
 #include <sharpen/CtrlHandler.hpp>
-#include <sharpen/ElectionTimer.hpp>
+#include <sharpen/RandomTimerAdaptor.hpp>
 #include <sharpen/Converter.hpp>
+#include <sharpen/Console.hpp>
 
 //id
 using TestId = sharpen::Uint64;
@@ -113,7 +114,7 @@ public:
 
     void EraseLogAfter(sharpen::Uint64 index)
     {
-        std::printf("remove logs after index %lu\n",index);
+        sharpen::Print("remove logs after index ",index,"\n");
         auto ite = this->logs_.begin(),end = this->logs_.end();
         while (ite != end)
         {
@@ -342,7 +343,7 @@ bool RaiseElection(TestStateMachine *sm,sharpen::TimerPtr timer)
     return sm->StopElection();
 }
 
-void Loop(bool &flag,sharpen::ElectionTimer &electionTimer,TestStateMachine *sm)
+void Loop(bool &flag,sharpen::RandomTimerAdaptor &electionTimer,TestStateMachine *sm)
 {
     sharpen::Delay(std::chrono::seconds(5));
     while(flag)
@@ -351,18 +352,21 @@ void Loop(bool &flag,sharpen::ElectionTimer &electionTimer,TestStateMachine *sm)
         sharpen::TimerPtr eTimer = sharpen::MakeTimer(sharpen::EventEngine::GetEngine());
         while(sm->GetRole() != sharpen::RaftRole::Leader)
         {
-            electionTimer.Await();
+            if(!electionTimer.Await())
+            {
+                continue;
+            }
             sm->ResetLeader();
-            std::printf("%u raise election\n",sm->SelfId());
+            sharpen::Print(sm->SelfId()," raise election\n");
             bool success = RaiseElection(sm,eTimer);
             if(success)
             {
-                std::printf("%u became leader term %llu\n",sm->SelfId(),sm->CurrentTerm());
+                sharpen::Print(sm->SelfId()," became leader term ",sm->CurrentTerm(),"\n");
                 break;
             }
             else
             {
-                std::printf("%u election fail\n",sm->SelfId());
+                sharpen::Print(sm->SelfId()," election fail\n");
             }
         }
         //log
@@ -399,13 +403,13 @@ void Loop(bool &flag,sharpen::ElectionTimer &electionTimer,TestStateMachine *sm)
             sharpen::AwaitableFuture<void> finish;
             sharpen::Quorum::TimeLimitedProposeAsync(timer,std::chrono::seconds(1),loggers.begin(),loggers.end(),req,continuation,finish);
             bool success = continuation.Await();
-            std::printf("continue log\n");
+            std::puts("continue log");
             if(!success)
             {
-                std::printf("%lu keep alive fail\n",sm->SelfId());
+                sharpen::Print(sm->SelfId()," keep alive fail\n");
             }
             finish.Await();
-            std::printf("finish log\n");
+            std::puts("finish log");
             timer->Await(std::chrono::seconds(1));
         }
     }
@@ -423,7 +427,7 @@ void Test(TestId id,bool *flag,sharpen::MicroRpcServer **ser)
     }
     sharpen::IpEndPoint addr;
     addr.SetAddrByString("127.0.0.1");
-    addr.SetPort(id);
+    addr.SetPort(static_cast<sharpen::UintPort>(id));
     {
         char buf[21] = {0};
         addr.GetAddrSring(buf,sizeof(buf));
@@ -431,7 +435,7 @@ void Test(TestId id,bool *flag,sharpen::MicroRpcServer **ser)
     }
     sharpen::MicroRpcServerOption opt{sharpen::MicroRpcDispatcher{}};
     sharpen::MicroRpcServer server{sharpen::AddressFamily::Ip,addr,sharpen::EventEngine::GetEngine(),std::move(opt)};
-    sharpen::ElectionTimer electionTimer{sharpen::EventEngine::GetEngine(),std::chrono::seconds(10),std::chrono::seconds(30),static_cast<sharpen::Uint32>(id ^ std::clock())};
+    sharpen::RandomTimerAdaptor electionTimer{sharpen::EventEngine::GetEngine(),std::chrono::seconds(10),std::chrono::seconds(30),static_cast<sharpen::Uint32>(id ^ std::clock())};
     server.Register("RequestVote",[&sm](sharpen::MicroRpcContext &ctx)
     {
         auto ite = ctx.Request().Begin();
@@ -449,13 +453,13 @@ void Test(TestId id,bool *flag,sharpen::MicroRpcServer **ser)
         stack.Push<char>(success ? 1:0);
         if(success)
         {
-            std::printf("%u vote to %llu\n",sm.SelfId(),id);
+            sharpen::Print(sm.SelfId()," vote to ",id,"\n");
         }
         ctx.Connection()->WriteAsync(ctx.Encoder().Encode(stack));
     });
     server.Register("AppendEntries",[&sm,&electionTimer](sharpen::MicroRpcContext &ctx)
     {
-        electionTimer.Reset();
+        electionTimer.Cancel();
         std::vector<TestLog> logs;
         auto ite = ctx.Request().Begin();
         ++ite;
@@ -465,11 +469,11 @@ void Test(TestId id,bool *flag,sharpen::MicroRpcServer **ser)
         bool success = sm.AppendEntries(logs.begin(),logs.end(),leaderId,leaderTerm,0,0,0);
         if(success)
         {
-            std::printf("%u keep alive by leader %llu\n",sm.SelfId(),leaderId);
+            sharpen::Print(sm.SelfId()," keep alive by ",leaderId,"\n");
         }
         else
         {
-            std::printf("%u keep alive by leader %llu but fail\n",sm.SelfId(),leaderId);
+            sharpen::Print(sm.SelfId()," keep alive by ",leaderId," but fail\n");
         }
         sharpen::MicroRpcStack stack;
         stack.Push(sm.CurrentTerm());
@@ -478,7 +482,7 @@ void Test(TestId id,bool *flag,sharpen::MicroRpcServer **ser)
     });
     sharpen::Launch(&Loop,*flag,std::ref(electionTimer),&sm);
     *ser = &server;
-    std::printf("start server\n");
+    std::puts("start server");
     server.RunAsync();
 }
 
@@ -490,7 +494,7 @@ void Entry(TestId id)
     auto future = sharpen::Async(&Test,id,&flag,&ser);
     sharpen::RegisterCtrlHandler(sharpen::CtrlType::Interrupt,[ser,&flag]()
     {
-        std::printf("stop now\n");
+        std::puts("stop now");
         flag = false;
         ser->Stop();
     });
@@ -502,7 +506,7 @@ int main(int argc, char const *argv[])
 {
     if(argc == 1)
     {
-        std::printf("election test {port}\n");
+        std::puts("election test {port}");
         return 0;
     }
     TestId id = sharpen::Atoi<TestId>(argv[1],std::strlen(argv[1]));

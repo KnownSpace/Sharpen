@@ -3,6 +3,7 @@
 #define _SHARPEN_CONVERTER_HPP
 
 #include <type_traits>
+#include <cassert>
 
 #include "TypeDef.hpp"
 
@@ -81,8 +82,8 @@ namespace sharpen
         }
     }
 
-    template<typename _T,typename _RawType = typename std::remove_const<typename std::remove_reference<_T>::type>::type,typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value>::type>
-    _T Atoi(const char *str,sharpen::Size size,sharpen::Size radix = 10)
+    template<typename _T,typename _RawType = typename std::remove_const<typename std::remove_reference<_T>::type>::type,typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value && !std::is_unsigned<_RawType>::value>::type>
+    _T InternalAtoi(const char *str,sharpen::Size size,sharpen::Size radix,int)
     {
         _T data{0};
         bool n{false};
@@ -113,6 +114,41 @@ namespace sharpen
             data = -data;
         }
         return data;
+    }
+
+    template<typename _T,typename _RawType = typename std::remove_const<typename std::remove_reference<_T>::type>::type,typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value>::type>
+    _T InternalAtoi(const char *str,sharpen::Size size,sharpen::Size radix,...)
+    {
+        _T data{0};
+        const char *end = str + size;
+        while (str != end)
+        {
+            data *= static_cast<_T>(radix);
+            if(*str == '-')
+            {
+                assert("error string");
+            }
+            else if(*str >= 'A' && *str <= 'F')
+            {
+                data += *str - 'A' + 10;
+            }
+            else if(*str >= 'a' && *str <= 'f')
+            {
+                data += *str - 'a' + 10;
+            }
+            else
+            {
+                data += *str - '0';
+            }
+            ++str;
+        }
+        return data;
+    }
+
+    template<typename _T,typename _RawType = typename std::remove_const<typename std::remove_reference<_T>::type>::type,typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value>::type>
+    _T Atoi(const char *str,sharpen::Size size,sharpen::Size radix = 10)
+    {
+        return sharpen::InternalAtoi<_T>(str,size,radix,0);
     }
 }
 #endif
