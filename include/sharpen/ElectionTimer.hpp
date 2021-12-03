@@ -24,13 +24,13 @@ namespace sharpen
         void Notify(sharpen::Future<bool> &future);
     public:
         template<typename _Rep1,typename _Period1,typename _Rep2,typename _Period2>
-        ElectionTimer(sharpen::TimerPtr timer,const std::chrono::duration<_Rep1,_Period1> &minWait,const std::chrono::duration<_Rep2,_Period2> &maxWait)
-            :ElectionTimer(std::move(timer),minWait,maxWait,std::random_device{}())
+        ElectionTimer(sharpen::EventEngine &engine,const std::chrono::duration<_Rep1,_Period1> &minWait,const std::chrono::duration<_Rep2,_Period2> &maxWait)
+            :ElectionTimer(engine,minWait,maxWait,std::random_device{}())
         {}
 
         template<typename _Rep1,typename _Period1,typename _Rep2,typename _Period2>
-        ElectionTimer(sharpen::TimerPtr timer,const std::chrono::duration<_Rep1,_Period1> &minWait,const std::chrono::duration<_Rep2,_Period2> &maxWait,sharpen::Uint32 seed)
-            :timer_(timer)
+        ElectionTimer(sharpen::EventEngine &engine,const std::chrono::duration<_Rep1,_Period1> &minWait,const std::chrono::duration<_Rep2,_Period2> &maxWait,sharpen::Uint32 seed)
+            :timer_(sharpen::MakeTimer(engine))
             ,future_()
             ,notify_(nullptr)
             ,random_(seed)

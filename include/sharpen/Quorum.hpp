@@ -74,6 +74,7 @@ namespace sharpen
             }
             if(finishCounter == 0)
             {
+                CompleteFuture(waiterPtr->continuation_,false);
                 CompleteFuture(waiterPtr->finish_);
             }
         }
@@ -106,6 +107,7 @@ namespace sharpen
                 if(finishCounter == 0)
                 {
                     this->waiterPtr_->timer_->Cancel();
+                    CompleteFuture(this->waiterPtr_->continuation_,false);
                     CompleteFuture(this->waiterPtr_->finish_);
                 }
             }
@@ -209,6 +211,12 @@ namespace sharpen
             //init waiter
             std::shared_ptr<Waiter> waiterPtr = std::make_shared<Waiter>();
             sharpen::Size size = sharpen::GetRangeSize(begin,end);
+            if(size == 0)
+            {
+                continuation.Complete(false);
+                finish->Complete();
+                return;
+            }
             InitWaiter(waiterPtr,size,&continuation,finish);
             sharpen::Size index{0};
             //launch operations
@@ -228,6 +236,12 @@ namespace sharpen
             //init waiter
             std::shared_ptr<Waiter> waiterPtr = std::make_shared<Waiter>();
             sharpen::Size size = sharpen::GetRangeSize(begin,end);
+            if(size == 0)
+            {
+                continuation.Complete(false);
+                finish->Complete();
+                return;
+            }
             InitWaiter(waiterPtr,size,&continuation,finish);
             sharpen::Size index{0};
             //launch operations
@@ -247,6 +261,12 @@ namespace sharpen
             //init waiter
             std::shared_ptr<WaiterType> waiterPtr = std::make_shared<WaiterType>();
             sharpen::Size size = sharpen::GetRangeSize(begin,end);
+            if(size == 0)
+            {
+                continuation.Complete(false);
+                finish->Complete();
+                return;
+            }
             InitTimeLimitedWaiter(waiterPtr,std::move(timer),begin,size,&continuation,finish);
             sharpen::Size index{0};
             //launch operations
@@ -272,6 +292,12 @@ namespace sharpen
             //init waiter
             std::shared_ptr<WaiterType> waiterPtr = std::make_shared<WaiterType>();
             sharpen::Size size = sharpen::GetRangeSize(begin,end);
+            if(size == 0)
+            {
+                continuation.Complete(false);
+                finish->Complete();
+                return;
+            }
             InitTimeLimitedWaiter(waiterPtr,std::move(timer),begin,size,&continuation,finish);
             sharpen::Size index{0};
             //launch operations

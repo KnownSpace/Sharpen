@@ -158,6 +158,7 @@ namespace sharpen
             //or this is leader
             if(leaderTerm < this->CurrentTerm())
             {
+                std::printf("old leader\n");
                 return false;
             }
             //update term
@@ -165,9 +166,11 @@ namespace sharpen
             {
                 this->ConvertFollower();
                 this->SetCurrentTerm(leaderTerm);
+                this->leaderId_.Construct(leaderId);
             }
             else if(this->GetRole() == sharpen::RaftRole::Leader)
             {
+                std::printf("im am leader\n");
                 return false;
             }
             //access denied
@@ -175,6 +178,7 @@ namespace sharpen
             {
                 if(this->LeaderId() != leaderId)
                 {
+                    std::printf("fake leader\n");
                     return false;
                 }
             }
@@ -276,12 +280,7 @@ namespace sharpen
                 this->ConvertFollower();
                 this->SetCurrentTerm(candidateTerm);
                 this->PersistenceStorage().ResetVotedFor();
-            }
-            //if leader alive
-            //reject request
-            else if(this->KnowLeader())
-            {
-                return false;
+                this->ResetLeader();
             }
             if((!this->PersistenceStorage().IsVotedFor() || this->PersistenceStorage().GetVotedFor() == candidateId) && lastLogIndex >= this->LastIndex() && lastLogTerm >= this->LastTerm())
             {
