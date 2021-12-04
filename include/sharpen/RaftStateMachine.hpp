@@ -158,7 +158,6 @@ namespace sharpen
             //or this is leader
             if(leaderTerm < this->CurrentTerm())
             {
-                std::printf("old leader\n");
                 return false;
             }
             //update term
@@ -170,7 +169,6 @@ namespace sharpen
             }
             else if(this->GetRole() == sharpen::RaftRole::Leader)
             {
-                std::printf("im am leader\n");
                 return false;
             }
             //access denied
@@ -178,7 +176,6 @@ namespace sharpen
             {
                 if(this->LeaderId() != leaderId)
                 {
-                    std::printf("fake leader\n");
                     return false;
                 }
             }
@@ -351,6 +348,21 @@ namespace sharpen
         void ResetLeader()
         {
             this->leaderId_ = sharpen::NullOpt;
+        }
+
+        void PushLog(_Log log)
+        {
+            this->PersistenceStorage().PushLog(std::move(log));
+        }
+
+        void AddCommitIndex(sharpen::Uint64 value) noexcept
+        {
+            this->commitIndex_ += value;
+        }
+
+        void AddLastApplied(sharpen::Uint64 value) noexcept
+        {
+            this->lastApplied_ += value;
         }
 
         ~InternalRaftStateMachine() noexcept = default;
