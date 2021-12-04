@@ -234,7 +234,7 @@ public:
                 auto &&res = client->InvokeAsync(stack);
                 if(*res.Top().Data<char>() == 1)
                 {
-                    sm->GetVote(1);
+                    sm->ReturnedVote(1);
                     future.Complete(true);
                     return;
                 }

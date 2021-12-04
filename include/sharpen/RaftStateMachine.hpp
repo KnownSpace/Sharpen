@@ -88,6 +88,12 @@ namespace sharpen
             this->votes_ = 0;
             this->SetRole(sharpen::RaftRole::Follower);
         }
+
+        void BiggerTerm(sharpen::Uint64 term)
+        {
+            this->ConvertFollower();
+            this->SetCurrentTerm(term);
+        }
     public:
         InternalRaftStateMachine(_Id id,_PersistenceStorage pm)
             :InternalRaftStateMachine(std::move(id),std::move(pm),_Commiter{})
@@ -151,6 +157,14 @@ namespace sharpen
             return (this->Members().size())/2;
         }
 
+        void ReturnedNewTerm(sharpen::Uint64 term)
+        {
+            if(term > this->CurrentTerm())
+            {
+                this->BiggerTerm(term);
+            }
+        }
+
         template<typename _LogIterator,typename _Check = sharpen::EnableIf<sharpen::IsRaftLogIterator<_LogIterator>::Value>>
         bool AppendEntries(_LogIterator begin,_LogIterator end,const _Id &leaderId,sharpen::Uint64 leaderTerm,sharpen::Uint64 preLogIndex,sharpen::Uint64 preLogTerm,sharpen::Uint64 leaderCommit)
         {
@@ -163,8 +177,7 @@ namespace sharpen
             //update term
             if(this->CurrentTerm() < leaderTerm)
             {
-                this->ConvertFollower();
-                this->SetCurrentTerm(leaderTerm);
+                this->BiggerTerm(leaderTerm);
                 this->leaderId_.Construct(leaderId);
             }
             else if(this->GetRole() == sharpen::RaftRole::Leader)
@@ -248,7 +261,7 @@ namespace sharpen
             this->PersistenceStorage().SetVotedFor(this->selfId_);
         }
 
-        void GetVote(sharpen::Uint64 vote)
+        void ReturnedVote(sharpen::Uint64 vote)
         {
             this->votes_ += vote;
         }
@@ -274,8 +287,7 @@ namespace sharpen
             //update term
             if(this->CurrentTerm() < candidateTerm)
             {
-                this->ConvertFollower();
-                this->SetCurrentTerm(candidateTerm);
+                this->BiggerTerm(candidateTerm);
                 this->PersistenceStorage().ResetVotedFor();
                 this->ResetLeader();
             }
@@ -310,8 +322,8 @@ namespace sharpen
             }
             if(this->CurrentTerm() < leaderTerm)
             {
-                this->ConvertFollower();
-                this->SetCurrentTerm(leaderTerm);
+                this->BiggerTerm(leaderTerm);
+                this->leaderId_.Construct(leaderId);
             }
             else if(this->GetRole() == sharpen::RaftRole::Leader)
             {
