@@ -192,6 +192,19 @@ void sharpen::INetStreamChannel::SetReuseAddress(bool val)
 #endif
 }
 
+int sharpen::INetStreamChannel::GetErrorCode() const noexcept
+{
+    int err{0};
+#ifdef SHARPEN_IS_WIN
+    int errSize = sizeof(err);
+    ::getsockopt(reinterpret_cast<SOCKET>(this->handle_),SOL_SOCKET,SO_ERROR,reinterpret_cast<char*>(&err),&errSize);
+#else
+    socklen_t errSize = sizeof(err);
+    ::getsockopt(this->handle_,SOL_SOCKET,SO_ERROR,&err,&errSize);
+#endif
+    return err;
+}
+
 void sharpen::INetStreamChannel::PollReadAsync()
 {
     sharpen::AwaitableFuture<void> future;

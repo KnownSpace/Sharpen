@@ -58,6 +58,8 @@ namespace sharpen
 
         void SetReuseAddress(bool val);
 
+        int GetErrorCode() const noexcept;
+
         virtual void PollReadAsync(sharpen::Future<void> &future) = 0;
 
         virtual void PollWriteAsync(sharpen::Future<void> &future) = 0;
