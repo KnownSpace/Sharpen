@@ -9,3 +9,5 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/examples/Web")
 add_subdirectory("${PROJECT_SOURCE_DIR}/examples/MicroRpc")
 
 add_subdirectory("${PROJECT_SOURCE_DIR}/examples/CommandLines")
+
+add_subdirectory("${PROJECT_SOURCE_DIR}/examples/Tcp")
