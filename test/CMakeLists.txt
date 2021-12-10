@@ -27,6 +27,8 @@ add_executable(dummytypetest "${PROJECT_SOURCE_DIR}/test/DummyTypeTest.cpp")
 add_executable(microrpctest "${PROJECT_SOURCE_DIR}/test/MicroRpcTest.cpp")
 #quorum test
 add_executable(quorumtest "${PROJECT_SOURCE_DIR}/test/QuorumTest.cpp")
+#checksum test
+add_executable(checksumtest "${PROJECT_SOURCE_DIR}/test/ChecksumTest.cpp")
 #link
 target_link_libraries(awaittest sharpen)
 target_link_libraries(timertest sharpen)
@@ -40,6 +42,7 @@ target_link_libraries(arenatest sharpen)
 target_link_libraries(dummytypetest sharpen)
 target_link_libraries(microrpctest sharpen)
 target_link_libraries(quorumtest sharpen)
+target_link_libraries(checksumtest sharpen)
 #test
 enable_testing()
 #tests
@@ -60,3 +63,4 @@ add_test(NAME arena_test COMMAND "./arenatest${extname}")
 add_test(NAME dummy_type_test COMMAND "./dummytypetest${extname}")
 add_test(NAME microrpc_test COMMAND "./microrpctest${extname}")
 add_test(NAME quorum_test COMMAND "./quorumtest${extname}")
+add_test(NAME checksum_test COMMAND "./checksumtest${extname}")

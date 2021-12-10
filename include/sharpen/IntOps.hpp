@@ -38,6 +38,61 @@ namespace sharpen
     {
         return a>b?a:b;
     }
+
+    union Uint16Union
+    {
+        struct
+        {
+#ifdef SHARPEN_IS_BIG_ENDIAN
+            sharpen::Byte height_;
+            sharpen::Byte low_;
+#else
+            sharpen::Byte low_;
+            sharpen::Byte height_;
+#endif
+        } union_;
+        sharpen::Uint16 value_;  
+    };
+
+    union Uint32Union
+    {
+        struct
+        {
+#ifdef SHARPEN_IS_BIG_ENDIAN
+            sharpen::Uint16 height_;
+            sharpen::Uint16 low_;
+#else
+            sharpen::Uint16 low_;
+            sharpen::Uint16 height_;
+#endif
+        } union_;
+        sharpen::Uint32 value_;  
+    };
+
+    union Uint64Union
+    {
+        struct
+        {
+#ifdef SHARPEN_IS_BIG_ENDIAN
+            sharpen::Uint32 height_;
+            sharpen::Uint32 low_;
+#else
+            sharpen::Uint32 low_;
+            sharpen::Uint32 height_;
+#endif
+        } union_;
+        sharpen::Uint64 value_;  
+    };
+
+    extern unsigned char Crc16TableHeight[256];
+
+    extern unsigned char Crc16TableLow[256];
+
+    //CRC16-MODBUS
+    sharpen::Uint16 Crc16(const char *data,sharpen::Size size) noexcept;
+
+    //Adler32
+    sharpen::Uint32 Adler32(const char *data,sharpen::Size size) noexcept;
 }
 
 #endif
