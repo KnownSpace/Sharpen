@@ -92,6 +92,10 @@ const char *sharpen::MicroRpcDecoder::RunStateMachine(const char *begin,const ch
                 goto WaitDataLab;
             }
             this->ite_ = this->ite_ == 7 ? 8: this->ite_;
+            if(this->ite_ > sizeof(sharpen::Size))
+            {
+                throw sharpen::MicroRpcParseException("message too large");
+            }
             this->step_ = Step::WaitSize;
         case Step::WaitSize:
             if (this->ite_)
