@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14.0)
 
-include_directories("${PROJECT_SOURCE_DIR}/include")
+include_directories("${SHARPEN_INCLUDE_DIRS}")
 
 #executables
 #await test

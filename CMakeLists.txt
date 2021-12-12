@@ -7,6 +7,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED on)
 include(CTest)
 enable_testing()
 
+set(SHARPEN_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include")
+
 add_subdirectory("${PROJECT_SOURCE_DIR}/src")
 add_subdirectory("${PROJECT_SOURCE_DIR}/test")
 add_subdirectory("${PROJECT_SOURCE_DIR}/examples")

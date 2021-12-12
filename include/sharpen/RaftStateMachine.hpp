@@ -169,7 +169,6 @@ namespace sharpen
         bool AppendEntries(_LogIterator begin,_LogIterator end,const _Id &leaderId,sharpen::Uint64 leaderTerm,sharpen::Uint64 preLogIndex,sharpen::Uint64 preLogTerm,sharpen::Uint64 leaderCommit)
         {
             //if is old leader
-            //or this is leader
             if(leaderTerm < this->CurrentTerm())
             {
                 return false;
