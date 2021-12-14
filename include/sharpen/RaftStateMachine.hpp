@@ -157,7 +157,7 @@ namespace sharpen
             return (this->Members().size())/2;
         }
 
-        void ReturnedNewTerm(sharpen::Uint64 term)
+        void ReactNewTerm(sharpen::Uint64 term)
         {
             if(term > this->CurrentTerm())
             {
@@ -260,7 +260,7 @@ namespace sharpen
             this->PersistenceStorage().SetVotedFor(this->selfId_);
         }
 
-        void ReturnedVote(sharpen::Uint64 vote)
+        void ReactVote(sharpen::Uint64 vote)
         {
             this->votes_ += vote;
         }
