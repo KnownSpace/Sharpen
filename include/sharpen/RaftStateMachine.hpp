@@ -252,15 +252,16 @@ namespace sharpen
             {
                 this->commitIndex_ = (std::min)(leaderCommit,this->LastIndex());
             }
-            while (begin != end)
-            {
-                if(begin->GetIndex() > oldCommit)
-                {
-                    this->lastApplied_ += 1;
-                    this->Commiter().Commit(*begin);
-                }
-                ++begin;
-            }
+            // while (begin != end)
+            // {
+            //     if(begin->GetIndex() > oldCommit)
+            //     {
+            //         this->lastApplied_ += 1;
+            //         this->Commiter().Commit(*begin);
+            //     }
+            //     ++begin;
+            // }
+            this->ApplyLogs();
             return true;
         }
 
