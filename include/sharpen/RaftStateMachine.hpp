@@ -252,15 +252,6 @@ namespace sharpen
             {
                 this->commitIndex_ = (std::min)(leaderCommit,this->LastIndex());
             }
-            // while (begin != end)
-            // {
-            //     if(begin->GetIndex() > oldCommit)
-            //     {
-            //         this->lastApplied_ += 1;
-            //         this->Commiter().Commit(*begin);
-            //     }
-            //     ++begin;
-            // }
             this->ApplyLogs();
             return true;
         }
@@ -290,6 +281,7 @@ namespace sharpen
             {
                 this->SetRole(sharpen::RaftRole::Leader);
                 this->leaderId_.Construct(this->selfId_);
+                this->ApplyLogs();
                 return true;
             }
             return false;
