@@ -226,16 +226,16 @@ namespace sharpen
     {
         static void Print(_T &&arg)
         {
-            sharpen::TypePrinter::Print(stdout,std::forward<_T>(arg),0,0,0,0,0,0);
+            sharpen::TypePrinter::Print(stdout,std::forward<_T>(arg),0,0,0,0,0,0,0);
         }
 
         static void Perror(_T &&arg)
         {
-            sharpen::TypePrinter::Print(stderr,std::forward<_T>(arg),0,0,0,0,0,0);
+            sharpen::TypePrinter::Print(stderr,std::forward<_T>(arg),0,0,0,0,0,0,0);
         }
     };
     
-    template<typename _T,typename _Check = decltype(sharpen::TypePrinter::Print(stdout,std::declval<_T>(),0,0,0,0,0,0))>
+    template<typename _T,typename _Check = decltype(sharpen::TypePrinter::Print(stdout,std::declval<_T>(),0,0,0,0,0,0,0))>
     static void PrintCheck(_T &&);
     
     template<typename ..._Ts>

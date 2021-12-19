@@ -191,7 +191,6 @@ private:
 public:
     static void Commit(const TestLog &log) noexcept
     {
-        // std::printf("commit log value:%lld\n",log.GetValue());
         sharpen::Print("commit log ",log.GetValue(),"\n");
     }
 };
