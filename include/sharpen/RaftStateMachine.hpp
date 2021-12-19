@@ -417,6 +417,16 @@ namespace sharpen
             }
         }
 
+        void CommitAndApplyLog(_Log log)
+        {
+            if(this->GetRole() == sharpen::RaftRole::Leader)
+            {
+                this->AddCommitIndex(1);
+                this->Commiter().Commit(log);
+                this->AddLastApplied(1);
+            }
+        }
+
         ~InternalRaftStateMachine() noexcept = default;
     };
 

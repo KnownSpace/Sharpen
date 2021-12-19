@@ -403,7 +403,7 @@ void Loop(bool &flag,sharpen::RandomTimerAdaptor &electionTimer,TestStateMachine
             req.Push(sm->LastTerm());
             req.Push(sm->LastIndex());
             sm->PushLog(log);
-            sm->AddCommitIndex(1);
+            //sm->AddCommitIndex(1);
             //commit index
             req.Push(sm->CommitIndex());
             //leader id
@@ -423,8 +423,7 @@ void Loop(bool &flag,sharpen::RandomTimerAdaptor &electionTimer,TestStateMachine
             }
             else
             {
-                sm->Commiter().Commit(log);
-                sm->AddLastApplied(1);
+                sm->CommitAndApplyLog(std::move(log));
             }
             finish.Await();
             std::puts("finish log");
