@@ -29,9 +29,9 @@ private:
 
     sharpen::Uint64 term_;
     sharpen::Uint64 index_;
-    int value_;
+    sharpen::Uint64 value_;
 public:
-    TestLog(sharpen::Uint64 term,sharpen::Uint64 index,int value)
+    TestLog(sharpen::Uint64 term,sharpen::Uint64 index,sharpen::Uint64 value)
         :term_(term)
         ,index_(index)
         ,value_(value)
@@ -67,7 +67,7 @@ public:
         this->index_ = index;
     }
 
-    int GetValue() const noexcept
+    sharpen::Uint64 GetValue() const noexcept
     {
         return this->value_;
     }
@@ -126,7 +126,7 @@ public:
         }
         if(ite != this->logs_.end())
         {
-            this->logs_.erase(ite,this->logs_.end());
+            this->logs_.erase(++ite,this->logs_.end());
         }
     }
 
@@ -144,7 +144,7 @@ public:
         return ite != this->logs_.end();
     }
 
-    const TestLog &FindLog(sharpen::Uint64 index) const
+    const TestLog &GetLog(sharpen::Uint64 index) const
     {
         auto ite = this->logs_.begin(),end = this->logs_.end();
         while (ite != end)
@@ -191,7 +191,8 @@ private:
 public:
     static void Commit(const TestLog &log) noexcept
     {
-        std::printf("commit log value:%d\n",log.GetValue());
+        // std::printf("commit log value:%lld\n",log.GetValue());
+        sharpen::Print("commit log ",log.GetValue(),"\n");
     }
 };
 
@@ -326,8 +327,8 @@ bool RaiseElection(TestStateMachine *sm,sharpen::TimerPtr timer)
         {}
     }
     sharpen::MicroRpcStack req;
-    req.Push(static_cast<sharpen::Uint64>(0));
-    req.Push(static_cast<sharpen::Uint64>(0));
+    req.Push(sm->LastTerm());
+    req.Push(sm->LastIndex());
     req.Push(sm->SelfId());
     req.Push(sm->CurrentTerm());
     const char name[] = "RequestVote";
@@ -369,7 +370,7 @@ void Loop(bool &flag,sharpen::RandomTimerAdaptor &electionTimer,TestStateMachine
                 sharpen::Print(sm->SelfId()," election fail\n");
             }
         }
-        //log
+        //log 
         sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::EventEngine::GetEngine());
         while(sm->GetRole() == sharpen::RaftRole::Leader)
         {
@@ -395,7 +396,20 @@ void Loop(bool &flag,sharpen::RandomTimerAdaptor &electionTimer,TestStateMachine
             //keep alive
             sharpen::MicroRpcStack req;
             req.Clear();
+            TestLog log{sm->CurrentTerm(),sm->LastIndex() + 1,sm->LastIndex() + 1};
+            //log
+            req.Push(log.GetTerm());
+            req.Push(log.GetIndex());
+            //pre log
+            req.Push(sm->LastTerm());
+            req.Push(sm->LastIndex());
+            sm->PushLog(log);
+            sm->AddCommitIndex(1);
+            //commit index
+            req.Push(sm->CommitIndex());
+            //leader id
             req.Push(sm->SelfId());
+            //current term
             req.Push(sm->CurrentTerm());
             const char name[] = "AppendEntries";
             req.Push(name,name + sizeof(name) - 1);
@@ -407,6 +421,11 @@ void Loop(bool &flag,sharpen::RandomTimerAdaptor &electionTimer,TestStateMachine
             if(!success)
             {
                 sharpen::Print(sm->SelfId()," keep alive fail\n");
+            }
+            else
+            {
+                sm->Commiter().Commit(log);
+                sm->AddLastApplied(1);
             }
             finish.Await();
             std::puts("finish log");
@@ -466,7 +485,16 @@ void Test(TestId id,bool *flag,sharpen::MicroRpcServer **ser)
         sharpen::Uint64 leaderTerm = *ite->Data<sharpen::Uint64>();
         ++ite;
         sharpen::Uint64 leaderId = *ite->Data<sharpen::Uint64>();
-        bool success = sm.AppendEntries(logs.begin(),logs.end(),leaderId,leaderTerm,0,0,0);
+        ++ite;
+        sharpen::Uint64 lastCommit = *ite->Data<sharpen::Uint64>();
+        ++ite;
+        sharpen::Uint64 lastIndex = *ite->Data<sharpen::Uint64>();
+        ++ite;
+        sharpen::Uint64 lastTerm = *ite->Data<sharpen::Uint64>();
+        ++ite;
+        sharpen::Uint64 val = *ite->Data<sharpen::Uint64>();
+        logs.push_back(TestLog{leaderTerm,val,val});
+        bool success = sm.AppendEntries(logs.begin(),logs.end(),leaderId,leaderTerm,lastIndex,lastTerm,lastCommit);
         if(success)
         {
             sharpen::Print(sm.SelfId()," keep alive by ",leaderId,"\n");

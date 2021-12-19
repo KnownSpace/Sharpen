@@ -28,7 +28,7 @@ namespace sharpen
                                                                 ,std::declval<bool&>() = std::declval<const _PersistenceStorage&>().IsVotedFor()
                                                                 ,std::declval<_PersistenceStorage>().EraseLogAfter(0)
                                                                 ,std::declval<bool&>() = std::declval<const _PersistenceStorage&>().ContainLog(0)
-                                                                ,std::declval<_Log&>() = std::declval<const _PersistenceStorage&>().FindLog(0)
+                                                                ,std::declval<_Log&>() = std::declval<const _PersistenceStorage&>().GetLog(0)
                                                                 ,std::declval<_Log&>() = std::declval<const _PersistenceStorage&>().LastLog()
                                                                 ,std::declval<sharpen::Size&>() = std::declval<const _PersistenceStorage&>().LogCount()
                                                                 ,std::declval<bool&>() = std::declval<const _PersistenceStorage&>().LogIsEmpty()

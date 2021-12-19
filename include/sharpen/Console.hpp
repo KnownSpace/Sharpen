@@ -189,9 +189,16 @@ namespace sharpen
             std::fputs(str,file);
         }
 
+        //T is char
+        template<typename _T,typename _IsBool = typename std::enable_if<std::is_same<char,typename std::remove_const<typename std::remove_reference<_T>::type>::type>::value>::type>
+        static void Print(FILE *file,_T &&val,int,int,int,int,int,int,...)
+        {
+            std::fputc(val,file);
+        }
+
         //SpecialPrinter
         template<typename _T,typename _RawType = typename std::remove_reference<_T>::type,typename _HasSpecialPrinter = decltype(&sharpen::SpecialPrinter<_RawType>::Print)>
-        static void Print(FILE *file,_T &&val,int,int,int,int,int,int,...)
+        static void Print(FILE *file,_T &&val,int,int,int,int,int,int,int,...)
         {
             sharpen::SpecialPrinter<_RawType>::Print(file,std::forward<_T>(val));
         }
@@ -203,13 +210,13 @@ namespace sharpen
     {
         static void Print(_T &&arg,_Ts &&...args)
         {
-            sharpen::TypePrinter::Print(stdout,std::forward<_T>(arg),0,0,0,0,0,0);
+            sharpen::TypePrinter::Print(stdout,std::forward<_T>(arg),0,0,0,0,0,0,0);
             sharpen::ConsolePrinter<_Ts...>::Print(std::forward<_Ts>(args)...);
         }
 
         static void Perror(_T &&arg,_Ts &&...args)
         {
-            sharpen::TypePrinter::Print(stderr,std::forward<_T>(arg),0,0,0,0,0,0);
+            sharpen::TypePrinter::Print(stderr,std::forward<_T>(arg),0,0,0,0,0,0,0);
             sharpen::ConsolePrinter<_Ts...>::Print(std::forward<_Ts>(args)...);
         }
     };

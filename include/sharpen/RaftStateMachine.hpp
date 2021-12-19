@@ -203,12 +203,11 @@ namespace sharpen
             {
                 if(this->PersistenceStorage().ContainLog(preLogIndex))
                 {
-                    const _Log &log = this->PersistenceStorage().FindLog(preLogIndex);
+                    const _Log &log = this->PersistenceStorage().GetLog(preLogIndex);
                     if(log.GetTerm() != preLogTerm)
                     {
                         return false;
                     }
-                    this->PersistenceStorage().EraseLogAfter(preLogIndex);
                 }
                 else
                 {
@@ -219,26 +218,45 @@ namespace sharpen
             {
                 return false;
             }
-            //commit log
+            bool token{true};
+            //erase logs if term diff with leader
             for (auto ite = begin; ite != end; ++ite)
             {
+                //skip logs that already commited
                 if(ite->GetIndex() > this->commitIndex_)
                 {
-                    this->PersistenceStorage().PushLog(*begin);
+                    if(token && !this->PersistenceStorage().LogIsEmpty() && this->PersistenceStorage().ContainLog(ite->GetIndex()))
+                    {
+                        //check log
+                        //if log term != leader
+                        if(this->PersistenceStorage().GetLog(ite->GetIndex()).GetTerm() != ite->GetTerm())
+                        {
+                            //remove logs [index,end)
+                            this->PersistenceStorage().EraseLogAfter(ite->GetIndex() - 1);
+                            //skip check
+                            token = false;
+                            //push log
+                            this->PersistenceStorage().PushLog(*ite);
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                    this->PersistenceStorage().PushLog(*ite);
                 }
             }
-            //update commit index
-            //prepare to commit
-            sharpen::Uint64 oldCommit = this->commitIndex_;
-            if(leaderCommit > this->commitIndex_)
-            {
-                this->commitIndex_ = leaderCommit;
-            }
             //commit logs
+            sharpen::Uint64 oldCommit = this->CommitIndex();
+            if(this->commitIndex_ < leaderCommit)
+            {
+                this->commitIndex_ = (std::min)(leaderCommit,this->LastIndex());
+            }
             while (begin != end)
             {
                 if(begin->GetIndex() > oldCommit)
                 {
+                    this->lastApplied_ += 1;
                     this->Commiter().Commit(*begin);
                 }
                 ++begin;
@@ -374,6 +392,29 @@ namespace sharpen
         void AddLastApplied(sharpen::Uint64 value) noexcept
         {
             this->lastApplied_ += value;
+        }
+
+        sharpen::Uint64 CommitIndex() const noexcept
+        {
+            return this->commitIndex_;
+        }
+
+        sharpen::Uint64 LastApplied() const noexcept
+        {
+            return this->lastApplied_;
+        }
+
+        void ApplyLogs()
+        {
+            while (this->lastApplied_ < this->commitIndex_)
+            {
+                if(this->lastApplied_ != 0)
+                {
+                    const _Log &log = this->PersistenceStorage().GetLog(this->lastApplied_);
+                    this->Commiter().Commit(log);
+                }
+                ++this->lastApplied_;
+            }
         }
 
         ~InternalRaftStateMachine() noexcept = default;
