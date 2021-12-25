@@ -29,6 +29,20 @@ Sharpen is a multithreaded C++ network library
   1. Add include directory
   1. Add link target
 
+
+#### Use in your cmake projects:
+```cmake
+#Include FetchContent
+include(FetchContent)
+#Get sharpen
+fetchcontent_declare(sharpen GIT_REPOSITORY "sharpen repo url" GIT_TAG "git tag" SOURCE_DIR "libraries directory")
+fetchcontent_makeavailable(sharpen)
+#Link to your projects
+target_link_libraries(your_project sharpen::sharpen)
+#Include sharpen header file(optional)
+include_directories("${SHARPEN_INCLUDE_DIRS}")
+```
+
 #### Licenses:
   - Sharpen(MIT License)
   - Boost.Context(BOOST License)
