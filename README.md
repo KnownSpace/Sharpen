@@ -30,6 +30,6 @@ Sharpen is a multithreaded C++ network library
   1. Add link target
 
 #### Licenses:
-  - Sharpen(MIT Lincense)
-  - Boost.Context(BOOST Lincense)
-  - llhttp(MIT Lincense)
+  - Sharpen(MIT License)
+  - Boost.Context(BOOST License)
+  - llhttp(MIT License)
