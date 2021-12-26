@@ -83,16 +83,6 @@ namespace sharpen
         } union_;
         sharpen::Uint64 value_;  
     };
-
-    extern unsigned char Crc16TableHeight[256];
-
-    extern unsigned char Crc16TableLow[256];
-
-    //CRC16-MODBUS
-    sharpen::Uint16 Crc16(const char *data,sharpen::Size size) noexcept;
-
-    //Adler32
-    sharpen::Uint32 Adler32(const char *data,sharpen::Size size) noexcept;
 }
 
 #endif

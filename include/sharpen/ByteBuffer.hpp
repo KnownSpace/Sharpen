@@ -8,7 +8,7 @@
 
 #include "Noncopyable.hpp"
 #include "TypeDef.hpp"
-#include "IntOps.hpp"
+#include "BufferOps.hpp"
 
 namespace sharpen
 {
@@ -208,6 +208,22 @@ namespace sharpen
         inline sharpen::Uint16 Crc16() const noexcept
         {
             return sharpen::Crc16(this->Data(),this->GetSize());
+        }
+
+        inline sharpen::ByteBuffer Base64Encode() const
+        {
+            sharpen::ByteBuffer buf{sharpen::ComputeBase64EncodeSize(this->GetSize())};
+            bool success = sharpen::Base64Encode(buf.Data(),buf.GetSize(),this->Data(),this->GetSize());
+            static_cast<void>(success);
+            return buf;
+        }
+
+        inline sharpen::ByteBuffer Base64Decode() const
+        {
+            sharpen::ByteBuffer buf{sharpen::ComputeBase64DecodeSize(this->GetSize())};
+            bool success = sharpen::Base64Decode(buf.Data(),buf.GetSize(),this->Data(),this->GetSize());
+            static_cast<void>(success);
+            return buf;
         }
     };
 } 

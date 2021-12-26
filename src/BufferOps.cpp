@@ -1,7 +1,9 @@
-#include <sharpen/IntOps.hpp>
+#include <sharpen/BufferOps.hpp>
 
 #include <utility>
 #include <cassert>
+
+#include <sharpen/IntOps.hpp>
 
 unsigned char sharpen::Crc16TableHeight[256] =
 {
@@ -129,4 +131,113 @@ sharpen::Uint32 sharpen::Adler32(const char *data,sharpen::Size size) noexcept
         adler32.union_.height_ %= 65521;
     }
     return adler32.value_;
+}
+
+sharpen::Size sharpen::ComputeBase64EncodeSize(sharpen::Size size) noexcept
+{
+    return size/3*4 + (size % 3) ? 4:0;
+}
+
+sharpen::Size sharpen::ComputeBase64DecodeSize(sharpen::Size size) noexcept
+{
+    return size/4*3;
+}
+
+bool sharpen::Base64Encode(char *dst,sharpen::Size dstSize,const char *src,sharpen::Size srcSize) noexcept
+{
+    if(dstSize < sharpen::ComputeBase64EncodeSize(srcSize))
+    {
+        return false;
+    }
+    if(!srcSize)
+    {
+        return true;
+    }
+    static const char *base64Hex = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-";
+    unsigned char srcBuf[3] = {};
+    const char *srcEnd = src + srcSize;
+    sharpen::Size i{0};
+    while (src != srcEnd)
+    {
+        srcBuf[i++] = static_cast<unsigned char>(*(src++));
+        if(i == 3)
+        {
+            //convert to base 64
+            *(dst++) = base64Hex[srcBuf[0] >> 2];
+            *(dst++) = base64Hex[(srcBuf[0] & 0x03 ) << 4 | srcBuf[1] >> 4];
+            *(dst++) = base64Hex[(srcBuf[1] & 0x0F) << 2 | srcBuf[2] >> 6];
+            *(dst++) = base64Hex[srcBuf[2] & 0x3F];
+            i = 0;
+            continue;
+        }
+    }
+    if(i != 0)
+    {
+        for (sharpen::Size j = i; j < 3; j++)
+        {
+            srcBuf[j] = 0;
+        }
+        *(dst++) = base64Hex[srcBuf[0] >> 2];
+        *(dst++) = base64Hex[(srcBuf[0] & 0x03 ) << 4 | srcBuf[1] >> 4];
+        *(dst++) = i == 2 ? base64Hex[(srcBuf[1] & 0x0F) << 2 | srcBuf[2] >> 6] : '=';
+        *(dst++) = '=';
+    }
+    return true;
+}
+
+char sharpen::Base64DecodeMapping(unsigned char c) noexcept
+{
+    if(c >= 'A' && c <= 'Z')
+    {
+        return c - 'A';
+    }
+    else if(c >= 'a' && c <= 'z')
+    {
+        return c - 'a' + 24;
+    }
+    else if(c == '+')
+    {
+        return 62;
+    }
+    else if(c == '=')
+    {
+        return 0;
+    }
+    return 63;
+}
+
+bool sharpen::Base64Decode(char *dst,sharpen::Size dstSize,const char *src,sharpen::Size srcSize) noexcept
+{
+    if (dstSize < sharpen::ComputeBase64DecodeSize(srcSize) || srcSize % 4)
+    {
+        return false;
+    }
+    if(!srcSize)
+    {
+        return true;
+    }
+    unsigned char srcBuf[4] = {};
+    const char *srcEnd = src + srcSize;
+    sharpen::Size i{0};
+    while (src != srcEnd)
+    {
+        srcBuf[i++] = static_cast<unsigned char>(*(src++));
+        if(i == 4)
+        {
+            char tmp{sharpen::Base64DecodeMapping(srcBuf[0])};
+            tmp <<= 2;
+            tmp |= sharpen::Base64DecodeMapping(srcBuf[1]) >> 4;
+            *(dst++) = tmp;
+
+            tmp = sharpen::Base64DecodeMapping(srcBuf[1]) << 4;
+            tmp |= sharpen::Base64DecodeMapping(srcBuf[2]) >> 2;
+            *(dst++) = tmp;
+
+            tmp = sharpen::Base64DecodeMapping(srcBuf[2]) << 6;
+            tmp |= sharpen::Base64DecodeMapping(srcBuf[3]);
+            *(dst++) = tmp;
+            i = 0;
+        }
+    }
+    return true;
 }

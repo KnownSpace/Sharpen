@@ -1,6 +1,6 @@
 #include <cstdio>
 #include <cassert>
-#include <sharpen/IntOps.hpp>
+#include <sharpen/BufferOps.hpp>
 
 int main(int argc, char const *argv[])
 {
