@@ -135,7 +135,7 @@ sharpen::Uint32 sharpen::Adler32(const char *data,sharpen::Size size) noexcept
 
 sharpen::Size sharpen::ComputeBase64EncodeSize(sharpen::Size size) noexcept
 {
-    return size/3*4 + (size % 3) ? 4:0;
+    return size/3*4 + ((size % 3) ? 4:0);
 }
 
 sharpen::Size sharpen::ComputeBase64DecodeSize(sharpen::Size size) noexcept
