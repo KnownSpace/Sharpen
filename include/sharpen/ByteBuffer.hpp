@@ -8,6 +8,7 @@
 
 #include "Noncopyable.hpp"
 #include "TypeDef.hpp"
+#include "IntOps.hpp"
 
 namespace sharpen
 {
@@ -197,6 +198,16 @@ namespace sharpen
         inline void Clear()
         {
             this->vector_.clear();
+        }
+
+        inline sharpen::Uint32 Adler32() const noexcept
+        {
+            return sharpen::Adler32(this->Data(),this->GetSize());
+        }
+
+        inline sharpen::Uint16 Crc16() const noexcept
+        {
+            return sharpen::Crc16(this->Data(),this->GetSize());
         }
     };
 } 
