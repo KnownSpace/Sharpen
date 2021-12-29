@@ -33,7 +33,7 @@ namespace sharpen
     using IsRpcMessage = sharpen::IsMatches<sharpen::InternalIsRpcMessage,_Message>;
 
     template<typename _Request,typename _Dispatcher>
-    using InternalIsRpcDispatcher = auto(*)()->decltype(sharpen::DeclLvalue<_Dispatcher>().GetProcedureName(sharpen::DeclLvalue<_Request>()));
+    using InternalIsRpcDispatcher = auto(*)()->decltype(sharpen::DeclLvalue<_Dispatcher>().GetProcedureName(sharpen::DeclLvalue<_Request>()/*request*/));
 
     template<typename _Request,typename _Dispatcher>
     using IsRpcDispatcher = sharpen::IsMatches<sharpen::InternalIsRpcDispatcher,_Request,_Dispatcher>;

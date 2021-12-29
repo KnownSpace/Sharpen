@@ -8,8 +8,8 @@
 namespace sharpen
 {
     template<typename _Proposer,typename _Proposal>
-    using InternalIsQuorumProposer = auto(*)()->decltype(sharpen::DeclLvalue<_Proposer>().ProposeAsync(std::declval<_Proposal>()
-                                                        ,std::declval<sharpen::Future<bool>&>()));
+    using InternalIsQuorumProposer = auto(*)()->decltype(sharpen::DeclLvalue<_Proposer>().ProposeAsync(std::declval<_Proposal>()/*proposal*/
+                                                        ,std::declval<sharpen::Future<bool>&>())/*result future*/);
 
     template<typename _Proposer,typename _Proposal>
     using IsQuorumProposer = sharpen::IsMatches<sharpen::InternalIsQuorumProposer,_Proposer,_Proposal>;
