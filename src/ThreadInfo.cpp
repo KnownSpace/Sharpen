@@ -20,7 +20,7 @@ sharpen::Uint32 sharpen::GetCurrentThreadId() noexcept
 #ifdef SHARPEN_IS_WIN
         id.Construct(::GetCurrentThreadId());
 #elif defined SHARPEN_IS_LINUX
-        id.Construct(syscall(__NR_gettid));
+        id.Construct(static_cast<sharpen::Uint32>(syscall(__NR_gettid)));
 #else
         id.Construct(pthread_self());
 #endif

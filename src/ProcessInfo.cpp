@@ -16,7 +16,7 @@ sharpen::Uint32 sharpen::GetProcessId() noexcept
 #ifdef SHARPEN_IS_WIN
         id.Construct(::GetCurrentProcessId());
 #else
-        id.Construct(::getpid());
+        id.Construct(static_cast<sharpen::Uint32>(::getpid()));
 #endif
     }
     return id.Get();
