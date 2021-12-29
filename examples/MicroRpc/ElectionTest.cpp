@@ -82,7 +82,7 @@ private:
     sharpen::Uint64 currentTerm_;
 public:
 
-    void PushLog(const TestLog &log)
+    void AppendLog(const TestLog &log)
     {
         logs_.push_back(log);
     }
@@ -112,18 +112,10 @@ public:
         return this->votedFor_.HasValue();
     }
 
-    void EraseLogAfter(sharpen::Uint64 index)
+    void EraseLog(sharpen::Uint64 index)
     {
-        sharpen::Print("remove logs after index ",index,"\n");
+        sharpen::Print("remove logs index ",index,"\n");
         auto ite = this->logs_.begin(),end = this->logs_.end();
-        while (ite != end)
-        {
-            if (ite->GetIndex() == index)
-            {
-                break;
-            }
-            ++ite;
-        }
         if(ite != this->logs_.end())
         {
             this->logs_.erase(++ite,this->logs_.end());
@@ -163,12 +155,12 @@ public:
         return this->logs_.back();
     }
 
-    size_t LogCount() const
+    size_t LogsCount() const
     {
         return this->logs_.size();
     }
 
-    bool LogIsEmpty() const
+    bool EmptyLogs() const
     {
         return this->logs_.empty();
     }
@@ -181,6 +173,20 @@ public:
     void ResetVotedFor()
     {
         this->votedFor_ = sharpen::NullOpt;
+    }
+
+    bool CheckLog(sharpen::Uint64 index,sharpen::Uint64 expectedTerm) const
+    {
+        return this->GetLog(index).GetTerm() == expectedTerm;
+    }
+
+    sharpen::Uint64 LastLogIndex() const noexcept
+    {
+        if(this->logs_.empty())
+        {
+            return 0;
+        }
+        return this->logs_.back().GetIndex();
     }
 };
 
@@ -421,7 +427,7 @@ void Loop(bool &flag,sharpen::RandomTimerAdaptor &electionTimer,TestStateMachine
             }
             else
             {
-                sm->PushLog(log);
+                sm->AppendLog(log);
                 sm->AddCommitIndex(1);
                 sm->ApplyLogs();
             }

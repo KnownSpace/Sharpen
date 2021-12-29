@@ -111,7 +111,7 @@ namespace sharpen
 
         sharpen::Uint64 LastIndex() const noexcept
         {
-            if(this->PersistenceStorage().LogIsEmpty())
+            if(this->PersistenceStorage().EmptyLogs())
             {
                 return 0;
             }
@@ -120,7 +120,7 @@ namespace sharpen
 
         sharpen::Uint64 LastTerm() const noexcept
         {
-            if(this->PersistenceStorage().LogIsEmpty())
+            if(this->PersistenceStorage().EmptyLogs())
             {
                 return 0;
             }
@@ -199,12 +199,11 @@ namespace sharpen
             //reset voted for
             this->PersistenceStorage().ResetVotedFor();
             //check logs
-            if(!this->PersistenceStorage().LogIsEmpty())
+            if(!this->PersistenceStorage().EmptyLogs())
             {
                 if(this->PersistenceStorage().ContainLog(preLogIndex))
                 {
-                    const _Log &log = this->PersistenceStorage().GetLog(preLogIndex);
-                    if(log.GetTerm() != preLogTerm)
+                    if(!this->PersistenceStorage().CheckLog(preLogIndex,preLogTerm))
                     {
                         return false;
                     }
@@ -225,25 +224,22 @@ namespace sharpen
                 //skip logs that already commited
                 if(ite->GetIndex() > this->commitIndex_)
                 {
-                    if(token && !this->PersistenceStorage().LogIsEmpty() && this->PersistenceStorage().ContainLog(ite->GetIndex()))
+                    if(token && !this->PersistenceStorage().EmptyLogs() && this->PersistenceStorage().ContainLog(ite->GetIndex()))
                     {
                         //check log
                         //if log term != leader
-                        if(this->PersistenceStorage().GetLog(ite->GetIndex()).GetTerm() != ite->GetTerm())
+                        if(!this->PersistenceStorage().CheckLog(ite->GetIndex(),ite->GetTerm()))
                         {
                             //remove logs [index,end)
-                            this->PersistenceStorage().EraseLogAfter(ite->GetIndex() - 1);
+                            for (size_t ib = ite->GetIndex(),ie = this->PersistenceStorage().LastLogIndex(); ib <= ie; ++ib)
+                            {
+                                this->PersistenceStorage().EraseLog(ie);
+                            }
                             //skip check
                             token = false;
-                            //push log
-                            this->PersistenceStorage().PushLog(*ite);
-                        }
-                        else
-                        {
-                            continue;
                         }
                     }
-                    this->PersistenceStorage().PushLog(*ite);
+                    this->PersistenceStorage().AppendLog(*ite);
                 }
             }
             //commit logs
@@ -372,9 +368,9 @@ namespace sharpen
             this->leaderId_ = sharpen::NullOpt;
         }
 
-        void PushLog(_Log log)
+        void AppendLog(_Log log)
         {
-            this->PersistenceStorage().PushLog(std::move(log));
+            this->PersistenceStorage().AppendLog(std::move(log));
         }
 
         void AddCommitIndex(sharpen::Uint64 value) noexcept
