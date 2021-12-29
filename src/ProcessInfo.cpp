@@ -6,11 +6,18 @@
 #include <unistd.h>
 #endif
 
+#include <sharpen/Option.hpp>
+
 sharpen::Uint32 sharpen::GetProcessId() noexcept
 {
+    static sharpen::Option<sharpen::Uint32> id;
+    if(!id.HasValue())
+    {
 #ifdef SHARPEN_IS_WIN
-    return ::GetCurrentProcessId();
+        id.Construct(::GetCurrentProcessId());
 #else
-    return ::getpid();
+        id.Construct(::getpid());
 #endif
+    }
+    return id.Get();
 }

@@ -10,14 +10,20 @@
 #include <pthread.h>
 #endif
 
+#include <sharpen/Option.hpp>
 
 sharpen::Uint32 sharpen::GetCurrentThreadId() noexcept
 {
+    static thread_local sharpen::Option<sharpen::Uint32> id;
+    if(!id.HasValue())
+    {
 #ifdef SHARPEN_IS_WIN
-        return ::GetCurrentThreadId();
+        id.Construct(::GetCurrentThreadId());
 #elif defined SHARPEN_IS_LINUX
-        return syscall(__NR_gettid);
+        id.Construct(syscall(__NR_gettid));
 #else
-        return pthread_self();
-#endif   
+        id.Construct(pthread_self());
+#endif
+    }
+    return id.Get();
 }
