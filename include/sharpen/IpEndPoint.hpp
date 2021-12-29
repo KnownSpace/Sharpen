@@ -48,6 +48,28 @@ namespace sharpen
             return !(*this == other);
         }
 
+        sharpen::Int64 CompareWith(const Self &other) const noexcept;
+
+        inline bool operator>(const Self &other) const noexcept
+        {
+            return this->CompareWith(other) > 0;
+        }
+
+        inline bool operator<(const Self &other) const noexcept
+        {
+            return this->CompareWith(other) < 0;
+        }
+
+        inline bool operator>=(const Self &other) const noexcept
+        {
+            return this->CompareWith(other) >= 0;
+        }
+
+        inline bool operator<=(const Self &other) const noexcept
+        {
+            return this->CompareWith(other) <= 0;
+        }
+
         virtual NativeAddr *GetAddrPtr() noexcept override;
 
         virtual const NativeAddr *GetAddrPtr() const noexcept override;

@@ -3,6 +3,7 @@
 #include <utility>
 
 #include <sharpen/SystemMacro.hpp>
+#include <sharpen/IntOps.hpp>
 
 #ifdef SHARPEN_IS_WIN
 #include <WS2tcpip.h>
@@ -95,4 +96,14 @@ void sharpen::IpEndPoint::GetAddrSring(char *addrStr,sharpen::Size size) const
 void sharpen::IpEndPoint::SetAddrByString(const char *addrStr)
 {
     ::inet_pton(AF_INET,addrStr,&(this->addr_.sin_addr));
+}
+
+sharpen::Int64 sharpen::IpEndPoint::CompareWith(const Self &other) const noexcept
+{
+    sharpen::Int64 thiz,otherval;
+    thiz = this->GetAddr() << 16;
+    thiz |= this->GetPort();
+    otherval = other.GetAddr() << 16;
+    otherval |= other.GetPort();
+    return thiz - otherval;
 }

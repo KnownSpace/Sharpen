@@ -269,3 +269,25 @@ void sharpen::ByteBuffer::Erase(ConstIterator begin,ConstIterator end)
 {
     this->vector_.erase(begin,end);
 }
+
+sharpen::Char sharpen::ByteBuffer::GetOrDefault(sharpen::Size index,sharpen::Char defaultVal) const noexcept
+{
+    if(index >= this->GetSize())
+    {
+        return defaultVal;
+    }
+    return this->Get(index);
+}
+
+sharpen::Int32 sharpen::ByteBuffer::CompareWith(const Self &other) const noexcept
+{
+    if(other.GetSize() > this->GetSize())
+    {
+        return -1;
+    }
+    else if(this->GetSize() > other.GetSize())
+    {
+        return 1;
+    }
+    return std::memcmp(this->Data(),other.Data(),this->GetSize());
+}

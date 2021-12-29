@@ -98,3 +98,12 @@ void sharpen::Ipv6EndPoint::SetAddrByString(const char *addrStr)
 {
     ::inet_pton(AF_INET6,addrStr,&(this->addr_.sin6_addr));
 }
+
+sharpen::Int64 sharpen::Ipv6EndPoint::CompareWith(const Self &other) const noexcept
+{
+    sharpen::Int64 r{0};
+    r = std::memcmp(&this->addr_.sin6_addr,&other.addr_.sin6_addr,sizeof(this->addr_.sin6_addr));
+    r <<= 32;
+    r |= static_cast<sharpen::Int16>(this->GetPort() - other.GetPort());
+    return r;
+}

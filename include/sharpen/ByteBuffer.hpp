@@ -79,6 +79,8 @@ namespace sharpen
 
         sharpen::Char Get(sharpen::Size index) const;
 
+        sharpen::Char GetOrDefault(sharpen::Size index,sharpen::Char defaultVal) const noexcept;
+
         sharpen::Char *Data();
 
         const sharpen::Char* Data() const;
@@ -224,6 +226,28 @@ namespace sharpen
             bool success = sharpen::Base64Decode(buf.Data(),buf.GetSize(),this->Data(),this->GetSize());
             static_cast<void>(success);
             return buf;
+        }
+
+        sharpen::Int32 CompareWith(const Self &other) const noexcept;
+
+        inline bool operator>(const Self &other) const noexcept
+        {
+            return this->CompareWith(other) > 0;
+        }
+
+        inline bool operator<(const Self &other) const noexcept
+        {
+            return this->CompareWith(other) < 0;
+        }
+
+        inline bool operator>=(const Self &other) const noexcept
+        {
+            return this->CompareWith(other) >= 0;
+        }
+
+        inline bool operator<=(const Self &other) const noexcept
+        {
+            return this->CompareWith(other) <= 0;
         }
     };
 } 
