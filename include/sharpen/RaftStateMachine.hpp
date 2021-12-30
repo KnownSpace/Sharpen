@@ -199,9 +199,9 @@ namespace sharpen
             //reset voted for
             this->PersistenceStorage().ResetVotedFor();
             //check logs
-            if(!this->PersistenceStorage().EmptyLogs())
+            if(!this->PersistenceStorage().EmptyLogs() && preLogIndex > this->lastApplied_)
             {
-                if(this->PersistenceStorage().ContainLog(preLogIndex))
+                if( this->PersistenceStorage().ContainLog(preLogIndex))
                 {
                     if(!this->PersistenceStorage().CheckLog(preLogIndex,preLogTerm))
                     {
@@ -213,7 +213,7 @@ namespace sharpen
                     return false;
                 }
             }
-            else if(preLogIndex != 0)
+            else if(preLogIndex != 0 && preLogIndex > this->lastApplied_)
             {
                 return false;
             }
