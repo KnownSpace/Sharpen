@@ -89,7 +89,7 @@ void sharpen::FileMemory::Flush() const
     }
 }
 
-void sharpen::FileMemory::FlushSync() const
+void sharpen::FileMemory::FlushAndWait() const
 {
     if(this->address_)
     {
