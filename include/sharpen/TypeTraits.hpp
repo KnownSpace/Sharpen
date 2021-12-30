@@ -3,6 +3,7 @@
 #define _SHARPEN_TYPETRAITS_HPP
 
 #include <type_traits>
+#include <functional>
 
 #include "TypeDef.hpp"
 
@@ -351,5 +352,23 @@ namespace sharpen
 
     template<typename _T>
     _T &&DeclRvalue();
+
+    template<typename _Fn,typename ..._Args>
+    using InternalIsCompletedBindable = auto(*)()->decltype(std::bind(std::declval<_Fn>(),std::declval<_Args>()...)());
+
+    template<typename _Fn,typename ..._Args>
+    using IsCompletedBindable = sharpen::IsMatches<sharpen::InternalIsCompletedBindable,_Fn,_Args...>;
+
+    template<typename _R,typename _Fn,typename ..._Args>
+    using InternalIsCallableReturned = auto(*)()->sharpen::EnableIf<std::is_same<_R,decltype(std::declval<_Fn>()(std::declval<_Args>()...))>::value>;
+
+    template<typename _R,typename _Fn,typename ..._Args>
+    using IsCallableReturned = sharpen::IsMatches<sharpen::InternalIsCallableReturned,_R,_Fn,_Args...>;
+
+    template<typename _R,typename _Fn,typename ..._Args>
+    using InternalIsCompletedBindableReturned = auto(*)()->sharpen::EnableIf<std::is_same<_R,decltype(std::bind(std::declval<_Fn>(),std::declval<_Args>()...)())>::value>;
+
+    template<typename _R,typename _Fn,typename ..._Args>
+    using IsCompletedBindableReturned = sharpen::IsMatches<sharpen::InternalIsCompletedBindableReturned,_R,_Fn,_Args...>;
 }
 #endif

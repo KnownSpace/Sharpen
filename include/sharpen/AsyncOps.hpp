@@ -13,14 +13,14 @@
 
 namespace sharpen
 {
-    template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCallable<_Fn,_Args...>::Value>>
+    template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<void,_Fn,_Args...>::Value>>
     inline void Launch(_Fn &&fn,_Args &&...args)
     {
         sharpen::EventEngine &engine = sharpen::EventEngine::GetEngine();
         engine.Launch(std::forward<_Fn>(fn),std::forward<_Args>(args)...);
     }
 
-    template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCallable<_Fn,_Args...>::Value>>
+    template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<void,_Fn,_Args...>::Value>>
     inline void LaunchSpecial(sharpen::Size stackSize,_Fn &&fn,_Args &&...args)
     {
         sharpen::EventEngine &engine = sharpen::EventEngine::GetEngine();

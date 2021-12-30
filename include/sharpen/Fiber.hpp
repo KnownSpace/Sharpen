@@ -8,6 +8,7 @@
 #include "MemoryStack.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
+#include "TypeTraits.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -82,7 +83,7 @@ namespace sharpen
 
         void SetScheduler(sharpen::IFiberScheduler *scheduler) noexcept;
 
-        template<typename _Fn,typename ..._Args>
+        template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<void,_Fn,_Args...>::Value>>
         static sharpen::FiberPtr MakeFiber(sharpen::Size stackSize,_Fn &&fn,_Args &&...args)
         {
             sharpen::FiberPtr fiber = std::make_shared<sharpen::Fiber>();

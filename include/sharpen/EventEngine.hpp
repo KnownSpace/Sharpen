@@ -64,14 +64,14 @@ namespace sharpen
 
         void Run();
 
-        template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCallable<_Fn,_Args...>::Value>>
+        template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<void,_Fn,_Args...>::Value>>
         void LaunchAndRun(_Fn &&fn,_Args &&...args)
         {
             this->Launch(std::forward<_Fn>(fn),std::forward<_Args>(args)...);
             this->Run();
         }
 
-        template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCallable<_Fn,_Args...>::Value>>
+        template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<void,_Fn,_Args...>::Value>>
         void Startup(_Fn &&fn,_Args &&...args)
         {
             auto task = std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...);

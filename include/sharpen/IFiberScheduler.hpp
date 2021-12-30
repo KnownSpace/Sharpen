@@ -5,6 +5,7 @@
 #include "Fiber.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
+#include "TypeTraits.hpp"
 
 #ifndef SHARPEN_FIBER_STACK_SIZE
 #define SHARPEN_FIBER_STACK_SIZE 64*1024
@@ -23,13 +24,13 @@ namespace sharpen
 
         virtual void Schedule(sharpen::FiberPtr &&fiber) = 0;
 
-        template<typename _Fn,typename ..._Args,typename _Check = decltype(std::bind(std::declval<_Fn>(),std::declval<_Args>()...)())>
+        template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<void,_Fn,_Args...>::Value>>
         void Launch(_Fn &&fn,_Args &&...args)
         {
             this->LaunchSpecial(SHARPEN_FIBER_STACK_SIZE,std::forward<_Fn>(fn),std::forward<_Args>(args)...);
         }
 
-        template<typename _Fn,typename ..._Args,typename _Check = decltype(std::bind(std::declval<_Fn>(),std::declval<_Args>()...)())>
+        template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<void,_Fn,_Args...>::Value>>
         void LaunchSpecial(sharpen::Size stackSize,_Fn &&fn,_Args &&...args)
         {
             sharpen::FiberPtr fiber = sharpen::Fiber::MakeFiber(stackSize,std::forward<_Fn>(fn),std::forward<_Args>(args)...);
