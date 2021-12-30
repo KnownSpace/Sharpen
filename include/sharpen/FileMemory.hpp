@@ -37,7 +37,7 @@ namespace sharpen
 
         void Flush() const;
 
-        void FlushSync() const;
+        void FlushAndWait() const;
     }; 
 }
 
