@@ -25,17 +25,7 @@ namespace sharpen
         
         static void InitOverlapped(OVERLAPPED &ol,sharpen::Uint64 offset);
 
-        static void Closer(sharpen::FileHandle file,sharpen::FileHandle mapping) noexcept;
-
         void InitOverlappedStruct(sharpen::IocpOverlappedStruct &event,sharpen::Uint64 offset);
-
-        void DoInitFileMapping();
-
-        void InitFileMapping();
-
-        std::once_flag mappingFlag_;
-
-        sharpen::FileHandle mappingHandle_;
 
     public:
 
