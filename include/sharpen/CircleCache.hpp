@@ -59,7 +59,7 @@ namespace sharpen
     
         ~CircleCache() noexcept = default;
 
-        inline void Push(_T &&obj)
+        inline void Push(_T obj)
         {
             this->buf_[this->next_++ % this->buf_.size()].Construct(std::move(obj));
         }
@@ -94,7 +94,7 @@ namespace sharpen
             return (this->next_ < this->Size())? this->next_ : this->Size();
         }
 
-        template<typename ...._Args>
+        template<typename ..._Args>
         inline auto Emplace(_Args &&...args) -> decltype(std::declval<sharpen::Option<_T>>().Construct(std::forward<_Args>(args)...))
         {
             this->buf_[this->next_++ % this->buf_.size()].Construct(std::forward<_Args>(args)...);
