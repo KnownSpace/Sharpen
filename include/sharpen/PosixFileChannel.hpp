@@ -16,7 +16,11 @@ namespace sharpen
     {
     private:
         using MyBase = sharpen::IFileChannel;
+        using Self = sharpen::PosixFileChannel;
 
+        void DoRead(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> *future);
+
+        void DoWrite(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> *future);
     public:
 
         explicit PosixFileChannel(sharpen::FileHandle handle);

@@ -19,23 +19,35 @@ sharpen::PosixFileChannel::PosixFileChannel(sharpen::FileHandle handle)
     this->handle_ = handle;
 }
 
+void sharpen::PosixFileChannel::DoWrite(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> *future)
+{
+    ssize_t r = ::pwrite64(this->handle_,buf,bufSize,offset);
+    if(r == -1)
+    {
+        future->Fail(sharpen::MakeLastErrorPtr());
+        return;
+    }
+    future->Complete(r);
+}
+
+void sharpen::PosixFileChannel::DoRead(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> *future)
+{
+    ssize_t r = ::pread64(this->handle_,buf,bufSize,offset);
+    if(r == -1)
+    {
+        future->Fail(sharpen::MakeLastErrorPtr());
+        return;
+    }
+    future->Complete(r);
+}
+
 void sharpen::PosixFileChannel::WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)
 {
     if (!this->IsRegistered())
     {
         throw std::logic_error("should register to a loop first");
     }
-    sharpen::FileHandle fd = this->handle_;
-    this->loop_->RunInLoop([buf,bufSize,offset,&future,fd]() mutable
-    {
-        ssize_t r = ::pwrite(fd,buf,bufSize,offset);
-        if (r < 0)
-        {
-            future.Fail(sharpen::MakeLastErrorPtr());
-            return;
-        }
-        future.Complete(r);
-    });
+    this->loop_->RunInLoop(std::bind(&Self::DoWrite,this,buf,bufSize,offset,&future));
 }
         
 void sharpen::PosixFileChannel::WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)
@@ -53,17 +65,7 @@ void sharpen::PosixFileChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSi
     {
         throw std::logic_error("should register to a loop first");
     }
-    sharpen::FileHandle fd = this->handle_;
-    this->loop_->RunInLoop([buf,bufSize,offset,&future,fd]() mutable
-    {
-        ssize_t r = ::pread(fd,buf,bufSize,offset);
-        if (r < 0)
-        {
-            future.Fail(sharpen::MakeLastErrorPtr());
-            return;
-        }
-        future.Complete(r);
-    });
+    this->loop_->RunInLoop(std::bind(&Self::DoRead,this,buf,bufSize,offset,&future));
 }
         
 void sharpen::PosixFileChannel::ReadAsync(sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)
