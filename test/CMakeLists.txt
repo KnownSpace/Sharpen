@@ -29,6 +29,10 @@ add_executable(microrpctest "${PROJECT_SOURCE_DIR}/test/MicroRpcTest.cpp")
 add_executable(quorumtest "${PROJECT_SOURCE_DIR}/test/QuorumTest.cpp")
 #checksum test
 add_executable(checksumtest "${PROJECT_SOURCE_DIR}/test/ChecksumTest.cpp")
+#bloom filter test
+add_executable(bloomfiltertest "${PROJECT_SOURCE_DIR}/test/BloomFilterTest.cpp")
+#base64 test
+add_executable(base64test "${PROJECT_SOURCE_DIR}/test/Base64Test.cpp")
 #link
 target_link_libraries(awaittest sharpen)
 target_link_libraries(timertest sharpen)
@@ -43,6 +47,8 @@ target_link_libraries(dummytypetest sharpen)
 target_link_libraries(microrpctest sharpen)
 target_link_libraries(quorumtest sharpen)
 target_link_libraries(checksumtest sharpen)
+target_link_libraries(bloomfiltertest sharpen)
+target_link_libraries(base64test sharpen)
 #test
 enable_testing()
 #tests
@@ -64,3 +70,5 @@ add_test(NAME dummy_type_test COMMAND "./dummytypetest${extname}")
 add_test(NAME microrpc_test COMMAND "./microrpctest${extname}")
 add_test(NAME quorum_test COMMAND "./quorumtest${extname}")
 add_test(NAME checksum_test COMMAND "./checksumtest${extname}")
+add_test(NAME bloomfilter_test COMMAND "./bloomfiltertest${extname}")
+add_test(NAME base64_test COMMAND "./bloomfiltertest${extname}")
