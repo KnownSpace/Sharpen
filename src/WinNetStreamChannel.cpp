@@ -497,7 +497,7 @@ void sharpen::WinNetStreamChannel::RequestCancel() noexcept
 
 void sharpen::WinNetStreamChannel::Cancel() noexcept
 {
-    this->loop_->RunInLoop(std::bind(&sharpen::WinNetStreamChannel::RequestCancel,this));
+    this->loop_->RunInLoopSoon(std::bind(&sharpen::WinNetStreamChannel::RequestCancel,this));
 }
 
 #endif
