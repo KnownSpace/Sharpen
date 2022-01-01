@@ -8,6 +8,7 @@
 void PrintUsage()
 {
     std::puts("usage:\n"
+                "\tli - list all of <key,value>\n"
                 "\tget <key> - get value\n"
                 "\tput <key> <value> - put <key,value> to cache\n"
                 "\tdelete <key> - delete value");
