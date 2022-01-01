@@ -20,7 +20,6 @@ namespace sharpen
     private:
         using Self = InternalMemoryTable<_Map,_Logger>;
         using MapType = _Map;
-        using Iterator = typename MapType::iterator;
         using ConstIterator = typename MapType::const_iterator;
         using Pair = sharpen::CompressedPair<MapType,_Logger>;
 
@@ -110,6 +109,16 @@ namespace sharpen
         void RestoreFromLogger()
         {
             this->Logger().Restore(this->Map());
+        }
+
+        ConstIterator Begin() const noexcept
+        {
+            return this->Map().begin();
+        }
+
+        ConstIterator End() const noexcept
+        {
+            return this->Map().end();
         }
     
         ~InternalMemoryTable() noexcept = default;

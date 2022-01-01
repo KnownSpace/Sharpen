@@ -122,8 +122,8 @@ namespace sharpen
                 case sharpen::BinaryLoggerHelper::RestoreStep::ReadValue:
                     if(counter != val.GetSize())
                     {
-                        val[counter] = *begin++;
-                        if(++counter != key.GetSize())
+                        val[counter++] = *begin++;
+                        if(counter != val.GetSize())
                         {
                             continue;
                         }
