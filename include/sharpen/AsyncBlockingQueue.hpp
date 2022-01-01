@@ -32,7 +32,7 @@ namespace sharpen
             std::unique_lock<sharpen::SpinLock> lock(this->lock_);
             _T obj = std::move(this->list_.front());
             this->list_.pop_front();
-            return std::move(obj);
+            return obj;
         }
 
         void Push(_T obj)
@@ -40,6 +40,16 @@ namespace sharpen
             {
                 std::unique_lock<sharpen::SpinLock> lock(this->lock_);
                 this->list_.push_back(std::move(obj));
+            }
+            this->sign_.Unlock();
+        }
+
+        template<typename ..._Args,typename _Check = decltype(_T{std::declval<_Args>()...})>
+        void Emplace(_Args &&...args)
+        {
+            {
+                std::unique_lock<sharpen::SpinLock> lock(this->lock_);
+                this->list_.emplace(std::forward<_Args>(args)...);
             }
             this->sign_.Unlock();
         }

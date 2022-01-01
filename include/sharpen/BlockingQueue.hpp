@@ -42,6 +42,16 @@ namespace sharpen
             }
             this->cond_.notify_one();
         }
+
+        template<typename ..._Args,typename _Check = decltype(_T{std::declval<_Args>()...})>
+        void Emplace(_Args &&...args)
+        {
+            {
+                std::unique_lock<Lock> lock(this->lock_);
+                this->list_.emplace(std::forward<_Args>(args)...);
+            }
+            this->cond_.notify_one();
+        }
         
         _T Pop() noexcept
         {
