@@ -74,7 +74,6 @@ namespace sharpen
             }
             if(finishCounter == 0)
             {
-                CompleteFuture(waiterPtr->continuation_,false);
                 CompleteFuture(waiterPtr->finish_);
             }
         }
@@ -107,7 +106,6 @@ namespace sharpen
                 if(finishCounter == 0)
                 {
                     this->waiterPtr_->timer_->Cancel();
-                    CompleteFuture(this->waiterPtr_->continuation_,false);
                     CompleteFuture(this->waiterPtr_->finish_);
                 }
             }
