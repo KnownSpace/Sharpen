@@ -78,8 +78,8 @@ namespace sharpen
             sharpen::Size delta = (hash >> 17) | (hash << 15);
             for (sharpen::Size i = 0; i < this->hashCount_; ++i)
             {
-                sharpen::Size pos = hash % (this->space_.size() << 3);
-                this->space_[pos >> 3] |= (1 << (pos % 8));
+                sharpen::Size pos = hash % (this->space_.size()*8);
+                this->space_[pos/8] |= (1 << (pos % 8));
                 hash += delta;
             }
         }
@@ -93,9 +93,9 @@ namespace sharpen
             sharpen::Size delta = (hash >> 17) | (hash << 15);
             for (sharpen::Size i = 0; i < this->hashCount_; ++i)
             {
-                sharpen::Size pos = hash % (this->space_.size() << 3);
+                sharpen::Size pos = hash % (this->space_.size()*8);
                 sharpen::Size bit = static_cast<sharpen::Size>(1) << (pos % 8);
-                if(!(this->space_[pos >> 3] & bit))
+                if(!(this->space_[pos/8] & bit))
                 {
                     return false;
                 }
