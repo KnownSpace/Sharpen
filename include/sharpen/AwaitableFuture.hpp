@@ -76,7 +76,6 @@ namespace sharpen
             }
             if(fiber)
             {
-                //this->scheduler_->Schedule(std::move(fiber));
                 this->ScheduleFiber(std::move(fiber));
             }
         }
@@ -95,7 +94,6 @@ namespace sharpen
             {
                 if (this->IsPending())
                 {
-                    //this->pendingFiber_ = sharpen::Fiber::GetCurrentFiber();
                     this->pendingFiber_ = std::move(current);
                     scheduler->SetSwitchCallback(std::bind(&sharpen::AwaitableFuture<_Result>::NotifyIfCompleted,this));
                     scheduler->SwitchToProcesserFiber();
