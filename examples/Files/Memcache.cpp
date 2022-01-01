@@ -8,10 +8,10 @@
 void PrintUsage()
 {
     std::puts("usage:\n"
-                "\tli - list all of <key,value>\n"
-                "\tget <key> - get value\n"
-                "\tput <key> <value> - put <key,value> to cache\n"
-                "\tdelete <key> - delete value");
+                "\tli - list all of item\n"
+                "\tget <name> - get item description\n"
+                "\tput <name> <value> - put item\n"
+                "\tdelete <name> - delete item");
 }
 
 using CacheTable = sharpen::MemoryTable<std::map,sharpen::BinaryLogger<std::map>>;
@@ -22,6 +22,8 @@ CacheTable BuildTable(const char *logPath)
     log->Register(sharpen::EventEngine::GetEngine());
     return CacheTable{log};
 }
+
+const char *dbPath = "./todo.binlog";
 
 void Entry(int argc, char const *argv[])
 {
@@ -38,7 +40,7 @@ void Entry(int argc, char const *argv[])
             PrintUsage();
             return;
         }
-        CacheTable tb = BuildTable("./binlog.cache");
+        CacheTable tb = BuildTable(dbPath);
         tb.RestoreFromLogger();
         sharpen::ByteBuffer key{argv[2],std::strlen(argv[2])};
         if(tb.Exist(key))
@@ -50,7 +52,7 @@ void Entry(int argc, char const *argv[])
             }
             return;
         }
-        std::puts("key doesn't exist");
+        std::puts("item doesn't exist");
     }
     else if(!std::strcmp(op,"delete"))
     {
@@ -59,7 +61,7 @@ void Entry(int argc, char const *argv[])
             PrintUsage();
             return;
         }
-        CacheTable tb = BuildTable("./binlog.cache");
+        CacheTable tb = BuildTable(dbPath);
         tb.RestoreFromLogger();
         sharpen::ByteBuffer key{argv[2],std::strlen(argv[2])};
         if(tb.Exist(key))
@@ -68,7 +70,7 @@ void Entry(int argc, char const *argv[])
             std::puts("success");
             return;
         }
-        std::puts("key doesn't exist");
+        std::puts("item doesn't exist");
     }
     else if(!std::strcmp(op,"put"))
     {
@@ -77,7 +79,7 @@ void Entry(int argc, char const *argv[])
             PrintUsage();
             return;
         }
-        CacheTable tb = BuildTable("./binlog.cache");
+        CacheTable tb = BuildTable(dbPath);
         tb.RestoreFromLogger();
         sharpen::ByteBuffer key{argv[2],std::strlen(argv[2])};
         sharpen::ByteBuffer val{argv[3],std::strlen(argv[3])};
@@ -86,9 +88,9 @@ void Entry(int argc, char const *argv[])
     }
     else if(!std::strcmp(op,"li"))
     {
-        CacheTable tb = BuildTable("./binlog.cache");
+        CacheTable tb = BuildTable(dbPath);
         tb.RestoreFromLogger();
-        std::puts("table:");
+        std::puts("list of items:");
         for (auto begin = tb.Begin(),end = tb.End(); begin != end; ++begin)
         {
             for (size_t i = 0; i < begin->first.GetSize(); ++i)
