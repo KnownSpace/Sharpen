@@ -46,6 +46,10 @@ namespace sharpen
         virtual sharpen::Uint64 GetFileSize() const override;
 
         virtual sharpen::FileMemory MapMemory(sharpen::Size size,sharpen::Uint64 offset) override;
+
+        virtual void Truncate() override;
+
+        virtual void Truncate(sharpen::Uint64 size) override;
     };
 }
 

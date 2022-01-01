@@ -44,6 +44,10 @@ namespace sharpen
         }
 
         virtual sharpen::FileMemory MapMemory(sharpen::Size size,sharpen::Uint64 offset) = 0;
+
+        virtual void Truncate() = 0;
+
+        virtual void Truncate(sharpen::Uint64 size) = 0;
     };
 
     using FileChannelPtr = std::shared_ptr<sharpen::IFileChannel>;

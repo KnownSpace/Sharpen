@@ -157,4 +157,31 @@ sharpen::FileMemory sharpen::WinFileChannel::MapMemory(sharpen::Size size,sharpe
     return {this->handle_,addr,size};
 }
 
+void sharpen::WinFileChannel::Truncate()
+{
+    if(::SetFilePointer(this->handle_,0,nullptr,FILE_BEGIN) == INVALID_SET_FILE_POINTER)
+    {
+        sharpen::ThrowLastError();
+    }
+    if(::SetEndOfFile(this->handle_) == FALSE)
+    {
+        sharpen::ThrowLastError();
+    }
+}
+
+void sharpen::WinFileChannel::Truncate(sharpen::Uint64 size)
+{
+    LARGE_INTEGER li,old;
+    li.QuadPart = size;
+    if(::SetFilePointerEx(this->handle_,li,&old,FILE_BEGIN) == FALSE)
+    {
+        sharpen::ThrowLastError();
+    }
+    if(::SetEndOfFile(this->handle_) == FALSE)
+    {
+        sharpen::ThrowLastError();
+    }
+    ::SetFilePointerEx(this->handle_,old,nullptr,FILE_BEGIN);
+}
+
 #endif

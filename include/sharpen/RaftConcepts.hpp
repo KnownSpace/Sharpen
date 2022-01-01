@@ -49,11 +49,11 @@ namespace sharpen
     template<typename _Id,typename _Member>
     using IsRaftMember = sharpen::IsMatches<sharpen::InternalIsRaftMember,_Id,_Member>;
 
-    template<typename _Log,typename _Commiter>
-    using InternalIsRaftCommiter = auto(*)() -> decltype(std::declval<_Commiter>().Commit(std::declval<_Log>()));
+    template<typename _Log,typename _Application>
+    using InternalIsRaftApplication = auto(*)() -> decltype(std::declval<_Application>().Commit(std::declval<_Log>()));
 
-    template<typename _Log,typename _Commiter>
-    using IsRaftCommiter = sharpen::IsMatches<sharpen::InternalIsRaftCommiter,_Log,_Commiter>;
+    template<typename _Log,typename _Application>
+    using IsRaftApplication = sharpen::IsMatches<sharpen::InternalIsRaftApplication,_Log,_Application>;
 }
 
 #endif

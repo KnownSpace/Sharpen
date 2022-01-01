@@ -20,16 +20,16 @@
 namespace sharpen
 {
 
-    template<typename _Id,typename  _Log,typename _Commiter,typename _PersistenceStorage,typename _Member>
+    template<typename _Id,typename  _Log,typename _Application,typename _PersistenceStorage,typename _Member>
     using RaftStateMachineRequires = sharpen::BoolType<sharpen::IsRaftLog<_Log>::Value
                                                         && sharpen::IsRaftMember<_Id,_Member>::Value
                                                         && sharpen::IsRaftPersistenceStorage<_PersistenceStorage,_Log,_Id>::Value>;
 
-    template<typename _Id,typename  _Log,typename _Commiter,typename _PersistenceStorage,typename _Member,typename _Check = void>
+    template<typename _Id,typename  _Log,typename _Application,typename _PersistenceStorage,typename _Member,typename _Check = void>
     class InternalRaftStateMachine;
 
-    template<typename _Id,typename  _Log,typename _Commiter,typename _PersistenceStorage,typename _Member>
-    class InternalRaftStateMachine<_Id,_Log,_Commiter,_PersistenceStorage,_Member,sharpen::EnableIf<sharpen::RaftStateMachineRequires<_Id,_Log,_Commiter,_PersistenceStorage,_Member>::Value>>:public sharpen::Noncopyable,public sharpen::Nonmovable
+    template<typename _Id,typename  _Log,typename _Application,typename _PersistenceStorage,typename _Member>
+    class InternalRaftStateMachine<_Id,_Log,_Application,_PersistenceStorage,_Member,sharpen::EnableIf<sharpen::RaftStateMachineRequires<_Id,_Log,_Application,_PersistenceStorage,_Member>::Value>>:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
         using MemberMap = std::unordered_map<_Id,_Member>;
@@ -45,7 +45,7 @@ namespace sharpen
 
         //volatile status
         //current role and commiter
-        sharpen::CompressedPair<_Commiter,sharpen::RaftRole> rolePair_;
+        sharpen::CompressedPair<_Application,sharpen::RaftRole> rolePair_;
         //commit index
         sharpen::Uint64 commitIndex_;
         //applied index
@@ -96,10 +96,10 @@ namespace sharpen
         }
     public:
         InternalRaftStateMachine(_Id id,_PersistenceStorage pm)
-            :InternalRaftStateMachine(std::move(id),std::move(pm),_Commiter{})
+            :InternalRaftStateMachine(std::move(id),std::move(pm),_Application{})
         {}
 
-        InternalRaftStateMachine(_Id id,_PersistenceStorage pm,_Commiter commiter)
+        InternalRaftStateMachine(_Id id,_PersistenceStorage pm,_Application commiter)
             :selfId_(std::move(id))
             ,pm_(std::move(pm))
             ,rolePair_(std::move(commiter),sharpen::RaftRole::Follower)
@@ -142,12 +142,12 @@ namespace sharpen
             return this->rolePair_.Second();
         }
 
-        _Commiter &Commiter() noexcept
+        _Application &Application() noexcept
         {
             return this->rolePair_.First();
         }
 
-        const _Commiter &Commiter() const noexcept
+        const _Application &Commiter() const noexcept
         {
             return this->rolePair_.First();
         }
@@ -318,7 +318,7 @@ namespace sharpen
 
         //return true if we continue
         //this impl is optional
-        template<typename _UCommiter = _Commiter,typename _Check = decltype(std::declval<_UCommiter>().InstallSnapshot(std::declval<_PersistenceStorage>(),0,0,0,0,nullptr,false))>
+        template<typename _UCommiter = _Application,typename _Check = decltype(std::declval<_UCommiter>().InstallSnapshot(std::declval<_PersistenceStorage>(),0,0,0,0,nullptr,false))>
         bool InstallSnapshot(const _Id &leaderId,sharpen::Uint64 leaderTerm,sharpen::Uint64 lastIncludedIndex,sharpen::Uint64 lastIncludedTerm,sharpen::Uint64 offset,const char *data,bool done)
         {
             //check term
@@ -349,7 +349,7 @@ namespace sharpen
                 this->leaderId_.Construct(leaderId);
             }
             this->leaderId_.Construct(leaderId);
-            this->Commiter().InstallSnapshot(this->PersistenceStorage(),leaderTerm,lastIncludedIndex,lastIncludedTerm,offset,data,done);
+            this->Application().InstallSnapshot(this->PersistenceStorage(),leaderTerm,lastIncludedIndex,lastIncludedTerm,offset,data,done);
             return !done;
         }
 
@@ -400,7 +400,7 @@ namespace sharpen
                 if(this->lastApplied_ != 0)
                 {
                     const _Log &log = this->PersistenceStorage().GetLog(this->lastApplied_);
-                    this->Commiter().Commit(log);
+                    this->Application().Commit(log);
                 }
                 ++this->lastApplied_;
             }
@@ -409,20 +409,20 @@ namespace sharpen
         ~InternalRaftStateMachine() noexcept = default;
     };
 
-    template<typename _Id,typename  _Log,typename _Commiter,typename _PersistenceStorage,typename _Member>
-    using RaftStateMachine = sharpen::InternalRaftStateMachine<_Id,_Log,_Commiter,_PersistenceStorage,_Member>;
+    template<typename _Id,typename  _Log,typename _Application,typename _PersistenceStorage,typename _Member>
+    using RaftStateMachine = sharpen::InternalRaftStateMachine<_Id,_Log,_Application,_PersistenceStorage,_Member>;
 
-    template<typename _Id,typename  _Log,typename _Commiter,typename _PersistenceStorage,typename _Member>
-    using RaftStateMachinePtr = std::shared_ptr<sharpen::RaftStateMachine<_Id,_Log,_Commiter,_PersistenceStorage,_Member>>;
+    template<typename _Id,typename  _Log,typename _Application,typename _PersistenceStorage,typename _Member>
+    using RaftStateMachinePtr = std::shared_ptr<sharpen::RaftStateMachine<_Id,_Log,_Application,_PersistenceStorage,_Member>>;
 
-    template<typename _Id,typename  _Log,typename _Commiter,typename _PersistenceStorage,typename _Member,typename _StateMachine = sharpen::RaftStateMachine<_Id,_Log,_Commiter,_PersistenceStorage,_Member>,typename _Check = sharpen::IsCompletedType<_StateMachine>>
+    template<typename _Id,typename  _Log,typename _Application,typename _PersistenceStorage,typename _Member,typename _StateMachine = sharpen::RaftStateMachine<_Id,_Log,_Application,_PersistenceStorage,_Member>,typename _Check = sharpen::IsCompletedType<_StateMachine>>
     std::shared_ptr<_StateMachine> MakeRaftStateMachine(_Id id,_PersistenceStorage pm)
     {
         return std::make_shared<_StateMachine>(std::move(id),std::move(pm));
     }
 
-    template<typename _Id,typename  _Log,typename _Commiter,typename _PersistenceStorage,typename _Member,typename _StateMachine = sharpen::RaftStateMachine<_Id,_Log,_Commiter,_PersistenceStorage,_Member>,typename _Check = sharpen::IsCompletedType<_StateMachine>>
-    std::shared_ptr<_StateMachine> MakeRaftStateMachine(_Id id,_PersistenceStorage pm,_Commiter commiter)
+    template<typename _Id,typename  _Log,typename _Application,typename _PersistenceStorage,typename _Member,typename _StateMachine = sharpen::RaftStateMachine<_Id,_Log,_Application,_PersistenceStorage,_Member>,typename _Check = sharpen::IsCompletedType<_StateMachine>>
+    std::shared_ptr<_StateMachine> MakeRaftStateMachine(_Id id,_PersistenceStorage pm,_Application commiter)
     {
         return std::make_shared<_StateMachine>(std::move(id),std::move(pm),std::move(commiter));
     }

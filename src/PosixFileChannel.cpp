@@ -109,4 +109,20 @@ sharpen::FileMemory sharpen::PosixFileChannel::MapMemory(sharpen::Size size,shar
     return {addr,size};
 }
 
+void sharpen::PosixFileChannel::Truncate()
+{
+    if(::ftruncate(this->handle_,0) == -1)
+    {
+        sharpen::ThrowLastError();
+    }
+}
+
+void sharpen::PosixFileChannel::Truncate(sharpen::Uint64 size)
+{
+    if(::ftruncate64(this->handle_,size) == -1)
+    {
+        sharpen::ThrowLastError();
+    }
+}
+
 #endif
