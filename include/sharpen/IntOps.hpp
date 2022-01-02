@@ -14,23 +14,23 @@ namespace sharpen
     {
         const char *data = reinterpret_cast<const char *>(&val);
 #ifdef SHARPEN_IS_BIG_ENDIAN
-        for (sharpen::Size i = 0; i < sizeof(val); ++i)
+        for (sharpen::Size i = sizeof(val);i != 0; --i)
         {
-            if (data[sizeof(val) - 1 - i] == 0)
+            if (data[sizeof(val) - i] != 0)
             {
                 return i;
             }
         }
 #else
-        for (sharpen::Size i = 0; i < sizeof(val); ++i)
+        for (sharpen::Size i = sizeof(val);i != 0; --i)
         {
-            if (data[i] == 0)
+            if (data[i-1] != 0)
             {
                 return i;
             }
         }
 #endif
-        return sizeof(_T);
+        return 1;
     }
 
     template<typename _T1,typename _T2>

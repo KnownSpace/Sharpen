@@ -172,7 +172,7 @@ public:
 
     void ResetVotedFor()
     {
-        this->votedFor_ = sharpen::NullOpt;
+        this->votedFor_ = sharpen::EmptyOpt;
     }
 
     bool CheckLog(sharpen::Uint64 index,sharpen::Uint64 expectedTerm) const

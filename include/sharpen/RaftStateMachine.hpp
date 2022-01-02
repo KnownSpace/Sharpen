@@ -365,7 +365,7 @@ namespace sharpen
 
         void ResetLeader()
         {
-            this->leaderId_ = sharpen::NullOpt;
+            this->leaderId_ = sharpen::EmptyOpt;
         }
 
         void AppendLog(_Log log)

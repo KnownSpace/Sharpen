@@ -51,7 +51,7 @@ namespace sharpen
 
         RpcServerOption(_Dispatcher dispatcher,EncoderBuilder encoderBuilder,DecoderBuilder decoderBuilder)
             :dispatcher_(std::move(dispatcher))
-            ,timeout_(sharpen::NullOpt)
+            ,timeout_(sharpen::EmptyOpt)
             ,encoderBuilder_(std::move(encoderBuilder))
             ,decoderBuilder_(std::move(decoderBuilder))
         {}

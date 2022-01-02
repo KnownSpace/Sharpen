@@ -17,10 +17,10 @@ namespace sharpen
         {}
     };
     
-    class NullOption
+    class EmptyOptional
     {};
 
-    constexpr sharpen::NullOption NullOpt;
+    constexpr sharpen::EmptyOptional EmptyOpt;
 
     class BadOptionException:public std::logic_error
     {
@@ -90,7 +90,7 @@ namespace sharpen
             ::new (&this->value_) _T{std::forward<_Args>(args)...};
         }
 
-        InternalOptional(sharpen::NullOption)
+        InternalOptional(sharpen::EmptyOptional)
             :hasValue_(false)
             ,dummy_()
         {}
@@ -122,7 +122,7 @@ namespace sharpen
             return *this;
         }
 
-        Self &operator=(sharpen::NullOption) noexcept
+        Self &operator=(sharpen::EmptyOptional) noexcept
         {
             this->Reset();
             return *this;
@@ -244,7 +244,7 @@ namespace sharpen
             ::new (&this->value_) _T{std::forward<_Args>(args)...};
         }
 
-        InternalOptional(sharpen::NullOption)
+        InternalOptional(sharpen::EmptyOptional)
             :hasValue_(false)
             ,dummy_()
         {}
@@ -271,7 +271,7 @@ namespace sharpen
             return *this;
         }
 
-        Self &operator=(sharpen::NullOption) noexcept
+        Self &operator=(sharpen::EmptyOptional) noexcept
         {
             this->Reset();
         }

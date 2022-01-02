@@ -269,6 +269,11 @@ namespace sharpen
         {
             return sharpen::BufferHash(this->Data(),this->GetSize());
         }
+
+        inline bool Empty() const noexcept
+        {
+            return this->vector_.empty();
+        }
     };
 } 
 

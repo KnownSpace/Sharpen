@@ -9,7 +9,7 @@ sharpen::Optional<int> GetInt(bool i)
     {
         return {1};
     }
-    return sharpen::NullOpt;
+    return sharpen::EmptyOpt;
 }
 
 struct Test
@@ -54,7 +54,7 @@ sharpen::Optional<Test> GetTest(bool i)
     {
         return Test{};
     }
-    return sharpen::NullOpt;
+    return sharpen::EmptyOpt;
 }
 
 int main()
