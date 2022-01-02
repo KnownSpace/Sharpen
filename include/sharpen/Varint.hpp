@@ -84,8 +84,8 @@ namespace sharpen
                         value |= *begin & mask_;
                     }
                     sharpen::Size rawBytes = this->data_.GetSize()*7;
-                    assert(rawBytes <= sizeof(_T));
                     rawBytes /= 8;
+                    assert(rawBytes <= sizeof(_T));
                     value <<= (rawBytes)*8 %7;
                     value |= static_cast<unsigned char>(*end & mask_) >> (7 -  (rawBytes*8 % 7));
                     sharpen::ConvertEndian(reinterpret_cast<char*>(&value),rawBytes);
