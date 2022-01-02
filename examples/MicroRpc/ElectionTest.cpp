@@ -78,7 +78,7 @@ class TestPm
 {
 private:
     std::vector<TestLog> logs_;
-    sharpen::Option<TestId> votedFor_;
+    sharpen::Optional<TestId> votedFor_;
     sharpen::Uint64 currentTerm_;
 public:
 
@@ -109,7 +109,7 @@ public:
 
     bool IsVotedFor() const
     {
-        return this->votedFor_.HasValue();
+        return this->votedFor_.Exist();
     }
 
     void EraseLog(sharpen::Uint64 index)

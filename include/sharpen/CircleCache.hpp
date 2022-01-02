@@ -6,7 +6,7 @@
 #include <utility>
 
 #include "TypeDef.hpp"
-#include "Option.hpp"
+#include "Optional.hpp"
 
 namespace sharpen
 {
@@ -15,7 +15,7 @@ namespace sharpen
     {
     private:
         using Self = CircleCache;
-        using Buffer = std::vector<sharpen::Option<_T>>;
+        using Buffer = std::vector<sharpen::Optional<_T>>;
         using Iterator = typename Buffer::iterator_type;
         using ConstIterator = typename Buffer::const_iterator_type;
 
@@ -95,7 +95,7 @@ namespace sharpen
         }
 
         template<typename ..._Args>
-        inline auto Emplace(_Args &&...args) -> decltype(std::declval<sharpen::Option<_T>>().Construct(std::forward<_Args>(args)...))
+        inline auto Emplace(_Args &&...args) -> decltype(std::declval<sharpen::Optional<_T>>().Construct(std::forward<_Args>(args)...))
         {
             this->buf_[this->next_++ % this->buf_.size()].Construct(std::forward<_Args>(args)...);
         }

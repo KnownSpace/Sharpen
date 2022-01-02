@@ -10,12 +10,12 @@
 #include <pthread.h>
 #endif
 
-#include <sharpen/Option.hpp>
+#include <sharpen/Optional.hpp>
 
 sharpen::Uint32 sharpen::GetCurrentThreadId() noexcept
 {
-    static thread_local sharpen::Option<sharpen::Uint32> id;
-    if(!id.HasValue())
+    static thread_local sharpen::Optional<sharpen::Uint32> id;
+    if(!id.Exist())
     {
 #ifdef SHARPEN_IS_WIN
         id.Construct(::GetCurrentThreadId());

@@ -44,10 +44,10 @@ namespace sharpen
     };
 
     template<typename _T,bool _IsTrivial>
-    class InternalOption
+    class InternalOptional
     {
     private:
-        using Self = sharpen::InternalOption<_T,_IsTrivial>;
+        using Self = sharpen::InternalOptional<_T,_IsTrivial>;
 
         bool hasValue_;
         union 
@@ -56,12 +56,12 @@ namespace sharpen
             sharpen::InternalOptionDummpType dummy_;
         };
     public:
-        InternalOption() noexcept
+        InternalOptional() noexcept
             :hasValue_(false)
             ,dummy_()
         {}
 
-        InternalOption(const Self &other)
+        InternalOptional(const Self &other)
             :hasValue_(other.hasValue_)
             ,dummy_()
         {
@@ -71,7 +71,7 @@ namespace sharpen
             }
         }
 
-        InternalOption(Self &&other) noexcept
+        InternalOptional(Self &&other) noexcept
             :hasValue_(other.hasValue_)
             ,dummy_()
         {
@@ -83,14 +83,14 @@ namespace sharpen
         }
 
         template<typename ..._Args,typename _Check = decltype(_T{std::declval<_Args>()...})>
-        InternalOption(_Args &&...args) SHARPEN_NOEXCEPT_IF(_T {std::declval<_Args>()...})
+        InternalOptional(_Args &&...args) SHARPEN_NOEXCEPT_IF(_T {std::declval<_Args>()...})
             :hasValue_(true)
             ,dummy_()
         {
             ::new (&this->value_) _T{std::forward<_Args>(args)...};
         }
 
-        InternalOption(sharpen::NullOption)
+        InternalOptional(sharpen::NullOption)
             :hasValue_(false)
             ,dummy_()
         {}
@@ -172,14 +172,14 @@ namespace sharpen
             throw sharpen::BadOptionException("this option is null");
         }
 
-        bool HasValue() const noexcept
+        bool Exist() const noexcept
         {
             return this->hasValue_;
         }
 
         operator bool() const noexcept
         {
-            return this->HasValue();
+            return this->Exist();
         }
 
         void Reset() noexcept
@@ -194,14 +194,14 @@ namespace sharpen
             ::new (&this->value_) _T{std::forward<_Args>(args)...};
         }      
 
-        ~InternalOption() noexcept = default;
+        ~InternalOptional() noexcept = default;
     };
 
     template<typename _T>
-    class InternalOption<_T,false>
+    class InternalOptional<_T,false>
     {
     private:
-        using Self = sharpen::InternalOption<_T,false>;
+        using Self = sharpen::InternalOptional<_T,false>;
 
         bool hasValue_;
         union 
@@ -210,12 +210,12 @@ namespace sharpen
             sharpen::InternalOptionDummpType dummy_;
         };
     public:
-        InternalOption() noexcept
+        InternalOptional() noexcept
             :hasValue_(false)
             ,dummy_()
         {}
 
-        InternalOption(const Self &other)
+        InternalOptional(const Self &other)
             :hasValue_(other.hasValue_)
             ,dummy_()
         {
@@ -225,7 +225,7 @@ namespace sharpen
             }
         }
 
-        InternalOption(Self &&other) noexcept
+        InternalOptional(Self &&other) noexcept
             :hasValue_(other.hasValue_)
             ,dummy_()
         {
@@ -237,14 +237,14 @@ namespace sharpen
         }
 
         template<typename ..._Args,typename _Check = decltype(_T{std::declval<_Args>()...})>
-        InternalOption(_Args &&...args) SHARPEN_NOEXCEPT_IF(_T {std::declval<_Args>()...})
+        InternalOptional(_Args &&...args) SHARPEN_NOEXCEPT_IF(_T {std::declval<_Args>()...})
             :hasValue_(true)
             ,dummy_()
         {
             ::new (&this->value_) _T{std::forward<_Args>(args)...};
         }
 
-        InternalOption(sharpen::NullOption)
+        InternalOptional(sharpen::NullOption)
             :hasValue_(false)
             ,dummy_()
         {}
@@ -323,14 +323,14 @@ namespace sharpen
             throw sharpen::BadOptionException("this option is null");
         }
 
-        bool HasValue() const noexcept
+        bool Exist() const noexcept
         {
             return this->hasValue_;
         }
 
         operator bool() const noexcept
         {
-            return this->HasValue();
+            return this->Exist();
         }
 
         void Reset() noexcept
@@ -351,14 +351,14 @@ namespace sharpen
             ::new (&this->value_) _T{std::forward<_Args>(args)...};
         }
 
-        ~InternalOption() noexcept
+        ~InternalOptional() noexcept
         {
             Reset();
         }
     };
 
     template<typename _T>
-    using Option = sharpen::InternalOption<_T,std::is_trivial<_T>::value>;
+    using Optional = sharpen::InternalOptional<_T,std::is_trivial<_T>::value>;
 }
 
 #endif

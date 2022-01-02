@@ -14,7 +14,7 @@
 #include "Future.hpp"
 #include "Quorum.hpp"
 #include "CompressedPair.hpp"
-#include "Option.hpp"
+#include "Optional.hpp"
 #include "RaftConcepts.hpp"
 
 namespace sharpen
@@ -35,7 +35,7 @@ namespace sharpen
         using MemberMap = std::unordered_map<_Id,_Member>;
 
         _Id selfId_;
-        sharpen::Option<_Id> leaderId_;
+        sharpen::Optional<_Id> leaderId_;
 
         //persistence status
         //current term
@@ -355,7 +355,7 @@ namespace sharpen
 
         bool KnowLeader() const noexcept
         {
-            return this->leaderId_.HasValue();
+            return this->leaderId_.Exist();
         }
 
         const _Id &LeaderId() const noexcept

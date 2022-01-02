@@ -48,7 +48,7 @@ namespace sharpen
         using DecoderBuilder = std::function<_Decoder()>;
 
         Pair pair_;
-        sharpen::Option<std::chrono::milliseconds> timeout_;
+        sharpen::Optional<std::chrono::milliseconds> timeout_;
         DecoderBuilder decoderBuilder_;
         EncoderBuilder encoderBuilder_;
         Handler timeoutHandler_;
@@ -88,7 +88,7 @@ namespace sharpen
             sharpen::TimerPtr timer;
             sharpen::AwaitableFuture<bool> timeout;
             sharpen::AwaitableFuture<sharpen::Size> future;
-            if(this->timeout_.HasValue())
+            if(this->timeout_.Exist())
             {
                 timer = sharpen::MakeTimer(*this->engine_);
             }
@@ -104,7 +104,7 @@ namespace sharpen
                     {
                         future.Reset();
                         //timeout model
-                        if(this->timeout_.HasValue())
+                        if(this->timeout_.Exist())
                         {
                             //init
                             timeout.Reset();

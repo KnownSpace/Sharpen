@@ -4,7 +4,7 @@
 
 #include "INetStreamChannel.hpp"
 #include "CompressedPair.hpp"
-#include "Option.hpp"
+#include "Optional.hpp"
 
 namespace sharpen
 {
@@ -18,7 +18,7 @@ namespace sharpen
         sharpen::NetStreamChannelPtr conn_;
         _Request req_;
         Pair pair_;
-        sharpen::Option<_Data> data_;
+        sharpen::Optional<_Data> data_;
     public:
         explicit RpcContext(sharpen::NetStreamChannelPtr conn)
             :RpcContext(std::move(conn),_Encoder{},_Decoder{})
@@ -91,12 +91,12 @@ namespace sharpen
             return this->data_.Get();
         }
 
-        sharpen::Option<_Data> &DataOption() noexcept
+        sharpen::Optional<_Data> &DataOption() noexcept
         {
             return this->data_;
         }
 
-        const sharpen::Option<_Data> &DataOption() const noexcept
+        const sharpen::Optional<_Data> &DataOption() const noexcept
         {
             return this->data_;
         }

@@ -1,9 +1,9 @@
 #include <cstdio>
 #include <cassert>
 
-#include <sharpen/Option.hpp>
+#include <sharpen/Optional.hpp>
 
-sharpen::Option<int> GetInt(bool i)
+sharpen::Optional<int> GetInt(bool i)
 {
     if (i)
     {
@@ -48,7 +48,7 @@ struct Test
     }
 };
 
-sharpen::Option<Test> GetTest(bool i)
+sharpen::Optional<Test> GetTest(bool i)
 {
     if (i)
     {
@@ -61,10 +61,10 @@ int main()
 {
     std::printf("option test begin\n");
     {
-        sharpen::Option<int> opt = GetInt(false);
+        sharpen::Optional<int> opt = GetInt(false);
         std::puts("option<int> empty test\n");
-        std::printf("opt<int> has value? %d\n",opt.HasValue());
-        assert(opt.HasValue() == false);
+        std::printf("opt<int> has value? %d\n",opt.Exist());
+        assert(opt.Exist() == false);
         try
         {
             int a = opt.Get();
@@ -76,8 +76,8 @@ int main()
         }
         opt = GetInt(true);
         std::puts("option<int> value test\n");
-        std::printf("opt<int> has value? %d\n",opt.HasValue());
-        assert(opt.HasValue() == true);
+        std::printf("opt<int> has value? %d\n",opt.Exist());
+        assert(opt.Exist() == true);
         try
         {
             int a = opt.Get();
@@ -90,10 +90,10 @@ int main()
         }
     }
     {
-        sharpen::Option<Test> opt = GetTest(false);
+        sharpen::Optional<Test> opt = GetTest(false);
         std::puts("option<Test> empty test\n");
-        std::printf("opt has value? %d\n",opt.HasValue());
-        assert(opt.HasValue() == false);
+        std::printf("opt has value? %d\n",opt.Exist());
+        assert(opt.Exist() == false);
         try
         {
             Test &a = opt.Get();
@@ -105,8 +105,8 @@ int main()
         }
         std::puts("option<Test> value test\n");
         opt = GetTest(true);
-        std::printf("opt has value? %d\n",opt.HasValue());
-        assert(opt.HasValue() == true);
+        std::printf("opt has value? %d\n",opt.Exist());
+        assert(opt.Exist() == true);
         try
         {
             Test &test = opt.Get();

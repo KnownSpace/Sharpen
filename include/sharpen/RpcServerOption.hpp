@@ -5,7 +5,7 @@
 #include <chrono>
 #include <functional>
 
-#include "Option.hpp"
+#include "Optional.hpp"
 
 namespace sharpen
 {
@@ -18,7 +18,7 @@ namespace sharpen
         using DecoderBuilder = std::function<_Decoder()>;
 
         _Dispatcher dispatcher_;
-        sharpen::Option<std::chrono::milliseconds> timeout_;
+        sharpen::Optional<std::chrono::milliseconds> timeout_;
         EncoderBuilder encoderBuilder_;
         DecoderBuilder decoderBuilder_;
         
@@ -123,15 +123,15 @@ namespace sharpen
 
         bool HasTimeout() const noexcept
         {
-            return this->timeout_.HasValue();
+            return this->timeout_.Exist();
         }
 
-        sharpen::Option<std::chrono::milliseconds> &TimeoutOption() noexcept
+        sharpen::Optional<std::chrono::milliseconds> &TimeoutOption() noexcept
         {
             return this->timeout_;
         }
 
-        const sharpen::Option<std::chrono::milliseconds> &TimeoutOption() const noexcept
+        const sharpen::Optional<std::chrono::milliseconds> &TimeoutOption() const noexcept
         {
             return this->timeout_;
         }

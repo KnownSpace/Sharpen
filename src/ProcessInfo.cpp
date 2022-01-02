@@ -6,12 +6,12 @@
 #include <unistd.h>
 #endif
 
-#include <sharpen/Option.hpp>
+#include <sharpen/Optional.hpp>
 
 sharpen::Uint32 sharpen::GetProcessId() noexcept
 {
-    static sharpen::Option<sharpen::Uint32> id;
-    if(!id.HasValue())
+    static sharpen::Optional<sharpen::Uint32> id;
+    if(!id.Exist())
     {
 #ifdef SHARPEN_IS_WIN
         id.Construct(::GetCurrentProcessId());
