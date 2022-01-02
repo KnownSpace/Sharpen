@@ -32,11 +32,12 @@ namespace sharpen
             ,hashCount_(hashCount)
         {}
 
-        BloomFilter(sharpen::Size spaceSize,sharpen::Size hashCount)
+        BloomFilter(sharpen::Size bitsOfSpace,sharpen::Size hashCount)
             :space_()
             ,hashCount_(hashCount)
         {
-            this->space_.assign(spaceSize,0);
+            bitsOfSpace = bitsOfSpace/8 + ((bitsOfSpace % 8)? 1:0);
+            this->space_.assign(bitsOfSpace,0);
         }
     
         BloomFilter(const Self &other)
