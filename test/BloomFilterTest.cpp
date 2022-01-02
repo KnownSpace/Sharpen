@@ -23,7 +23,7 @@ int main(int argc, char const *argv[])
             fake += 1;
         }
     }
-    std::printf("fake/test count=%zu/%zu - %Lf\n",fake,testCount - count);
+    std::printf("fake/test count=%zu/%zu\n",fake,testCount - count);
     std::puts("pass");
     return 0;
 }
