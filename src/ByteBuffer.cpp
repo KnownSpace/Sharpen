@@ -281,6 +281,11 @@ sharpen::Char sharpen::ByteBuffer::GetOrDefault(sharpen::Size index,sharpen::Cha
 
 sharpen::Int32 sharpen::ByteBuffer::CompareWith(const Self &other) const noexcept
 {
+    int r = std::memcmp(this->Data(),other.Data(),(std::min)(this->GetSize(),other.GetSize()));
+    if(r != 0)
+    {
+        return r;
+    }
     if(other.GetSize() > this->GetSize())
     {
         return -1;
@@ -289,5 +294,5 @@ sharpen::Int32 sharpen::ByteBuffer::CompareWith(const Self &other) const noexcep
     {
         return 1;
     }
-    return std::memcmp(this->Data(),other.Data(),this->GetSize());
+    return 0;
 }
