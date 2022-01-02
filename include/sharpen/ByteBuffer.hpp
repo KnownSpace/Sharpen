@@ -5,11 +5,11 @@
 #include <vector>
 #include <algorithm>
 #include <functional>
-#include <type_traits>
 
 #include "Noncopyable.hpp"
 #include "TypeDef.hpp"
 #include "BufferOps.hpp"
+#include "TypeTraits.hpp"
 
 namespace sharpen
 {
@@ -26,7 +26,6 @@ namespace sharpen
 
     private:
         void CheckAndMoveMark();
-
     public:
         using Iterator = typename Vector::iterator;
 
@@ -254,6 +253,16 @@ namespace sharpen
         inline bool operator==(const Self &other) const noexcept
         {
             return this->CompareWith(other) == 0;
+        }
+
+        inline sharpen::Size Hash32() const noexcept
+        {
+            return sharpen::BufferHash32(this->Data(),this->GetSize());
+        }
+
+        inline sharpen::Uint64 Hash64() const noexcept
+        {
+            return sharpen::BufferHash64(this->Data(),this->GetSize());
         }
 
         inline sharpen::Size Hash() const noexcept

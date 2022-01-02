@@ -4,18 +4,26 @@
 int main(int argc, char const *argv[])
 {
     std::puts("bloom filter test begin");
-    constexpr sharpen::Size count = static_cast<sharpen::Size>(1e5);
-    sharpen::BloomFilter<int> filter{count,8};
-    for (int i = 0; i < count; ++i)
+    constexpr sharpen::Size count = static_cast<sharpen::Size>(1e4);
+    sharpen::BloomFilter<sharpen::Size> filter{count*10,10};
+    for (sharpen::Size i = 0; i < count; ++i)
     {
         filter.Add(i);
     }
-    for (int i = 0; i < count; i++)
+    for (sharpen::Size i = 0; i < count; i++)
     {
         assert(filter.Containe(i));
     }
-    constexpr sharpen::Size notExist = count;
-    std::printf("containe %zu ? %d\n",notExist,filter.Containe(notExist));
+    sharpen::Size fake{0};
+    constexpr sharpen::Size testCount = static_cast<sharpen::Size>(1e9);
+    for (sharpen::Size i = count; i < testCount; ++i)
+    {
+        if(filter.Containe(i))
+        {
+            fake += 1;
+        }
+    }
+    std::printf("fake/test count=%zu/%zu - %Lf\n",fake,testCount - count);
     std::puts("pass");
     return 0;
 }
