@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <functional>
 #include <type_traits>
 
 #include "Noncopyable.hpp"
@@ -254,7 +255,24 @@ namespace sharpen
         {
             return this->CompareWith(other) == 0;
         }
+
+        inline sharpen::Size Hash() const noexcept
+        {
+            return sharpen::BufferHash(this->Data(),this->GetSize());
+        }
     };
 } 
+
+namespace std
+{
+    template<>
+    struct hash<sharpen::ByteBuffer>
+    {
+        std::size_t operator()(const sharpen::ByteBuffer& buf) const noexcept
+        {
+            return buf.Hash();
+        }
+    };
+}
 
 #endif

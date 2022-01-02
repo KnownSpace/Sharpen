@@ -241,3 +241,16 @@ bool sharpen::Base64Decode(char *dst,sharpen::Size dstSize,const char *src,sharp
     }
     return true;
 }
+
+sharpen::Size sharpen::BufferHash(const char *data,sharpen::Size size) noexcept
+{
+    constexpr sharpen::Size offsetBasis = 0x811c9dc5;
+    constexpr sharpen::Size prime = 16777619;
+    sharpen::Size hash = offsetBasis;
+    for (auto begin = data,end = data + size; begin != end; ++begin)
+    {
+        hash ^= *begin;
+        hash *= prime;
+    }
+    return hash;
+} 

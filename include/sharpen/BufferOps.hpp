@@ -30,6 +30,9 @@ namespace sharpen
 
     //Base64 Decode
     bool Base64Decode(char *dst,sharpen::Size dstSize,const char *src,sharpen::Size srcSize) noexcept;
+
+    //FNV-1a hash 32bits
+    sharpen::Size BufferHash(const char *data,sharpen::Size size) noexcept;
 }
 
 #endif
