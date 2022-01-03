@@ -235,7 +235,10 @@ namespace sharpen
             return buf;
         }
 
-        sharpen::Int32 CompareWith(const Self &other) const noexcept;
+        inline sharpen::Int32 CompareWith(const Self &other) const noexcept
+        {
+            return sharpen::BufferCompare(this->Data(),this->GetSize(),other.Data(),other.GetSize());
+        }
 
         inline bool operator>(const Self &other) const noexcept
         {

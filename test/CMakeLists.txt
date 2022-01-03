@@ -37,6 +37,8 @@ add_executable(base64test "${PROJECT_SOURCE_DIR}/test/Base64Test.cpp")
 add_executable(memorytabletest "${PROJECT_SOURCE_DIR}/test/MemoryTableTest.cpp")
 #varint test
 add_executable(varinttest "${PROJECT_SOURCE_DIR}/test/VarintTest.cpp")
+#buffer compare test
+add_executable(buffercomparetest "${PROJECT_SOURCE_DIR}/test/BufferCompareTest.cpp")
 #link
 target_link_libraries(awaittest sharpen)
 target_link_libraries(timertest sharpen)
@@ -55,6 +57,7 @@ target_link_libraries(bloomfiltertest sharpen)
 target_link_libraries(base64test sharpen)
 target_link_libraries(memorytabletest sharpen)
 target_link_libraries(varinttest sharpen)
+target_link_libraries(buffercomparetest sharpen)
 #test
 enable_testing()
 #tests
@@ -80,3 +83,4 @@ add_test(NAME bloomfilter_test COMMAND "./bloomfiltertest${extname}")
 add_test(NAME base64_test COMMAND "./bloomfiltertest${extname}")
 add_test(NAME memorytable_test COMMAND "./memorytabletest${extname}")
 add_test(NAME varint_test COMMAND "./varinttest${extname}")
+add_test(NAME buffercompare_test COMMAND "./buffercomparetest${extname}")

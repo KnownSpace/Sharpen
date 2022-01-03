@@ -5,6 +5,8 @@
 #include "TypeDef.hpp"
 #include "TypeTraits.hpp"
 
+#include <cstring>
+
 namespace sharpen
 {
     extern unsigned char Crc16TableHeight[256];
@@ -58,6 +60,11 @@ namespace sharpen
         return sharpen::BufferHash32(data,size);
 #endif
     }
+
+    //1     if leftBuf >  rightBuf
+    //0     if leftBuf == rightBuf
+    //-1    if leftBuf <  rigthBuf
+    sharpen::Int32 BufferCompare(const char *leftBuf,sharpen::Size leftSize,const char *rightBuf,sharpen::Size rightSize) noexcept;
 }
 
 #endif
