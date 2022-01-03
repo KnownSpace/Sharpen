@@ -76,6 +76,7 @@ namespace sharpen
             if(ite != this->Map().end())
             {
                 ite->second.Clear();
+                ite->second.Shrink();
             }
         }
 

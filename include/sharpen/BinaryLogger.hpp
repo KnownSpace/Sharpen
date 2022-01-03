@@ -117,6 +117,7 @@ namespace sharpen
                         if(ite != map.end())
                         {
                             ite->second.Clear();
+                            ite->second.Shrink();
                         }
                         step = sharpen::BinaryLoggerHelper::RestoreStep::ReadOp;
                         continue;
