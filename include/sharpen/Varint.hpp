@@ -77,18 +77,26 @@ namespace sharpen
                 _T value{0};
                 if(!this->data_.Empty())
                 {
-                    auto begin = this->data_.Begin(),end = --this->data_.End();
-                    for (; begin != end; ++begin)
+                    if (this->data_.GetSize() == 1)
                     {
-                        value <<= 7;
-                        value |= *begin & mask_;
+                        value = this->data_.Front() & mask_;
+                        value <<= 1;
                     }
-                    sharpen::Size rawBytes = this->data_.GetSize()*7;
-                    rawBytes /= 8;
-                    assert(rawBytes <= sizeof(_T));
-                    value <<= (rawBytes)*8 %7;
-                    value |= static_cast<unsigned char>(*end & mask_) >> (7 -  (rawBytes*8 % 7));
-                    sharpen::ConvertEndian(reinterpret_cast<char*>(&value),rawBytes);
+                    else
+                    {
+                        auto begin = this->data_.Begin(),end = this->data_.End();
+                        for (; begin != end && (*begin & signBit_); ++begin)
+                        {
+                            value <<= 7;
+                            value |= *begin & mask_;
+                        }
+                        sharpen::Size rawBytes = this->data_.GetSize()*7;
+                        rawBytes /= 8;
+                        assert(rawBytes <= sizeof(_T));
+                        value <<= (rawBytes)*8 %7;
+                        value |= static_cast<unsigned char>(*begin & mask_) >> (7 -  (rawBytes*8 % 7));
+                        sharpen::ConvertEndian(reinterpret_cast<char*>(&value),rawBytes);
+                    }
                 }
                 this->cache_.Construct(value);
             }
@@ -124,7 +132,10 @@ namespace sharpen
                 }
                 unsigned char tmp = (*begin & ~(1 << offset));
                 tmp <<= 7 - offset;
-                this->data_.PushBack(tmp | signBit_);
+                if(min || tmp)
+                {
+                    this->data_.PushBack(tmp | signBit_);
+                }
                 if(++offset == 8)
                 {
                     offset = 1;
