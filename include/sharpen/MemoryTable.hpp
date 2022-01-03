@@ -102,7 +102,7 @@ namespace sharpen
         bool Exist(const sharpen::ByteBuffer &key) const noexcept
         {
             auto ite = this->Map().find(key);
-            return ite != this->Map().end() && !ite->second().Empty();
+            return ite != this->Map().end() && !ite->second.Empty();
         }
 
         void Clear() const
