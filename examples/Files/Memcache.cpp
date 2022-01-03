@@ -93,6 +93,11 @@ void Entry(int argc, char const *argv[])
         std::puts("list of items:");
         for (auto begin = tb.Begin(),end = tb.End(); begin != end; ++begin)
         {
+            //skip deleted key
+            if(tb.IsDeleted(begin))
+            {
+                continue;
+            }
             for (size_t i = 0; i < begin->first.GetSize(); ++i)
             {
                 std::putchar(begin->first[i]);

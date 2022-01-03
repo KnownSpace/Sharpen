@@ -81,7 +81,12 @@ namespace sharpen
 
         const sharpen::ByteBuffer &Get(const sharpen::ByteBuffer &key) const
         {
-            return this->Map().at(key); 
+            auto ite = this->Map().find(key);
+            if(!this->IsDeleted(ite))
+            {
+                return ite->second;
+            }
+            throw std::out_of_range("key doesn't exist"); 
         }
 
         const sharpen::ByteBuffer &operator[](const sharpen::ByteBuffer &key) const
@@ -124,6 +129,11 @@ namespace sharpen
         ConstIterator End() const noexcept
         {
             return this->Map().end();
+        }
+
+        inline bool IsDeleted(ConstIterator ite) const noexcept
+        {
+            return ite == this->End() || ite->second.Empty();
         }
     
         ~InternalMemoryTable() noexcept = default;
