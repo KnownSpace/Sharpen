@@ -113,7 +113,11 @@ namespace sharpen
                     counter = 0;
                     if(op == sharpen::BinaryLoggerHelper::DeleteOp)
                     {
-                        map.erase(std::move(key));
+                        auto ite = map.find(key);
+                        if(ite != map.end())
+                        {
+                            ite->second.Clear();
+                        }
                         step = sharpen::BinaryLoggerHelper::RestoreStep::ReadOp;
                         continue;
                     }

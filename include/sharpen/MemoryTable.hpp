@@ -72,7 +72,11 @@ namespace sharpen
         void Delete(const sharpen::ByteBuffer &key)
         {
             this->Logger().LogDelete(key);
-            this->Map().erase(key);
+            auto ite = this->Map().find(key);
+            if(ite != this->Map().end())
+            {
+                ite->second.Clear();
+            }
         }
 
         const sharpen::ByteBuffer &Get(const sharpen::ByteBuffer &key) const
@@ -97,7 +101,8 @@ namespace sharpen
 
         bool Exist(const sharpen::ByteBuffer &key) const noexcept
         {
-            return this->Map().find(key) != this->Map().end();
+            auto ite = this->Map().find(key);
+            return ite != this->Map().end() && !ite->second().Empty();
         }
 
         void Clear() const
