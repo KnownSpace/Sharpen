@@ -197,9 +197,15 @@ namespace sharpen
             return std::search(this->Begin(),this->End(),begin,end);
         }
 
-        inline void Clear()
+        inline void Clear() noexcept
         {
             this->vector_.clear();
+        }
+
+        inline void ClearAndShrink() noexcept
+        {
+            this->Clear();
+            this->Shrink();
         }
 
         inline sharpen::Uint32 Adler32() const noexcept

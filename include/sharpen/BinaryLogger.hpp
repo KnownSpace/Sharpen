@@ -116,8 +116,7 @@ namespace sharpen
                         auto ite = map.find(key);
                         if(ite != map.end())
                         {
-                            ite->second.Clear();
-                            ite->second.Shrink();
+                            ite->second.ClearAndShrink();
                         }
                         step = sharpen::BinaryLoggerHelper::RestoreStep::ReadOp;
                         continue;

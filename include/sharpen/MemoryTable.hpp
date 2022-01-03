@@ -75,8 +75,7 @@ namespace sharpen
             auto ite = this->Map().find(key);
             if(ite != this->Map().end())
             {
-                ite->second.Clear();
-                ite->second.Shrink();
+                ite->second.ClearAndShrink();
             }
         }
 
