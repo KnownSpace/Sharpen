@@ -177,13 +177,13 @@ namespace sharpen
             return this->vector_.crend();
         }
 
-        ConstIterator Find(sharpen::Char e) const;
+        ConstIterator Find(sharpen::Char e) const noexcept;
 
-        Iterator Find(sharpen::Char e);
+        Iterator Find(sharpen::Char e) noexcept;
 
-        ReverseIterator ReverseFind(sharpen::Char e);
+        ReverseIterator ReverseFind(sharpen::Char e) noexcept;
 
-        ConstReverseIterator ReverseFind(sharpen::Char e) const;
+        ConstReverseIterator ReverseFind(sharpen::Char e) const noexcept;
 
         template<typename _Iterator,typename _Check = decltype(std::declval<Self>().Get(0) == *std::declval<_Iterator>())>
         Iterator Search(const _Iterator begin,const _Iterator end)

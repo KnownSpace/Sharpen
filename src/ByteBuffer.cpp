@@ -216,7 +216,7 @@ sharpen::Size sharpen::ByteBuffer::GetMark() const noexcept
     return mark_;
 }
 
-sharpen::ByteBuffer::Iterator sharpen::ByteBuffer::Find(char e)
+sharpen::ByteBuffer::Iterator sharpen::ByteBuffer::Find(char e) noexcept
 {
     for (auto begin = this->Begin(); begin != this->End(); begin++)
     {
@@ -228,9 +228,9 @@ sharpen::ByteBuffer::Iterator sharpen::ByteBuffer::Find(char e)
     return this->End();
 }
 
-sharpen::ByteBuffer::ConstIterator sharpen::ByteBuffer::Find(char e) const
+sharpen::ByteBuffer::ConstIterator sharpen::ByteBuffer::Find(char e) const noexcept
 {
-    for (auto begin = this->Begin(); begin != this->End(); begin++)
+    for (auto begin = this->Begin(); begin != this->End(); ++begin)
     {
         if (*begin == e)
         {
@@ -240,9 +240,9 @@ sharpen::ByteBuffer::ConstIterator sharpen::ByteBuffer::Find(char e) const
     return this->End();
 }
 
-sharpen::ByteBuffer::ReverseIterator sharpen::ByteBuffer::ReverseFind(char e)
+sharpen::ByteBuffer::ReverseIterator sharpen::ByteBuffer::ReverseFind(char e) noexcept
 {
-    for (auto begin = this->ReverseBegin(); begin != this->ReverseEnd(); begin++)
+    for (auto begin = this->ReverseBegin(); begin != this->ReverseEnd(); ++begin)
     {
         if (*begin == e)
         {
@@ -252,7 +252,7 @@ sharpen::ByteBuffer::ReverseIterator sharpen::ByteBuffer::ReverseFind(char e)
     return this->ReverseEnd();
 }
 
-sharpen::ByteBuffer::ConstReverseIterator sharpen::ByteBuffer::ReverseFind(char e) const
+sharpen::ByteBuffer::ConstReverseIterator sharpen::ByteBuffer::ReverseFind(char e) const noexcept
 {
     for (auto begin = this->ReverseBegin(); begin != this->ReverseEnd(); begin++)
     {
