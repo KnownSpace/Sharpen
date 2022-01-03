@@ -18,15 +18,9 @@ namespace sharpen
     //only 1 byte
     struct MicroRpcFieldHeader
     {
-#ifdef SHARPEN_IS_BIG_ENDIAN
-    unsigned char type_:4;
-    unsigned char sizeSpace_:3;
-    unsigned char end_:1;
-#else
-    unsigned char end_:1;
-    unsigned char sizeSpace_:3;
-    unsigned char type_:4;
-#endif
+        unsigned char end_:1;
+        unsigned char sizeSpace_:3;
+        unsigned char type_:4;
     };
 
     /*

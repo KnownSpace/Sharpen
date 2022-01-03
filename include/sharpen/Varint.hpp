@@ -116,8 +116,14 @@ namespace sharpen
             }
             this->data_.ExtendTo(bytes_);
             this->data_.Clear();
+#ifdef SHARPEN_IS_LIL_ENDIAN
             const unsigned char *begin = reinterpret_cast<const unsigned char*>(&value);
             const unsigned char *end = begin + sizeof(_T);
+#else
+            const unsigned char *begin = reinterpret_cast<const unsigned char*>(&value) + sizeof(_T) - 1;
+            const unsigned char *end = begin - 1;
+#endif
+            
             sharpen::Size offset{1};
             sharpen::Size min{sharpen::MinSizeof(value)};
             while (begin != end && min--)
@@ -140,7 +146,11 @@ namespace sharpen
                 {
                     offset = 1;
                 }
+#ifdef SHARPEN_IS_LIL_ENDIAN
                 ++begin;
+#else
+                --begin;
+#endif
             }
             if(!this->data_.Empty())
             {
