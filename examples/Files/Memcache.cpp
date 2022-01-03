@@ -23,7 +23,7 @@ CacheTable BuildTable(const char *logPath)
     return CacheTable{log};
 }
 
-const char *dbPath = "./todo.binlog";
+const char *dbPath = "./binlog";
 
 void Entry(int argc, char const *argv[])
 {
