@@ -25,7 +25,7 @@ namespace sharpen
         sharpen::Size mark_;
 
     private:
-        void CheckAndMoveMark();
+        void CheckAndMoveMark() noexcept;
     public:
         using Iterator = typename Vector::iterator;
 
@@ -63,7 +63,7 @@ namespace sharpen
 
         void PushBack(sharpen::Char val);
 
-        sharpen::Size GetSize() const;
+        sharpen::Size GetSize() const noexcept;
 
         void PopBack();
 
@@ -81,9 +81,9 @@ namespace sharpen
 
         sharpen::Char GetOrDefault(sharpen::Size index,sharpen::Char defaultVal) const noexcept;
 
-        sharpen::Char *Data();
+        sharpen::Char *Data() noexcept;
 
-        const sharpen::Char* Data() const;
+        const sharpen::Char* Data() const noexcept;
 
         inline sharpen::Char &operator[](sharpen::Size index)
         {
@@ -97,7 +97,7 @@ namespace sharpen
 
         void Reserve(sharpen::Size size);
 
-        void Reset();
+        void Reset() noexcept;
 
         void Extend(sharpen::Size size);
 
@@ -133,9 +133,9 @@ namespace sharpen
 
         void Mark(sharpen::Size pos);
 
-        sharpen::Size Remaining() const;
+        sharpen::Size Remaining() const noexcept;
 
-        sharpen::Size GetMark() const;
+        sharpen::Size GetMark() const noexcept;
 
         inline Iterator Begin()
         {
@@ -199,6 +199,7 @@ namespace sharpen
 
         inline void Clear() noexcept
         {
+            this->CheckAndMoveMark();
             this->vector_.clear();
         }
 

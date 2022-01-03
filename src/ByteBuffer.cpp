@@ -71,12 +71,12 @@ void sharpen::ByteBuffer::PushBack(sharpen::Char val)
     this->vector_.push_back(val);
 }
 
-sharpen::Size sharpen::ByteBuffer::GetSize() const
+sharpen::Size sharpen::ByteBuffer::GetSize() const noexcept
 {
     return this->vector_.size();
 }
 
-void sharpen::ByteBuffer::CheckAndMoveMark()
+void sharpen::ByteBuffer::CheckAndMoveMark() noexcept
 {
     if (this->mark_ > this->vector_.size())
     {
@@ -120,12 +120,12 @@ sharpen::Char &sharpen::ByteBuffer::Get(sharpen::Size index)
     return this->vector_.at(index);
 }
 
-const sharpen::Char *sharpen::ByteBuffer::Data() const
+const sharpen::Char *sharpen::ByteBuffer::Data() const noexcept
 {
     return this->vector_.data();
 }
 
-sharpen::Char *sharpen::ByteBuffer::Data()
+sharpen::Char *sharpen::ByteBuffer::Data() noexcept
 {
     return reinterpret_cast<sharpen::Char*>(this->vector_.data());
 }
@@ -155,8 +155,12 @@ void sharpen::ByteBuffer::ExtendTo(sharpen::Size size)
     this->ExtendTo(size,0);
 }
 
-void sharpen::ByteBuffer::Reset()
+void sharpen::ByteBuffer::Reset() noexcept
 {
+    if(this->Empty())
+    {
+        return;
+    }
     std::memset(this->vector_.data(),0,this->vector_.size());
 }
 
@@ -202,12 +206,12 @@ void sharpen::ByteBuffer::Mark(sharpen::Size pos)
     this->CheckAndMoveMark();
 }
 
-sharpen::Size sharpen::ByteBuffer::Remaining() const
+sharpen::Size sharpen::ByteBuffer::Remaining() const noexcept
 {
     return GetSize() - mark_;
 }
 
-sharpen::Size sharpen::ByteBuffer::GetMark() const
+sharpen::Size sharpen::ByteBuffer::GetMark() const noexcept
 {
     return mark_;
 }
