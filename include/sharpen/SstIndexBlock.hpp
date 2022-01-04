@@ -36,6 +36,8 @@ namespace sharpen
     private:
         using Self = SstIndexBlock;
         using DataBlockHandles = std::vector<sharpen::SstBlockHandle>;
+        using Iterator = typename DataBlockHandles::iterator;
+        using ConstIterator = typename DataBlockHandles::const_iterator;
     
         DataBlockHandles dataBlocks_;
     public:

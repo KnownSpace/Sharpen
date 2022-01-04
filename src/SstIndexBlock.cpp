@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+#include <sharpen/IteratorOps.hpp>
+
 void sharpen::SstIndexBlock::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size size,sharpen::Size offset)
 {
     if(buf.GetSize() - offset < size)
@@ -12,7 +14,7 @@ void sharpen::SstIndexBlock::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Si
     const char *end = begin + size;
     while (begin != end)
     {
-        if(end - begin < sizeof(sharpen::SstBlock) + sizeof(sharpen::Uint64))
+        if(sharpen::GetRangeSize(begin,end) < sizeof(sharpen::SstBlock) + sizeof(sharpen::Uint64))
         {
             this->dataBlocks_.clear();
             throw std::invalid_argument("invalid buffer");
@@ -23,7 +25,7 @@ void sharpen::SstIndexBlock::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Si
         sharpen::ByteBuffer key{begin,keySize};
         begin += keySize;
         sharpen::SstBlock block;
-        if(end - begin < sizeof(block))
+        if(sharpen::GetRangeSize(begin,end) < sizeof(block))
         {
             this->dataBlocks_.clear();
             throw std::invalid_argument("invalid buffer");
