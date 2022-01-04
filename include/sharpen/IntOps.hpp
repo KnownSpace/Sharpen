@@ -138,7 +138,7 @@ namespace sharpen
     template<typename _To,typename _From,typename _Check = sharpen::EnableIf<std::is_integral<_To>::value && std::is_integral<_From>::value && std::is_unsigned<_To>::value>>
     inline _To InternalIntCast(_From from,...)
     {
-        if(from >= 0 && static_cast<std::make_unsigned<_From>::type>(from) <= (std::numeric_limits<_To>::max)())
+        if(from >= 0 && static_cast<typename std::make_unsigned<_From>::type>(from) <= (std::numeric_limits<_To>::max)())
         {
             return static_cast<_To>(from);
         }
@@ -149,7 +149,7 @@ namespace sharpen
     template<typename _To,typename _From,typename _Check = sharpen::EnableIf<std::is_integral<_To>::value && std::is_integral<_From>::value && std::is_unsigned<_From>::value>>
     inline _To InternalIntCast(_From from,int,...)
     {
-        if(static_cast<std::make_unsigned<_To>::type>((std::numeric_limits<_To>::max)()) >= from)
+        if(static_cast<typename std::make_unsigned<_To>::type>((std::numeric_limits<_To>::max)()) >= from)
         {
             return static_cast<_To>(from);
         }
