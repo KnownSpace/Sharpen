@@ -111,7 +111,7 @@ namespace sharpen
     }
 
     template<typename _To,typename _From,typename _Check = sharpen::EnableIf<std::is_integral<_To>::value && std::is_integral<_From>::value>>
-    constexpr inline _To InternalIntCast(_From from,...)
+    inline _To InternalIntCast(_From from,...)
     {
         if(!sharpen::CheckIntCast<_To>(from))
         {
