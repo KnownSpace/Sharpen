@@ -265,6 +265,11 @@ namespace sharpen
             return this->CompareWith(other) == 0;
         }
 
+        inline bool operator!=(const Self &other) const noexcept
+        {
+            return this->CompareWith(other) != 0;
+        }
+
         inline sharpen::Size Hash32() const noexcept
         {
             return sharpen::BufferHash32(this->Data(),this->GetSize());
