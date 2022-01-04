@@ -68,3 +68,27 @@ sharpen::Size sharpen::SstIndexBlock::StoreTo(sharpen::ByteBuffer &buf,sharpen::
     }
     return needSize;
 }
+
+sharpen::SstIndexBlock::ConstIterator sharpen::SstIndexBlock::Find(const sharpen::ByteBuffer &key) const noexcept
+{
+    auto begin = this->dataBlocks_.cbegin();
+    auto end = this->dataBlocks_.cend();
+    while (begin != end)
+    {
+        sharpen::Size size = sharpen::GetRangeSize(begin,end);
+        auto mid = begin + size/2;
+        if(mid->Key() == key)
+        {
+            return mid;
+        }
+        else if(mid->Key() > key)
+        {
+            end = mid;
+        }
+        else if(mid->Key() < key)
+        {
+            begin = sharpen::IteratorForward(mid,1);
+        }
+    }
+    return begin;
+}

@@ -66,6 +66,36 @@ namespace sharpen
         {
             return this->block_;
         }
+
+        inline bool operator==(const Self &other) const noexcept
+        {
+            return this->key_ == other.key_;
+        }
+
+        inline bool operator!=(const Self &other) const noexcept
+        {
+            return this->key_ != other.key_;
+        }
+
+        inline bool operator>=(const Self &other) const noexcept
+        {
+            return this->key_ >= other.key_;
+        }
+
+        inline bool operator<=(const Self &other) const noexcept
+        {
+            return this->key_ <= other.key_;
+        }
+
+        inline bool operator>(const Self &other) const noexcept
+        {
+            return this->key_ > other.key_;
+        }
+
+        inline bool operator<(const Self &other) const noexcept
+        {
+            return this->key_ < other.key_;
+        }
     };
 }
 

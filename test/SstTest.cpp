@@ -16,8 +16,8 @@ void Entry()
             sharpen::FileChannelPtr sstFile = sharpen::MakeFileChannel(name,sharpen::FileAccessModel::Write,sharpen::FileOpenModel::CreateNew);
             sstFile->Register(sharpen::EventEngine::GetEngine());
             sharpen::SortedStringTable table;
-            table.IndexBlock().Blocks().push_back({sharpen::ByteBuffer{"datablock",9},{0,0}});
-            table.MetaIndexBlock().Blocks().push_back({sharpen::ByteBuffer{"filter",6},{0,0}});
+            table.IndexBlock().Put({sharpen::ByteBuffer{"datablock",9},{0,0}});
+            table.MetaIndexBlock().Put({sharpen::ByteBuffer{"filter",6},{0,0}});
             table.Store(sstFile,0);
             sstFile->Close();
         }
@@ -52,7 +52,7 @@ void Entry()
             sharpen::FileChannelPtr sstFile = sharpen::MakeFileChannel(name,sharpen::FileAccessModel::Write,sharpen::FileOpenModel::CreateNew);
             sstFile->Register(sharpen::EventEngine::GetEngine());
             sharpen::SortedStringTable table;
-            table.IndexBlock().Blocks().push_back({sharpen::ByteBuffer{"datablock",9},{0,0}});
+            table.IndexBlock().Put({sharpen::ByteBuffer{"datablock",9},{0,0}});
             table.Store(sstFile,0);
             sstFile->Close();
         }
@@ -71,7 +71,7 @@ void Entry()
             sharpen::FileChannelPtr sstFile = sharpen::MakeFileChannel(name,sharpen::FileAccessModel::Write,sharpen::FileOpenModel::CreateNew);
             sstFile->Register(sharpen::EventEngine::GetEngine());
             sharpen::SortedStringTable table;
-            table.MetaIndexBlock().Blocks().push_back({sharpen::ByteBuffer{"filter",6},{0,0}});
+            table.MetaIndexBlock().Put({sharpen::ByteBuffer{"filter",6},{0,0}});
             table.Store(sstFile,0);
             sstFile->Close();
         }
@@ -85,6 +85,9 @@ void Entry()
             assert(table.MetaIndexBlock().Blocks().front().Key() == sharpen::ByteBuffer("filter",6));
             assert(table.Footer().IndexBlock().size_ == 0);
         }
+        sharpen::SstIndexBlock index;
+        index.Put({{"ke1",3},{0,0}});
+        index.Put({{"ke2",3},{0,0}});
         sharpen::RemoveFile(name);
         std::puts("pass");
     }

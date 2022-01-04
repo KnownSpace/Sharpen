@@ -26,6 +26,7 @@ Index Block
 */
 
 #include <vector>
+#include <algorithm>
 
 #include "SstBlockHandle.hpp"
 
@@ -70,11 +71,6 @@ namespace sharpen
     
         ~SstIndexBlock() noexcept = default;
 
-        DataBlockHandles &Blocks() noexcept
-        {
-            return this->dataBlocks_;
-        }
-
         const DataBlockHandles &Blocks() const noexcept
         {
             return this->dataBlocks_;
@@ -92,6 +88,54 @@ namespace sharpen
         inline sharpen::Size StoreTo(sharpen::ByteBuffer &buf) const
         {
             return this->StoreTo(buf,0);
+        }
+
+        ConstIterator Find(const sharpen::ByteBuffer &key) const noexcept;
+
+        void Sort() noexcept
+        {
+            std::sort(this->dataBlocks_.begin(),this->dataBlocks_.end());
+        }
+
+        inline Iterator Begin()
+        {
+            return this->dataBlocks_.begin();
+        }
+
+        inline ConstIterator Begin() const
+        {
+            return this->dataBlocks_.cbegin();
+        }
+
+        inline Iterator End()
+        {
+            return this->dataBlocks_.end();
+        }
+
+        inline ConstIterator End() const
+        {
+            return this->dataBlocks_.cend();
+        }
+
+        void Put(sharpen::SstBlockHandle block)
+        {
+            auto ite = this->Find(block.Key());
+            if (ite == this->End() || ite->Key() != block.Key())
+            {
+                this->dataBlocks_.push_back(std::move(block));
+                this->Sort();
+            }
+        }
+
+        template<typename ..._Args>
+        auto Emplace(_Args &&...args) -> decltype(this->dataBlocks_.emplace_back(std::forward<_Args>(args)...))
+        {
+            auto ite = this->Find(block.Key());
+            if (ite == this->End() || ite->Key() != block.Key())
+            {
+                this->dataBlocks_.emplace_back(std::forward<_Args>(args)...);
+                this->Sort();
+            }
         }
     };
 }
