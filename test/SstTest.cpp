@@ -85,9 +85,6 @@ void Entry()
             assert(table.MetaIndexBlock().Blocks().front().Key() == sharpen::ByteBuffer("filter",6));
             assert(table.Footer().IndexBlock().size_ == 0);
         }
-        sharpen::SstIndexBlock index;
-        index.Put({{"ke1",3},{0,0}});
-        index.Put({{"ke2",3},{0,0}});
         sharpen::RemoveFile(name);
         std::puts("pass");
     }
