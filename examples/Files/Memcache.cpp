@@ -41,7 +41,7 @@ void Entry(int argc, char const *argv[])
             return;
         }
         CacheTable tb = BuildTable(dbPath);
-        tb.RestoreFromLogger();
+        tb.Restore();
         sharpen::ByteBuffer key{argv[2],std::strlen(argv[2])};
         if(tb.Exist(key))
         {
@@ -62,7 +62,7 @@ void Entry(int argc, char const *argv[])
             return;
         }
         CacheTable tb = BuildTable(dbPath);
-        tb.RestoreFromLogger();
+        tb.Restore();
         sharpen::ByteBuffer key{argv[2],std::strlen(argv[2])};
         if(tb.Exist(key))
         {
@@ -80,7 +80,7 @@ void Entry(int argc, char const *argv[])
             return;
         }
         CacheTable tb = BuildTable(dbPath);
-        tb.RestoreFromLogger();
+        tb.Restore();
         sharpen::ByteBuffer key{argv[2],std::strlen(argv[2])};
         sharpen::ByteBuffer val{argv[3],std::strlen(argv[3])};
         tb.Put(key,val);
@@ -89,7 +89,7 @@ void Entry(int argc, char const *argv[])
     else if(!std::strcmp(op,"li"))
     {
         CacheTable tb = BuildTable(dbPath);
-        tb.RestoreFromLogger();
+        tb.Restore();
         std::puts("list of items:");
         for (auto begin = tb.Begin(),end = tb.End(); begin != end; ++begin)
         {
