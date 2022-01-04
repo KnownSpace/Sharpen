@@ -134,6 +134,12 @@ namespace sharpen
             return ite != this->Map().end() && !ite->second.Empty();
         }
 
+        bool ExistIgnoreDeleted(const sharpen::ByteBuffer &key) const noexcept
+        {
+            auto ite = this->Map().find(key);
+            return ite != this->Map().end();
+        }
+
         void Clear() const
         {
             this->Map().clear();
