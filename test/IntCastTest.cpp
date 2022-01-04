@@ -22,6 +22,14 @@ int main(int argc, char const *argv[])
     std::printf("size max can cast to uint32 ? %d\n",r);
     assert(r == (sizeof(sharpen::Size) <= sizeof(sharpen::Uint32)));
 
+    r = sharpen::CheckIntCast<sharpen::Uint32>(std::numeric_limits<sharpen::Int32>::min());
+    std::printf("int32 min can cast to uint32 ? %d\n",r);
+    assert(r == 0);
+
+    r = sharpen::CheckIntCast<sharpen::Uint32>(std::numeric_limits<sharpen::Int64>::min());
+    std::printf("int64 min can cast to uint32 ? %d\n",r);
+    assert(r == 0);
+
     std::puts("pass");
     return 0;
 }
