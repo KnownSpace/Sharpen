@@ -248,9 +248,23 @@ namespace sharpen
     }
 
     template<typename _T,typename ..._Ts,typename _Check = PrintTest<decltype(sharpen::PrintCheck(std::declval<_T>())),decltype(sharpen::PrintCheck(std::declval<_Ts>()))...>>
+    inline void Println(_T &&arg,_Ts &&...args)
+    {
+        sharpen::ConsolePrinter<_T,_Ts...>::Print(std::forward<_T>(arg),std::forward<_Ts>(args)...);
+        std::putchar('\n');
+    }
+
+    template<typename _T,typename ..._Ts,typename _Check = PrintTest<decltype(sharpen::PrintCheck(std::declval<_T>())),decltype(sharpen::PrintCheck(std::declval<_Ts>()))...>>
     inline void Perror(_T &&arg,_Ts &&...args)
     {
         sharpen::ConsolePrinter<_T,_Ts...>::Perror(std::forward<_T>(arg),std::forward<_Ts>(args)...);
+    }
+
+    template<typename _T,typename ..._Ts,typename _Check = PrintTest<decltype(sharpen::PrintCheck(std::declval<_T>())),decltype(sharpen::PrintCheck(std::declval<_Ts>()))...>>
+    inline void Perrorln(_T &&arg,_Ts &&...args)
+    {
+        sharpen::ConsolePrinter<_T,_Ts...>::Perror(std::forward<_T>(arg),std::forward<_Ts>(args)...);
+        std::putchar('\n');
     }
 }
 
