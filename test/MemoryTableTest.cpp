@@ -15,7 +15,7 @@ void Entry()
     logFile->Register(sharpen::EventEngine::GetEngine());
     {
         sharpen::MemoryTable<std::map,sharpen::BinaryLogger<std::map>> table{logFile};
-        table.RestoreFromLogger();
+        table.Restore();
         sharpen::ByteBuffer key{"key",3},val{"val",3};
         table.Put(key,val);
         key.Append("123",3);
@@ -24,11 +24,21 @@ void Entry()
     }
     {
         sharpen::MemoryTable<std::map,sharpen::BinaryLogger<std::map>> table{logFile};
-        table.RestoreFromLogger();
+        table.Restore();
         sharpen::ByteBuffer key{"key",3},val;
         val = table[key];
         assert(!std::memcmp("val",val.Data(),3));
         key.Append("123",3);
+        assert(!table.Exist(key));
+    }
+    {
+        sharpen::MemoryTable<std::map,sharpen::BinaryLogger<std::map>> table{logFile};
+        table.Restore();
+        sharpen::WriteBatch batch;
+        sharpen::ByteBuffer key{"key",3},val{"val",3};
+        batch.Put(key,std::move(val));
+        batch.Delete(key);
+        table.Action(batch);
         assert(!table.Exist(key));
     }
     logFile->Close();

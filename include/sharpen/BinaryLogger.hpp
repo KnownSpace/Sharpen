@@ -6,6 +6,7 @@
 #include "IFileChannel.hpp"
 #include "CompilerInfo.hpp"
 #include "ByteOrder.hpp"
+#include "WriteBatch.hpp"
 
 namespace sharpen
 {
@@ -188,9 +189,19 @@ namespace sharpen
             std::memcpy(buf + 1,&len,sizeof(len));
             len = val.GetSize();
             std::memcpy(buf + 1 + sizeof(len),&len,sizeof(len));
-            this->offset_ += this->channel_->WriteAsync(buf,sizeof(buf),this->offset_);
-            this->offset_ += this->channel_->WriteAsync(key,this->offset_);
-            this->offset_ += this->channel_->WriteAsync(val,this->offset_);
+            sharpen::Uint64 offset = this->offset_;
+            try
+            {
+                this->offset_ += this->channel_->WriteAsync(buf,sizeof(buf),this->offset_);
+                this->offset_ += this->channel_->WriteAsync(key,this->offset_);
+                this->offset_ += this->channel_->WriteAsync(val,this->offset_);
+            }
+            catch(const std::exception&)
+            {
+                this->offset_ = offset;
+                this->channel_->Truncate(offset);
+                throw;
+            }
         }
 
         void LogDelete(const sharpen::ByteBuffer &key)
@@ -203,8 +214,18 @@ namespace sharpen
             char buf[1+sizeof(len)] = {0};
             buf[0] = sharpen::BinaryLoggerHelper::DeleteOp;
             std::memcpy(buf + 1,&len,sizeof(len));
-            this->offset_ += this->channel_->WriteAsync(buf,sizeof(buf),this->offset_);
-            this->offset_ += this->channel_->WriteAsync(key,this->offset_);
+            sharpen::Uint64 offset = this->offset_;
+            try
+            {
+                this->offset_ += this->channel_->WriteAsync(buf,sizeof(buf),this->offset_);
+                this->offset_ += this->channel_->WriteAsync(key,this->offset_);
+            }
+            catch(const std::exception&)
+            {
+                this->offset_ = offset;
+                this->channel_->Truncate(offset);
+                throw;
+            }
         }
 
         void ClearLogs()
@@ -233,6 +254,36 @@ namespace sharpen
                     return;
                 }
                 offset += len;
+            }
+        }
+
+        void LogWriteBatch(const sharpen::WriteBatch &batch)
+        {
+            auto begin = batch.Begin();
+            auto end = batch.End();
+            sharpen::Uint64 offset = this->offset_;
+            try
+            {
+                while (begin != end)
+                {
+                    switch (begin->type_)
+                    {
+                    case sharpen::WriteBatch::ActionType::Put:
+                        this->LogPut(*begin->key_,*begin->value_);
+                        break;
+                    case sharpen::WriteBatch::ActionType::Delete:
+                        this->LogDelete(*begin->key_);
+                        break;
+                    }
+                    ++begin;
+                }
+            }
+            catch(const std::exception &)
+            {
+                //rollback
+                this->offset_ = offset;
+                this->channel_->Truncate(offset);
+                throw;   
             }
         }
     };   

@@ -79,6 +79,30 @@ namespace sharpen
             }
         }
 
+        void Action(const sharpen::WriteBatch &batch)
+        {
+            this->Logger().LogWriteBatch(batch);
+            auto begin = batch.Begin();
+            auto end = batch.End();
+            while (begin != end)
+            {
+                switch (begin->type_)
+                {
+                case sharpen::WriteBatch::ActionType::Put:
+                    this->Map()[*begin->key_] = std::move(*begin->value_);
+                    break;
+                case sharpen::WriteBatch::ActionType::Delete:
+                    auto ite = this->Map().find(*begin->key_);
+                    if(ite != this->Map().end())
+                    {
+                        ite->second.ClearAndShrink();
+                    }
+                    break;
+                }
+                ++begin;
+            }
+        }
+
         const sharpen::ByteBuffer &Get(const sharpen::ByteBuffer &key) const
         {
             auto ite = this->Map().find(key);
@@ -116,7 +140,7 @@ namespace sharpen
             this->Logger().ClearLogs();
         }
 
-        void RestoreFromLogger()
+        void Restore()
         {
             this->Logger().Restore(this->Map());
         }
