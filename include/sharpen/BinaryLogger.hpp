@@ -7,6 +7,7 @@
 #include "CompilerInfo.hpp"
 #include "ByteOrder.hpp"
 #include "WriteBatch.hpp"
+#include "IntOps.hpp"
 
 namespace sharpen
 {
@@ -48,7 +49,7 @@ namespace sharpen
 #pragma clang diagnostic ignored "-Wimplicit-fallthrough"
 #endif
 
-        static void RunStateMachine(const char *begin,const char *end,sharpen::BinaryLoggerHelper::RestoreStep &step,char &op,sharpen::ByteBuffer &key,sharpen::ByteBuffer &val,sharpen::Size &lenBuf,sharpen::Size &counter,MapType &map)
+        static void RunStateMachine(const char *begin,const char *end,sharpen::BinaryLoggerHelper::RestoreStep &step,char &op,sharpen::ByteBuffer &key,sharpen::ByteBuffer &val,sharpen::Uint64 &lenBuf,sharpen::Size &counter,MapType &map)
         {
             while (begin != end)
             {
@@ -76,7 +77,7 @@ namespace sharpen
                         }
                     }
                     sharpen::ConvertEndian(lenBuf);
-                    key.ExtendTo(lenBuf);
+                    key.ExtendTo(sharpen::IntCast<sharpen::Size>(lenBuf));
                     if(op == sharpen::BinaryLoggerHelper::PutOp_)
                     {
                         counter = 8;
@@ -99,7 +100,7 @@ namespace sharpen
                         }
                     }
                     sharpen::ConvertEndian(lenBuf);
-                    val.ExtendTo(lenBuf);
+                    val.ExtendTo(sharpen::IntCast<sharpen::Size>(lenBuf));
                     step = sharpen::BinaryLoggerHelper::RestoreStep::ReadKey;
                     continue;
                 case sharpen::BinaryLoggerHelper::RestoreStep::ReadKey:
@@ -241,7 +242,8 @@ namespace sharpen
             sharpen::ByteBuffer buf{4096},key,value;
             char op;
             sharpen::BinaryLoggerHelper::RestoreStep step = sharpen::BinaryLoggerHelper::RestoreStep::ReadOp;
-            sharpen::Size counter{0},lenBuf{0};
+            sharpen::Size counter{0};
+            sharpen::Uint64 lenBuf{0};
             while (offset != size)
             {
                 sharpen::Size len = this->channel_->ReadAsync(buf,offset);

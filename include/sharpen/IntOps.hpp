@@ -3,6 +3,8 @@
 #define _SHARPEN_INTOPS_HPP
 
 #include <utility>
+#include <limits>
+#include <stdexcept>
 
 #include "TypeTraits.hpp"
 #include "ByteOrder.hpp"
@@ -83,6 +85,58 @@ namespace sharpen
         } union_;
         sharpen::Uint64 value_;  
     };
+
+    template<typename _To,typename _From,typename _Check = sharpen::EnableIf<std::is_integral<_To>::value && std::is_integral<_From>::value>>
+    constexpr inline bool InternalCheckIntCast(_From from,...)
+    {
+        return from <= (std::numeric_limits<_To>::max)() && from >= (std::numeric_limits<_To>::min)();
+    }
+
+    template<typename _To,typename _From,typename _Check = sharpen::EnableIf<std::is_integral<_To>::value && std::is_integral<_From>::value && (sizeof(_To) > sizeof(_From)) && std::is_unsigned<_From>::value>>
+    constexpr inline bool InternalCheckIntCast(_From from,int,...)
+    {
+        return true;
+    }
+
+    template<typename _To,typename _From,typename _Check = sharpen::EnableIf<std::is_integral<_To>::value && std::is_integral<_From>::value && std::is_same<_To,_From>::value>>
+    constexpr inline bool InternalCheckIntCast(_From from,int,int,...)
+    {
+        return true;
+    }
+
+    template<typename _To,typename _From>
+    constexpr inline auto CheckIntCast(_From from) -> decltype(sharpen::InternalCheckIntCast<_To>(from,0,0,0))
+    {
+        return sharpen::InternalCheckIntCast<_To>(from,0,0,0);
+    }
+
+    template<typename _To,typename _From,typename _Check = sharpen::EnableIf<std::is_integral<_To>::value && std::is_integral<_From>::value>>
+    constexpr inline _To InternalIntCast(_From from,...)
+    {
+        if(!sharpen::CheckIntCast<_To>(from))
+        {
+            throw std::out_of_range("value cann't cast to target type");
+        }
+        return static_cast<_To>(from);
+    }
+
+    template<typename _To,typename _From,typename _Check = sharpen::EnableIf<std::is_integral<_To>::value && std::is_integral<_From>::value && (sizeof(_To) > sizeof(_From)) && std::is_unsigned<_From>::value>>
+    constexpr inline _To InternalIntCast(_From from,int,...)
+    {
+        return static_cast<_To>(from);
+    }
+
+    template<typename _To,typename _From,typename _Check = sharpen::EnableIf<std::is_integral<_To>::value && std::is_integral<_From>::value && std::is_same<_To,_From>::value>>
+    constexpr inline _To InternalIntCast(_From from,int,int,...)
+    {
+        return static_cast<_To>(from);
+    }
+
+    template<typename _To,typename _From>
+    constexpr inline auto IntCast(_From from) -> decltype(sharpen::InternalIntCast<_To>(from,0,0,0))
+    {
+        return sharpen::InternalIntCast<_To>(from,0,0,0);
+    }
 }
 
 #endif
