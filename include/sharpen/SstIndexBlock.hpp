@@ -131,17 +131,16 @@ namespace sharpen
             *ite = std::move(block);
         }
 
-        template<typename ..._Args>
-        auto Emplace(_Args &&...args) -> decltype(this->dataBlocks_.emplace_back(std::forward<_Args>(args)...))
+        void Put(sharpen::ByteBuffer key,const sharpen::SstBlock &block)
         {
-            auto ite = this->Find(block.Key());
-            if (ite == this->End() || ite->Key() != block.Key())
+            auto ite = this->Find(key);
+            if (ite == this->End() || ite->Key() != key)
             {
-                this->dataBlocks_.emplace_back(std::forward<_Args>(args)...);
+                this->dataBlocks_.emplace_back(std::move(key),block);
                 this->Sort();
                 return;
             }
-            this->dataBlocks_.emplace(ite,std::forward<_Args>(args)...);
+            this->dataBlocks_.emplace(ite,std::move(key),block);
         }
     };
 }
