@@ -411,21 +411,6 @@ namespace sharpen
 
     template<typename _Id,typename  _Log,typename _Application,typename _PersistenceStorage,typename _Member>
     using RaftStateMachine = sharpen::InternalRaftStateMachine<_Id,_Log,_Application,_PersistenceStorage,_Member>;
-
-    template<typename _Id,typename  _Log,typename _Application,typename _PersistenceStorage,typename _Member>
-    using RaftStateMachinePtr = std::shared_ptr<sharpen::RaftStateMachine<_Id,_Log,_Application,_PersistenceStorage,_Member>>;
-
-    template<typename _Id,typename  _Log,typename _Application,typename _PersistenceStorage,typename _Member,typename _StateMachine = sharpen::RaftStateMachine<_Id,_Log,_Application,_PersistenceStorage,_Member>,typename _Check = sharpen::IsCompletedType<_StateMachine>>
-    std::shared_ptr<_StateMachine> MakeRaftStateMachine(_Id id,_PersistenceStorage pm)
-    {
-        return std::make_shared<_StateMachine>(std::move(id),std::move(pm));
-    }
-
-    template<typename _Id,typename  _Log,typename _Application,typename _PersistenceStorage,typename _Member,typename _StateMachine = sharpen::RaftStateMachine<_Id,_Log,_Application,_PersistenceStorage,_Member>,typename _Check = sharpen::IsCompletedType<_StateMachine>>
-    std::shared_ptr<_StateMachine> MakeRaftStateMachine(_Id id,_PersistenceStorage pm,_Application commiter)
-    {
-        return std::make_shared<_StateMachine>(std::move(id),std::move(pm),std::move(commiter));
-    }
 }
 
 #endif
