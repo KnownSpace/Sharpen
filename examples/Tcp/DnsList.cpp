@@ -7,13 +7,27 @@
 #include <sharpen/IpEndPoint.hpp>
 #include <sharpen/Ipv6EndPoint.hpp>
 
-void Entry()
+void Entry(const char *name)
 {
     sharpen::StartupNetSupport();
-    std::puts("dns test begin1");
     std::vector<sharpen::Dns::ResolveResult> result;
-    sharpen::Dns::ResolveName("localhost",std::back_inserter(result));
-    for (auto begin = result.begin(),end = result.end(); begin != end; ++begin)
+    sharpen::Dns::ResolveName(name,std::back_inserter(result));
+    if(result.empty())
+    {
+        std::puts("host not found");
+        return;
+    }
+    std::puts("all dns results:");
+    auto begin = result.begin(),end = result.end();
+    if(!begin->canonname_.Empty())
+    {
+        std::fputs("canonname\t",stdout);
+        for (auto ite = begin->canonname_.Begin(); ite != begin->canonname_.End(); ++ite)
+        {
+            std::putchar(*ite);
+        }
+    }
+    for (; begin != end; ++begin)
     {
         if(begin->af_ == sharpen::AddressFamily::Ip)
         {
@@ -30,14 +44,22 @@ void Entry()
             std::printf("Ipv6\t%s\n",buf);
         }
     }
-    assert(!result.empty());
-    std::puts("pass");
     sharpen::CleanupNetSupport();
+}
+
+void PrintUsage()
+{
+    std::puts("usage: <hostname> - list dns results");
 }
 
 int main(int argc, char const *argv[])
 {
+    if(argc < 2)
+    {
+        PrintUsage();
+        return 0;
+    }
     sharpen::EventEngine &engine = sharpen::EventEngine::SetupSingleThreadEngine();
-    engine.Startup(&Entry);
+    engine.Startup(&Entry,argv[1]);
     return 0;
 }
