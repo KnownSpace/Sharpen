@@ -7,7 +7,7 @@ Index Block
 +---------------------+
 |Data Block1 Key Size | 8 bytes
 +---------------------+
-|Data Block1 Key      |
+|Data Block1 Key      | Index Key
 +---------------------+
 |Offset of Data Block1| 8 bytes
 +---------------------+
@@ -119,29 +119,15 @@ namespace sharpen
             return this->dataBlocks_.cend();
         }
 
-        void Put(sharpen::SstBlockHandle block)
-        {
-            auto ite = this->Find(block.Key());
-            if (ite == this->End() || ite->Key() != block.Key())
-            {
-                this->dataBlocks_.push_back(std::move(block));
-                this->Sort();
-                return;
-            }
-            *ite = std::move(block);
-        }
+        void Put(sharpen::SstBlockHandle block);
 
-        void Put(sharpen::ByteBuffer key,const sharpen::SstBlock &block)
-        {
-            auto ite = this->Find(key);
-            if (ite == this->End() || ite->Key() != key)
-            {
-                this->dataBlocks_.emplace_back(std::move(key),block);
-                this->Sort();
-                return;
-            }
-            this->dataBlocks_.emplace(ite,std::move(key),block);
-        }
+        void Put(sharpen::ByteBuffer key,const sharpen::SstBlock &block);
+
+        void Delete(const sharpen::ByteBuffer &key) noexcept;
+
+        void Update(const sharpen::ByteBuffer &oldKey,sharpen::SstBlockHandle block);
+
+        void Update(const sharpen::ByteBuffer &oldKey,sharpen::ByteBuffer newKey,const sharpen::SstBlock &block);
     };
 }
 

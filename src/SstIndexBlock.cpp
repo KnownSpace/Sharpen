@@ -116,3 +116,62 @@ sharpen::SstIndexBlock::Iterator sharpen::SstIndexBlock::Find(const sharpen::Byt
     }
     return begin;
 }
+
+void sharpen::SstIndexBlock::Put(sharpen::ByteBuffer key,const sharpen::SstBlock &block)
+{
+    auto ite = this->Find(key);
+    if (ite == this->End() || ite->Key() != key)
+    {
+        this->dataBlocks_.emplace_back(std::move(key),block);
+    }
+    else
+    {
+        ite->Key() = std::move(key);
+        ite->Block() = block;
+    }
+    this->Sort();
+}
+
+void sharpen::SstIndexBlock::Put(sharpen::SstBlockHandle block)
+{
+    auto ite = this->Find(block.Key());
+    if (ite == this->End() || ite->Key() != block.Key())
+    {
+        this->dataBlocks_.push_back(std::move(block));
+    }
+    else
+    {
+        *ite = std::move(block);
+    }
+    this->Sort();
+}
+
+void sharpen::SstIndexBlock::Delete(const sharpen::ByteBuffer &key) noexcept
+{
+    auto ite = this->Find(key);
+    if (ite != this->End() && ite->Key() == key)
+    {
+        this->dataBlocks_.erase(ite);
+    }
+}
+
+void sharpen::SstIndexBlock::Update(const sharpen::ByteBuffer &oldKey,sharpen::SstBlockHandle block)
+{
+    auto ite = this->Find(oldKey);
+    if(ite != this->End() && ite->Key() == oldKey)
+    {
+        *ite = std::move(block);
+        this->Sort();
+    }
+}
+
+void sharpen::SstIndexBlock::Update(const sharpen::ByteBuffer &oldKey,sharpen::ByteBuffer newKey,const sharpen::SstBlock &block)
+{
+    auto ite = this->Find(oldKey);
+    if(ite != this->End() && ite->Key() == oldKey)
+    {
+        ite->Key() = std::move(newKey);
+        ite->Block() = block;
+        this->Sort();
+    }
+}

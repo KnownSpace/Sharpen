@@ -62,7 +62,17 @@ namespace sharpen
             return this->key_;
         }
 
+        sharpen::ByteBuffer &Key() noexcept
+        {
+            return this->key_;
+        }
+
         const sharpen::SstBlock &Block() const noexcept
+        {
+            return this->block_;
+        }
+
+        sharpen::SstBlock &Block() noexcept
         {
             return this->block_;
         }
