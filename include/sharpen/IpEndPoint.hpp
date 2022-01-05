@@ -82,7 +82,7 @@ namespace sharpen
 
         void SetAddr(sharpen::UintIpAddr addr) noexcept;
 
-        void GetAddrSring(char *addrStr,sharpen::Size size) const;
+        void GetAddrString(char *addrStr,sharpen::Size size) const;
 
         void SetAddrByString(const char *addrStr);
 

@@ -53,9 +53,17 @@ namespace sharpen
 #ifdef SHARPEN_IS_WIN
     constexpr sharpen::ErrorCode ErrorCancel = ERROR_OPERATION_ABORTED;
     constexpr sharpen::ErrorCode ErrorConnectionAborted = ERROR_CONNECTION_ABORTED;
+    constexpr sharpen::ErrorCode ErrorHostNotFound = WSAHOST_NOT_FOUND;
+    constexpr sharpen::ErrorCode ErrorBlocking = WSAEWOULDBLOCK;
 #else
     constexpr sharpen::ErrorCode ErrorCancel = ECANCELED;
     constexpr sharpen::ErrorCode ErrorConnectionAborted = ECONNABORTED;
+    constexpr sharpen::ErrorCode ErrorHostNotFound = EAI_NONAME;
+#ifdef EAGAIN
+    constexpr sharpen::ErrorCode ErrorBlocking = EAGAIN;
+#else
+    constexpr sharpen::ErrorCode ErrorBlocking = EWOULDBLOCK;
+#endif
 #endif
 }
 

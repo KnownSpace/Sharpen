@@ -453,7 +453,7 @@ void Test(TestId id,bool *flag,sharpen::MicroRpcServer **ser)
     addr.SetPort(static_cast<sharpen::UintPort>(id));
     {
         char buf[21] = {0};
-        addr.GetAddrSring(buf,sizeof(buf));
+        addr.GetAddrString(buf,sizeof(buf));
         std::printf("listen on %s:%u\n",buf,addr.GetPort());
     }
     sharpen::MicroRpcServerOption opt{sharpen::MicroRpcDispatcher{}};

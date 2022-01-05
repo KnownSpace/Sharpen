@@ -2,6 +2,8 @@
 #ifndef _SHARPEN_MEMORYTABLE_HPP
 #define _SHARPEN_MEMORYTABLE_HPP
 
+#include <stdexcept>
+
 #include "ByteBuffer.hpp"
 #include "MemoryTableConcepts.hpp"
 #include "CompressedPair.hpp"

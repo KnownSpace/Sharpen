@@ -55,7 +55,7 @@ void Entry()
         sharpen::IpEndPoint addr;
         ctx.Connection()->GetRemoteEndPoint(addr);
         char ip[21] = {0};
-        addr.GetAddrSring(ip,sizeof(ip));
+        addr.GetAddrString(ip,sizeof(ip));
         std::printf("%s:%u timeout disconnect\n",ip,addr.GetPort());
     });
     sharpen::RegisterCtrlHandler(sharpen::CtrlType::Interrupt,[&server]() mutable

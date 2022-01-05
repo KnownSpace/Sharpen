@@ -4,6 +4,7 @@
 
 #include "SystemMacro.hpp"
 #include "TypeDef.hpp"
+#include "NetTypeDef.hpp"
 
 #ifdef SHARPEN_IS_WIN
 #include <WinSock2.h>

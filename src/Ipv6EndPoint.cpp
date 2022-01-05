@@ -18,7 +18,7 @@ sharpen::Ipv6EndPoint::Ipv6EndPoint(const in6_addr &addr,sharpen::UintPort port)
 {
     this->addr_.sin6_family = AF_INET6;
     sharpen::Ipv6EndPoint::CopyIn6Addr(this->addr_.sin6_addr,addr);
-    this->addr_.sin6_port = port;
+    this->addr_.sin6_port = ::htons(port);
 }
 
 sharpen::Ipv6EndPoint &sharpen::Ipv6EndPoint::operator=(const sharpen::Ipv6EndPoint &other)

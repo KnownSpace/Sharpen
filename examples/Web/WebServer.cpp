@@ -36,7 +36,7 @@ void Entry()
     TestHttpServer server(addr);
     char ip[21];
     std::memset(ip,0,sizeof(ip));
-    addr.GetAddrSring(ip,sizeof(ip));
+    addr.GetAddrString(ip,sizeof(ip));
     std::printf("now listen on %s:%d\n",ip,addr.GetPort());
     std::printf("use ctrl + c to stop\n");
     sharpen::RegisterCtrlHandler(sharpen::CtrlType::Interrupt,[&server]() mutable

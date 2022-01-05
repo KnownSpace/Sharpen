@@ -71,12 +71,6 @@ namespace sharpen
         virtual void Cancel() noexcept = 0;
     };
 
-    enum class AddressFamily
-    {
-        Ip,
-        Ipv6
-    };
-
     sharpen::NetStreamChannelPtr MakeTcpStreamChannel(sharpen::AddressFamily af);
 
     void StartupNetSupport();

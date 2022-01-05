@@ -43,6 +43,8 @@ add_executable(buffercomparetest "${PROJECT_SOURCE_DIR}/test/BufferCompareTest.c
 add_executable(intcasttest "${PROJECT_SOURCE_DIR}/test/IntCastTest.cpp")
 #sst test
 add_executable(ssttest "${PROJECT_SOURCE_DIR}/test/SstTest.cpp")
+#dns test
+add_executable(dnstest "${PROJECT_SOURCE_DIR}/test/DnsTest.cpp")
 #link
 target_link_libraries(awaittest sharpen)
 target_link_libraries(timertest sharpen)
@@ -64,6 +66,7 @@ target_link_libraries(varinttest sharpen)
 target_link_libraries(buffercomparetest sharpen)
 target_link_libraries(intcasttest sharpen)
 target_link_libraries(ssttest sharpen)
+target_link_libraries(dnstest sharpen)
 #test
 enable_testing()
 #tests
@@ -92,3 +95,4 @@ add_test(NAME varint_test COMMAND "./varinttest${extname}")
 add_test(NAME buffercompare_test COMMAND "./buffercomparetest${extname}")
 add_test(NAME intcast_test COMMAND "./intcasttest${extname}")
 add_test(NAME sst_test COMMAND "./ssttest${extname}")
+add_test(NAME dns_test COMMAND "./ssttest${extname}")
