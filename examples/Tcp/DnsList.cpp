@@ -21,11 +21,12 @@ void Entry(const char *name)
     auto begin = result.begin(),end = result.end();
     if(!begin->canonname_.Empty())
     {
-        std::fputs("canonname\t",stdout);
+        std::fputs("Canonname\t",stdout);
         for (auto ite = begin->canonname_.Begin(); ite != begin->canonname_.End(); ++ite)
         {
             std::putchar(*ite);
         }
+        std::putchar('\n');
     }
     for (; begin != end; ++begin)
     {
@@ -34,14 +35,14 @@ void Entry(const char *name)
             sharpen::IpEndPoint *ep = dynamic_cast<sharpen::IpEndPoint*>(begin->endPoint_.get());
             char buf[25] = {0};
             ep->GetAddrString(buf,sizeof(buf));
-            std::printf("Ipv4\t%s\n",buf);
+            std::printf("Ipv4     \t%s\n",buf);
         }   
         else
         {
             sharpen::Ipv6EndPoint *ep = dynamic_cast<sharpen::Ipv6EndPoint*>(begin->endPoint_.get());
             char buf[60] = {0};
             ep->GetAddrString(buf,sizeof(buf));
-            std::printf("Ipv6\t%s\n",buf);
+            std::printf("Ipv6     \t%s\n",buf);
         }
     }
     sharpen::CleanupNetSupport();
