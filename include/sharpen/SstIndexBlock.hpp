@@ -41,6 +41,8 @@ namespace sharpen
         using ConstIterator = typename DataBlockHandles::const_iterator;
     
         DataBlockHandles dataBlocks_;
+
+        Iterator Find(const sharpen::ByteBuffer &key) noexcept;
     public:
     
         SstIndexBlock() noexcept = default;
@@ -124,7 +126,9 @@ namespace sharpen
             {
                 this->dataBlocks_.push_back(std::move(block));
                 this->Sort();
+                return;
             }
+            *ite = std::move(block);
         }
 
         template<typename ..._Args>
@@ -135,7 +139,9 @@ namespace sharpen
             {
                 this->dataBlocks_.emplace_back(std::forward<_Args>(args)...);
                 this->Sort();
+                return;
             }
+            this->dataBlocks_.emplace(ite,std::forward<_Args>(args)...);
         }
     };
 }

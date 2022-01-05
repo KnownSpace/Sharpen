@@ -92,3 +92,27 @@ sharpen::SstIndexBlock::ConstIterator sharpen::SstIndexBlock::Find(const sharpen
     }
     return begin;
 }
+
+sharpen::SstIndexBlock::Iterator sharpen::SstIndexBlock::Find(const sharpen::ByteBuffer &key) noexcept
+{
+    auto begin = this->dataBlocks_.begin();
+    auto end = this->dataBlocks_.end();
+    while (begin != end)
+    {
+        sharpen::Size size = sharpen::GetRangeSize(begin,end);
+        auto mid = begin + size/2;
+        if(mid->Key() == key)
+        {
+            return mid;
+        }
+        else if(mid->Key() > key)
+        {
+            end = mid;
+        }
+        else if(mid->Key() < key)
+        {
+            begin = sharpen::IteratorForward(mid,1);
+        }
+    }
+    return begin;
+}
