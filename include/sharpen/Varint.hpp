@@ -35,14 +35,18 @@ namespace sharpen
             :cache_(sharpen::EmptyOpt)
             ,data_()
         {
-            std::memcpy(this->data_,data.Data(),(std::min)(data.GetSize(),bytes_));
+            sharpen::Size size = (std::min)(data.GetSize(),bytes_);
+            std::memcpy(this->data_,data.Data(),size);
+            this->data_[size] &= mask_;
         }
 
         Varint(const char *data,sharpen::Size size)
             :cache_(sharpen::EmptyOpt)
             ,data_()
         {
-            std::memcpy(this->data_,data,(std::min)(size,bytes_));
+            size = (std::min)(size,bytes_);
+            std::memcpy(this->data_,data.Data(),size);
+            this->data_[size] &= mask_;
         }
     
         Varint(const Self &other) noexcept
@@ -215,10 +219,7 @@ namespace sharpen
             return size;
         }
 
-        static inline constexpr sharpen::Size GetMaxSize() noexcept
-        {
-            return bytes_;
-        }
+        constexpr static sharpen::Size MaxSize = bytes_;
     };
 
     template<typename _T>
