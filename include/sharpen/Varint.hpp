@@ -22,7 +22,7 @@ namespace sharpen
         constexpr static unsigned char signBit_ = ~mask_;
 
         mutable sharpen::Optional<_T> cache_;
-        char data_[bytes_];
+        char data_[Self::bytes_];
     public:
         explicit Varint(_T intValue)
             :cache_(sharpen::EmptyOpt)
@@ -35,7 +35,7 @@ namespace sharpen
             :cache_(sharpen::EmptyOpt)
             ,data_()
         {
-            sharpen::Size size = (std::min)(data.GetSize(),bytes_);
+            sharpen::Size size = (std::min)(data.GetSize(),sizeof(this->data_));
             std::memcpy(this->data_,data.Data(),size);
             this->data_[size] &= mask_;
         }
@@ -44,8 +44,8 @@ namespace sharpen
             :cache_(sharpen::EmptyOpt)
             ,data_()
         {
-            size = (std::min)(size,bytes_);
-            std::memcpy(this->data_,data.Data(),size);
+            size = (std::min)(size,sizeof(this->data_));
+            std::memcpy(this->data_,data,size);
             this->data_[size] &= mask_;
         }
     
@@ -219,7 +219,10 @@ namespace sharpen
             return size;
         }
 
-        constexpr static sharpen::Size MaxSize = bytes_;
+        static constexpr sharpen::Size GetMaxSize() noexcept
+        {
+            return sizeof(_T)*8/7 + ((sizeof(_T)*8 % 7)?1:0);
+        }
     };
 
     template<typename _T>
