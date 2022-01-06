@@ -22,7 +22,7 @@ namespace sharpen
         constexpr static unsigned char signBit_ = ~mask_;
 
         mutable sharpen::Optional<_T> cache_;
-        sharpen::ByteBuffer data_;
+        char data_[bytes_];
     public:
         explicit Varint(_T intValue)
             :cache_(sharpen::EmptyOpt)
@@ -33,28 +33,39 @@ namespace sharpen
 
         explicit Varint(sharpen::ByteBuffer data)
             :cache_(sharpen::EmptyOpt)
-            ,data_(std::move(data))
-        {}
+            ,data_()
+        {
+            std::memcpy(this->data_,data.Data(),(std::min)(data.GetSize(),bytes_));
+        }
 
         Varint(const char *data,sharpen::Size size)
             :cache_(sharpen::EmptyOpt)
-            ,data_(data,size)
-        {}
+            ,data_()
+        {
+            std::memcpy(this->data_,data,(std::min)(size,bytes_));
+        }
     
-        Varint(const Self &other)
+        Varint(const Self &other) noexcept
             :cache_(other.cache_)
-            ,data_(other.data_)
-        {}
+            ,data_()
+        {
+            std::memcpy(this->data_,other.data_,bytes_);
+        }
     
         Varint(Self &&other) noexcept
             :cache_(std::move(other.cache_))
-            ,data_(std::move(other.data_))
-        {}
-    
-        inline Self &operator=(const Self &other)
+            ,data_()
         {
-            Self tmp{other};
-            std::swap(tmp,*this);
+            std::memcpy(this->data_,other.data_,bytes_);
+        }
+    
+        Self &operator=(const Self &other) noexcept
+        {
+            if (this != std::addressof(other))
+            {
+                this->cache_ = other.cache_;
+                std::memcpy(this->data_,other.data_,bytes_);
+            }
             return *this;
         }
     
@@ -63,7 +74,7 @@ namespace sharpen
             if(this != std::addressof(other))
             {
                 this->cache_ = std::move(other.cache_);
-                this->data_ = std::move(other.data_);
+                std::memcpy(this->data_,other.data_,bytes_);
             }
             return *this;
         }
@@ -75,28 +86,26 @@ namespace sharpen
             if(!this->cache_.Exist())
             {
                 _T value{0};
-                if(!this->data_.Empty())
+                const char *ite = this->data_;
+                if(*ite & signBit_)
                 {
-                    if (this->data_.GetSize() == 1)
+                    sharpen::Size rawBytes{1};
+                    while (*ite & signBit_)
                     {
-                        value = this->data_.Front() & mask_;
-                        value <<= 1;
+                        value <<= 7;
+                        value |= *ite++ & mask_;
+                        ++rawBytes;
                     }
-                    else
-                    {
-                        auto begin = this->data_.Begin(),end = this->data_.End();
-                        for (; begin != end && (*begin & signBit_); ++begin)
-                        {
-                            value <<= 7;
-                            value |= *begin & mask_;
-                        }
-                        sharpen::Size rawBytes = this->data_.GetSize()*7;
-                        rawBytes /= 8;
-                        assert(rawBytes <= sizeof(_T));
-                        value <<= (rawBytes)*8 %7;
-                        value |= static_cast<unsigned char>(*begin & mask_) >> (7 -  (rawBytes*8 % 7));
-                        sharpen::ConvertEndian(reinterpret_cast<char*>(&value),rawBytes);
-                    }
+                    rawBytes *= 7;
+                    rawBytes /= 8;
+                    value <<= rawBytes*8%7;
+                    value |= static_cast<unsigned char>(*ite & mask_) >> (7 - (rawBytes *8%7));
+                    sharpen::ConvertEndian(reinterpret_cast<char*>(&value),rawBytes);
+                }
+                else
+                {
+                    value = *ite;
+                    value <<= 1;
                 }
                 this->cache_.Construct(value);
             }
@@ -114,8 +123,6 @@ namespace sharpen
             {
                 return;
             }
-            this->data_.ExtendTo(bytes_);
-            this->data_.Clear();
 #ifdef SHARPEN_IS_LIL_ENDIAN
             const unsigned char *begin = reinterpret_cast<const unsigned char*>(&value);
             const unsigned char *end = begin + sizeof(_T);
@@ -126,21 +133,22 @@ namespace sharpen
             
             sharpen::Size offset{1};
             sharpen::Size min{sharpen::MinSizeof(value)};
+            char *ite = this->data_;
             while (begin != end && min--)
             {
                 if (offset == 1)
                 {
-                    this->data_.PushBack(*begin >> offset | signBit_);
+                    *ite++ =*begin >> offset | signBit_;
                 }
                 else
                 {
-                    this->data_.Back() |= *begin >> offset;
+                    *(ite-1) |= *begin >> offset;
                 }
                 unsigned char tmp = (*begin & ~(1 << offset));
                 tmp <<= 7 - offset;
                 if(min || tmp)
                 {
-                    this->data_.PushBack(tmp | signBit_);
+                    *ite++ = tmp | signBit_;
                 }
                 if(++offset == 8)
                 {
@@ -152,10 +160,7 @@ namespace sharpen
                 --begin;
 #endif
             }
-            if(!this->data_.Empty())
-            {
-                this->data_.Back() &= mask_;
-            }
+            *(ite-1) &= mask_;
         }
 
         inline operator _T() const noexcept
@@ -193,9 +198,26 @@ namespace sharpen
             return this->Get() < other.Get();
         }
 
-        const sharpen::ByteBuffer &Data() const noexcept
+        const char *Data() const noexcept
         {
             return this->data_;
+        }
+
+        sharpen::Size ComputeSize() const noexcept
+        {
+            sharpen::Size size{1};
+            const char *ite = this->data_;
+            while (*ite & signBit_)
+            {
+                ++ite;
+                ++size;
+            }
+            return size;
+        }
+
+        static inline constexpr sharpen::Size GetMaxSize() noexcept
+        {
+            return bytes_;
         }
     };
 
