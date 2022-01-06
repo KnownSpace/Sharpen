@@ -146,7 +146,7 @@ namespace sharpen
                 }
                 else
                 {
-                    *(ite-1) |= *begin >> offset;
+                    ite[-1] |= *begin >> offset;
                 }
                 unsigned char tmp = (*begin & ~(1 << offset));
                 tmp <<= 7 - offset;
@@ -164,7 +164,10 @@ namespace sharpen
                 --begin;
 #endif
             }
-            *(ite-1) &= mask_;
+            if(ite != this->data_)
+            {
+                ite[-1] &= mask_;
+            }
         }
 
         inline operator _T() const noexcept
