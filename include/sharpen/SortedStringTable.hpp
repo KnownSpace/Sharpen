@@ -10,7 +10,11 @@ Sorted String Table
 +------------------+
 |Meta Index Block  | 
 +------------------+
+|Meta Index Chksum | 2 bytes - Crc16
++------------------+
 |Index Block       | 
++------------------+
+|Index Chksum      | 2 bytes - Crc16
 +------------------+
 |Footer Block      | 32 bytes
 +------------------+
@@ -84,6 +88,7 @@ Data Block
 #include "TypeDef.hpp"
 #include "SstFooter.hpp"
 #include "SstIndexBlock.hpp"
+#include "ChecksumException.hpp"
 
 namespace sharpen
 {

@@ -24,6 +24,12 @@ void sharpen::SortedStringTable::Load(sharpen::FileChannelPtr channel)
     {
         buf.ExtendTo(sharpen::IntCast<sharpen::Size>(size));
         channel->ReadAsync(buf,this->footer_.IndexBlock().offset_);
+        sharpen::Uint16 chksum{0};
+        channel->ReadAsync(reinterpret_cast<char*>(&chksum),sizeof(chksum),this->footer_.IndexBlock().offset_ + size);
+        if(chksum != buf.Crc16())
+        {
+            throw sharpen::ChecksumException("index block checksum error");
+        }
         this->indexBlock_.LoadFrom(buf,buf.GetSize());
     }
     //load meta index block
@@ -32,6 +38,13 @@ void sharpen::SortedStringTable::Load(sharpen::FileChannelPtr channel)
     {
         buf.ExtendTo(sharpen::IntCast<sharpen::Size>(size));
         channel->ReadAsync(buf,this->footer_.MetaIndexBlock().offset_);
+        sharpen::Uint16 chksum{0};
+        channel->ReadAsync(reinterpret_cast<char*>(&chksum),sizeof(chksum),this->footer_.MetaIndexBlock().offset_ + size);
+        if(chksum != buf.Crc16())
+        {
+            this->indexBlock_.Clear();
+            throw sharpen::ChecksumException("meta index block checksum error");
+        }
         this->metaIndexBlock_.LoadFrom(buf,buf.GetSize());
     }
 }
@@ -47,7 +60,9 @@ void sharpen::SortedStringTable::Store(sharpen::FileChannelPtr channel,sharpen::
     {
         if(metaIndexSize)
         {
+            sharpen::Uint16 chksum{sharpen::Crc16(buf.Data(),metaIndexSize)};
             offset += channel->WriteAsync(buf.Data(),metaIndexSize,offset);
+            offset += channel->WriteAsync(reinterpret_cast<const char*>(&chksum),sizeof(chksum),offset);
         }
     }
     catch(const std::exception&)
@@ -62,7 +77,9 @@ void sharpen::SortedStringTable::Store(sharpen::FileChannelPtr channel,sharpen::
     {
         if(indexSize)
         {
+            sharpen::Uint16 chksum{sharpen::Crc16(buf.Data(),indexSize)};
             offset += channel->WriteAsync(buf.Data(),indexSize,offset);
+            offset += channel->WriteAsync(reinterpret_cast<const char*>(&chksum),sizeof(chksum),offset);
         }
     }
     catch(const std::exception&)

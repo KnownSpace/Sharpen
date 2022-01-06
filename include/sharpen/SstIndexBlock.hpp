@@ -128,6 +128,11 @@ namespace sharpen
         void Update(const sharpen::ByteBuffer &oldKey,sharpen::SstBlockHandle block);
 
         void Update(const sharpen::ByteBuffer &oldKey,sharpen::ByteBuffer newKey,const sharpen::SstBlock &block);
+
+        inline void Clear() noexcept
+        {
+            this->dataBlocks_.clear();
+        }
     };
 }
 
