@@ -91,26 +91,12 @@ namespace sharpen
             {
                 _T value{0};
                 const char *ite = this->data_;
-                if(*ite & signBit_)
+                sharpen::Size counter{0};
+                while (*ite & signBit_)
                 {
-                    sharpen::Size rawBytes{1};
-                    while (*ite & signBit_)
-                    {
-                        value <<= 7;
-                        value |= *ite++ & mask_;
-                        ++rawBytes;
-                    }
-                    rawBytes *= 7;
-                    rawBytes /= 8;
-                    value <<= rawBytes*8%7;
-                    value |= static_cast<unsigned char>(*ite & mask_) >> (7 - (rawBytes *8%7));
-                    sharpen::ConvertEndian(reinterpret_cast<char*>(&value),rawBytes);
+                    value |= (*ite++ & mask_) << 7*counter++;
                 }
-                else
-                {
-                    value = *ite;
-                    value <<= 1;
-                }
+                value  |= (*ite & mask_) << 7*counter;
                 this->cache_.Construct(value);
             }
             return this->cache_.Get();
@@ -123,51 +109,15 @@ namespace sharpen
                 return;
             }
             this->cache_.Construct(value);
-            if(value == 0)
+            using UnsignedValue = typename std::make_unsigned<_T>::type;
+            UnsignedValue val{static_cast<UnsignedValue>(value)};
+            unsigned char *ite = reinterpret_cast<unsigned char*>(this->data_ + 0);
+            for (;val > mask_; ++ite)
             {
-                return;
+                *ite = static_cast<unsigned char>(val) | signBit_;
+                val >>= 7;
             }
-#ifdef SHARPEN_IS_LIL_ENDIAN
-            const unsigned char *begin = reinterpret_cast<const unsigned char*>(&value);
-            const unsigned char *end = begin + sizeof(_T);
-#else
-            const unsigned char *begin = reinterpret_cast<const unsigned char*>(&value) + sizeof(_T) - 1;
-            const unsigned char *end = begin - 1;
-#endif
-            
-            sharpen::Size offset{1};
-            sharpen::Size min{sharpen::MinSizeof(value)};
-            char *ite = this->data_;
-            while (begin != end && min--)
-            {
-                if (offset == 1)
-                {
-                    *ite++ =*begin >> offset | signBit_;
-                }
-                else
-                {
-                    ite[-1] |= *begin >> offset;
-                }
-                unsigned char tmp = (*begin & ~(1 << offset));
-                tmp <<= 7 - offset;
-                if(min || tmp)
-                {
-                    *ite++ = tmp | signBit_;
-                }
-                if(++offset == 8)
-                {
-                    offset = 1;
-                }
-#ifdef SHARPEN_IS_LIL_ENDIAN
-                ++begin;
-#else
-                --begin;
-#endif
-            }
-            if(ite != this->data_)
-            {
-                ite[-1] &= mask_;
-            }
+            *ite = val;
         }
 
         inline operator _T() const noexcept

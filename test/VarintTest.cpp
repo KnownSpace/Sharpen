@@ -8,7 +8,7 @@ int main(int argc, char const *argv[])
         //-1
         sharpen::ByteBuffer comp{5};
         std::memset(comp.Data(),~0,comp.GetSize() - 1);
-        comp.Back() = 120;
+        comp.Back() = 15;
         {
             sharpen::Varint32 i{comp};
             std::printf("value is %d\n",i.Get());
@@ -21,9 +21,8 @@ int main(int argc, char const *argv[])
     }
     {
         //1
-        sharpen::ByteBuffer comp{2};
-        comp.Front() = -128;
-        comp.Back() = 64;
+        sharpen::ByteBuffer comp{1};
+        comp.Front() = 1;
         {
             sharpen::Varint32 i{comp};
             std::printf("value is %d\n",i.Get());
@@ -37,7 +36,7 @@ int main(int argc, char const *argv[])
     {
         //2
         sharpen::ByteBuffer comp{1};
-        comp.Front() = 1;
+        comp.Front() = 2;
         {
             sharpen::Varint32 i{comp};
             std::printf("value is %d\n",i.Get());
@@ -59,6 +58,37 @@ int main(int argc, char const *argv[])
         }
         {
             sharpen::Varint32 i{0};
+            assert(sharpen::BufferCompare(i.Data(),i.ComputeSize(),comp.Data(),comp.GetSize()) == 0);
+        }
+    }
+    {
+        //123456
+        sharpen::ByteBuffer comp{3};
+        comp[0] = -64;
+        comp[1] = -60;
+        comp[2] = 7;
+        {
+            sharpen::Varint32 i{comp};
+            std::printf("value is %d\n",i.Get());
+            assert(i == 123456);
+        }
+        {
+            sharpen::Varint32 i{123456};
+            assert(sharpen::BufferCompare(i.Data(),i.ComputeSize(),comp.Data(),comp.GetSize()) == 0);
+        }
+    }
+    {
+        //150
+        sharpen::ByteBuffer comp{2};
+        comp[0] = -106;
+        comp[1] = 1;
+        {
+            sharpen::Varint32 i{comp};
+            std::printf("value is %d\n",i.Get());
+            assert(i == 150);
+        }
+        {
+            sharpen::Varint32 i{150};
             assert(sharpen::BufferCompare(i.Data(),i.ComputeSize(),comp.Data(),comp.GetSize()) == 0);
         }
     }
