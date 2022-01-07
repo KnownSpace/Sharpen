@@ -6,7 +6,6 @@
 
 #include "ByteBuffer.hpp"
 #include "Optional.hpp"
-#include "ByteOrder.hpp"
 #include "IntOps.hpp"
 
 namespace sharpen
