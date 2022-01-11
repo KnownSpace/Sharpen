@@ -103,9 +103,13 @@ namespace sharpen
             {
                 data += *str - 'a' + 10;
             }
-            else
+            else if(*str >= '0' && *str <= '9')
             {
                 data += *str - '0';
+            }
+            else
+            {
+                throw std::invalid_argument("string is not a number");
             }
             ++str;
         }
@@ -136,9 +140,13 @@ namespace sharpen
             {
                 data += *str - 'a' + 10;
             }
-            else
+            else if(*str >= '0' && *str <= '9')
             {
                 data += *str - '0';
+            }
+            else
+            {
+                throw std::invalid_argument("string is not a number");
             }
             ++str;
         }

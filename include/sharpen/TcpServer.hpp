@@ -21,7 +21,7 @@ namespace sharpen
 
         virtual void OnNewChannel(sharpen::NetStreamChannelPtr channel) = 0;
     public:
-        explicit TcpServer(sharpen::AddressFamily af,const sharpen::IEndPoint &endpoint,sharpen::EventEngine &engine);
+        TcpServer(sharpen::AddressFamily af,const sharpen::IEndPoint &endpoint,sharpen::EventEngine &engine);
 
         virtual ~TcpServer() noexcept
         {
@@ -40,6 +40,11 @@ namespace sharpen
         inline void GetRemoteEndPoint(sharpen::IEndPoint &endpoint) const
         {
             this->acceptor_.GetRemoteEndPoint(endpoint);
+        }
+
+        inline bool IsRunning() const noexcept
+        {
+            return this->running_;
         }
     };
 }

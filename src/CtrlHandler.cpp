@@ -19,7 +19,7 @@ BOOL WINAPI sharpen::CtrlHelper::CtrlHandler(DWORD ctrlType)
     }
     else if (ctrlType == CTRL_CLOSE_EVENT)
     {
-        for (auto begin = sharpen::CtrlHelper::onInterrupt_.begin();begin != sharpen::CtrlHelper::onInterrupt_.end();++begin)
+        for (auto begin = sharpen::CtrlHelper::onQuite_.begin();begin != sharpen::CtrlHelper::onQuite_.end();++begin)
         {
             (*begin)();
         } 
@@ -40,10 +40,10 @@ void sharpen::CtrlHelper::CtrlHandler(int signalType)
     }
     else if(signalType == SIGQUIT)
     {
-        for (auto begin = sharpen::CtrlHelper::onInterrupt_.begin();begin != sharpen::CtrlHelper::onInterrupt_.end();++begin)
+        for (auto begin = sharpen::CtrlHelper::onQuite_.begin();begin != sharpen::CtrlHelper::onQuite_.end();++begin)
         {
             (*begin)();
-        } 
+        }  
     }
 }
 
