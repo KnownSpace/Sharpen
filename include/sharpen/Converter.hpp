@@ -4,6 +4,7 @@
 
 #include <type_traits>
 #include <cassert>
+#include <stdexcept>
 
 #include "TypeDef.hpp"
 
