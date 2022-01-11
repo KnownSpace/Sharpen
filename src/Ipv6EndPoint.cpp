@@ -54,12 +54,12 @@ const sharpen::Ipv6EndPoint::NativeAddr *sharpen::Ipv6EndPoint::GetAddrPtr() con
 
 sharpen::UintPort sharpen::Ipv6EndPoint::GetPort() const noexcept
 {
-    return this->addr_.sin6_port;
+    return ::ntohs(this->addr_.sin6_port);
 }
 
 void sharpen::Ipv6EndPoint::SetPort(sharpen::UintPort port) noexcept
 {
-    this->addr_.sin6_port = port;
+    this->addr_.sin6_port = ::htons(port);
 }
 
 void sharpen::Ipv6EndPoint::CopyIn6Addr(in6_addr &dst,const in6_addr &src) noexcept
