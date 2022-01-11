@@ -90,12 +90,23 @@ void sharpen::IpEndPoint::SetAddr(sharpen::UintIpAddr addr) noexcept
 
 void sharpen::IpEndPoint::GetAddrString(char *addrStr,sharpen::Size size) const
 {
-    ::inet_ntop(AF_INET,&(this->addr_.sin_addr),addrStr,size);
+    if(::inet_ntop(AF_INET,&(this->addr_.sin_addr),addrStr,size) == nullptr)
+    {
+        sharpen::ThrowLastError();
+    }
 }
 
 void sharpen::IpEndPoint::SetAddrByString(const char *addrStr)
 {
-    ::inet_pton(AF_INET,addrStr,&(this->addr_.sin_addr));
+    int r = ::inet_pton(AF_INET,addrStr,&(this->addr_.sin_addr));
+    if(r == 0)
+    {
+        throw std::invalid_argument("invalid address string");
+    }
+    else if(r == -1)
+    {
+        sharpen::ThrowLastError();
+    }
 }
 
 sharpen::Int64 sharpen::IpEndPoint::CompareWith(const Self &other) const noexcept

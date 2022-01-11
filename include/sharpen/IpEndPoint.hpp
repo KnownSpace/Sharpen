@@ -3,6 +3,7 @@
 #define _SHARPEN_IPENDPOINT_HPP
 
 #include <functional>
+#include <stdexcept>
 
 #include "SystemMacro.hpp"
 
@@ -14,6 +15,7 @@
 #include "TypeDef.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
+#include "SystemError.hpp"
 
 
 namespace sharpen

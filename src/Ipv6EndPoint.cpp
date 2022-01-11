@@ -82,7 +82,10 @@ void sharpen::Ipv6EndPoint::SetAddr(const in6_addr &addr) noexcept
 
 void sharpen::Ipv6EndPoint::GetAddrString(char *addrStr,sharpen::Size size) const
 {
-    ::inet_ntop(AF_INET6,&(this->addr_.sin6_addr),addrStr,size);
+    if(::inet_ntop(AF_INET6,&(this->addr_.sin6_addr),addrStr,size) == nullptr)
+    {
+        sharpen::ThrowLastError();
+    }
 }
 
 int sharpen::Ipv6EndPoint::CompareIn6Addr(const in6_addr &addr1,const in6_addr &addr2) noexcept
@@ -96,7 +99,15 @@ int sharpen::Ipv6EndPoint::CompareIn6Addr(const in6_addr &addr1,const in6_addr &
 
 void sharpen::Ipv6EndPoint::SetAddrByString(const char *addrStr)
 {
-    ::inet_pton(AF_INET6,addrStr,&(this->addr_.sin6_addr));
+    int r = ::inet_pton(AF_INET6,addrStr,&(this->addr_.sin6_addr));
+    if(r == 0)
+    {
+        throw std::invalid_argument("invalid address string");
+    }
+    else if(r == -1)
+    {
+        sharpen::ThrowLastError();
+    }
 }
 
 sharpen::Int64 sharpen::Ipv6EndPoint::CompareWith(const Self &other) const noexcept
