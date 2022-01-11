@@ -255,7 +255,7 @@ void QuorumTest()
 
 int main(int argc, char const *argv[])
 {
-    sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine();
+    sharpen::EventEngine &engine = sharpen::EventEngine::SetupSingleThreadEngine();
     engine.Startup(&QuorumTest);
     return 0;
 }

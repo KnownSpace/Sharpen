@@ -106,7 +106,7 @@ void CancelTest()
 void NetworkTest()
 {
     sharpen::StartupNetSupport();
-    sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine();
+    sharpen::EventEngine &engine = sharpen::EventEngine::SetupSingleThreadEngine();
     engine.Startup([&engine]()
     {
         std::printf("network test begin\n");
