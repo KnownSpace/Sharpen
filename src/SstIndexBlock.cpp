@@ -120,30 +120,33 @@ sharpen::SstIndexBlock::Iterator sharpen::SstIndexBlock::Find(const sharpen::Byt
 void sharpen::SstIndexBlock::Put(sharpen::ByteBuffer key,const sharpen::SstBlock &block)
 {
     auto ite = this->Find(key);
-    if (ite == this->End() || ite->Key() != key)
+    if(ite != this->End())
     {
-        this->dataBlocks_.emplace_back(std::move(key),block);
+        if(ite->Key() == key)
+        {
+            ite->Block() = block;
+            return;
+        }
+        this->dataBlocks_.emplace(ite,std::move(key),block);
+        return;
     }
-    else
-    {
-        ite->Key() = std::move(key);
-        ite->Block() = block;
-    }
-    this->Sort();
+    this->dataBlocks_.emplace_back(std::move(key),block);
 }
 
 void sharpen::SstIndexBlock::Put(sharpen::SstBlockHandle block)
 {
     auto ite = this->Find(block.Key());
-    if (ite == this->End() || ite->Key() != block.Key())
+    if(ite != this->End())
     {
-        this->dataBlocks_.push_back(std::move(block));
+        if(ite->Key() == block.Key())
+        {
+            ite->Block() = std::move(block.Block());
+            return;
+        }
+        this->dataBlocks_.emplace(ite,std::move(block));
+        return;
     }
-    else
-    {
-        *ite = std::move(block);
-    }
-    this->Sort();
+    this->dataBlocks_.emplace_back(std::move(block));
 }
 
 void sharpen::SstIndexBlock::Delete(const sharpen::ByteBuffer &key) noexcept
@@ -157,21 +160,12 @@ void sharpen::SstIndexBlock::Delete(const sharpen::ByteBuffer &key) noexcept
 
 void sharpen::SstIndexBlock::Update(const sharpen::ByteBuffer &oldKey,sharpen::SstBlockHandle block)
 {
-    auto ite = this->Find(oldKey);
-    if(ite != this->End() && ite->Key() == oldKey)
-    {
-        *ite = std::move(block);
-        this->Sort();
-    }
+    this->Delete(oldKey);
+    this->Put(std::move(block));
 }
 
 void sharpen::SstIndexBlock::Update(const sharpen::ByteBuffer &oldKey,sharpen::ByteBuffer newKey,const sharpen::SstBlock &block)
 {
-    auto ite = this->Find(oldKey);
-    if(ite != this->End() && ite->Key() == oldKey)
-    {
-        ite->Key() = std::move(newKey);
-        ite->Block() = block;
-        this->Sort();
-    }
+    this->Delete(oldKey);
+    this->Put(std::move(newKey),std::move(block));
 }
