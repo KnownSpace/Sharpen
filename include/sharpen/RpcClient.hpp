@@ -233,11 +233,11 @@ namespace sharpen
         void InvokeAsync(sharpen::Future<_Response> &future,const _Request &package)
         {
             Waiter *waiter = new Waiter{};
-            waiter->invokeFuture_ = &future;
             if(!waiter)
             {
                 throw std::bad_alloc();
             }
+            waiter->invokeFuture_ = &future;
             this->Encoder().EncodeTo(package,waiter->buf_);
             waiter->writeFuture_.SetCallback(std::bind(&Self::WriteRequestCallback,this,waiter,std::placeholders::_1));
             this->conn_->WriteAsync(waiter->buf_,0,waiter->writeFuture_);
