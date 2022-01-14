@@ -63,6 +63,39 @@ void Test()
     sharpen::RemoveFile("./buf.log");
     sharpen::RemoveFile("./hello.txt");
     std::printf("pass\n");
+    std::puts("resolve path test");
+    {
+        char curr[] = "/";
+        char path[] = "./abc/def/.././a.txt/.a";
+        char resolved[sizeof(curr) + sizeof(path) - 1] = {0};
+        // /abc/a.txt/.a
+        sharpen::ResolvePath(curr,sizeof(curr) - 1,path,sizeof(path) - 1,resolved,sizeof(resolved) - 1);
+        std::printf("current is %s\n"
+                    "path is %s\n"
+                    "resolved is %s\n",curr,path,resolved);
+        assert(!std::strcmp(resolved,"/abc/a.txt/.a"));
+    }
+    {
+        char curr[] = "C:/";
+        char path[] = "./abc/def/.././a.txt/.a";
+        char resolved[sizeof(curr) + sizeof(path) - 1] = {0};
+        // C:/abc/a.txt/.a
+        sharpen::ResolvePath(curr,sizeof(curr) - 1,path,sizeof(path) - 1,resolved,sizeof(resolved) - 1);
+        std::printf("current is %s\n"
+                    "path is %s\n"
+                    "resolved is %s\n",curr,path,resolved);
+        assert(!std::strcmp(resolved,"C:/abc/a.txt/.a"));
+    }
+    {
+        char path[] = "./abc/def/.././a.txt/.a";
+        char resolved[sizeof(path)] = {0};
+        // abc/a.txt/.a
+        sharpen::ResolvePath(nullptr,0,path,sizeof(path) - 1,resolved,sizeof(resolved) - 1);
+        std::printf("path is %s\n"
+                    "resolved is %s\n",path,resolved);
+        assert(!std::strcmp(resolved,"abc/a.txt/.a"));
+    }
+    std::puts("pass");
     std::printf("file test pass\n");
 }
 
