@@ -29,6 +29,8 @@ namespace sharpen
     
         sharpen::SstBlock indexBlock_;
         sharpen::SstBlock metaIndexBlock_;
+
+        void InternalStoreTo(char *data) const noexcept;
     public:
         SstFooter() noexcept = default;
 
@@ -80,12 +82,16 @@ namespace sharpen
             return this->metaIndexBlock_;
         }
 
+        void LoadFrom(const char *data,sharpen::Size size);
+
         void LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset);
 
         inline void LoadFrom(const sharpen::ByteBuffer &buf)
         {
             this->LoadFrom(buf,0);
         }
+
+        void StoreTo(char *data,sharpen::Size size) const;
 
         void StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
 

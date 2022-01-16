@@ -2,15 +2,26 @@
 
 #include <stdexcept>
 
-void sharpen::SstFooter::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset)
+void sharpen::SstFooter::LoadFrom(const char *data,sharpen::Size size)
 {
-    sharpen::Size size = buf.GetSize() - offset;
     if(size < sizeof(*this))
     {
         throw std::invalid_argument("invalid buffer");
     }
-    std::memcpy(&this->indexBlock_,buf.Data() + offset,sizeof(this->indexBlock_));
-    std::memcpy(&this->metaIndexBlock_,buf.Data() + offset + sizeof(this->indexBlock_),sizeof(this->metaIndexBlock_));
+    std::memcpy(&this->indexBlock_,data,sizeof(this->indexBlock_));
+    std::memcpy(&this->metaIndexBlock_,data + sizeof(this->indexBlock_),sizeof(this->metaIndexBlock_));
+}
+
+void sharpen::SstFooter::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset)
+{
+    sharpen::Size size = buf.GetSize() - offset;
+    this->LoadFrom(buf.Data() + offset,size);
+}
+
+void sharpen::SstFooter::InternalStoreTo(char *data) const noexcept
+{
+    std::memcpy(data,&this->indexBlock_,sizeof(this->indexBlock_));
+    std::memcpy(data + sizeof(this->indexBlock_),&this->metaIndexBlock_,sizeof(this->metaIndexBlock_));
 }
 
 void sharpen::SstFooter::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
@@ -20,6 +31,14 @@ void sharpen::SstFooter::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) 
     {
         buf.Extend(sizeof(*this) - size);
     }
-    std::memcpy(buf.Data() + offset,&this->indexBlock_,sizeof(this->indexBlock_));
-    std::memcpy(buf.Data() + offset + sizeof(this->indexBlock_),&this->metaIndexBlock_,sizeof(this->metaIndexBlock_));
+    this->InternalStoreTo(buf.Data() + offset);
+}
+
+void sharpen::SstFooter::StoreTo(char *data,sharpen::Size size) const
+{
+    if(size < sizeof(*this))
+    {
+        throw std::invalid_argument("buffer too small");
+    }
+    this->InternalStoreTo(data);
 }
