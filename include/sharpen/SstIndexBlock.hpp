@@ -91,7 +91,7 @@ namespace sharpen
 
         sharpen::Size ComputeNeedSize() const noexcept;
 
-        sharpen::Size StoreTo(char *data,sharpen::Size size) const noexcept;
+        sharpen::Size StoreTo(char *data,sharpen::Size size) const;
 
         sharpen::Size StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
 

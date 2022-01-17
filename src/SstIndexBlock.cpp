@@ -72,7 +72,7 @@ void sharpen::SstIndexBlock::InternalStoreTo(char *data) const noexcept
     }
 }
 
-sharpen::Size sharpen::SstIndexBlock::StoreTo(char *data,sharpen::Size size) const noexcept
+sharpen::Size sharpen::SstIndexBlock::StoreTo(char *data,sharpen::Size size) const
 {
     sharpen::Size needSize{this->dataBlocks_.size()*(sizeof(sharpen::SstBlock) + sizeof(sharpen::Uint64) + sizeof(sharpen::Uint64))};
     for (auto begin = this->dataBlocks_.begin(),end = this->dataBlocks_.end(); begin != end; ++begin)
