@@ -34,18 +34,14 @@ namespace sharpen
             :cache_(sharpen::EmptyOpt)
             ,data_()
         {
-            sharpen::Size size = (std::min)(data.GetSize(),sizeof(this->data_));
-            std::memcpy(this->data_,data.Data(),size);
-            this->data_[size] &= mask_;
+            this->Set(data);
         }
 
         Varint(const char *data,sharpen::Size size)
             :cache_(sharpen::EmptyOpt)
             ,data_()
         {
-            size = (std::min)(size,sizeof(this->data_));
-            std::memcpy(this->data_,data,size);
-            this->data_[size] &= mask_;
+            this->Set(data,size);
         }
     
         Varint(const Self &other) noexcept
@@ -79,6 +75,12 @@ namespace sharpen
                 this->cache_ = std::move(other.cache_);
                 std::memcpy(this->data_,other.data_,bytes_);
             }
+            return *this;
+        }
+
+        Self &operator=(_T val) noexcept
+        {
+            this->Set(val);
             return *this;
         }
     
@@ -117,6 +119,29 @@ namespace sharpen
                 val >>= 7;
             }
             *ite = val;
+        }
+
+        void Set(const sharpen::ByteBuffer &data)
+        {
+            if(this->cache_.Exist() && this->cache_.Get() == value)
+            {
+                return;
+            }
+            this->cache_.Reset();
+            sharpen::Size size = (std::min)(data.GetSize(),sizeof(this->data_));
+            std::memcpy(this->data_,data.Data(),size);
+            this->data_[size] &= mask_;
+        }
+
+        void Set(const char *data,sharpen::Size size)
+        {
+            if(this->cache_.Exist() && this->cache_.Get() == value)
+            {
+                return;
+            }
+            size = (std::min)(size,sizeof(this->data_));
+            std::memcpy(this->data_,data,size);
+            this->data_[size] &= mask_;
         }
 
         inline operator _T() const noexcept
