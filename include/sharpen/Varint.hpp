@@ -123,10 +123,6 @@ namespace sharpen
 
         void Set(const sharpen::ByteBuffer &data)
         {
-            if(this->cache_.Exist() && this->cache_.Get() == value)
-            {
-                return;
-            }
             this->cache_.Reset();
             sharpen::Size size = (std::min)(data.GetSize(),sizeof(this->data_));
             std::memcpy(this->data_,data.Data(),size);
@@ -135,10 +131,6 @@ namespace sharpen
 
         void Set(const char *data,sharpen::Size size)
         {
-            if(this->cache_.Exist() && this->cache_.Get() == value)
-            {
-                return;
-            }
             size = (std::min)(size,sizeof(this->data_));
             std::memcpy(this->data_,data,size);
             this->data_[size] &= mask_;
