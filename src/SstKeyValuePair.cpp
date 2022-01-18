@@ -22,14 +22,26 @@ sharpen::Size sharpen::SstKeyValuePair::LoadFrom(const char *data,sharpen::Size 
     }
     sharpen::Varuint64 builder{data,size};
     sharpen::Size offset{builder.ComputeSize()};
+    if(offset > size)
+    {
+        throw std::invalid_argument("invalid buffer");
+    }
     this->sharedSize_ = builder.Get();
     builder.Set(data + offset,size - offset);
     this->uniquedSize_ = builder.Get();
     offset += builder.ComputeSize();
+    if(offset > size)
+    {
+        throw std::invalid_argument("invalid buffer");
+    }
     sharpen::Size keySize{sharpen::IntCast<sharpen::Size>(this->uniquedSize_ + this->sharedSize_)};
     this->key_.ExtendTo(keySize);
     if(this->uniquedSize_)
     {
+        if(offset + this->uniquedSize_ > size)
+        {
+            throw std::invalid_argument("invalid buffer");
+        }
         std::memcpy(this->key_.Data() + this->sharedSize_,data + offset,this->uniquedSize_);
         offset = sharpen::IntCast<sharpen::Size>(this->uniquedSize_ + offset);
     }
@@ -38,6 +50,10 @@ sharpen::Size sharpen::SstKeyValuePair::LoadFrom(const char *data,sharpen::Size 
     offset += builder.ComputeSize();
     if (builder.Get())
     {
+        if(offset + builder.Get() > size)
+        {
+            throw std::invalid_argument("invalid buffer");
+        }
         std::memcpy(this->value_.Data(),data + offset,builder.Get());
         offset = sharpen::IntCast<sharpen::Size>(builder.Get() + offset);
     }

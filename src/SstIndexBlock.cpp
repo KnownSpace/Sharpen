@@ -8,6 +8,7 @@ void sharpen::SstIndexBlock::LoadFrom(const char *data,sharpen::Size size)
 {
     const char *begin = data;
     const char *end = begin + size;
+    this->dataBlocks_.clear();
     while (begin != end)
     {
         if(sharpen::GetRangeSize(begin,end) < sizeof(sharpen::SstBlock) + sizeof(sharpen::Uint64))

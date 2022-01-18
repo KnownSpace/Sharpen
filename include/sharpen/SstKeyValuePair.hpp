@@ -29,7 +29,7 @@ namespace sharpen
     class SstKeyValuePair
     {
     private:
-        using Self = SstKeyValuePair;
+        using Self = sharpen::SstKeyValuePair;
     
         sharpen::Uint64 sharedSize_;
         sharpen::Uint64 uniquedSize_;
