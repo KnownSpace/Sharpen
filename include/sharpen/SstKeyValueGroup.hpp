@@ -110,6 +110,11 @@ namespace sharpen
         {
             return this->pairs_.cend();
         }
+
+        inline sharpen::Size GetSize() const noexcept
+        {
+            return this->pairs_.size();
+        }
     };
 }
 
