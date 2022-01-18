@@ -18,7 +18,7 @@ namespace sharpen
 
         constexpr static sharpen::Size bytes_ = sizeof(_T)*8/7 + ((sizeof(_T)*8 % 7)?1:0);
         constexpr static unsigned char mask_ = static_cast<unsigned char>(~(1 << 7));
-        constexpr static unsigned char signBit_ = ~mask_;
+        constexpr static unsigned char signBit_ = static_cast<unsigned char>(~mask_);
 
         mutable sharpen::Optional<_T> cache_;
         char data_[Self::bytes_];
@@ -118,7 +118,7 @@ namespace sharpen
                 *ite = static_cast<unsigned char>(val) | signBit_;
                 val >>= 7;
             }
-            *ite = val;
+            *ite = static_cast<unsigned char>(val);
         }
 
         void Set(const sharpen::ByteBuffer &data)

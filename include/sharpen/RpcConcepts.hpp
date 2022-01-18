@@ -11,7 +11,9 @@ namespace sharpen
     //encoder concept
     template<typename _Message,typename _Encoder>
     using InternalIsRpcEncoder = auto(*)() -> decltype(sharpen::DeclLvalue<sharpen::ByteBuffer>() = std::declval<_Encoder>().Encode(std::declval<_Message>())
-                                                        ,sharpen::DeclLvalue<sharpen::Size>() = std::declval<_Encoder>().EncodeTo(std::declval<_Message>(),sharpen::DeclLvalue<sharpen::ByteBuffer>()));
+                                                        ,sharpen::DeclLvalue<sharpen::Size>() = std::declval<_Encoder>().EncodeTo(std::declval<_Message>(),sharpen::DeclLvalue<sharpen::ByteBuffer>())
+                                                        ,sharpen::DeclLvalue<sharpen::Size>() = std::declval<_Encoder>().EncodeTo(std::declval<_Message>(),nullptr,0)
+                                                        ,sharpen::DeclLvalue<sharpen::Size>() = std::declval<_Encoder>().EncodeTo(std::declval<_Message>(),sharpen::DeclLvalue<sharpen::ByteBuffer>(),0));
 
     template<typename _Message,typename _Encoder>
     using IsRpcEncoder = sharpen::IsMatches<sharpen::InternalIsRpcEncoder,_Message,_Encoder>;
@@ -21,7 +23,9 @@ namespace sharpen
     using InternalIsRpcDecoder = auto(*)() -> decltype(sharpen::DeclLvalue<sharpen::Size>() = std::declval<_Decoder>().Decode(nullptr,0)
                                                     ,sharpen::DeclLvalue<bool>() = std::declval<_Decoder>().IsCompleted()
                                                     ,std::declval<_Decoder>().SetCompleted(false)
-                                                    ,std::declval<_Decoder>().Bind(sharpen::DeclLvalue<_Message>()));
+                                                    ,std::declval<_Decoder>().Bind(sharpen::DeclLvalue<_Message>())
+                                                    ,sharpen::DeclLvalue<sharpen::Size>() = std::declval<_Decoder>().Decode(std::declval<const sharpen::ByteBuffer&>(),0)
+                                                    ,sharpen::DeclLvalue<sharpen::Size>() = std::declval<_Decoder>().Decode(std::declval<const sharpen::ByteBuffer&>()));
 
     template<typename _Message,typename _Decoder>
     using IsRpcDecoder = sharpen::IsMatches<sharpen::InternalIsRpcDecoder,_Message,_Decoder>;

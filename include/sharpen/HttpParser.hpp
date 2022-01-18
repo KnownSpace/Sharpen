@@ -18,6 +18,8 @@ struct llhttp_settings_s;
 
 namespace sharpen
 {
+    class ByteBuffer;
+
     class HttpParser:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
@@ -124,6 +126,13 @@ namespace sharpen
         }
 
         void Parse(const char *data,sharpen::Size size);
+
+        inline void Parse(const sharpen::ByteBuffer &buf,sharpen::Size offset);
+
+        inline void Parse(const sharpen::ByteBuffer &buf)
+        {
+            this->Parse(buf,0);
+        }
 
         bool NeedUpgrade() const;
 

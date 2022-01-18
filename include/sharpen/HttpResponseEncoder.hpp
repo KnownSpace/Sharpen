@@ -19,9 +19,19 @@ namespace sharpen
             return std::move(buf);
         }
 
+        inline static sharpen::Size EncodeTo(const sharpen::HttpResponse &res,sharpen::ByteBuffer &buf,sharpen::Size offset)
+        {
+            return res.CopyTo(buf,offset);
+        }
+
         inline static sharpen::Size EncodeTo(const sharpen::HttpResponse &res,sharpen::ByteBuffer &buf)
         {
             return res.CopyTo(buf);
+        }
+
+        inline static sharpen::Size EncodeTo(const sharpen::HttpResponse &res,char *data,sharpen::Size size)
+        {
+            return res.CopyTo(data,size);
         }
     };
 }

@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <llhttp.h>
 
+#include <sharpen/ByteBuffer.hpp>
+
 sharpen::HttpParser::HttpParser(sharpen::HttpParser::ParserModel model)
     :parser_(nullptr)
     ,onMsgBegin_()
@@ -209,4 +211,9 @@ bool sharpen::HttpParser::IsCompleted() const
 void sharpen::HttpParser::SetCompleted(bool completed)
 {
     this->completed_ = completed;
+}
+
+void sharpen::HttpParser::Parse(const sharpen::ByteBuffer &buf,sharpen::Size offset)
+{
+    this->Parse(buf.Data() + offset,buf.GetSize() - offset);
 }

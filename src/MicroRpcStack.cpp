@@ -39,7 +39,7 @@ sharpen::Size sharpen::MicroRpcStack::CopyTo(char *data, sharpen::Size size) con
     sharpen::Size tmp{this->ComputeSize()};
     if (size < tmp)
     {
-        throw std::length_error("buf too small");
+        throw std::length_error("buffer too small");
     }
     this->UnsafeCopyTo(data);
     return tmp;

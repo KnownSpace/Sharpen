@@ -20,7 +20,7 @@ void sharpen::SstKeyValueGroup::LoadFrom(const char *data,sharpen::Size size)
             pair.SetSharedKey(primary.GetKey().Data(),pair.GetSharedKeySize());
             this->pairs_.emplace_back(std::move(pair));
         }
-        catch(const std::exception& e)
+        catch(const std::exception&)
         {
             this->pairs_.clear();
             throw;

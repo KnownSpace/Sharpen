@@ -4,6 +4,7 @@
 
 #include "HttpParser.hpp"
 #include "HttpParseException.hpp"
+#include "ByteBuffer.hpp"
 
 namespace sharpen
 {
@@ -47,6 +48,16 @@ namespace sharpen
                 throw sharpen::HttpParseException(this->parser_.GetErrorMessage());
             }
             return size;
+        }
+
+        inline sharpen::Size Decode(const sharpen::ByteBuffer &buf,sharpen::Size offset)
+        {
+            this->Decode(buf.Data() + offset,buf.GetSize() - offset);
+        }
+
+        inline sharpen::Size Decode(const sharpen::ByteBuffer &buf)
+        {
+            this->Decode(buf,0);
         }
 
         void SetCompleted(bool completed)

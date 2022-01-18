@@ -41,6 +41,16 @@ namespace sharpen
 
         sharpen::Size Decode(const char *data,sharpen::Size size);
 
+        inline sharpen::Size Decode(const sharpen::ByteBuffer &buf,sharpen::Size offset)
+        {
+            this->Decode(buf.Data() + offset,buf.GetSize() - offset);
+        }
+
+        inline sharpen::Size Decode(const sharpen::ByteBuffer &buf)
+        {
+            this->Decode(buf,0);
+        }
+
         bool IsCompleted() const noexcept
         {
             return this->completed_;
