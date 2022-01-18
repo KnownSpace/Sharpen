@@ -52,12 +52,12 @@ namespace sharpen
 
         inline sharpen::Size Decode(const sharpen::ByteBuffer &buf,sharpen::Size offset)
         {
-            this->Decode(buf.Data() + offset,buf.GetSize() - offset);
+            return this->Decode(buf.Data() + offset,buf.GetSize() - offset);
         }
 
         inline sharpen::Size Decode(const sharpen::ByteBuffer &buf)
         {
-            this->Decode(buf,0);
+            return this->Decode(buf,0);
         }
 
         void SetCompleted(bool completed)
