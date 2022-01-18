@@ -11,11 +11,13 @@ void sharpen::SstKeyValueGroup::LoadFrom(const char *data,sharpen::Size size)
     sharpen::SstKeyValuePair pair;
     sharpen::Size offset{pair.LoadFrom(data,size)};
     this->pairs_.emplace_back(std::move(pair));
+    const sharpen::SstKeyValuePair &primary = *this->Begin();
     while (offset != size)
     {
         try
         {
             offset += pair.LoadFrom(data + offset,size - offset);
+            pair.SetSharedKey(primary.GetKey().Data(),pair.GetSharedKeySize());
             this->pairs_.emplace_back(std::move(pair));
         }
         catch(const std::exception& e)

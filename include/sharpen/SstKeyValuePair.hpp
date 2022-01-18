@@ -84,12 +84,12 @@ namespace sharpen
 
         sharpen::Size ComputeSize() const noexcept;
 
-        const sharpen::ByteBuffer &GetKey() const noexcept
+        inline const sharpen::ByteBuffer &GetKey() const noexcept
         {
             return this->key_;
         }
 
-        void SetKey(sharpen::Size sharedSize,sharpen::Size uniqueSize,sharpen::ByteBuffer key) noexcept
+        inline void SetKey(sharpen::Size sharedSize,sharpen::Size uniqueSize,sharpen::ByteBuffer key) noexcept
         {
             assert(sharedSize + uniqueSize == key.GetSize());
             this->key_ = std::move(key);
@@ -105,6 +105,35 @@ namespace sharpen
         const sharpen::ByteBuffer &Value() const noexcept
         {
             return this->value_;
+        }
+
+        inline sharpen::Uint64 GetSharedKeySize() const noexcept
+        {
+            return this->sharedSize_;
+        }
+
+        inline sharpen::Uint64 GetUniquedKeySize() const noexcept
+        {
+            return this->uniquedSize_;
+        }
+
+        void SetSharedKey(const char *data,sharpen::Size size)
+        {
+            if(size < this->GetSharedKeySize())
+            {
+                throw std::invalid_argument("invalid shard key");
+            }
+            std::memcpy(this->key_.Data(),data,this->GetSharedKeySize());
+        }
+
+        const char *GetSharedKeyBegin() const noexcept
+        {
+            return this->key_.Data();
+        }
+
+        const char *GetSharedKeyEnd() const noexcept
+        {
+            return this->key_.Data() + this->sharedSize_;
         }
     };
 }
