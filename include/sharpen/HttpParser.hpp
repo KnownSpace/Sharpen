@@ -127,7 +127,7 @@ namespace sharpen
 
         void Parse(const char *data,sharpen::Size size);
 
-        inline void Parse(const sharpen::ByteBuffer &buf,sharpen::Size offset);
+        void Parse(const sharpen::ByteBuffer &buf,sharpen::Size offset);
 
         inline void Parse(const sharpen::ByteBuffer &buf)
         {
