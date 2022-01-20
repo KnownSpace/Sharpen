@@ -31,6 +31,18 @@ namespace sharpen
         Pairs pairs_;
 
         void InternalStoreTo(char *data,sharpen::Size size) const;
+
+        inline Iterator Begin() noexcept
+        {
+            return this->pairs_.begin();
+        }
+
+        inline Iterator End() noexcept
+        {
+            return this->pairs_.end();
+        }
+
+        Iterator Find(const sharpen::ByteBuffer &key);
     public:
     
         SstKeyValueGroup() = default;
@@ -78,9 +90,12 @@ namespace sharpen
 
         void Delete(const sharpen::ByteBuffer &key);
 
-        void Update(const sharpen::ByteBuffer &oldKey,sharpen::SstKeyValuePair pair);
+        inline ConstIterator Delete(ConstIterator where)
+        {
+            return this->pairs_.erase(where);
+        }
 
-        Iterator Find(const sharpen::ByteBuffer &key);
+        void Update(const sharpen::ByteBuffer &oldKey,sharpen::SstKeyValuePair pair);
 
         ConstIterator Find(const sharpen::ByteBuffer &key) const;
 
@@ -89,16 +104,6 @@ namespace sharpen
         inline bool Empty() const noexcept
         {
             return this->pairs_.empty();
-        }
-
-        inline Iterator Begin() noexcept
-        {
-            return this->pairs_.begin();
-        }
-
-        inline Iterator End() noexcept
-        {
-            return this->pairs_.end();
         }
 
         inline ConstIterator Begin() const noexcept

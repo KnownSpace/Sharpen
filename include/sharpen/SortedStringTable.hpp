@@ -88,7 +88,7 @@ Data Block
 #include "TypeDef.hpp"
 #include "SstFooter.hpp"
 #include "SstIndexBlock.hpp"
-#include "ChecksumException.hpp"
+#include "DataCorruptionException.hpp"
 
 namespace sharpen
 {

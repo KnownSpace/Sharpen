@@ -28,7 +28,7 @@ void sharpen::SortedStringTable::Load(sharpen::FileChannelPtr channel)
         channel->ReadAsync(reinterpret_cast<char*>(&chksum),sizeof(chksum),this->footer_.IndexBlock().offset_ + size);
         if(chksum != buf.Crc16())
         {
-            throw sharpen::ChecksumException("index block checksum error");
+            throw sharpen::DataCorruptionException("index block corruption");
         }
         this->indexBlock_.LoadFrom(buf,buf.GetSize());
     }
@@ -43,7 +43,7 @@ void sharpen::SortedStringTable::Load(sharpen::FileChannelPtr channel)
         if(chksum != buf.Crc16())
         {
             this->indexBlock_.Clear();
-            throw sharpen::ChecksumException("meta index block checksum error");
+            throw sharpen::DataCorruptionException("meta index block corruption");
         }
         this->metaIndexBlock_.LoadFrom(buf,buf.GetSize());
     }

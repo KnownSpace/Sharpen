@@ -32,6 +32,12 @@ int main(int argc, char const *argv[])
     r = sharpen::BufferCompare(buf4, sizeof(buf4), buf3, sizeof(buf3));
     std::printf("is buf4 == buf3 ? %d\n", r == 0);
     assert(r == 0);
+
+    char buf5[] = "2";
+    r = sharpen::BufferCompare(buf5,sizeof(buf5),buf1,sizeof(buf1));
+    std::printf("is buf5 > buf1 ? %d\n", r == 1);
+    assert(r == 1);
+    
     std::puts("pass");
     return 0;
 }
