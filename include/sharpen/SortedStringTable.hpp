@@ -128,7 +128,12 @@ namespace sharpen
     
         ~SortedStringTable() noexcept = default;
 
-        const sharpen::SstFooter &GetFooter() const noexcept
+        sharpen::SstFooter &Footer() noexcept
+        {
+            return this->footer_;
+        }
+
+        const sharpen::SstFooter &Footer() const noexcept
         {
             return this->footer_;
         }
