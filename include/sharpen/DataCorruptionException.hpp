@@ -11,7 +11,7 @@ namespace sharpen
     {
     private:
     
-        using Self = InternalDataCorruptionException<_Exception,_IsEmpty>;
+        using Self = sharpen::InternalDataCorruptionException<_Exception,_IsEmpty>;
     
         const char *msg_;
     public:
@@ -43,7 +43,7 @@ namespace sharpen
     {
     private:
     
-        using Self = InternalDataCorruptionException<_Exception,false>;
+        using Self = sharpen::InternalDataCorruptionException<_Exception,false>;
         using Base = _Exception;
     public:
         InternalDataCorruptionException() noexcept = default;
@@ -65,11 +65,11 @@ namespace sharpen
     
     //if sizeof(std::exception) == sizeof(void*),std::exception is a interface class
     //exception class defination
-    class DataCorruptionException:public InternalDataCorruptionException<std::exception,sizeof(std::exception) == sizeof(void*)>
+    class DataCorruptionException:public sharpen::InternalDataCorruptionException<std::exception,sizeof(std::exception) == sizeof(void*)>
     {
     private:
-        using Self = DataCorruptionException;
-        using Base = InternalDataCorruptionException<std::exception,sizeof(std::exception) == sizeof(void*)>;
+        using Self = sharpen::DataCorruptionException;
+        using Base = sharpen::InternalDataCorruptionException<std::exception,sizeof(std::exception) == sizeof(void*)>;
     public:
         DataCorruptionException() noexcept = default;
     
