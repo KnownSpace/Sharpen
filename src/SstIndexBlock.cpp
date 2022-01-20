@@ -1,6 +1,7 @@
 #include <sharpen/SstIndexBlock.hpp>
 
 #include <stdexcept>
+#include <cassert>
 
 #include <sharpen/IteratorOps.hpp>
 
@@ -37,6 +38,7 @@ void sharpen::SstIndexBlock::LoadFrom(const char *data,sharpen::Size size)
 
 void sharpen::SstIndexBlock::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size size,sharpen::Size offset)
 {
+    assert(buf.GetSize() > offset);
     if(buf.GetSize() - offset < size)
     {
         throw std::invalid_argument("invalid buffer");
@@ -54,51 +56,48 @@ sharpen::Size sharpen::SstIndexBlock::ComputeNeedSize() const noexcept
     return needSize;
 }
 
-void sharpen::SstIndexBlock::InternalStoreTo(char *data) const noexcept
+sharpen::Size sharpen::SstIndexBlock::UnsafeStoreTo(char *data) const noexcept
 {
+    sharpen::Size offset{0};
     for (auto begin = this->dataBlocks_.begin(),end = this->dataBlocks_.end(); begin != end; ++begin)
     {
         sharpen::Uint64 keySize = begin->Key().GetSize();
-        std::memcpy(data,&keySize,sizeof(keySize));
-        data += sizeof(keySize);
+        std::memcpy(data + offset,&keySize,sizeof(keySize));
+        offset += sizeof(keySize);
         if(keySize)
         {
-            std::memcpy(data,begin->Key().Data(),keySize);
-            data += keySize; 
+            std::memcpy(data + offset,begin->Key().Data(),keySize);
+            offset += keySize; 
         }
-        std::memcpy(data,&begin->Block().offset_,sizeof(begin->Block().offset_));
-        data += sizeof(begin->Block().offset_);
-        std::memcpy(data,&begin->Block().size_,sizeof(begin->Block().size_));
-        data += sizeof(begin->Block().size_);
+        std::memcpy(data + offset,&begin->Block().offset_,sizeof(begin->Block().offset_));
+        offset += sizeof(begin->Block().offset_);
+        std::memcpy(data + offset,&begin->Block().size_,sizeof(begin->Block().size_));
+        offset += sizeof(begin->Block().size_);
     }
+    return offset;
 }
 
 sharpen::Size sharpen::SstIndexBlock::StoreTo(char *data,sharpen::Size size) const
 {
-    sharpen::Size needSize{this->dataBlocks_.size()*(sizeof(sharpen::SstBlock) + sizeof(sharpen::Uint64) + sizeof(sharpen::Uint64))};
-    for (auto begin = this->dataBlocks_.begin(),end = this->dataBlocks_.end(); begin != end; ++begin)
-    {
-        needSize += begin->Key().GetSize();
-    }
+    sharpen::Size needSize{this->ComputeNeedSize()};
     if(needSize > size)
     {
         throw std::invalid_argument("buffer too small");
     }
-    this->InternalStoreTo(data);
-    return needSize;
+    return this->UnsafeStoreTo(data);
 }
 
 sharpen::Size sharpen::SstIndexBlock::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
 {
-    sharpen::Size size = buf.GetSize() - offset;
-    sharpen::Size needSize = this->ComputeNeedSize();
+    assert(buf.GetSize() > offset);
+    sharpen::Size size{buf.GetSize() - offset};
+    sharpen::Size needSize{this->ComputeNeedSize()};
     if(size < needSize)
     {
         buf.Extend(needSize - size);
     }
     char *data = buf.Data() + offset;
-    this->InternalStoreTo(data);
-    return needSize;
+    return this->UnsafeStoreTo(data);
 }
 
 sharpen::SstIndexBlock::ConstIterator sharpen::SstIndexBlock::Find(const sharpen::ByteBuffer &key) const noexcept

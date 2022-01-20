@@ -42,8 +42,6 @@ namespace sharpen
         DataBlockHandles dataBlocks_;
 
         Iterator Find(const sharpen::ByteBuffer &key) noexcept;
-
-        void InternalStoreTo(char *data) const noexcept;
     public:
     
         SstIndexBlock() noexcept = default;
@@ -89,6 +87,8 @@ namespace sharpen
         }
 
         sharpen::Size ComputeNeedSize() const noexcept;
+
+        sharpen::Size UnsafeStoreTo(char *data) const noexcept;
 
         sharpen::Size StoreTo(char *data,sharpen::Size size) const;
 

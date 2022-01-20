@@ -30,8 +30,6 @@ namespace sharpen
     
         Pairs pairs_;
 
-        void InternalStoreTo(char *data,sharpen::Size size) const;
-
         inline Iterator Begin() noexcept
         {
             return this->pairs_.begin();
@@ -73,13 +71,15 @@ namespace sharpen
 
         sharpen::Size ComputeSize() const noexcept;
 
-        void StoreTo(char *data,sharpen::Size size) const;
+        sharpen::Size UnsafeStoreTo(char *data) const;
 
-        void StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
+        sharpen::Size StoreTo(char *data,sharpen::Size size) const;
 
-        inline void StoreTo(sharpen::ByteBuffer &buf) const
+        sharpen::Size StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
+
+        inline sharpen::Size StoreTo(sharpen::ByteBuffer &buf) const
         {
-            this->StoreTo(buf,0);
+            return this->StoreTo(buf,0);
         }
 
         void Put(sharpen::SstKeyValuePair pair);

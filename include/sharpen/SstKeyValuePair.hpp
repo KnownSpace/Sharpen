@@ -35,8 +35,6 @@ namespace sharpen
         sharpen::Uint64 uniquedSize_;
         sharpen::ByteBuffer key_;
         sharpen::ByteBuffer value_;
-
-        sharpen::Size InternalStoreTo(char *data) const;
     public:
     
         SstKeyValuePair();
@@ -72,6 +70,8 @@ namespace sharpen
         {
             return this->LoadFrom(buf,0);
         }
+
+        sharpen::Size UnsafeStoreTo(char *data) const;
 
         sharpen::Size StoreTo(char *data,sharpen::Size size) const;
 

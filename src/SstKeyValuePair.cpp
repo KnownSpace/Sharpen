@@ -62,6 +62,7 @@ sharpen::Size sharpen::SstKeyValuePair::LoadFrom(const char *data,sharpen::Size 
 
 sharpen::Size sharpen::SstKeyValuePair::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset)
 {
+    assert(buf.GetSize() > offset);
     return this->LoadFrom(buf.Data() + offset,buf.GetSize() - offset);
 }
 
@@ -79,7 +80,7 @@ sharpen::Size sharpen::SstKeyValuePair::ComputeSize() const noexcept
     return size;
 }
 
-sharpen::Size sharpen::SstKeyValuePair::InternalStoreTo(char *data) const
+sharpen::Size sharpen::SstKeyValuePair::UnsafeStoreTo(char *data) const
 {
     sharpen::Varuint64 builder{this->sharedSize_};
     sharpen::Size offset{builder.ComputeSize()};
@@ -113,7 +114,7 @@ sharpen::Size sharpen::SstKeyValuePair::StoreTo(char *data,sharpen::Size size) c
     {
         throw std::invalid_argument("buffer too small");
     }
-    return this->InternalStoreTo(data);
+    return this->UnsafeStoreTo(data);
 }
 
 sharpen::Size sharpen::SstKeyValuePair::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
@@ -124,5 +125,5 @@ sharpen::Size sharpen::SstKeyValuePair::StoreTo(sharpen::ByteBuffer &buf,sharpen
     {
         buf.Extend(needSize - size);
     } 
-    return this->InternalStoreTo(buf.Data());
+    return this->UnsafeStoreTo(buf.Data());
 }

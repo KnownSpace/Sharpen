@@ -1,6 +1,7 @@
 #include <sharpen/SstFooter.hpp>
 
 #include <stdexcept>
+#include <cassert>
 
 void sharpen::SstFooter::LoadFrom(const char *data,sharpen::Size size)
 {
@@ -14,8 +15,8 @@ void sharpen::SstFooter::LoadFrom(const char *data,sharpen::Size size)
 
 void sharpen::SstFooter::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset)
 {
-    sharpen::Size size = buf.GetSize() - offset;
-    this->LoadFrom(buf.Data() + offset,size);
+    assert(buf.GetSize() > offset);
+    this->LoadFrom(buf.Data() + offset,buf.GetSize() - offset);
 }
 
 void sharpen::SstFooter::InternalStoreTo(char *data) const noexcept

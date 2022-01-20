@@ -142,7 +142,7 @@ namespace sharpen
         {
             return static_cast<_To>(from);
         }
-        throw std::bad_cast("cannot value cast to target type,value too small or too big");
+        throw std::bad_cast{};
     }
 
     //u -> i
@@ -153,7 +153,7 @@ namespace sharpen
         {
             return static_cast<_To>(from);
         }
-        throw std::bad_cast("cannot value cast to target type,value too small or too big");
+        throw std::bad_cast{};
     }
 
     //i1 -> i2
@@ -165,7 +165,7 @@ namespace sharpen
         {
             return static_cast<_To>(from);
         }
-        throw std::bad_cast("cannot value cast to target type,value too small or too big");
+        throw std::bad_cast{};
     }
 
     //u -> i

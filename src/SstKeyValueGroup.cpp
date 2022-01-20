@@ -30,6 +30,7 @@ void sharpen::SstKeyValueGroup::LoadFrom(const char *data,sharpen::Size size)
 
 void sharpen::SstKeyValueGroup::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset)
 {
+    assert(buf.GetSize() > offset);
     this->LoadFrom(buf.Data() + offset,buf.GetSize() - offset);
 }
 
@@ -43,34 +44,36 @@ sharpen::Size sharpen::SstKeyValueGroup::ComputeSize() const noexcept
     return size;
 }
 
-void sharpen::SstKeyValueGroup::InternalStoreTo(char *data,sharpen::Size size) const
+sharpen::Size sharpen::SstKeyValueGroup::UnsafeStoreTo(char *data) const
 {
     sharpen::Size offset{0};
     for (auto begin = this->Begin(),end = this->End(); begin != end; ++begin)
     {
-        offset += begin->StoreTo(data + offset,size - offset);
+        offset += begin->UnsafeStoreTo(data + offset);
     }
+    return offset;
 }
 
-void sharpen::SstKeyValueGroup::StoreTo(char *data,sharpen::Size size) const
+sharpen::Size sharpen::SstKeyValueGroup::StoreTo(char *data,sharpen::Size size) const
 {
     sharpen::Size needSize{this->ComputeSize()};
     if(size < needSize)
     {
         throw std::invalid_argument("buffer too small");
     }
-    this->InternalStoreTo(data,size);
+    return this->UnsafeStoreTo(data);
 }
 
-void sharpen::SstKeyValueGroup::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
+sharpen::Size sharpen::SstKeyValueGroup::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
 {
+    assert(buf.GetSize() > offset);
     sharpen::Size needSize{this->ComputeSize()};
     sharpen::Size size{buf.GetSize() - offset};
     if(size < needSize)
     {
         buf.Extend(needSize - size);
     }
-    this->InternalStoreTo(buf.Data() + offset,buf.GetSize() - offset);
+    return this->UnsafeStoreTo(buf.Data() + offset);
 }
 
 sharpen::SstKeyValueGroup::Iterator sharpen::SstKeyValueGroup::Find(const sharpen::ByteBuffer &key)
