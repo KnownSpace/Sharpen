@@ -45,7 +45,7 @@ void Entry()
             sharpen::SortedStringTable table;
             table.Load(sstFile);
             sstFile->Close();
-            assert(table.GetFooter().IndexBlock().size_ == table.GetFooter().MetaIndexBlock().size_ && table.GetFooter().IndexBlock().size_ == 0);
+            assert(table.Footer().IndexBlock().size_ == table.Footer().MetaIndexBlock().size_ && table.Footer().IndexBlock().size_ == 0);
         }
         //has index
         {
@@ -64,7 +64,7 @@ void Entry()
             sstFile->Close();
             assert(table.MetaIndexBlock().Blocks().size() == 0 && table.IndexBlock().Blocks().size() == 1);
             assert(table.IndexBlock().Blocks().front().Key() == sharpen::ByteBuffer("datablock",9));
-            assert(table.GetFooter().MetaIndexBlock().size_ == 0);
+            assert(table.Footer().MetaIndexBlock().size_ == 0);
         }
         //has meta index
         {
@@ -83,7 +83,7 @@ void Entry()
             sstFile->Close();
             assert(table.IndexBlock().Blocks().size() == 0 && table.MetaIndexBlock().Blocks().size() == 1);
             assert(table.MetaIndexBlock().Blocks().front().Key() == sharpen::ByteBuffer("filter",6));
-            assert(table.GetFooter().IndexBlock().size_ == 0);
+            assert(table.Footer().IndexBlock().size_ == 0);
         }
         sharpen::RemoveFile(name);
         std::puts("pass");
