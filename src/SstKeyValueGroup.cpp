@@ -130,8 +130,9 @@ void sharpen::SstKeyValueGroup::Delete(const sharpen::ByteBuffer &key)
 
 std::pair<sharpen::Uint64,sharpen::Uint64> sharpen::SstKeyValueGroup::ComputeKeySizes(const sharpen::ByteBuffer &key) const noexcept
 {
-    auto mismatch = std::mismatch(this->First().GetKey().Begin(),this->First().GetKey().End(),key.Begin(),key.End());
-    sharpen::Uint64 sharedSize = sharpen::GetRangeSize(this->First().GetKey().Begin(),mismatch.first);
+    sharpen::Size sharedSize{0};
+    for (sharpen::Size count = (std::min)(this->First().GetKey().GetSize(),key.GetSize()); sharedSize != count && this->First().GetKey()[sharedSize] == key[sharedSize]; ++sharedSize)
+    {}
     sharpen::Uint64 uniquedSize = key.GetSize() - sharedSize;
     return {sharedSize,uniquedSize};
 }
@@ -152,6 +153,19 @@ bool sharpen::SstKeyValueGroup::TryPut(sharpen::ByteBuffer key,sharpen::ByteBuff
         if(!sizes.first)
         {
             return false;
+        }
+        //first key
+        if(!sizes.second)
+        {
+            this->pairs_.emplace(this->pairs_.begin(),0,key.GetSize(),std::move(key),std::move(value));
+            //re-compute key sizes
+            for (auto begin = sharpen::IteratorForward(this->pairs_.begin(),1); begin != this->pairs_.end(); ++begin)
+            {
+                sizes = this->ComputeKeySizes(begin->GetKey());
+                begin->SetSharedKeySize(sizes.first);
+                begin->SetUniquedKeySize(sizes.second);
+            }
+            return true;
         }
         this->pairs_.emplace(ite,sizes.first,sizes.second,std::move(key),std::move(value));
         return true;
