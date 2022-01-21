@@ -61,6 +61,8 @@ namespace sharpen
         using Iterator = typename Groups::iterator;
         using ConstIterator = typename Groups::const_iterator;
 
+        static constexpr sharpen::Size maxKeyPerGroups_{16};
+
         Groups groups_;
 
         static bool Comp(const sharpen::SstKeyValueGroup &group,const sharpen::ByteBuffer &key) noexcept;

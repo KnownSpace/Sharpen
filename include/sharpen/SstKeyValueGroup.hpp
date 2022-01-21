@@ -137,6 +137,16 @@ namespace sharpen
         {
             return this->pairs_.back();
         }
+
+        inline void Reserve(sharpen::Size size)
+        {
+            this->pairs_.reserve(this->GetSize() + size);
+        }
+
+        inline void Resize(sharpen::Size size)
+        {
+            this->pairs_.resize(size);
+        }
     };
 }
 

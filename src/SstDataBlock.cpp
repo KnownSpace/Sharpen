@@ -169,6 +169,27 @@ void sharpen::SstDataBlock::Put(sharpen::ByteBuffer key,sharpen::ByteBuffer valu
             bool succ = ite->TryPut(std::move(key),std::move(value));
             assert(succ);
             static_cast<void>(succ);
+            if(ite->GetSize() > maxKeyPerGroups_)
+            {
+                //div this group to 2 groups
+                sharpen::SstKeyValueGroup group;
+                auto begin = sharpen::IteratorForward(ite->Begin(),maxKeyPerGroups_);
+                auto end = ite->End();
+                sharpen::SstKeyValueGroup group;
+                group.Reserve(sharpen::GetRangeSize(begin,end));
+                this->groups_.reserve(this->groups_.size() + 1);
+                for (auto i = begin; i != end; ++i)
+                {
+                    group.Put(std::move(i->GetKey()),std::move(i->Value()));        
+                }
+                ite = sharpen::IteratorForward(ite,1);
+                if(ite == this->groups_.end())
+                {
+                    this->groups_.emplace_back(std::move(group));
+                    return;
+                }
+                this->groups_.emplace(ite,std::move(group));
+            }
             return;
         }
         //need to create a new group
