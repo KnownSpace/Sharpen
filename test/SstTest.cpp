@@ -62,7 +62,6 @@ void Entry()
             sharpen::SortedStringTable table;
             table.Load(sstFile);
             sstFile->Close();
-            assert(table.MetaIndexBlock().Blocks().size() == 0 && table.IndexBlock().Blocks().size() == 1);
             assert(table.IndexBlock().Blocks().front().Key() == sharpen::ByteBuffer("datablock",9));
             assert(table.Footer().MetaIndexBlock().size_ == 0);
         }

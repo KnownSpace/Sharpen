@@ -112,9 +112,19 @@ namespace sharpen
             return this->sharedSize_;
         }
 
+        inline void SetSharedKeySize(sharpen::Uint64 size) noexcept
+        {
+            this->sharedSize_ = size;
+        }
+
         inline sharpen::Uint64 GetUniquedKeySize() const noexcept
         {
             return this->uniquedSize_;
+        }
+
+        inline void SetUniquedKeySize(sharpen::Uint64 size) noexcept
+        {
+            this->uniquedSize_ = size;
         }
 
         void SetSharedKey(const char *data,sharpen::Size size)

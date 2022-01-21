@@ -14,6 +14,7 @@ Key Value Group
 */
 
 #include <stdexcept>
+#include <algorithm>
 
 #include "SstKeyValuePair.hpp"
 #include "IteratorOps.hpp"
@@ -30,17 +31,9 @@ namespace sharpen
     
         Pairs pairs_;
 
-        inline Iterator Begin() noexcept
-        {
-            return this->pairs_.begin();
-        }
+        static bool Comp(const sharpen::SstKeyValuePair &pair,const sharpen::ByteBuffer &key) noexcept;
 
-        inline Iterator End() noexcept
-        {
-            return this->pairs_.end();
-        }
-
-        Iterator Find(const sharpen::ByteBuffer &key);
+        std::pair<sharpen::Uint64,sharpen::Uint64> ComputeKeySizes(const sharpen::ByteBuffer &key) const noexcept;
     public:
     
         SstKeyValueGroup() = default;
@@ -82,7 +75,11 @@ namespace sharpen
             return this->StoreTo(buf,0);
         }
 
-        void Put(sharpen::SstKeyValuePair pair);
+        void Put(sharpen::ByteBuffer key,sharpen::ByteBuffer value);
+
+        bool TryPut(sharpen::ByteBuffer key,sharpen::ByteBuffer value);
+
+        bool CheckKey(const sharpen::ByteBuffer &key) const noexcept;
 
         sharpen::SstKeyValuePair &Get(const sharpen::ByteBuffer &key);
 
@@ -94,8 +91,8 @@ namespace sharpen
         {
             return this->pairs_.erase(where);
         }
-
-        void Update(const sharpen::ByteBuffer &oldKey,sharpen::SstKeyValuePair pair);
+        
+        Iterator Find(const sharpen::ByteBuffer &key);
 
         ConstIterator Find(const sharpen::ByteBuffer &key) const;
 
@@ -116,9 +113,29 @@ namespace sharpen
             return this->pairs_.cend();
         }
 
+        inline Iterator Begin() noexcept
+        {
+            return this->pairs_.begin();
+        }
+
+        inline Iterator End() noexcept
+        {
+            return this->pairs_.end();
+        }
+
         inline sharpen::Size GetSize() const noexcept
         {
             return this->pairs_.size();
+        }
+
+        const sharpen::SstKeyValuePair &First() const
+        {
+            return this->pairs_.front();
+        }
+
+        const sharpen::SstKeyValuePair &Last() const
+        {
+            return this->pairs_.back();
         }
     };
 }

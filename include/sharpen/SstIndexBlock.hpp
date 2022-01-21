@@ -41,7 +41,7 @@ namespace sharpen
     
         DataBlockHandles dataBlocks_;
 
-        Iterator Find(const sharpen::ByteBuffer &key) noexcept;
+        static bool Comp(const sharpen::SstBlockHandle &block,const sharpen::ByteBuffer &key) noexcept;
     public:
     
         SstIndexBlock() noexcept = default;
@@ -99,6 +99,8 @@ namespace sharpen
             return this->StoreTo(buf,0);
         }
 
+        Iterator Find(const sharpen::ByteBuffer &key) noexcept;
+
         ConstIterator Find(const sharpen::ByteBuffer &key) const noexcept;
 
         void Sort() noexcept
@@ -131,10 +133,6 @@ namespace sharpen
         void Put(sharpen::ByteBuffer key,const sharpen::SstBlock &block);
 
         void Delete(const sharpen::ByteBuffer &key) noexcept;
-
-        void Update(const sharpen::ByteBuffer &oldKey,sharpen::SstBlockHandle block);
-
-        void Update(const sharpen::ByteBuffer &oldKey,sharpen::ByteBuffer newKey,const sharpen::SstBlock &block);
 
         inline void Clear() noexcept
         {

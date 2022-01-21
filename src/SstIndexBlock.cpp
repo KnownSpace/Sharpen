@@ -100,52 +100,21 @@ sharpen::Size sharpen::SstIndexBlock::StoreTo(sharpen::ByteBuffer &buf,sharpen::
     return this->UnsafeStoreTo(data);
 }
 
+bool sharpen::SstIndexBlock::Comp(const sharpen::SstBlockHandle &block,const sharpen::ByteBuffer &key) noexcept
+{
+    return block.Key() < key;
+}
+
 sharpen::SstIndexBlock::ConstIterator sharpen::SstIndexBlock::Find(const sharpen::ByteBuffer &key) const noexcept
 {
-    auto begin = this->dataBlocks_.cbegin();
-    auto end = this->dataBlocks_.cend();
-    while (begin != end)
-    {
-        sharpen::Size size = sharpen::GetRangeSize(begin,end);
-        auto mid = begin + size/2;
-        if(mid->Key() == key)
-        {
-            return mid;
-        }
-        else if(mid->Key() > key)
-        {
-            end = mid;
-        }
-        else if(mid->Key() < key)
-        {
-            begin = sharpen::IteratorForward(mid,1);
-        }
-    }
-    return begin;
+    using FnPtr = bool(*)(const sharpen::SstBlockHandle&,const sharpen::ByteBuffer&);
+    return std::lower_bound(this->dataBlocks_.begin(),this->dataBlocks_.end(),key,static_cast<FnPtr>(&Self::Comp));
 }
 
 sharpen::SstIndexBlock::Iterator sharpen::SstIndexBlock::Find(const sharpen::ByteBuffer &key) noexcept
 {
-    auto begin = this->dataBlocks_.begin();
-    auto end = this->dataBlocks_.end();
-    while (begin != end)
-    {
-        sharpen::Size size = sharpen::GetRangeSize(begin,end);
-        auto mid = begin + size/2;
-        if(mid->Key() == key)
-        {
-            return mid;
-        }
-        else if(mid->Key() > key)
-        {
-            end = mid;
-        }
-        else if(mid->Key() < key)
-        {
-            begin = sharpen::IteratorForward(mid,1);
-        }
-    }
-    return begin;
+    using FnPtr = bool(*)(const sharpen::SstBlockHandle&,const sharpen::ByteBuffer&);
+    return std::lower_bound(this->dataBlocks_.begin(),this->dataBlocks_.end(),key,static_cast<FnPtr>(&Self::Comp));
 }
 
 void sharpen::SstIndexBlock::Put(sharpen::ByteBuffer key,const sharpen::SstBlock &block)
@@ -187,16 +156,4 @@ void sharpen::SstIndexBlock::Delete(const sharpen::ByteBuffer &key) noexcept
     {
         this->dataBlocks_.erase(ite);
     }
-}
-
-void sharpen::SstIndexBlock::Update(const sharpen::ByteBuffer &oldKey,sharpen::SstBlockHandle block)
-{
-    this->Delete(oldKey);
-    this->Put(std::move(block));
-}
-
-void sharpen::SstIndexBlock::Update(const sharpen::ByteBuffer &oldKey,sharpen::ByteBuffer newKey,const sharpen::SstBlock &block)
-{
-    this->Delete(oldKey);
-    this->Put(std::move(newKey),std::move(block));
 }

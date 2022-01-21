@@ -76,52 +76,21 @@ sharpen::Size sharpen::SstKeyValueGroup::StoreTo(sharpen::ByteBuffer &buf,sharpe
     return this->UnsafeStoreTo(buf.Data() + offset);
 }
 
+bool sharpen::SstKeyValueGroup::Comp(const sharpen::SstKeyValuePair &pair,const sharpen::ByteBuffer &key)
+{
+    return pair.GetKey() < key;
+}
+
 sharpen::SstKeyValueGroup::Iterator sharpen::SstKeyValueGroup::Find(const sharpen::ByteBuffer &key)
 {
-    auto begin = this->Begin();
-    auto end = this->End();
-    while (begin != end)
-    {
-        sharpen::Size size = sharpen::GetRangeSize(begin,end);
-        auto mid = begin + size/2;
-        if(mid->GetKey() == key)
-        {
-            return mid;
-        }
-        else if(mid->GetKey() > key)
-        {
-            end = mid;
-        }
-        else if(mid->GetKey() < key)
-        {
-            begin = sharpen::IteratorForward(mid,1);
-        }
-    }
-    return begin;
+    using FnPtr = bool(*)(const sharpen::SstKeyValuePair&,const sharpen::ByteBuffer&);
+    return std::lower_bound(this->pairs_.begin(),this->pairs_.end(),key,static_cast<FnPtr>(&Self::Comp));
 }
 
 sharpen::SstKeyValueGroup::ConstIterator sharpen::SstKeyValueGroup::Find(const sharpen::ByteBuffer &key) const
 {
-    auto begin = this->Begin();
-    auto end = this->End();
-    while (begin != end)
-    {
-        sharpen::Size size = sharpen::GetRangeSize(begin,end);
-        auto mid = begin + size/2;
-        if(mid->GetKey() == key)
-        {
-            return mid;
-        }
-        else if(mid->GetKey() > key)
-        {
-            end = mid;
-        }
-        else if(mid->GetKey() < key)
-        {
-            begin = sharpen::IteratorForward(mid,1);
-        }
-    }
-    return begin;
+    using FnPtr = bool(*)(const sharpen::SstKeyValuePair&,const sharpen::ByteBuffer&);
+    return std::lower_bound(this->pairs_.begin(),this->pairs_.end(),key,static_cast<FnPtr>(&Self::Comp));
 }
 
 bool sharpen::SstKeyValueGroup::Exist(const sharpen::ByteBuffer &key) const
@@ -159,24 +128,59 @@ void sharpen::SstKeyValueGroup::Delete(const sharpen::ByteBuffer &key)
     }
 }
 
-void sharpen::SstKeyValueGroup::Put(sharpen::SstKeyValuePair pair)
+std::pair<sharpen::Uint64,sharpen::Uint64> sharpen::SstKeyValueGroup::ComputeKeySizes(const sharpen::ByteBuffer &key) const noexcept
 {
-    auto ite = this->Find(pair.GetKey());
-    if(ite != this->End())
-    {
-        if(ite->GetKey() == pair.GetKey())
-        {
-            *ite = std::move(pair);
-            return;
-        }
-        this->pairs_.emplace(ite,std::move(pair));
-        return;
-    }
-    this->pairs_.emplace_back(std::move(pair));
+    auto mismatch = std::mismatch(this->First().GetKey().Begin(),this->First().GetKey().End(),key.Begin(),key.End());
+    sharpen::Uint64 sharedSize = sharpen::GetRangeSize(this->First().GetKey().Begin(),mismatch.first);
+    sharpen::Uint64 uniquedSize = key.GetSize() - sharedSize;
+    return {sharedSize,uniquedSize};
 }
 
-void sharpen::SstKeyValueGroup::Update(const sharpen::ByteBuffer &oldKey,sharpen::SstKeyValuePair pair)
+bool sharpen::SstKeyValueGroup::TryPut(sharpen::ByteBuffer key,sharpen::ByteBuffer value)
 {
-    this->Delete(oldKey);
-    this->Put(std::move(pair));
+    auto ite = this->Find(key);
+    if(ite != this->End())
+    {
+        //key already exist
+        if(ite->GetKey() == key)
+        {
+            ite->Value() = std::move(value);
+            return true;
+        }
+        //not last key
+        auto sizes = this->ComputeKeySizes(key);
+        if(!sizes.first)
+        {
+            return false;
+        }
+        this->pairs_.emplace(ite,sizes.first,sizes.second,std::move(key),std::move(value));
+        return true;
+    }
+    //last key
+    if(this->Empty())
+    {
+        sharpen::Size keySize{key.GetSize()};
+        this->pairs_.emplace_back(0,keySize,std::move(key),std::move(value));
+        return true;
+    }
+    auto sizes = this->ComputeKeySizes(key);
+    if(!sizes.first)
+    {
+        return false;
+    }
+    this->pairs_.emplace_back(sizes.first,sizes.second,std::move(key),std::move(value));
+    return true;
+}
+
+void sharpen::SstKeyValueGroup::Put(sharpen::ByteBuffer key,sharpen::ByteBuffer value)
+{
+    if(!this->TryPut(std::move(key),std::move(value)))
+    {
+        throw std::invalid_argument("cannot insert key to group");
+    }
+}
+
+bool sharpen::SstKeyValueGroup::CheckKey(const sharpen::ByteBuffer &key) const noexcept
+{
+    return this->Empty() || this->ComputeKeySizes(key).first;
 }
