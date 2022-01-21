@@ -85,6 +85,16 @@ namespace sharpen
 
         const sharpen::SstKeyValuePair &Get(const sharpen::ByteBuffer &key) const;
 
+        inline sharpen::ByteBuffer &GetValue(const sharpen::ByteBuffer &key)
+        {
+            return this->Get(key).Value();
+        }
+
+        inline const sharpen::ByteBuffer &GetValue(const sharpen::ByteBuffer &key) const
+        {
+            return this->Get(key).Value();
+        }
+
         void Delete(const sharpen::ByteBuffer &key);
 
         inline ConstIterator Delete(ConstIterator where)
@@ -146,6 +156,26 @@ namespace sharpen
         inline void Resize(sharpen::Size size)
         {
             this->pairs_.resize(size);
+        }
+
+        inline sharpen::ByteBuffer &operator[](const sharpen::ByteBuffer &key)
+        {
+            return this->Get(key).Value();
+        }
+
+        inline const sharpen::ByteBuffer &operator[](const sharpen::ByteBuffer &key) const
+        {
+            return this->Get(key).Value();
+        }
+
+        inline sharpen::SstKeyValuePair &operator[](sharpen::Size index)
+        {
+            return this->pairs_.at(index);
+        }
+
+        inline const sharpen::SstKeyValuePair &operator[](sharpen::Size index) const
+        {
+            return this->pairs_.at(index);
         }
     };
 }

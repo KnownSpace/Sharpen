@@ -62,7 +62,7 @@ sharpen::Size sharpen::SstKeyValuePair::LoadFrom(const char *data,sharpen::Size 
 
 sharpen::Size sharpen::SstKeyValuePair::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset)
 {
-    assert(buf.GetSize() > offset);
+    assert(buf.GetSize() >= offset);
     return this->LoadFrom(buf.Data() + offset,buf.GetSize() - offset);
 }
 
@@ -82,23 +82,28 @@ sharpen::Size sharpen::SstKeyValuePair::ComputeSize() const noexcept
 
 sharpen::Size sharpen::SstKeyValuePair::UnsafeStoreTo(char *data) const
 {
+    //store shared size
     sharpen::Varuint64 builder{this->sharedSize_};
     sharpen::Size offset{builder.ComputeSize()};
     std::memcpy(data,builder.Data(),offset);
+    //store uniqued size
     builder.Set(this->uniquedSize_);
     sharpen::Size size{builder.ComputeSize()};
     std::memcpy(data + offset,builder.Data(),size);
     offset += size;
     assert(this->uniquedSize_ + this->sharedSize_ == this->key_.GetSize());
+    //store uniqued key
     if(this->uniquedSize_)
     {
-        std::memcpy(data + offset,this->key_.Data(),sharpen::IntCast<sharpen::Size>(this->uniquedSize_));
+        std::memcpy(data + offset,this->key_.Data() + this->sharedSize_,sharpen::IntCast<sharpen::Size>(this->uniquedSize_));
     }
     offset = sharpen::IntCast<sharpen::Size>(this->uniquedSize_ + offset);
+    //store value size
     builder.Set(this->value_.GetSize());
     size = builder.ComputeSize();
     std::memcpy(data + offset,builder.Data(),size);
     offset += size;
+    //store value
     if (!this->value_.Empty())
     {
         std::memcpy(data + offset,this->value_.Data(),this->value_.GetSize());   

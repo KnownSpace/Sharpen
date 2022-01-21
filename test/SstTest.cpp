@@ -4,6 +4,7 @@
 #include <sharpen/IFileChannel.hpp>
 #include <sharpen/SortedStringTable.hpp>
 #include <sharpen/FileOps.hpp>
+#include <sharpen/SstDataBlock.hpp>
 
 void Entry()
 {
@@ -85,6 +86,69 @@ void Entry()
             assert(table.Footer().IndexBlock().size_ == 0);
         }
         sharpen::RemoveFile(name);
+        //key value pair test
+        {
+            sharpen::ByteBuffer buf;
+            {
+                sharpen::SstKeyValuePair pair{0,5,sharpen::ByteBuffer{"mykey",5},sharpen::ByteBuffer{"myval",5}};
+                pair.StoreTo(buf);
+            }
+            {
+                sharpen::SstKeyValuePair pair;
+                pair.LoadFrom(buf);
+                assert(pair.GetKey() == sharpen::ByteBuffer("mykey",5));
+                assert(pair.Value() == sharpen::ByteBuffer("myval",5));
+            }
+        }
+        //key value group test
+        {
+            sharpen::ByteBuffer buf;
+            {
+                sharpen::SstKeyValueGroup group;
+                group.Put(sharpen::ByteBuffer{"mykey",5},sharpen::ByteBuffer{"myval",5});
+                group.Put(sharpen::ByteBuffer{"mykey1",6},sharpen::ByteBuffer{"myval",5});
+                assert(!group.TryPut(sharpen::ByteBuffer("oykey",5),sharpen::ByteBuffer("myval",5)));
+                group.Put(sharpen::ByteBuffer{"myke",4},sharpen::ByteBuffer{"myval",5});
+                group.StoreTo(buf);
+            }
+            {
+                sharpen::SstKeyValueGroup group;
+                group.LoadFrom(buf);
+                assert(group.GetSize() == 3);
+                assert(group[0].GetKey() == sharpen::ByteBuffer("myke",4));
+                assert(group[1].GetKey() == sharpen::ByteBuffer("mykey",5));
+                assert(group[2].GetKey() == sharpen::ByteBuffer("mykey1",6));
+                for (sharpen::Size i = 0; i < group.GetSize(); ++i)
+                {
+                    assert(group[i].Value() == sharpen::ByteBuffer("myval",5));
+                }
+            }
+        }
+        //data block test
+        {
+            sharpen::ByteBuffer buf;
+            {
+                sharpen::SstDataBlock block;
+                block.Put(sharpen::ByteBuffer{"akey",4},sharpen::ByteBuffer{"myval",5});
+                block.Put(sharpen::ByteBuffer{"bkey",4},sharpen::ByteBuffer{"myval",5});
+                block.Put(sharpen::ByteBuffer{"abkey",5},sharpen::ByteBuffer{"myval",5});
+                assert(block.GetSize() == 2);
+                assert(block[0].GetSize() == 2);
+                assert(block[1].GetSize() == 1);
+                assert(block[0][0].GetKey() == sharpen::ByteBuffer("akey",4));
+                assert(block[0][1].GetKey() == sharpen::ByteBuffer("abkey",5));
+                block.StoreTo(buf);
+            }
+            {
+                sharpen::SstDataBlock block;
+                block.LoadFrom(buf);
+                assert(block.GetSize() == 2);
+                assert(block[0].GetSize() == 2);
+                assert(block[1].GetSize() == 1);
+                assert(block[0][0].GetKey() == sharpen::ByteBuffer("akey",4));
+                assert(block[0][1].GetKey() == sharpen::ByteBuffer("abkey",5));
+            }
+        }
         std::puts("pass");
     }
     catch(const std::exception& e)

@@ -15,7 +15,7 @@ void sharpen::SstFooter::LoadFrom(const char *data,sharpen::Size size)
 
 void sharpen::SstFooter::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset)
 {
-    assert(buf.GetSize() > offset);
+    assert(buf.GetSize() >= offset);
     this->LoadFrom(buf.Data() + offset,buf.GetSize() - offset);
 }
 

@@ -11,13 +11,12 @@ void sharpen::SstKeyValueGroup::LoadFrom(const char *data,sharpen::Size size)
     sharpen::SstKeyValuePair pair;
     sharpen::Size offset{pair.LoadFrom(data,size)};
     this->pairs_.emplace_back(std::move(pair));
-    const sharpen::SstKeyValuePair &primary = *this->Begin();
     while (offset != size)
     {
         try
         {
             offset += pair.LoadFrom(data + offset,size - offset);
-            pair.SetSharedKey(primary.GetKey().Data(),pair.GetSharedKeySize());
+            pair.SetSharedKey(this->First().GetKey().Data(),pair.GetSharedKeySize());
             this->pairs_.emplace_back(std::move(pair));
         }
         catch(const std::exception&)
@@ -30,7 +29,7 @@ void sharpen::SstKeyValueGroup::LoadFrom(const char *data,sharpen::Size size)
 
 void sharpen::SstKeyValueGroup::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset)
 {
-    assert(buf.GetSize() > offset);
+    assert(buf.GetSize() >= offset);
     this->LoadFrom(buf.Data() + offset,buf.GetSize() - offset);
 }
 
@@ -66,7 +65,7 @@ sharpen::Size sharpen::SstKeyValueGroup::StoreTo(char *data,sharpen::Size size) 
 
 sharpen::Size sharpen::SstKeyValueGroup::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
 {
-    assert(buf.GetSize() > offset);
+    assert(buf.GetSize() >= offset);
     sharpen::Size needSize{this->ComputeSize()};
     sharpen::Size size{buf.GetSize() - offset};
     if(size < needSize)
@@ -167,7 +166,15 @@ bool sharpen::SstKeyValueGroup::TryPut(sharpen::ByteBuffer key,sharpen::ByteBuff
             }
             return true;
         }
-        this->pairs_.emplace(ite,sizes.first,sizes.second,std::move(key),std::move(value));
+        ite = sharpen::IteratorForward(ite,1);
+        if(ite == this->End())
+        {
+            this->pairs_.emplace_back(sizes.first,sizes.second,std::move(key),std::move(value));
+        }
+        else
+        {
+            this->pairs_.emplace(ite,sizes.first,sizes.second,std::move(key),std::move(value));
+        }
         return true;
     }
     //last key

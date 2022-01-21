@@ -25,10 +25,10 @@ void sharpen::SstDataBlock::LoadFrom(const char *data,sharpen::Size size)
         throw sharpen::DataCorruptionException("data block corruption");
     }
     std::vector<std::pair<sharpen::Size,sharpen::Size>> indexs;
-    indexs.reserve(number - 1);
+    indexs.reserve(number);
     {
         sharpen::Uint32 off{0};
-        for (sharpen::Size i = 0,count = number - 1; i < count; ++i)
+        for (sharpen::Size i = 1,count = number; i < count; ++i)
         {
             std::memcpy(&off,data + offset,sizeof(off));
             sharpen::Size begin{off};
@@ -39,7 +39,6 @@ void sharpen::SstDataBlock::LoadFrom(const char *data,sharpen::Size size)
             }
             offset += sizeof(off);
             std::memcpy(&off,data + offset,sizeof(off));
-            offset += sizeof(off);
             sharpen::Size end{off};
             //check error
             if(end+ sizeof(off)*number > size || end < begin || end - begin + sizeof(off)*number > size)
@@ -55,6 +54,7 @@ void sharpen::SstDataBlock::LoadFrom(const char *data,sharpen::Size size)
     }
     //load key value groups
     sharpen::SstKeyValueGroup group;
+    this->groups_.clear();
     for (auto begin = indexs.begin(),end = indexs.end(); begin != end; ++begin)
     {
         try
@@ -72,7 +72,7 @@ void sharpen::SstDataBlock::LoadFrom(const char *data,sharpen::Size size)
 
 void sharpen::SstDataBlock::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset)
 {
-    assert(buf.GetSize() > offset);
+    assert(buf.GetSize() >= offset);
     this->LoadFrom(buf.Data() + offset,buf.GetSize() - offset);
 }
 
@@ -101,7 +101,7 @@ sharpen::Size sharpen::SstDataBlock::UnsafeStoreTo(char *data) const
     sharpen::Size last{offset + sizeof(sharpen::Uint32)*this->groups_.size()};
     for (sharpen::Size i = 0,count = this->groups_.size(); i != count; ++i)
     {
-        sharpen::Size kvSize{this->groups_[i].UnsafeStoreTo(data + offset)};
+        sharpen::Size kvSize{this->groups_[i].UnsafeStoreTo(data + last)};
         sharpen::Uint32 off{sharpen::IntCast<sharpen::Uint32>(last)};
         std::memcpy(data + offset + i*sizeof(off),&off,sizeof(off));
         last += kvSize;
@@ -124,7 +124,7 @@ sharpen::Size sharpen::SstDataBlock::StoreTo(char *data,sharpen::Size size) cons
 
 sharpen::Size sharpen::SstDataBlock::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
 {
-    assert(buf.GetSize() > offset);
+    assert(buf.GetSize() >= offset);
     sharpen::Size needSize{this->ComputeSize()};
     sharpen::Size size{buf.GetSize() - offset};
     if(needSize > size)
@@ -166,21 +166,21 @@ void sharpen::SstDataBlock::Put(sharpen::ByteBuffer key,sharpen::ByteBuffer valu
         //check and insert key
         if(ite->CheckKey(key))
         {
-            bool succ = ite->TryPut(std::move(key),std::move(value));
-            assert(succ);
-            static_cast<void>(succ);
-            if(ite->GetSize() > maxKeyPerGroups_)
+            if(ite->GetSize() >= maxKeyPerGroups_)
             {
                 //div this group to 2 groups
                 sharpen::SstKeyValueGroup group;
                 auto begin = sharpen::IteratorForward(ite->Begin(),maxKeyPerGroups_);
                 auto end = ite->End();
-                group.Reserve(sharpen::GetRangeSize(begin,end));
+                group.Reserve(sharpen::GetRangeSize(begin,end) + 1);
                 this->groups_.reserve(this->groups_.size() + 1);
                 for (auto i = begin; i != end; ++i)
                 {
                     group.Put(std::move(i->GetKey()),std::move(i->Value()));        
                 }
+                bool succ = group.TryPut(std::move(key),std::move(value));
+                assert(succ);
+                static_cast<void>(succ);
                 ite = sharpen::IteratorForward(ite,1);
                 if(ite == this->groups_.end())
                 {
@@ -188,6 +188,12 @@ void sharpen::SstDataBlock::Put(sharpen::ByteBuffer key,sharpen::ByteBuffer valu
                     return;
                 }
                 this->groups_.emplace(ite,std::move(group));
+            }
+            else
+            {
+                bool succ = ite->TryPut(std::move(key),std::move(value));
+                assert(succ);
+                static_cast<void>(succ);
             }
             return;
         }
@@ -223,4 +229,24 @@ sharpen::Size sharpen::SstDataBlock::ComputeKeyCount() const noexcept
         size += begin->GetSize();
     }
     return size;
+}
+
+sharpen::ByteBuffer &sharpen::SstDataBlock::Get(const sharpen::ByteBuffer &key)
+{
+    auto ite = this->FindGroup(key);
+    if(ite == this->groups_.end())
+    {
+        throw std::out_of_range("key doesn't exists");
+    }
+    return ite->GetValue(key);
+}
+
+const sharpen::ByteBuffer &sharpen::SstDataBlock::Get(const sharpen::ByteBuffer &key) const
+{
+    auto ite = this->FindGroup(key);
+    if(ite == this->groups_.end())
+    {
+        throw std::out_of_range("key doesn't exists");
+    }
+    return ite->GetValue(key);
 }

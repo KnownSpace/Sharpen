@@ -131,6 +131,7 @@ namespace sharpen
 
         void Set(const char *data,sharpen::Size size)
         {
+            this->cache_.Reset();
             size = (std::min)(size,sizeof(this->data_));
             std::memcpy(this->data_,data,size);
             this->data_[size] &= mask_;

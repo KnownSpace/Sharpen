@@ -47,7 +47,7 @@ namespace sharpen
 
         ByteBuffer(Self &&other) noexcept;
 
-        virtual ~ByteBuffer() noexcept = default;
+        ~ByteBuffer() noexcept = default;
 
         Self &operator=(const Self &other);
 

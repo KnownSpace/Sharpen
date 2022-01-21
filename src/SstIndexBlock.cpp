@@ -38,7 +38,7 @@ void sharpen::SstIndexBlock::LoadFrom(const char *data,sharpen::Size size)
 
 void sharpen::SstIndexBlock::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size size,sharpen::Size offset)
 {
-    assert(buf.GetSize() > offset);
+    assert(buf.GetSize() >= offset);
     if(buf.GetSize() - offset < size)
     {
         throw std::invalid_argument("invalid buffer");
@@ -89,7 +89,7 @@ sharpen::Size sharpen::SstIndexBlock::StoreTo(char *data,sharpen::Size size) con
 
 sharpen::Size sharpen::SstIndexBlock::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
 {
-    assert(buf.GetSize() > offset);
+    assert(buf.GetSize() >= offset);
     sharpen::Size size{buf.GetSize() - offset};
     sharpen::Size needSize{this->ComputeNeedSize()};
     if(size < needSize)

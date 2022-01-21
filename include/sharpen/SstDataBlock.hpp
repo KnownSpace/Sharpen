@@ -135,9 +135,33 @@ namespace sharpen
 
         void Delete(const sharpen::ByteBuffer &key);
 
+        sharpen::ByteBuffer &Get(const sharpen::ByteBuffer &key);
+
+        const sharpen::ByteBuffer &Get(const sharpen::ByteBuffer &key) const;
+
         Iterator FindGroup(const sharpen::ByteBuffer &key);
 
         sharpen::Size ComputeKeyCount() const noexcept;
+
+        inline sharpen::ByteBuffer &operator[](const sharpen::ByteBuffer &key)
+        {
+            return this->Get(key);
+        }
+
+        inline const sharpen::ByteBuffer &operator[](const sharpen::ByteBuffer &key) const
+        {
+            return this->Get(key);
+        }
+
+        inline sharpen::SstKeyValueGroup &operator[](sharpen::Size index)
+        {
+            return this->groups_.at(index);
+        }
+
+        inline const sharpen::SstKeyValueGroup &operator[](sharpen::Size index) const
+        {
+            return this->groups_.at(index);
+        }
     };
 }
 
