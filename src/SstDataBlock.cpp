@@ -175,7 +175,6 @@ void sharpen::SstDataBlock::Put(sharpen::ByteBuffer key,sharpen::ByteBuffer valu
                 sharpen::SstKeyValueGroup group;
                 auto begin = sharpen::IteratorForward(ite->Begin(),maxKeyPerGroups_);
                 auto end = ite->End();
-                sharpen::SstKeyValueGroup group;
                 group.Reserve(sharpen::GetRangeSize(begin,end));
                 this->groups_.reserve(this->groups_.size() + 1);
                 for (auto i = begin; i != end; ++i)

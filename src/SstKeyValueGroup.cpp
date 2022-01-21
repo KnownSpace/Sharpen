@@ -76,7 +76,7 @@ sharpen::Size sharpen::SstKeyValueGroup::StoreTo(sharpen::ByteBuffer &buf,sharpe
     return this->UnsafeStoreTo(buf.Data() + offset);
 }
 
-bool sharpen::SstKeyValueGroup::Comp(const sharpen::SstKeyValuePair &pair,const sharpen::ByteBuffer &key)
+bool sharpen::SstKeyValueGroup::Comp(const sharpen::SstKeyValuePair &pair,const sharpen::ByteBuffer &key) noexcept
 {
     return pair.GetKey() < key;
 }
