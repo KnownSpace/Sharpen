@@ -119,6 +119,16 @@ namespace sharpen
             return this->groups_.cend();
         }
 
+        inline Iterator Begin() noexcept
+        {
+            return this->groups_.begin();
+        }
+
+        inline Iterator End() noexcept
+        {
+            return this->groups_.end();
+        }
+
         inline bool Empty() const noexcept
         {
             return this->groups_.empty();
