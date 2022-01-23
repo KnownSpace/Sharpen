@@ -19,14 +19,14 @@ void Entry()
             sharpen::SortedStringTable table;
             table.IndexBlock().Put({sharpen::ByteBuffer{"datablock",9},{0,0}});
             table.MetaIndexBlock().Put({sharpen::ByteBuffer{"filter",6},{0,0}});
-            table.Store(sstFile,0);
+            table.StoreTo(sstFile,0);
             sstFile->Close();
         }
         {
             sharpen::FileChannelPtr sstFile = sharpen::MakeFileChannel(name,sharpen::FileAccessModel::Read,sharpen::FileOpenModel::Open);
             sstFile->Register(sharpen::EventEngine::GetEngine());
             sharpen::SortedStringTable table;
-            table.Load(sstFile);
+            table.LoadFrom(sstFile);
             sstFile->Close();
             assert(table.IndexBlock().Blocks().size() == table.MetaIndexBlock().Blocks().size() && table.IndexBlock().Blocks().size() == 1);
             assert(table.IndexBlock().Blocks().front().GetKey() == sharpen::ByteBuffer("datablock",9));
@@ -37,14 +37,14 @@ void Entry()
             sharpen::FileChannelPtr sstFile = sharpen::MakeFileChannel(name,sharpen::FileAccessModel::Write,sharpen::FileOpenModel::CreateNew);
             sstFile->Register(sharpen::EventEngine::GetEngine());
             sharpen::SortedStringTable table;
-            table.Store(sstFile,0);
+            table.StoreTo(sstFile,0);
             sstFile->Close();
         }
         {
             sharpen::FileChannelPtr sstFile = sharpen::MakeFileChannel(name,sharpen::FileAccessModel::Read,sharpen::FileOpenModel::Open);
             sstFile->Register(sharpen::EventEngine::GetEngine());
             sharpen::SortedStringTable table;
-            table.Load(sstFile);
+            table.LoadFrom(sstFile);
             sstFile->Close();
             assert(table.Footer().IndexBlock().size_ == table.Footer().MetaIndexBlock().size_ && table.Footer().IndexBlock().size_ == 0);
         }
@@ -54,14 +54,14 @@ void Entry()
             sstFile->Register(sharpen::EventEngine::GetEngine());
             sharpen::SortedStringTable table;
             table.IndexBlock().Put({sharpen::ByteBuffer{"datablock",9},{0,0}});
-            table.Store(sstFile,0);
+            table.StoreTo(sstFile,0);
             sstFile->Close();
         }
         {
             sharpen::FileChannelPtr sstFile = sharpen::MakeFileChannel(name,sharpen::FileAccessModel::Read,sharpen::FileOpenModel::Open);
             sstFile->Register(sharpen::EventEngine::GetEngine());
             sharpen::SortedStringTable table;
-            table.Load(sstFile);
+            table.LoadFrom(sstFile);
             sstFile->Close();
             assert(table.IndexBlock().Blocks().front().GetKey() == sharpen::ByteBuffer("datablock",9));
             assert(table.Footer().MetaIndexBlock().size_ == 0);
@@ -72,14 +72,14 @@ void Entry()
             sstFile->Register(sharpen::EventEngine::GetEngine());
             sharpen::SortedStringTable table;
             table.MetaIndexBlock().Put({sharpen::ByteBuffer{"filter",6},{0,0}});
-            table.Store(sstFile,0);
+            table.StoreTo(sstFile,0);
             sstFile->Close();
         }
         {
             sharpen::FileChannelPtr sstFile = sharpen::MakeFileChannel(name,sharpen::FileAccessModel::Read,sharpen::FileOpenModel::Open);
             sstFile->Register(sharpen::EventEngine::GetEngine());
             sharpen::SortedStringTable table;
-            table.Load(sstFile);
+            table.LoadFrom(sstFile);
             sstFile->Close();
             assert(table.IndexBlock().Blocks().size() == 0 && table.MetaIndexBlock().Blocks().size() == 1);
             assert(table.MetaIndexBlock().Blocks().front().GetKey() == sharpen::ByteBuffer("filter",6));

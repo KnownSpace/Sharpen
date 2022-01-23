@@ -4,7 +4,7 @@
 
 #include <sharpen/IntOps.hpp>
 
-void sharpen::SortedStringTable::Load(sharpen::FileChannelPtr channel)
+void sharpen::SortedStringTable::LoadFrom(sharpen::FileChannelPtr channel)
 {
     sharpen::ByteBuffer buf{sizeof(sharpen::SstFooter)};
     sharpen::Uint64 size = channel->GetFileSize();
@@ -49,7 +49,7 @@ void sharpen::SortedStringTable::Load(sharpen::FileChannelPtr channel)
     }
 }
 
-void sharpen::SortedStringTable::Store(sharpen::FileChannelPtr channel,sharpen::Uint64 offset) const
+void sharpen::SortedStringTable::StoreTo(sharpen::FileChannelPtr channel,sharpen::Uint64 offset) const
 {
     sharpen::ByteBuffer buf{4096};
     sharpen::Uint64 beginOffset = offset;

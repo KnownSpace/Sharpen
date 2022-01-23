@@ -158,9 +158,9 @@ namespace sharpen
             return this->metaIndexBlock_;
         }
 
-        void Load(sharpen::FileChannelPtr channel);
+        void LoadFrom(sharpen::FileChannelPtr channel);
 
-        void Store(sharpen::FileChannelPtr channel,sharpen::Uint64 offset) const;
+        void StoreTo(sharpen::FileChannelPtr channel,sharpen::Uint64 offset) const;
     };
 }
 
