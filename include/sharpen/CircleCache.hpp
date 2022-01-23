@@ -6,6 +6,8 @@
 #include <utility>
 #include <memory>
 #include <mutex>
+#include <cassert>
+#include <string>
 
 #include "TypeDef.hpp"
 #include "SpinLock.hpp"
@@ -13,26 +15,46 @@
 
 namespace sharpen
 {
-    template<typename _T>
-    class CircleCache:public sharpen::Noncopyable,public sharpen::Nonmovable
+    template <typename _T>
+    class CircleCache : public sharpen::Noncopyable, public sharpen::Nonmovable
     {
     private:
-        using Self = CircleCache;
-        using Buffer = std::vector<std::shared_ptr<_T>>;
+        struct CacheItem
+        {
+            std::string key_;
+            std::shared_ptr<_T> cacheObj_;
+        };
+
+        using Self = sharpen::CircleCache<_T>;
+        using Buffer = std::vector<typename Self::CacheItem>;
         using Lock = sharpen::SpinLock;
-        using Iterator = typename Buffer::iterator_type;
-        using ConstIterator = typename Buffer::const_iterator_type;
 
         Buffer buf_;
         mutable Lock lock_;
-        std::atomic_size_t next_;
+        sharpen::Size next_;
+
+        std::shared_ptr<_T> UnlockedGet(const std::string &key) const noexcept
+        {
+            std::shared_ptr<_T> result{nullptr};
+            for (auto begin = this->buf_.begin(), end = this->buf_.end(); begin != end; ++begin)
+            {
+                if ((*begin).cacheObj_ && (*begin).key_ == key)
+                {
+                    result = (*begin).cacheObj_;
+                    break;
+                }
+            }
+            return result;
+        }
     public:
         explicit CircleCache(sharpen::Size size)
             :buf_(size)
             ,lock_()
             ,next_(0)
-        {}
-    
+        {
+            assert(size != 0);
+        }
+
         ~CircleCache() noexcept = default;
 
         inline sharpen::Size GetSize() const noexcept
@@ -40,39 +62,34 @@ namespace sharpen
             return this->buf_.size();
         }
 
-        inline sharpen::Size GetUsedSize() const noexcept
+        template <typename... _Args,typename _Check = decltype(new _T{std::declval<_Args>()...})>
+        inline std::shared_ptr<_T> GetOrEmplace(const std::string &key, _Args &&...args)
         {
-            return (this->next_ < this->GetSize())? this->next_ : this->GetSize();
-        }
-
-        template<typename ..._Args>
-        inline auto Emplace(_Args &&...args) -> decltype(new _T{std::declval<_Args>()...})
-        {
-            sharpen::Size next{this->next_.fetch_add(1)};
-            {
-                std::unique_lock<Lock> lock(this->lock_);
-                this->buf_[next] = std::make_shared<_T>(std::forward<_Args>(args)...);
-            }
-        }
-
-        template<typename _Fn,typename _Check = sharpen::EnableIf<sharpen::IsCallableReturned<bool,_Fn,const _T&>>>
-        std::shared_ptr<_T> Get(_Fn &&cond) const
-        {
+            assert(!key.empty());
             std::shared_ptr<_T> result{nullptr};
             {
                 std::unique_lock<Lock> lock(this->lock_);
-                for (sharpen::Size i = 0,count = this->GetSize(); i != count; ++i)
+                result = this->UnlockedGet(key);
+                if (!result)
                 {
-                    if (this->buf_[i] && cond(this->buf_[i]))
-                    {
-                        result = this->buf_[i];
-                        break;
-                    }
+                    result = std::make_shared<_T>(std::forward<_Args>(args)...);
+                    CacheItem item;
+                    item.key_ = key;
+                    item.cacheObj_ = result;
+                    this->buf_[this->next_++ % this->buf_.size()] = std::move(item);
                 }
             }
+            assert(result != nullptr);
             return result;
         }
-    }; 
+
+        std::shared_ptr<_T> Get(const std::string &key) const noexcept
+        {
+            assert(!key.empty());
+            std::unique_lock<Lock> lock(this->lock_);
+            return this->UnlockedGet(key);
+        }
+    };
 }
 
 #endif
