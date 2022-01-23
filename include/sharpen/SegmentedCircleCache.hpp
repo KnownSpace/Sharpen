@@ -3,6 +3,7 @@
 #define _SHARPEN_SEGMENTEDCIRCLECACHE_HPP
 
 #include "CircleCache.hpp"
+#include "BufferOps.hpp"
 
 namespace sharpen
 {
@@ -19,7 +20,7 @@ namespace sharpen
 
         inline sharpen::Size HashKey(const std::string &key) const noexcept
         {
-            sharpen::Size hash{std::hash<std::string>{}(key)};
+            sharpen::Size hash{sharpen::BufferHash32(key.data(),key.size())};
             return hash % this->size_;
         }
 
