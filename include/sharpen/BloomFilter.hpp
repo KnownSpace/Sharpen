@@ -42,7 +42,7 @@ namespace sharpen
     class BloomFilter
     {
     private:
-        using Self = BloomFilter;
+        using Self = sharpen::BloomFilter<_T>;
 
         std::unique_ptr<std::atomic_char[]> space_;
         sharpen::Size size_;
@@ -159,7 +159,7 @@ namespace sharpen
 
         void CopyTo(char *data,sharpen::Size size) const
         {
-            if(size < this->space_.size())
+            if(size < this->GetSize())
             {
                 throw std::invalid_argument("buffer too small");
             }
