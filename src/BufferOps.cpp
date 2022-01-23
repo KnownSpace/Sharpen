@@ -270,7 +270,11 @@ sharpen::Uint64 sharpen::BufferHash64(const char *data,sharpen::Size size) noexc
 
 sharpen::Int32 sharpen::BufferCompare(const char *leftBuf,sharpen::Size leftSize,const char *rightBuf,sharpen::Size rightSize) noexcept
 {
-    sharpen::Int32 r = std::memcmp(leftBuf,rightBuf,(std::min)(leftSize,rightSize));
+    sharpen::Int32 r{0};
+    if(leftBuf && rightBuf)
+    {
+        r = std::memcmp(leftBuf,rightBuf,(std::min)(leftSize,rightSize));
+    }
     if(r != 0)
     {
         return r > 0 ? 1:-1;
