@@ -10,6 +10,7 @@ int main(int argc, char const *argv[])
         {
             std::string key{"key"};
             key.push_back(static_cast<char>('0' + i));
+            assert(!caches.Get(key));
             caches.GetOrEmplace(key,i);   
         }
         for (sharpen::Size i = 0; i != caches.GetSize(); ++i)
@@ -27,6 +28,7 @@ int main(int argc, char const *argv[])
         {
             std::string key{"key"};
             key.push_back(static_cast<char>('0' + i));
+            assert(!caches.Get(key));
             caches.GetOrEmplace(key,i);
         }
         for (sharpen::Size i = 0; i != caches.GetSize(); ++i)
