@@ -29,8 +29,8 @@ void Entry()
             table.Load(sstFile);
             sstFile->Close();
             assert(table.IndexBlock().Blocks().size() == table.MetaIndexBlock().Blocks().size() && table.IndexBlock().Blocks().size() == 1);
-            assert(table.IndexBlock().Blocks().front().Key() == sharpen::ByteBuffer("datablock",9));
-            assert(table.MetaIndexBlock().Blocks().front().Key() == sharpen::ByteBuffer("filter",6));
+            assert(table.IndexBlock().Blocks().front().GetKey() == sharpen::ByteBuffer("datablock",9));
+            assert(table.MetaIndexBlock().Blocks().front().GetKey() == sharpen::ByteBuffer("filter",6));
         }
         //empty
         {
@@ -63,7 +63,7 @@ void Entry()
             sharpen::SortedStringTable table;
             table.Load(sstFile);
             sstFile->Close();
-            assert(table.IndexBlock().Blocks().front().Key() == sharpen::ByteBuffer("datablock",9));
+            assert(table.IndexBlock().Blocks().front().GetKey() == sharpen::ByteBuffer("datablock",9));
             assert(table.Footer().MetaIndexBlock().size_ == 0);
         }
         //has meta index
@@ -82,7 +82,7 @@ void Entry()
             table.Load(sstFile);
             sstFile->Close();
             assert(table.IndexBlock().Blocks().size() == 0 && table.MetaIndexBlock().Blocks().size() == 1);
-            assert(table.MetaIndexBlock().Blocks().front().Key() == sharpen::ByteBuffer("filter",6));
+            assert(table.MetaIndexBlock().Blocks().front().GetKey() == sharpen::ByteBuffer("filter",6));
             assert(table.Footer().IndexBlock().size_ == 0);
         }
         sharpen::RemoveFile(name);

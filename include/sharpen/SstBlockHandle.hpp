@@ -57,12 +57,7 @@ namespace sharpen
     
         ~SstBlockHandle() noexcept = default;
 
-        const sharpen::ByteBuffer &Key() const noexcept
-        {
-            return this->key_;
-        }
-
-        sharpen::ByteBuffer &Key() noexcept
+        const sharpen::ByteBuffer &GetKey() const noexcept
         {
             return this->key_;
         }

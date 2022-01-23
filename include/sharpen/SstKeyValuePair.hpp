@@ -89,14 +89,6 @@ namespace sharpen
             return this->key_;
         }
 
-        inline void SetKey(sharpen::Size sharedSize,sharpen::Size uniqueSize,sharpen::ByteBuffer key) noexcept
-        {
-            assert(sharedSize + uniqueSize == key.GetSize());
-            this->key_ = std::move(key);
-            this->sharedSize_ = sharedSize;
-            this->uniquedSize_ = uniqueSize;
-        }
-
         sharpen::ByteBuffer &Value() noexcept
         {
             return this->value_;
@@ -114,6 +106,7 @@ namespace sharpen
 
         inline void SetSharedKeySize(sharpen::Uint64 size) noexcept
         {
+            assert(this->key_.GetSize() >= size);
             this->sharedSize_ = size;
         }
 
@@ -124,6 +117,7 @@ namespace sharpen
 
         inline void SetUniquedKeySize(sharpen::Uint64 size) noexcept
         {
+            assert(this->key_.GetSize() >= size);
             this->uniquedSize_ = size;
         }
 
