@@ -38,13 +38,13 @@ namespace sharpen
         }
     };
 
-    template<typename _T>
-    class BloomFilter
+    template<typename _T,typename _Element>
+    class InternalBloomFilter
     {
     private:
-        using Self = sharpen::BloomFilter<_T>;
+        using Self = sharpen::InternalBloomFilter<_T,_Element>;
 
-        std::unique_ptr<std::atomic_char[]> space_;
+        std::unique_ptr<_Element[]> space_;
         sharpen::Size size_;
         sharpen::Size hashCount_;
 
@@ -53,13 +53,13 @@ namespace sharpen
             return sharpen::BloomFilterHasher::Hash(obj);
         }
     public:
-        BloomFilter(sharpen::Size bitsOfSpace,sharpen::Size hashCount)
+        InternalBloomFilter(sharpen::Size bitsOfSpace,sharpen::Size hashCount)
             :space_(nullptr)
             ,size_(0)
             ,hashCount_(hashCount)
         {
             bitsOfSpace = bitsOfSpace/8 + ((bitsOfSpace % 8)? 1:0);
-            this->space_.reset(new std::atomic_char[bitsOfSpace]);
+            this->space_.reset(new _Element[bitsOfSpace]);
             this->size_ = bitsOfSpace;
             for (sharpen::Size i = 0; i != bitsOfSpace; ++i)
             {
@@ -67,12 +67,12 @@ namespace sharpen
             }
         }
 
-        BloomFilter(const char *space,sharpen::Size size,sharpen::Size hashCount)
+        InternalBloomFilter(const char *space,sharpen::Size size,sharpen::Size hashCount)
             :space_(nullptr)
             ,size_(0)
             ,hashCount_(hashCount)
         {
-            this->space_.reset(new std::atomic_char[size]);
+            this->space_.reset(new _Element[size]);
             this->size_ = size;
             for (sharpen::Size i = 0; i != size; ++i)
             {
@@ -80,20 +80,23 @@ namespace sharpen
             }
         }
     
-        BloomFilter(const Self &other)
+        InternalBloomFilter(const Self &other)
             :space_(nullptr)
             ,size_(0)
             ,hashCount_(other.hashCount_)
         {
-            this->space_.reset(new std::atomic_char[other.GetSize()]);
-            this->size_ = other.GetSize();
-            for (sharpen::Size i = 0; i != this->GetSize(); ++i)
+            if(other.GetSize())
             {
-                this->space_[i] = other.space_[i].load();
+                this->space_.reset(new _Element[other.GetSize()]);
+                this->size_ = other.GetSize();
+                for (sharpen::Size i = 0; i != this->GetSize(); ++i)
+                {
+                    this->space_[i] = static_cast<char>(other.space_[i]);
+                }
             }
         }
     
-        BloomFilter(Self &&other) noexcept
+        InternalBloomFilter(Self &&other) noexcept
             :space_(std::move(other.space_))
             ,size_(other.size_)
             ,hashCount_(other.hashCount_)
@@ -174,8 +177,14 @@ namespace sharpen
             return this->size_;
         }
     
-        ~BloomFilter() noexcept = default;
+        ~InternalBloomFilter() noexcept = default;
     };
+
+    template<typename _T>
+    using BloomFilter = sharpen::InternalBloomFilter<_T,char>;
+
+    template<typename _T>
+    using AtomicBloomFilter = sharpen::InternalBloomFilter<_T,std::atomic_char>;
 }
 
 #endif
