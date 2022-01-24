@@ -31,7 +31,7 @@ DataBlock                   about 4*1024 bytes
 +-------------------------+
 | Number of Group         | varint
 +-------------------------+
-| Key Value Group Offset1 | relative offset - 4 bytes
+| Key Value Group Offset1 | relative offset - 8 bytes
 +-------------------------+
 |          ...            |
 +-------------------------+
