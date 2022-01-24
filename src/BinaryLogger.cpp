@@ -75,9 +75,18 @@ std::list<sharpen::WriteBatch> sharpen::BinaryLogger::GetWriteBatchs()
         this->channel_->ReadAsync(reinterpret_cast<char*>(&size),sizeof(size),offset);
         offset += sizeof(size);
         buf.ExtendTo(sharpen::IntCast<sharpen::Size>(size));
-        this->channel_->ReadAsync(buf,offset);
-        offset += size;
-        batch.LoadFrom(buf);
+        try
+        {
+            this->channel_->ReadAsync(buf,offset);
+            batch.LoadFrom(buf);
+            offset += size;
+        }
+        catch(const std::exception&)
+        {
+            this->channel_->Truncate(offset);
+            this->offset_ = offset;
+            throw;   
+        }
         batchs.emplace_back(std::move(batch));
     }
     return batchs;
