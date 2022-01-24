@@ -2,39 +2,117 @@
 #ifndef _SHARPEN_MEMORYTABLE_HPP
 #define _SHARPEN_MEMORYTABLE_HPP
 
+/*
++-------
+|
++-----
+*/
+
 #include <stdexcept>
+#include <map>
 
 #include "ByteBuffer.hpp"
-#include "MemoryTableConcepts.hpp"
 #include "CompressedPair.hpp"
+#include "MemoryTableConcepts.hpp"
+#include "Noncopyable.hpp"
 
 namespace sharpen
-{
-    template<typename _Map,typename _Logger>
-    using MemoryTableRequire = sharpen::IsMemoryTableLogger<_Logger,_Map>;
-
-    template<typename _Map,typename _Logger,typename _Check = void>
+{   
+    template<typename _Logger,typename _Check = void>
     class InternalMemoryTable;
 
-    template<typename _Map,typename _Logger>
-    class InternalMemoryTable<_Map,_Logger,sharpen::EnableIf<sharpen::MemoryTableRequire<_Map,_Logger>::Value>>:public sharpen::Noncopyable
+    template<typename _Logger>
+    class InternalMemoryTable<_Logger,sharpen::EnableIf<sharpen::IsMemoryTableLogger<_Logger>::Value>>:public sharpen::Noncopyable
     {
     private:
-        using Self = InternalMemoryTable<_Map,_Logger>;
-        using MapType = _Map;
-        using ConstIterator = typename MapType::const_iterator;
-        using Pair = sharpen::CompressedPair<MapType,_Logger>;
+        
+        struct StoreItem
+        {
+            sharpen::ByteBuffer value_;
+            bool deleteTag_;
+        };
 
-        Pair pair_;
+        using Self = sharpen::InternalMemoryTable<_Logger,sharpen::EnableIf<sharpen::IsMemoryTableLogger<_Logger>::Value>>;
+        using MapType = std::map<sharpen::ByteBuffer,StoreItem>;
+        using ConstIterator = typename MapType::const_iterator;
+    
+        sharpen::CompressedPair<_Logger,MapType> pair_;
+
+        _Logger &Logger() noexcept
+        {
+            return this->pair_.First();
+        }
+
+        const _Logger &Logger() const noexcept
+        {
+            return this->pair_.First();
+        }
+
+        MapType &Map() noexcept
+        {
+            return this->pair_.Second();
+        }
+        
+        const MapType &Map() const noexcept
+        {
+            return this->pair_.Second();
+        }
+
+        void InternalPut(sharpen::ByteBuffer key,sharpen::ByteBuffer value)
+        {
+            StoreItem item;
+            item.value_ = std::move(value);
+            item.deleteTag_ = false;
+            this->Map()[std::move(key)] = std::move(item);
+        }
+
+        void InternalDelete(const sharpen::ByteBuffer &key)
+        {
+            auto ite = this->Map().find(key);
+            if(ite != this->Map().end())
+            {
+                ite->second.deleteTag_ = true;
+            }
+        }
+
+        void InternalAction(sharpen::WriteBatch &batch)
+        {
+            for (auto begin = batch.Begin(),end = batch.End(); begin != end; ++begin)
+            {
+                if (begin->type_ == sharpen::WriteBatch::ActionType::Put)
+                {
+                    this->InternalPut(std::move(begin->key_),std::move(begin->value_));
+                }
+                else
+                {
+                    this->InternalDelete(begin->key_);
+                }
+            }
+            batch.Clear();
+        }
+
+        void InternalAction(const sharpen::WriteBatch &batch)
+        {
+            for (auto begin = batch.Begin(),end = batch.End(); begin != end; ++begin)
+            {
+                if (begin->type_ == sharpen::WriteBatch::ActionType::Put)
+                {
+                    this->InternalPut(begin->key_,begin->value_);
+                }
+                else
+                {
+                    this->InternalDelete(begin->key_);
+                }
+            }
+        }
     public:
+    
         template<typename ..._Args,typename _Check = decltype(_Logger{std::declval<_Args>()...})>
         explicit InternalMemoryTable(_Args &&...args)
-            :pair_(MapType{},_Logger{std::forward<_Args>(args)...})
+            :pair_(_Logger{std::forward<_Args>(args)...},MapType{})
         {}
     
-        InternalMemoryTable(Self &&other) noexcept
-            :pair_(std::move(other.pair_))
-        {}
+        InternalMemoryTable(Self &&other) noexcept = default;
     
         Self &operator=(Self &&other) noexcept
         {
@@ -44,75 +122,89 @@ namespace sharpen
             }
             return *this;
         }
+    
+        ~InternalMemoryTable() noexcept = default;
 
-        MapType &Map() noexcept
+        inline void Restore()
         {
-            return this->pair_.First();
+            auto batchs = this->Logger().GetWriteBatchs();
+            for (auto begin = batchs.begin(),end = batchs.end(); begin != end; ++begin)
+            {
+                sharpen::WriteBatch &batch = *begin;
+                this->InternalAction(batch);
+            }
         }
 
-        const MapType &Map() const noexcept
+        inline void Action(sharpen::WriteBatch &batch)
         {
-            return this->pair_.First();
+            this->Logger().Log(batch);
+            this->InternalAction(batch);
         }
 
-         _Logger &Logger() noexcept
+        inline void Action(sharpen::WriteBatch &&batch)
         {
-            return this->pair_.Second();
+            this->Action(batch);
         }
 
-        const _Logger &Logger() const noexcept
+        inline void Action(const sharpen::WriteBatch &batch)
         {
-            return this->pair_.Second();
+            this->Logger().Log(batch);
+            this->InternalAction(batch);
         }
 
-        void Put(const sharpen::ByteBuffer &key,sharpen::ByteBuffer value)
+        inline void Put(sharpen::ByteBuffer key,sharpen::ByteBuffer value)
         {
-            this->Logger().LogPut(key,value);
-            this->Map()[key] = std::move(value);
+            sharpen::WriteBatch batch;
+            batch.Put(std::move(key),std::move(value));
+            this->Action(std::move(batch));
         }
 
-        void Delete(const sharpen::ByteBuffer &key)
+        inline void Delete(sharpen::ByteBuffer key)
         {
-            this->Logger().LogDelete(key);
+            sharpen::WriteBatch batch;
+            batch.Delete(std::move(key));
+            this->Action(std::move(batch));
+        }
+
+        void ClearLogs()
+        {
+            this->Logger().Clear();
+        }
+
+        void RemoveLogs()
+        {
+            this->Logger().Remove();
+        }
+
+        bool Exist(const sharpen::ByteBuffer &key) const noexcept
+        {
             auto ite = this->Map().find(key);
-            if(ite != this->Map().end())
-            {
-                ite->second.ClearAndShrink();
-            }
+            return ite != this->Map().end() && !ite->second.deleteTag_;
         }
 
-        void Action(const sharpen::WriteBatch &batch)
+        sharpen::ByteBuffer &Get(const sharpen::ByteBuffer &key)
         {
-            this->Logger().LogWriteBatch(batch);
-            auto begin = batch.Begin();
-            auto end = batch.End();
-            while (begin != end)
+            auto &item = this->Map().at(key);
+            if(item.deleteTag_)
             {
-                switch (begin->type_)
-                {
-                case sharpen::WriteBatch::ActionType::Put:
-                    this->Map()[*begin->key_] = std::move(*begin->value_);
-                    break;
-                case sharpen::WriteBatch::ActionType::Delete:
-                    auto ite = this->Map().find(*begin->key_);
-                    if(ite != this->Map().end())
-                    {
-                        ite->second.ClearAndShrink();
-                    }
-                    break;
-                }
-                ++begin;
+                throw std::out_of_range("key doesn't exists");
             }
+            return item.value_;
         }
 
         const sharpen::ByteBuffer &Get(const sharpen::ByteBuffer &key) const
         {
-            auto ite = this->Map().find(key);
-            if(!this->IsDeleted(ite))
+            auto &item = this->Map().at(key);
+            if(item.deleteTag_)
             {
-                return ite->second;
+                throw std::out_of_range("key doesn't exists");
             }
-            throw std::out_of_range("key doesn't exist"); 
+            return item.value_;
+        }
+
+        sharpen::ByteBuffer &operator[](const sharpen::ByteBuffer &key)
+        {
+            return this->Get(key);
         }
 
         const sharpen::ByteBuffer &operator[](const sharpen::ByteBuffer &key) const
@@ -120,59 +212,19 @@ namespace sharpen
             return this->Get(key);
         }
 
-        sharpen::Size GetSize() const noexcept
-        {
-            return this->Map().size();
-        }
-
-        bool Empty() const noexcept
-        {
-            return this->Map().empty();
-        }
-
-        bool Exist(const sharpen::ByteBuffer &key) const noexcept
-        {
-            auto ite = this->Map().find(key);
-            return ite != this->Map().end() && !ite->second.Empty();
-        }
-
-        bool ExistIgnoreDeleted(const sharpen::ByteBuffer &key) const noexcept
-        {
-            auto ite = this->Map().find(key);
-            return ite != this->Map().end();
-        }
-
-        void Clear() const
-        {
-            this->Map().clear();
-            this->Logger().ClearLogs();
-        }
-
-        void Restore()
-        {
-            this->Logger().Restore(this->Map());
-        }
-
-        ConstIterator Begin() const noexcept
+        inline ConstIterator Begin() const noexcept
         {
             return this->Map().begin();
         }
 
-        ConstIterator End() const noexcept
+        inline ConstIterator End() const noexcept
         {
             return this->Map().end();
         }
-
-        inline bool IsDeleted(ConstIterator ite) const noexcept
-        {
-            return ite == this->End() || ite->second.Empty();
-        }
-    
-        ~InternalMemoryTable() noexcept = default;
     };
 
-    template<template<class,class,class ...> class _Map,typename _Logger>
-    using MemoryTable = sharpen::InternalMemoryTable<_Map<sharpen::ByteBuffer,sharpen::ByteBuffer>,_Logger>;   
+    template<typename _Logger>
+    using MemoryTable = sharpen::InternalMemoryTable<_Logger>;
 }
 
 #endif

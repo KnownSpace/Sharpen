@@ -14,13 +14,11 @@ void PrintUsage()
                 "\tdelete <name> - delete item");
 }
 
-using CacheTable = sharpen::MemoryTable<std::map,sharpen::BinaryLogger<std::map>>;
+using CacheTable = sharpen::MemoryTable<sharpen::BinaryLogger>;
 
 CacheTable BuildTable(const char *logPath)
 {
-    sharpen::FileChannelPtr log = sharpen::MakeFileChannel(logPath,sharpen::FileAccessModel::All,sharpen::FileOpenModel::CreateOrOpen);
-    log->Register(sharpen::EventEngine::GetEngine());
-    return CacheTable{log};
+    return CacheTable{logPath,sharpen::EventEngine::GetEngine()};
 }
 
 const char *dbPath = "./binlog";
@@ -94,7 +92,7 @@ void Entry(int argc, char const *argv[])
         for (auto begin = tb.Begin(),end = tb.End(); begin != end; ++begin)
         {
             //skip deleted key
-            if(tb.IsDeleted(begin))
+            if(begin->second.deleteTag_)
             {
                 continue;
             }
@@ -103,9 +101,9 @@ void Entry(int argc, char const *argv[])
                 std::putchar(begin->first[i]);
             }
             std::putchar(':');
-            for (size_t i = 0; i < begin->second.GetSize(); ++i)
+            for (size_t i = 0; i < begin->second.value_.GetSize(); ++i)
             {
-                std::putchar(begin->second[i]);
+                std::putchar(begin->second.value_[i]);
             }
             std::putchar('\n');
         }

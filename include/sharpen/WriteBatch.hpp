@@ -2,9 +2,40 @@
 #ifndef _SHARPEN_WRITEBATCH_HPP
 #define _SHARPEN_WRITEBATCH_HPP
 
+/*
++----------------------+
+| Crc16                | 2 bytes
++----------------------+
+| Number of Operations | varint
++----------------------+
+| Type1                | 1 byte
++----------------------+
+| KeySize1             | varint
++----------------------+
+| Key1                 |
++----------------------+
+| ValueSize1(only Put) | varint
++----------------------+
+| Value1(only Put)     |
++----------------------+
+|        ...           |
++----------------------+
+| TypeN                |
++----------------------+
+| KeySizeN             |
++----------------------+
+| KeyN                 |
++----------------------+
+| ValueSizeN(only Put) |
++----------------------+
+| ValueN(Only Put)     |
++----------------------+
+*/
+
 #include <list>
 
 #include "ByteBuffer.hpp"
+#include "DataCorruptionException.hpp"
 
 namespace sharpen
 {
@@ -20,14 +51,15 @@ namespace sharpen
         struct Action
         {
             ActionType type_;
-            const sharpen::ByteBuffer *key_;
-            sharpen::ByteBuffer *value_;
+            sharpen::ByteBuffer key_;
+            sharpen::ByteBuffer value_;
         };
         
     private:
         
         using Self = sharpen::WriteBatch;
         using Actions = std::list<Action>;
+        using Iterator = typename Actions::iterator;
         using ConstIterator = typename Actions::const_iterator;
 
         Actions actions_;
@@ -49,13 +81,18 @@ namespace sharpen
     
         ~WriteBatch() noexcept = default;
 
-        void Put(const sharpen::ByteBuffer &key,sharpen::ByteBuffer &&value);
+        void Put(sharpen::ByteBuffer key,sharpen::ByteBuffer value);
 
-        void Delete(const sharpen::ByteBuffer &key);
+        void Delete(sharpen::ByteBuffer key);
 
         inline ConstIterator Begin() const noexcept
         {
             return this->actions_.cbegin();
+        }
+
+        inline Iterator Begin() noexcept
+        {
+            return this->actions_.begin();
         }
 
         inline ConstIterator End() const noexcept
@@ -63,9 +100,36 @@ namespace sharpen
             return this->actions_.cend();
         }
 
+        inline Iterator End() noexcept
+        {
+            return this->actions_.end();
+        }
+
         inline void Clear() noexcept
         {
             return this->actions_.clear();
+        }
+
+        void LoadFrom(const char *data,sharpen::Size size);
+
+        void LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset);
+
+        inline void LoadFrom(const sharpen::ByteBuffer &buf)
+        {
+            this->LoadFrom(buf,0);
+        }
+
+        sharpen::Size ComputeSize() const noexcept;
+
+        sharpen::Size UnsafeStoreTo(char *data) const;
+
+        sharpen::Size StoreTo(char *data,sharpen::Size size) const;
+
+        sharpen::Size StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
+
+        inline sharpen::Size StoreTo(sharpen::ByteBuffer &buf) const
+        {
+            return this->StoreTo(buf,0);
         }
     };   
 }
