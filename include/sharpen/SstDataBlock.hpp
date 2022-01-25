@@ -218,6 +218,11 @@ namespace sharpen
         {
             return this->ReverseBegin()->First().GetKey();
         }
+
+        inline void Clear() noexcept
+        {
+            this->groups_.clear();
+        }
     };
 }
 

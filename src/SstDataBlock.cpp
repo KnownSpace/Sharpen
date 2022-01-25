@@ -208,7 +208,9 @@ void sharpen::SstDataBlock::Put(sharpen::ByteBuffer key, sharpen::ByteBuffer val
                 this->groups_.reserve(this->groups_.size() + 1);
                 for (auto i = begin; i != end; ++i)
                 {
-                    group.Put(std::move(i->GetKey()), std::move(i->Value()));
+                    sharpen::ByteBuffer v{std::move(i->Value())};
+                    sharpen::ByteBuffer k{std::move(*i).MoveKey()};
+                    group.Put(std::move(k),std::move(v));
                 }
                 bool succ = group.TryPut(std::move(key), std::move(value));
                 assert(succ);
@@ -304,19 +306,14 @@ void sharpen::SstDataBlock::Combine(sharpen::SstDataBlock block, bool reserveCur
                 block.Put(std::move(key), std::move(value));
             }
         }
-        std::swap(*this, block);
-        return;
     }
-    for (auto begin = block.Begin(), end = block.End(); begin != end; ++begin)
+    else
     {
-        for (auto keyBegin = begin->Begin(), keyEnd = begin->End(); keyBegin != keyEnd; ++keyBegin)
-        {
-            sharpen::ByteBuffer value{std::move(keyBegin->Value())};
-            sharpen::ByteBuffer key{std::move(*keyBegin).MoveKey()};
-            this->Put(std::move(key), std::move(value));
-        }
+        block.Combine(*this,true);
     }
+    *this = std::move(block);
 }
+
 
 sharpen::SstDataBlock sharpen::SstDataBlock::Split()
 {
