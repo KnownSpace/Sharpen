@@ -24,10 +24,16 @@ namespace sharpen
     class SstKeyValueGroup
     {
     private:
+
         using Self = sharpen::SstKeyValueGroup;
         using Pairs = std::vector<sharpen::SstKeyValuePair>;
+    public:
+
         using Iterator = typename Pairs::iterator;
         using ConstIterator = typename Pairs::const_iterator;
+        using ReverseIterator = typename Pairs::reverse_iterator;
+        using ConstReverseIterator = typename Pairs::const_reverse_iterator;
+    private:
     
         Pairs pairs_;
 
@@ -131,6 +137,26 @@ namespace sharpen
         inline Iterator End() noexcept
         {
             return this->pairs_.end();
+        }
+
+        inline ReverseIterator ReverseBegin() noexcept
+        {
+            return this->pairs_.rbegin();
+        }
+
+        inline ConstReverseIterator ReverseBegin() const noexcept
+        {
+            return this->pairs_.rbegin();
+        }
+
+        inline ReverseIterator ReverseEnd() noexcept
+        {
+            return this->pairs_.rend();
+        }
+
+        inline ConstReverseIterator ReverseEnd() const noexcept
+        {
+            return this->pairs_.rend();
         }
 
         inline sharpen::Size GetSize() const noexcept

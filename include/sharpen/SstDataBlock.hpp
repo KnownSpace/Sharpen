@@ -56,16 +56,26 @@ namespace sharpen
     class SstDataBlock
     {
     private:
+
         using Self = SstDataBlock;
         using Groups = std::vector<sharpen::SstKeyValueGroup>;
+    public:
+
         using Iterator = typename Groups::iterator;
         using ConstIterator = typename Groups::const_iterator;
+        using ReverseIterator = typename Groups::reverse_iterator;
+        using ConstReverseIterator = typename Groups::const_reverse_iterator;
+    private:
 
         static constexpr sharpen::Size maxKeyPerGroups_{16};
 
         Groups groups_;
 
-        static bool Comp(const sharpen::SstKeyValueGroup &group,const sharpen::ByteBuffer &key) noexcept;
+        static bool Less(const sharpen::SstKeyValueGroup &group,const sharpen::ByteBuffer &key) noexcept;
+
+        Iterator FindInsertGroup(const sharpen::ByteBuffer &key);
+
+        ConstIterator FindInsertGroup(const sharpen::ByteBuffer &key) const;
     public:
     
         SstDataBlock() = default;
@@ -129,6 +139,26 @@ namespace sharpen
             return this->groups_.end();
         }
 
+        inline ReverseIterator ReverseBegin() noexcept
+        {
+            return this->groups_.rbegin();
+        }
+
+        inline ConstReverseIterator ReverseBegin() const noexcept
+        {
+            return this->groups_.rbegin();
+        }
+
+        inline ReverseIterator ReverseEnd() noexcept
+        {
+            return this->groups_.rend();
+        }
+
+        inline ConstReverseIterator ReverseEnd() const noexcept
+        {
+            return this->groups_.rend();
+        }
+
         inline bool Empty() const noexcept
         {
             return this->groups_.empty();
@@ -171,6 +201,22 @@ namespace sharpen
         inline const sharpen::SstKeyValueGroup &operator[](sharpen::Size index) const
         {
             return this->groups_.at(index);
+        }
+
+        void Combine(sharpen::SstDataBlock block,bool reserveCurrent);
+
+        sharpen::SstDataBlock Split();
+
+        bool Atomic() const noexcept;
+
+        const sharpen::ByteBuffer &FirstKey() const
+        {
+            return this->Begin()->First().GetKey();
+        }
+
+        const sharpen::ByteBuffer &LastKey() const
+        {
+            return this->ReverseBegin()->First().GetKey();
         }
     };
 }

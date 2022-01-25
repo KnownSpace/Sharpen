@@ -89,6 +89,13 @@ namespace sharpen
             return this->key_;
         }
 
+        sharpen::ByteBuffer MoveKey() && noexcept
+        {
+            this->SetSharedKeySize(0);
+            this->SetUniquedKeySize(0);
+            return std::move(this->key_);
+        }
+
         sharpen::ByteBuffer &Value() noexcept
         {
             return this->value_;

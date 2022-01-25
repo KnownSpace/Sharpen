@@ -129,31 +129,40 @@ void Entry()
             sharpen::ByteBuffer buf;
             {
                 sharpen::SstDataBlock block;
-                block.Put(sharpen::ByteBuffer{"akey",4},sharpen::ByteBuffer{"myval",5});
-                block.Put(sharpen::ByteBuffer{"bkey",4},sharpen::ByteBuffer{"myval",5});
-                block.Put(sharpen::ByteBuffer{"abkey",5},sharpen::ByteBuffer{"myval",5});
-                block.Put(sharpen::ByteBuffer{"ckey",4},sharpen::ByteBuffer{"myval",5});
-                assert(block.GetSize() == 3);
-                assert(block[0].GetSize() == 2);
+                block.Put(sharpen::ByteBuffer{"key_a",5},sharpen::ByteBuffer{"myval",5});
+                block.Put(sharpen::ByteBuffer{"key_b",5},sharpen::ByteBuffer{"myval",5});
+                block.Put(sharpen::ByteBuffer{"key_c",5},sharpen::ByteBuffer{"myval",5});
+                block.Put(sharpen::ByteBuffer{"key_d",5},sharpen::ByteBuffer{"myval",5});
+                block.Put(sharpen::ByteBuffer{"key_",4},sharpen::ByteBuffer{"myval",5});
+                block.Put(sharpen::ByteBuffer{"other",5},sharpen::ByteBuffer{"myval",5});
+                assert(block.GetSize() == 2);
+                assert(block[0].GetSize() == 5);
                 assert(block[1].GetSize() == 1);
-                assert(block[2].GetSize() == 1);
-                assert(block[0][0].GetKey() == sharpen::ByteBuffer("akey",4));
-                assert(block[0][1].GetKey() == sharpen::ByteBuffer("abkey",5));
-                assert(block[1][0].GetKey() == sharpen::ByteBuffer("bkey",4));
-                assert(block[2][0].GetKey() == sharpen::ByteBuffer("ckey",4));
+                assert(block[0][0].GetKey() == sharpen::ByteBuffer("key_",4));
+                assert(block[0][1].GetKey() == sharpen::ByteBuffer("key_a",5));
+                assert(block[0][2].GetKey() == sharpen::ByteBuffer("key_b",5));
+                assert(block[0][3].GetKey() == sharpen::ByteBuffer("key_c",5));
+                assert(block[0][4].GetKey() == sharpen::ByteBuffer("key_d",5));
+                assert(block[1][0].GetKey() == sharpen::ByteBuffer("other",5));
                 block.StoreTo(buf);
             }
             {
                 sharpen::SstDataBlock block;
                 block.LoadFrom(buf);
-                assert(block.GetSize() == 3);
-                assert(block[0].GetSize() == 2);
+                assert(block.GetSize() == 2);
+                assert(block[0].GetSize() == 5);
                 assert(block[1].GetSize() == 1);
-                assert(block[2].GetSize() == 1);
-                assert(block[0][0].GetKey() == sharpen::ByteBuffer("akey",4));
-                assert(block[0][1].GetKey() == sharpen::ByteBuffer("abkey",5));
-                assert(block[1][0].GetKey() == sharpen::ByteBuffer("bkey",4));
-                assert(block[2][0].GetKey() == sharpen::ByteBuffer("ckey",4));
+                assert(block[0][0].GetKey() == sharpen::ByteBuffer("key_",4));
+                assert(block[0][1].GetKey() == sharpen::ByteBuffer("key_a",5));
+                assert(block[0][2].GetKey() == sharpen::ByteBuffer("key_b",5));
+                assert(block[0][3].GetKey() == sharpen::ByteBuffer("key_c",5));
+                assert(block[0][4].GetKey() == sharpen::ByteBuffer("key_d",5));
+                assert(block[1][0].GetKey() == sharpen::ByteBuffer("other",5));
+                sharpen::SstDataBlock other{block};
+                other.Put(sharpen::ByteBuffer{"key_a",5},sharpen::ByteBuffer{"val",3});
+                block.Combine(other,false);
+                assert(block[sharpen::ByteBuffer("key_a",5)] == sharpen::ByteBuffer("val",3));
+                other = block.Split();
             }
         }
         std::puts("pass");

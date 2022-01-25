@@ -154,9 +154,9 @@ bool sharpen::SstKeyValueGroup::TryPut(sharpen::ByteBuffer key,sharpen::ByteBuff
             return false;
         }
         //first key
-        if(!sizes.second)
+        if(ite == this->Begin())
         {
-            this->pairs_.emplace(this->pairs_.begin(),0,key.GetSize(),std::move(key),std::move(value));
+            this->pairs_.emplace(ite,0,key.GetSize(),std::move(key),std::move(value));
             //re-compute key sizes
             for (auto begin = sharpen::IteratorForward(this->pairs_.begin(),1); begin != this->pairs_.end(); ++begin)
             {
