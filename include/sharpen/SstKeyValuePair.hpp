@@ -89,7 +89,7 @@ namespace sharpen
             return this->key_;
         }
 
-        sharpen::ByteBuffer MoveKey() && noexcept
+        sharpen::ByteBuffer &&MoveKey() && noexcept
         {
             this->SetSharedKeySize(0);
             this->SetUniquedKeySize(0);
