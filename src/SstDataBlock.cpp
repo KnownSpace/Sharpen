@@ -293,7 +293,7 @@ const sharpen::ByteBuffer &sharpen::SstDataBlock::Get(const sharpen::ByteBuffer 
     return ite->GetValue(key);
 }
 
-void sharpen::SstDataBlock::Combine(sharpen::SstDataBlock block, bool reserveCurrent)
+void sharpen::SstDataBlock::Merge(sharpen::SstDataBlock block, bool reserveCurrent)
 {
     if (reserveCurrent)
     {
@@ -309,7 +309,7 @@ void sharpen::SstDataBlock::Combine(sharpen::SstDataBlock block, bool reserveCur
     }
     else
     {
-        block.Combine(*this,true);
+        block.Merge(*this,true);
     }
     *this = std::move(block);
 }

@@ -40,6 +40,17 @@ namespace sharpen
 
         void Unlock() noexcept;
 
+        inline void unlock() noexcept
+        {
+            this->Unlock();
+        }
+
+        //never use me
+        inline void lock()
+        {
+            this->LockReadAsync();
+        }
+
         ~AsyncReadWriteLock() noexcept = default;
     };
     

@@ -203,7 +203,7 @@ namespace sharpen
             return this->groups_.at(index);
         }
 
-        void Combine(sharpen::SstDataBlock block,bool reserveCurrent);
+        void Merge(sharpen::SstDataBlock block,bool reserveCurrent);
 
         sharpen::SstDataBlock Split();
 
