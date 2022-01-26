@@ -162,7 +162,7 @@ void Entry()
                 other.Put(sharpen::ByteBuffer{"key_a",5},sharpen::ByteBuffer{"val",3});
                 block.Combine(other,false);
                 assert(block[sharpen::ByteBuffer("key_a",5)] == sharpen::ByteBuffer("val",3));
-                assert(block.Atomic());
+                assert(block.IsAtomic());
             }
         }
         std::puts("pass");

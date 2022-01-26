@@ -2,12 +2,6 @@
 #ifndef _SHARPEN_MEMORYTABLE_HPP
 #define _SHARPEN_MEMORYTABLE_HPP
 
-/*
-+-------
-|
-+-----
-*/
-
 #include <stdexcept>
 #include <map>
 #include <cassert>

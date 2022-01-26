@@ -207,7 +207,7 @@ namespace sharpen
 
         sharpen::SstDataBlock Split();
 
-        bool Atomic() const noexcept;
+        bool IsAtomic() const noexcept;
 
         const sharpen::ByteBuffer &FirstKey() const
         {
@@ -223,6 +223,8 @@ namespace sharpen
         {
             this->groups_.clear();
         }
+
+        bool IsOverlapped(const Self &other) const noexcept;
     };
 }
 

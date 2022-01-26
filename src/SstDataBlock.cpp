@@ -332,7 +332,7 @@ sharpen::SstDataBlock sharpen::SstDataBlock::Split()
     return block;
 }
 
-bool sharpen::SstDataBlock::Atomic() const noexcept
+bool sharpen::SstDataBlock::IsAtomic() const noexcept
 {
     sharpen::Size size{this->ComputeKeyCount()/2};
     for (auto begin = this->Begin(), end = this->End(); begin != end; ++begin)
@@ -343,4 +343,21 @@ bool sharpen::SstDataBlock::Atomic() const noexcept
         }
     }
     return false;
+}
+
+bool sharpen::SstDataBlock::IsOverlapped(const Self &other) const noexcept
+{
+    if (this->Empty() || other.Empty())
+    {
+        return false;
+    }
+    if(this->LastKey() < other.FirstKey())
+    {
+        return false;
+    }
+    if(this->FirstKey() > other.LastKey())
+    {
+        return false;
+    }
+    return true;
 }
