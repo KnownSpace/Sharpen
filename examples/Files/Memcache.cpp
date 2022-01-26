@@ -41,7 +41,7 @@ void Entry(int argc, char const *argv[])
         CacheTable tb = BuildTable(dbPath);
         tb.Restore();
         sharpen::ByteBuffer key{argv[2],std::strlen(argv[2])};
-        if(tb.Exist(key))
+        if(tb.Exist(key) == CacheTable::ExistStatus::Exist)
         {
             key = tb.Get(key);
             for (auto begin = key.Begin(),end = key.End(); begin != end; ++begin)
@@ -62,7 +62,7 @@ void Entry(int argc, char const *argv[])
         CacheTable tb = BuildTable(dbPath);
         tb.Restore();
         sharpen::ByteBuffer key{argv[2],std::strlen(argv[2])};
-        if(tb.Exist(key))
+        if(tb.Exist(key) == CacheTable::ExistStatus::Exist)
         {
             tb.Delete(key);
             std::puts("success");
@@ -92,7 +92,7 @@ void Entry(int argc, char const *argv[])
         for (auto begin = tb.Begin(),end = tb.End(); begin != end; ++begin)
         {
             //skip deleted key
-            if(begin->second.deleteTag_)
+            if(begin->second.IsDeleted())
             {
                 continue;
             }
@@ -101,9 +101,9 @@ void Entry(int argc, char const *argv[])
                 std::putchar(begin->first[i]);
             }
             std::putchar(':');
-            for (size_t i = 0; i < begin->second.value_.GetSize(); ++i)
+            for (size_t i = 0; i < begin->second.Value().GetSize(); ++i)
             {
-                std::putchar(begin->second.value_[i]);
+                std::putchar(begin->second.Value()[i]);
             }
             std::putchar('\n');
         }

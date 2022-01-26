@@ -15,9 +15,62 @@
 #include "CompressedPair.hpp"
 #include "MemoryTableConcepts.hpp"
 #include "Noncopyable.hpp"
+#include "Optional.hpp"
 
 namespace sharpen
 {   
+    class MemoryTableItem
+    {
+    private:
+
+        using Self = sharpen::MemoryTableItem;
+
+        sharpen::Optional<sharpen::ByteBuffer> value_;
+    public:
+        MemoryTableItem() = default;
+
+        explicit MemoryTableItem(sharpen::ByteBuffer value)
+            :value_(std::move(value))
+        {}
+    
+        MemoryTableItem(const Self &other) = default;
+    
+        MemoryTableItem(Self &&other) noexcept = default;
+    
+        inline Self &operator=(const Self &other)
+        {
+            Self tmp{other};
+            std::swap(tmp,*this);
+            return *this;
+        }
+    
+        Self &operator=(Self &&other) noexcept = default;
+    
+        ~MemoryTableItem() noexcept = default;
+
+        inline sharpen::ByteBuffer &Value() noexcept
+        {
+            assert(this->value_.Exist());
+            return this->value_.Get();
+        }
+
+        inline const sharpen::ByteBuffer &Value() const noexcept
+        {
+            assert(this->value_.Exist());
+            return this->value_.Get();
+        }
+
+        inline bool IsDeleted() const noexcept
+        {
+            return !this->value_.Exist();
+        }
+
+        void Delete() noexcept
+        {
+            this->value_.Reset();
+        }
+    };
+
     template<typename _Logger,typename _Check = void>
     class InternalMemoryTable;
 
@@ -25,14 +78,8 @@ namespace sharpen
     class InternalMemoryTable<_Logger,sharpen::EnableIf<sharpen::IsMemoryTableLogger<_Logger>::Value>>:public sharpen::Noncopyable
     {
     private:
-        
-        struct StoreItem
-        {
-            sharpen::ByteBuffer value_;
-            bool deleteTag_;
-        };
-
         using Self = sharpen::InternalMemoryTable<_Logger,sharpen::EnableIf<sharpen::IsMemoryTableLogger<_Logger>::Value>>;
+        using StoreItem = sharpen::MemoryTableItem;
         using MapType = std::map<sharpen::ByteBuffer,StoreItem>;
         using ConstIterator = typename MapType::const_iterator;
     
@@ -60,18 +107,19 @@ namespace sharpen
 
         void InternalPut(sharpen::ByteBuffer key,sharpen::ByteBuffer value)
         {
-            StoreItem item;
-            item.value_ = std::move(value);
-            item.deleteTag_ = false;
-            this->Map()[std::move(key)] = std::move(item);
+            this->Map()[std::move(key)] = StoreItem{std::move(value)};
         }
 
-        void InternalDelete(const sharpen::ByteBuffer &key)
+        void InternalDelete(sharpen::ByteBuffer key)
         {
             auto ite = this->Map().find(key);
             if(ite != this->Map().end())
             {
-                ite->second.deleteTag_ = true;
+                ite->second.Delete();
+            }
+            else
+            {
+                this->Map().emplace(std::move(key),StoreItem{});
             }
         }
 
@@ -85,7 +133,7 @@ namespace sharpen
                 }
                 else
                 {
-                    this->InternalDelete(begin->key_);
+                    this->InternalDelete(std::move(begin->key_));
                 }
             }
             batch.Clear();
@@ -106,6 +154,13 @@ namespace sharpen
             }
         }
     public:
+
+        enum class ExistStatus
+        {
+            Exist,
+            Deleted,
+            NotFound
+        };
     
         template<typename ..._Args,typename _Check = decltype(_Logger{std::declval<_Args>()...})>
         explicit InternalMemoryTable(_Args &&...args)
@@ -176,20 +231,28 @@ namespace sharpen
             this->Logger().Remove();
         }
 
-        bool Exist(const sharpen::ByteBuffer &key) const noexcept
+        Self::ExistStatus Exist(const sharpen::ByteBuffer &key) const noexcept
         {
             auto ite = this->Map().find(key);
-            return ite != this->Map().end() && !ite->second.deleteTag_;
+            if(ite == this->Map().end())
+            {
+                return Self::ExistStatus::NotFound;
+            }
+            else if(ite->second.IsDeleted())
+            {
+                return Self::ExistStatus::Deleted;
+            }
+            return Self::ExistStatus::Exist;
         }
 
         sharpen::ByteBuffer &Get(const sharpen::ByteBuffer &key)
         {
             auto &item = this->Map().at(key);
-            if(item.deleteTag_)
+            if(item.IsDeleted())
             {
                 throw std::out_of_range("key doesn't exists");
             }
-            return item.value_;
+            return item.Value();
         }
 
         const sharpen::ByteBuffer &Get(const sharpen::ByteBuffer &key) const
