@@ -10,6 +10,7 @@
 
 #include <stdexcept>
 #include <map>
+#include <cassert>
 
 #include "ByteBuffer.hpp"
 #include "CompressedPair.hpp"
