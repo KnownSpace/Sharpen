@@ -205,6 +205,54 @@ namespace sharpen
 
         void Merge(sharpen::SstDataBlock block,bool reserveCurrent);
 
+        template<typename _Iterator,typename _Check = decltype(std::declval<Self&>() = *std::declval<_Iterator>())>
+        void Merge(_Iterator begin,_Iterator end,bool reserveCurrent)
+        {
+            if(reserveCurrent)
+            {
+                Self block;
+                while (begin != end)
+                {
+                    for (auto groupBegin = begin->Begin(),groupEnd = begin->End(); groupBegin != groupEnd; ++groupEnd)
+                    {
+                        for (auto keyBegin = groupBegin->Begin(),keyEnd = groupEnd->End(); keyBegin != keyEnd; ++keyBegin)
+                        {
+                            sharpen::ByteBuffer value{std::move(keyBegin->Value())};
+                            sharpen::ByteBuffer key{std::move(*keyBegin).MoveKey()};
+                            block.Put(std::move(key), std::move(value)); 
+                        }
+                    }
+                    ++begin;
+                }
+                for (auto groupBegin = this->Begin(),groupEnd = this->End(); groupBegin != groupEnd; ++groupEnd)
+                {
+                    for (auto keyBegin = groupBegin->Begin(),keyEnd = groupEnd->End(); keyBegin != keyEnd; ++keyBegin)
+                    {
+                        sharpen::ByteBuffer value{std::move(keyBegin->Value())};
+                        sharpen::ByteBuffer key{std::move(*keyBegin).MoveKey()};
+                        block.Put(std::move(key), std::move(value)); 
+                    }
+                }
+                *this = std::move(block);
+                return;
+            }
+            Self block{*this};
+            while (begin != end)
+            {
+                for (auto groupBegin = begin->Begin(),groupEnd = begin->End(); groupBegin != groupEnd; ++groupEnd)
+                {
+                    for (auto keyBegin = groupBegin->Begin(),keyEnd = groupEnd->End(); keyBegin != keyEnd; ++keyBegin)
+                    {
+                        sharpen::ByteBuffer value{std::move(keyBegin->Value())};
+                        sharpen::ByteBuffer key{std::move(*keyBegin).MoveKey()};
+                        block.Put(std::move(key), std::move(value)); 
+                    }
+                }
+                ++begin;
+            }
+            *this = std::move(block);
+        }
+
         sharpen::SstDataBlock Split();
 
         bool IsAtomic() const noexcept;

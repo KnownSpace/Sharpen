@@ -234,7 +234,10 @@ void sharpen::SstDataBlock::Put(sharpen::ByteBuffer key, sharpen::ByteBuffer val
         //need to create a new group
         sharpen::SstKeyValueGroup group;
         group.Put(std::move(key), std::move(value));
-        ite = sharpen::IteratorForward(ite, 1);
+        if(group.First().GetKey() > ite->First().GetKey())
+        {
+            ite = sharpen::IteratorForward(ite, 1);
+        }
         if (ite == this->End())
         {
             this->groups_.emplace_back(std::move(group));
@@ -313,7 +316,6 @@ void sharpen::SstDataBlock::Merge(sharpen::SstDataBlock block, bool reserveCurre
     }
     *this = std::move(block);
 }
-
 
 sharpen::SstDataBlock sharpen::SstDataBlock::Split()
 {
