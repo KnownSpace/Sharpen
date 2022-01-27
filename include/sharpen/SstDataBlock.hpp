@@ -77,6 +77,11 @@ namespace sharpen
                 sharpen::ByteBuffer key{kv->GetKey()};
                 block.Put(std::move(key), std::move(value));
             }
+
+            static void Clear(Self &block) noexcept
+            {
+                //do nothing
+            }
         };
 
         template<typename _Iterator>
@@ -88,6 +93,11 @@ namespace sharpen
                 sharpen::ByteBuffer value{std::move(kv->Value())};
                 sharpen::ByteBuffer key{std::move(*kv).MoveKey()};
                 block.Put(std::move(key), std::move(value));
+            }
+
+            static void Clear(Self &block) noexcept
+            {
+                block.Clear();
             }
         };
 
@@ -244,6 +254,7 @@ namespace sharpen
                             Self::MergeHelper<_Iterator>::Merge(block,keyBegin);
                         }
                     }
+                    Self::MergeHelper<_Iterator>::Clear(*begin);
                     ++begin;
                 }
                 for (auto groupBegin = this->Begin(),groupEnd = this->End(); groupBegin != groupEnd; ++groupBegin)
@@ -268,6 +279,7 @@ namespace sharpen
                         Self::MergeHelper<_Iterator>::Merge(block,keyBegin); 
                     }
                 }
+                Self::MergeHelper<_Iterator>::Clear(*begin);
                 ++begin;
             }
             *this = std::move(block);
