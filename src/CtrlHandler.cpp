@@ -16,13 +16,15 @@ BOOL WINAPI sharpen::CtrlHelper::CtrlHandler(DWORD ctrlType)
         {
             (*begin)();
         }
+        return !sharpen::CtrlHelper::onInterrupt_.empty();
     }
     else if (ctrlType == CTRL_CLOSE_EVENT)
     {
         for (auto begin = sharpen::CtrlHelper::onQuite_.begin();begin != sharpen::CtrlHelper::onQuite_.end();++begin)
         {
             (*begin)();
-        } 
+        }
+        return !sharpen::CtrlHelper::onQuite_.empty(); 
     }
     return FALSE;
 }

@@ -46,8 +46,13 @@ void Entry(sharpen::UintPort port)
     std::memset(ip,0,sizeof(ip));
     addr.GetAddrString(ip,sizeof(ip));
     std::printf("now listen on %s:%d\n",ip,addr.GetPort());
+    sharpen::RegisterCtrlHandler(sharpen::CtrlType::Interrupt,[&server]()
+    {
+        server.Stop();
+    });
     std::puts("use ctrl + c to stop");
     server.RunAsync();
+    std::puts("server stop");
     sharpen::CleanupNetSupport();
 }
 

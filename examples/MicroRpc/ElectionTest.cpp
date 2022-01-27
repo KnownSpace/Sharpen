@@ -516,6 +516,7 @@ void Test(TestId id,bool *flag,sharpen::MicroRpcServer **ser)
     *ser = &server;
     std::puts("start server");
     server.RunAsync();
+    std::puts("server stop");
 }
 
 void Entry(TestId id)
@@ -526,7 +527,6 @@ void Entry(TestId id)
     auto future = sharpen::Async(&Test,id,&flag,&ser);
     sharpen::RegisterCtrlHandler(sharpen::CtrlType::Interrupt,[ser,&flag]()
     {
-        std::puts("stop now");
         flag = false;
         ser->Stop();
     });

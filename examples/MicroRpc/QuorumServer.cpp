@@ -50,7 +50,6 @@ void Entry()
     
     sharpen::RegisterCtrlHandler(sharpen::CtrlType::Interrupt,[&servers]() mutable
     {
-        std::printf("stop now\n");
         for (auto begin = servers.begin(),end = servers.end();begin != end;++begin)
         {
             (*begin)->Stop();
@@ -67,6 +66,7 @@ void Entry()
         });
     }
     barrier.WaitAsync();
+    std::puts("application stop");
     sharpen::CleanupNetSupport();
 }
 

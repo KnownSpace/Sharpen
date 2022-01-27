@@ -60,10 +60,10 @@ void Entry()
     });
     sharpen::RegisterCtrlHandler(sharpen::CtrlType::Interrupt,[&server]() mutable
     {
-        std::printf("stop now\n");
         server.Stop();
     });
     server.RunAsync();
+    std::puts("server stop");
     sharpen::CleanupNetSupport();
 }
 
