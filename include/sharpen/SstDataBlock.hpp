@@ -67,6 +67,30 @@ namespace sharpen
         using ConstReverseIterator = typename Groups::const_reverse_iterator;
     private:
 
+        template<typename _Iterator>
+        struct MergeHelper
+        {
+            template<typename _KeyIterator>
+            static void Merge(Self &block,_KeyIterator kv)
+            {
+                sharpen::ByteBuffer value{kv->Value()};
+                sharpen::ByteBuffer key{kv->GetKey()};
+                block.Put(std::move(key), std::move(value));
+            }
+        };
+
+        template<typename _Iterator>
+        struct MergeHelper<std::move_iterator<_Iterator>>
+        {
+            template<typename _KeyIterator>
+            static void Merge(Self &block,_KeyIterator kv)
+            {
+                sharpen::ByteBuffer value{std::move(kv->Value())};
+                sharpen::ByteBuffer key{std::move(*kv).MoveKey()};
+                block.Put(std::move(key), std::move(value));
+            }
+        };
+
         static constexpr sharpen::Size maxKeyPerGroups_{16};
 
         Groups groups_;
@@ -203,34 +227,32 @@ namespace sharpen
             return this->groups_.at(index);
         }
 
-        void Merge(sharpen::SstDataBlock block,bool reserveCurrent);
+        void MergeWith(sharpen::SstDataBlock block,bool reserveCurrent);
 
         template<typename _Iterator,typename _Check = decltype(std::declval<Self&>() = *std::declval<_Iterator>())>
-        void Merge(_Iterator begin,_Iterator end,bool reserveCurrent)
+        void MergeWith(_Iterator begin,_Iterator end,bool reserveCurrent)
         {
             if(reserveCurrent)
             {
                 Self block;
                 while (begin != end)
                 {
-                    for (auto groupBegin = begin->Begin(),groupEnd = begin->End(); groupBegin != groupEnd; ++groupEnd)
+                    for (auto groupBegin = begin->Begin(),groupEnd = begin->End(); groupBegin != groupEnd;++groupBegin)
                     {
-                        for (auto keyBegin = groupBegin->Begin(),keyEnd = groupEnd->End(); keyBegin != keyEnd; ++keyBegin)
+                        for (auto keyBegin = groupBegin->Begin(),keyEnd = groupBegin->End(); keyBegin != keyEnd; ++keyBegin)
                         {
-                            sharpen::ByteBuffer value{std::move(keyBegin->Value())};
-                            sharpen::ByteBuffer key{std::move(*keyBegin).MoveKey()};
-                            block.Put(std::move(key), std::move(value)); 
+                            Self::MergeHelper<_Iterator>::Merge(block,keyBegin);
                         }
                     }
                     ++begin;
                 }
-                for (auto groupBegin = this->Begin(),groupEnd = this->End(); groupBegin != groupEnd; ++groupEnd)
+                for (auto groupBegin = this->Begin(),groupEnd = this->End(); groupBegin != groupEnd; ++groupBegin)
                 {
-                    for (auto keyBegin = groupBegin->Begin(),keyEnd = groupEnd->End(); keyBegin != keyEnd; ++keyBegin)
+                    for (auto keyBegin = groupBegin->Begin(),keyEnd = groupBegin->End(); keyBegin != keyEnd; ++keyBegin)
                     {
-                        sharpen::ByteBuffer value{std::move(keyBegin->Value())};
-                        sharpen::ByteBuffer key{std::move(*keyBegin).MoveKey()};
-                        block.Put(std::move(key), std::move(value)); 
+                        sharpen::ByteBuffer value{keyBegin->Value()};
+                        sharpen::ByteBuffer key{keyBegin->GetKey()};
+                        block.Put(std::move(key), std::move(value));
                     }
                 }
                 *this = std::move(block);
@@ -239,18 +261,31 @@ namespace sharpen
             Self block{*this};
             while (begin != end)
             {
-                for (auto groupBegin = begin->Begin(),groupEnd = begin->End(); groupBegin != groupEnd; ++groupEnd)
+                for (auto groupBegin = begin->Begin(),groupEnd = begin->End(); groupBegin != groupEnd; ++groupBegin)
                 {
-                    for (auto keyBegin = groupBegin->Begin(),keyEnd = groupEnd->End(); keyBegin != keyEnd; ++keyBegin)
+                    for (auto keyBegin = groupBegin->Begin(),keyEnd = groupBegin->End(); keyBegin != keyEnd; ++keyBegin)
                     {
-                        sharpen::ByteBuffer value{std::move(keyBegin->Value())};
-                        sharpen::ByteBuffer key{std::move(*keyBegin).MoveKey()};
-                        block.Put(std::move(key), std::move(value)); 
+                        Self::MergeHelper<_Iterator>::Merge(block,keyBegin); 
                     }
                 }
                 ++begin;
             }
             *this = std::move(block);
+        }
+
+        Self Merge(Self other,bool reserveCurrent) const
+        {
+            Self tmp{*this};
+            tmp.MergeWith(other,reserveCurrent);
+            return tmp;
+        }
+
+        template<typename _Iterator,typename _Check = decltype(std::declval<Self&>() = *std::declval<_Iterator>())>
+        Self Merge(_Iterator begin,_Iterator end,bool reserveCurrent) const
+        {
+            Self tmp{*this};
+            tmp.MergeWith(begin,end,reserveCurrent);
+            return tmp;
         }
 
         sharpen::SstDataBlock Split();

@@ -138,6 +138,11 @@ namespace sharpen
         {
             this->dataBlocks_.clear();
         }
+
+        inline bool Empty() const noexcept
+        {
+            return this->dataBlocks_.empty();
+        }
     };
 }
 
