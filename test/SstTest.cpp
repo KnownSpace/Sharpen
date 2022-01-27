@@ -160,7 +160,7 @@ void Entry()
                 assert(block[1][0].GetKey() == sharpen::ByteBuffer("other",5));
                 sharpen::SstDataBlock other{block};
                 other.Put(sharpen::ByteBuffer{"key_a",5},sharpen::ByteBuffer{"val",3});
-                block.Merge(other,false);
+                block.MergeWith(other,false);
                 assert(block[sharpen::ByteBuffer("key_a",5)] == sharpen::ByteBuffer("val",3));
                 assert(block.IsAtomic());
             }
