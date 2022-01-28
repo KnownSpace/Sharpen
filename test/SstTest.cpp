@@ -133,8 +133,8 @@ void Entry()
                 block.Put(sharpen::ByteBuffer{"key_b",5},sharpen::ByteBuffer{"myval",5});
                 block.Put(sharpen::ByteBuffer{"key_c",5},sharpen::ByteBuffer{"myval",5});
                 block.Put(sharpen::ByteBuffer{"key_d",5},sharpen::ByteBuffer{"myval",5});
-                block.Put(sharpen::ByteBuffer{"key_",4},sharpen::ByteBuffer{"myval",5});
                 block.Put(sharpen::ByteBuffer{"other",5},sharpen::ByteBuffer{"myval",5});
+                block.Put(sharpen::ByteBuffer{"key_",4},sharpen::ByteBuffer{"myval",5});
                 assert(block.GetSize() == 2);
                 assert(block[0].GetSize() == 5);
                 assert(block[1].GetSize() == 1);
