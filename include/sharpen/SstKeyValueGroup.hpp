@@ -103,7 +103,12 @@ namespace sharpen
 
         void Delete(const sharpen::ByteBuffer &key);
 
-        inline ConstIterator Delete(ConstIterator where)
+        inline Iterator Erase(Iterator where)
+        {
+            return this->pairs_.erase(where);
+        }
+
+        inline ConstIterator Erase(ConstIterator where)
         {
             return this->pairs_.erase(where);
         }

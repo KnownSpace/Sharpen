@@ -184,10 +184,18 @@ sharpen::SstDataBlock::ConstIterator sharpen::SstDataBlock::FindInsertGroup(cons
     return ite;
 }
 
-bool sharpen::SstDataBlock::Exist(const sharpen::ByteBuffer &key) const
+sharpen::ExistStatus sharpen::SstDataBlock::Exist(const sharpen::ByteBuffer &key) const
 {
     auto ite = this->FindGroup(key);
-    return ite != this->End() && ite->Exist(key);
+    if(ite->Exist(key))
+    {
+        if (!ite->Get(key).Value().Empty())
+        {
+            return sharpen::ExistStatus::Exist;   
+        }
+        return sharpen::ExistStatus::Deleted;
+    }
+    return sharpen::ExistStatus::NotExist;
 }
 
 void sharpen::SstDataBlock::Put(sharpen::ByteBuffer key, sharpen::ByteBuffer value)
@@ -253,17 +261,9 @@ void sharpen::SstDataBlock::Put(sharpen::ByteBuffer key, sharpen::ByteBuffer val
     this->groups_.emplace_back(std::move(group));
 }
 
-void sharpen::SstDataBlock::Delete(const sharpen::ByteBuffer &key)
+void sharpen::SstDataBlock::Delete(sharpen::ByteBuffer key)
 {
-    auto ite = this->FindGroup(key);
-    if (ite != this->End())
-    {
-        ite->Delete(key);
-        if (ite->Empty())
-        {
-            this->groups_.erase(ite);
-        }
-    }
+    this->Put(std::move(key),sharpen::ByteBuffer{});
 }
 
 sharpen::Size sharpen::SstDataBlock::ComputeKeyCount() const noexcept
@@ -298,23 +298,7 @@ const sharpen::ByteBuffer &sharpen::SstDataBlock::Get(const sharpen::ByteBuffer 
 
 void sharpen::SstDataBlock::MergeWith(sharpen::SstDataBlock block, bool reserveCurrent)
 {
-    if (reserveCurrent)
-    {
-        for (auto begin = this->Begin(), end = this->End(); begin != end; ++begin)
-        {
-            for (auto keyBegin = begin->Begin(), keyEnd = begin->End(); keyBegin < keyEnd; ++keyBegin)
-            {
-                sharpen::ByteBuffer value{std::move(keyBegin->Value())};
-                sharpen::ByteBuffer key{std::move(*keyBegin).MoveKey()};
-                block.Put(std::move(key), std::move(value));
-            }
-        }
-    }
-    else
-    {
-        block.MergeWith(*this,true);
-    }
-    *this = std::move(block);
+    this->MergeWith(std::make_move_iterator(&block),std::make_move_iterator(&block + 1),reserveCurrent);
 }
 
 sharpen::SstDataBlock sharpen::SstDataBlock::Split()
@@ -362,4 +346,18 @@ bool sharpen::SstDataBlock::IsOverlapped(const Self &other) const noexcept
         return false;
     }
     return true;
+}
+
+void sharpen::SstDataBlock::EraseDeleted()
+{
+    for (auto begin = this->Begin(),end = this->End(); begin != end; ++begin)
+    {
+        for (auto keyBegin = begin->Begin(); keyBegin != begin->End(); ++keyBegin)
+        {
+            if(keyBegin->Value().Empty())
+            {
+                keyBegin = begin->Erase(keyBegin);
+            }   
+        }
+    }
 }

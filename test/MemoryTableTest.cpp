@@ -30,7 +30,7 @@ void Entry()
             val = table[key];
             assert(!std::memcmp("val", val.Data(), 3));
             key.Append("123", 3);
-            assert(table.Exist(key) == sharpen::MemoryTable<sharpen::BinaryLogger>::ExistStatus::Deleted);
+            assert(table.Exist(key) == sharpen::ExistStatus::Deleted);
         }
         {
             sharpen::MemoryTable<sharpen::BinaryLogger> table{log, sharpen::EventEngine::GetEngine()};
@@ -40,7 +40,7 @@ void Entry()
             batch.Put(key, std::move(val));
             batch.Delete(key);
             table.Action(batch);
-            assert(table.Exist(key) == sharpen::MemoryTable<sharpen::BinaryLogger>::ExistStatus::Deleted);
+            assert(table.Exist(key) == sharpen::ExistStatus::Deleted);
         }
         {
             sharpen::RemoveFile(log);

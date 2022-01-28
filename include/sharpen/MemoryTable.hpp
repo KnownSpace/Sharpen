@@ -11,6 +11,7 @@
 #include "MemoryTableConcepts.hpp"
 #include "Noncopyable.hpp"
 #include "Optional.hpp"
+#include "ExistStatus.hpp"
 
 namespace sharpen
 {   
@@ -149,13 +150,6 @@ namespace sharpen
             }
         }
     public:
-
-        enum class ExistStatus
-        {
-            Exist,
-            Deleted,
-            NotFound
-        };
     
         template<typename ..._Args,typename _Check = decltype(_Logger{std::declval<_Args>()...})>
         explicit InternalMemoryTable(_Args &&...args)
@@ -226,18 +220,18 @@ namespace sharpen
             this->Logger().Remove();
         }
 
-        Self::ExistStatus Exist(const sharpen::ByteBuffer &key) const noexcept
+        sharpen::ExistStatus Exist(const sharpen::ByteBuffer &key) const noexcept
         {
             auto ite = this->Map().find(key);
             if(ite == this->Map().end())
             {
-                return Self::ExistStatus::NotFound;
+                return sharpen::ExistStatus::NotExist;
             }
             else if(ite->second.IsDeleted())
             {
-                return Self::ExistStatus::Deleted;
+                return sharpen::ExistStatus::Deleted;
             }
-            return Self::ExistStatus::Exist;
+            return sharpen::ExistStatus::Exist;
         }
 
         sharpen::ByteBuffer &Get(const sharpen::ByteBuffer &key)

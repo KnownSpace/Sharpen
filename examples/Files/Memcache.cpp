@@ -41,7 +41,7 @@ void Entry(int argc, char const *argv[])
         CacheTable tb = BuildTable(dbPath);
         tb.Restore();
         sharpen::ByteBuffer key{argv[2],std::strlen(argv[2])};
-        if(tb.Exist(key) == CacheTable::ExistStatus::Exist)
+        if(tb.Exist(key) == sharpen::ExistStatus::Exist)
         {
             key = tb.Get(key);
             for (auto begin = key.Begin(),end = key.End(); begin != end; ++begin)
@@ -62,7 +62,7 @@ void Entry(int argc, char const *argv[])
         CacheTable tb = BuildTable(dbPath);
         tb.Restore();
         sharpen::ByteBuffer key{argv[2],std::strlen(argv[2])};
-        if(tb.Exist(key) == CacheTable::ExistStatus::Exist)
+        if(tb.Exist(key) == sharpen::ExistStatus::Exist)
         {
             tb.Delete(key);
             std::puts("success");

@@ -50,6 +50,7 @@ DataBlock                   about 4*1024 bytes
 #include "SstBlockHandle.hpp"
 #include "SstKeyValueGroup.hpp"
 #include "DataCorruptionException.hpp"
+#include "ExistStatus.hpp"
 
 namespace sharpen
 {
@@ -203,11 +204,11 @@ namespace sharpen
             return this->groups_.size();
         }
 
-        bool Exist(const sharpen::ByteBuffer &key) const;
+        sharpen::ExistStatus Exist(const sharpen::ByteBuffer &key) const;
 
         void Put(sharpen::ByteBuffer key,sharpen::ByteBuffer value);
 
-        void Delete(const sharpen::ByteBuffer &key);
+        void Delete(sharpen::ByteBuffer key);
 
         sharpen::ByteBuffer &Get(const sharpen::ByteBuffer &key);
 
@@ -320,6 +321,8 @@ namespace sharpen
         }
 
         bool IsOverlapped(const Self &other) const noexcept;
+
+        void EraseDeleted();
     };
 }
 
