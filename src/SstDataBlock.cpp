@@ -159,15 +159,11 @@ sharpen::SstDataBlock::ConstIterator sharpen::SstDataBlock::FindGroup(const shar
 sharpen::SstDataBlock::Iterator sharpen::SstDataBlock::FindInsertGroup(const sharpen::ByteBuffer &key)
 {
     auto ite = this->FindGroup(key);
-    if (ite == this->End())
+    if (ite == this->End() && !this->Empty())
     {
-        if (this->Empty())
-        {
-            return ite;
-        }
-        return sharpen::IteratorBackward(ite, 1);
+        ite = sharpen::IteratorBackward(ite, 1);
     }
-    if(ite != this->Begin() && key < ite->First().GetKey() && !ite->CheckKey(key))
+    else if(ite != this->Begin() && key < ite->First().GetKey() && !ite->CheckKey(key))
     {
         ite = sharpen::IteratorBackward(ite,1);
     }
@@ -177,15 +173,11 @@ sharpen::SstDataBlock::Iterator sharpen::SstDataBlock::FindInsertGroup(const sha
 sharpen::SstDataBlock::ConstIterator sharpen::SstDataBlock::FindInsertGroup(const sharpen::ByteBuffer &key) const
 {
     auto ite = this->FindGroup(key);
-    if (ite == this->End())
+    if (ite == this->End() && !this->Empty())
     {
-        if (this->Empty())
-        {
-            return ite;
-        }
-        return sharpen::IteratorBackward(ite, 1);
+        ite = sharpen::IteratorBackward(ite, 1);
     }
-    if(ite != this->Begin() && key < ite->First().GetKey() && !ite->CheckKey(key))
+    else if(ite != this->Begin() && key < ite->First().GetKey() && !ite->CheckKey(key))
     {
         ite = sharpen::IteratorBackward(ite,1);
     }
