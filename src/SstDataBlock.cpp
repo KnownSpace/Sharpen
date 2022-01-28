@@ -167,12 +167,10 @@ sharpen::SstDataBlock::Iterator sharpen::SstDataBlock::FindInsertGroup(const sha
         }
         return sharpen::IteratorBackward(ite, 1);
     }
-
     if(ite != this->Begin() && key < ite->First().GetKey())
     {
         ite = sharpen::IteratorBackward(ite,1);
     }
-
     return ite;
 }
 
@@ -186,6 +184,10 @@ sharpen::SstDataBlock::ConstIterator sharpen::SstDataBlock::FindInsertGroup(cons
             return ite;
         }
         return sharpen::IteratorBackward(ite, 1);
+    }
+    if(ite != this->Begin() && key < ite->First().GetKey())
+    {
+        ite = sharpen::IteratorBackward(ite,1);
     }
     return ite;
 }
