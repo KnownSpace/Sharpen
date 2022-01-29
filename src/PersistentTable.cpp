@@ -3,8 +3,13 @@
 #include <cassert>
 
 sharpen::PersistentTable::PersistentTable(sharpen::FileChannelPtr channel)
+    :PersistentTable(std::move(channel),10)
+{}
+
+sharpen::PersistentTable::PersistentTable(sharpen::FileChannelPtr channel,sharpen::Size bitsOfElements)
     :channel_(std::move(channel))
     ,root_()
+    ,filterBits_(bitsOfElements)
     ,dataCache_(64)
     ,filterCache_(64)
 {
@@ -27,11 +32,7 @@ bool sharpen::PersistentTable::Empty() const
 
 sharpen::SstDataBlock sharpen::PersistentTable::LoadDataBlock(sharpen::Uint64 offset,sharpen::Uint64 size) const
 {
-    sharpen::SstDataBlock block;
-    sharpen::ByteBuffer buf{sharpen::IntCast<sharpen::Size>(size)};
-    this->channel_->ReadAsync(buf,offset);
-    block.LoadFrom(buf);
-    return block;
+    return sharpen::SortedStringTableBuilder::BuildDataBlock<sharpen::SstDataBlock>(this->channel_,offset,size);
 }
 
 sharpen::SstDataBlock sharpen::PersistentTable::LoadDataBlock(const sharpen::ByteBuffer &key) const
@@ -55,14 +56,6 @@ std::shared_ptr<sharpen::SstDataBlock> sharpen::PersistentTable::LoadDataBlockCa
     return block;
 }
 
-sharpen::BloomFilter<sharpen::ByteBuffer> sharpen::PersistentTable::LoadFilter(sharpen::Uint64 offset,sharpen::Uint64 size) const
-{
-    sharpen::ByteBuffer buf{sharpen::IntCast<sharpen::Size>(size)};
-    this->channel_->ReadAsync(buf,offset);
-    sharpen::BloomFilter<sharpen::ByteBuffer> filter{buf.Data(),buf.GetSize(),10};
-    return filter;
-}
-
 sharpen::BloomFilter<sharpen::ByteBuffer> sharpen::PersistentTable::LoadFilter(const sharpen::ByteBuffer &key) const
 {
     auto ite = this->root_.MetaIndexBlock().Find(key);
@@ -70,7 +63,8 @@ sharpen::BloomFilter<sharpen::ByteBuffer> sharpen::PersistentTable::LoadFilter(c
     {
         throw std::invalid_argument("key doen't exist");
     }
-    return this->LoadFilter(ite->Block().offset_,ite->Block().size_);
+    assert(this->filterBits_);
+    return sharpen::SortedStringTableBuilder::BuildFilter(this->channel_,ite->Block().offset_,ite->Block().size_,this->filterBits_);
 }
 
 std::shared_ptr<sharpen::BloomFilter<sharpen::ByteBuffer>> sharpen::PersistentTable::LoadFilterCache(const std::string &cacheKey,sharpen::Uint64 offset,sharpen::Uint64 size) const
