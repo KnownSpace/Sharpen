@@ -215,11 +215,6 @@ namespace sharpen
             this->Logger().Clear();
         }
 
-        void RemoveLogs()
-        {
-            this->Logger().Remove();
-        }
-
         sharpen::ExistStatus Exist(const sharpen::ByteBuffer &key) const noexcept
         {
             auto ite = this->Map().find(key);
@@ -272,6 +267,11 @@ namespace sharpen
         inline ConstIterator End() const noexcept
         {
             return this->Map().end();
+        }
+
+        inline void Clear() noexcept
+        {
+            this->Map().clear();
         }
     };
 

@@ -18,7 +18,9 @@ using CacheTable = sharpen::MemoryTable<sharpen::BinaryLogger>;
 
 CacheTable BuildTable(const char *logPath)
 {
-    return CacheTable{logPath,sharpen::EventEngine::GetEngine()};
+    sharpen::FileChannelPtr channel = sharpen::MakeFileChannel(logPath,sharpen::FileAccessModel::All,sharpen::FileOpenModel::CreateOrOpen);
+    channel->Register(sharpen::EventEngine::GetEngine());
+    return CacheTable{channel};
 }
 
 const char *dbPath = "./binlog";

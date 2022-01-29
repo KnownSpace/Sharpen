@@ -168,7 +168,7 @@ namespace sharpen
             }
             for (sharpen::Size i = 0; i != this->GetSize(); ++i)
             {
-                *data++ = this->space_[i].load();
+                *data++ = static_cast<char>(this->space_[i]);
             }
         }
 

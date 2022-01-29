@@ -348,7 +348,7 @@ bool sharpen::SstDataBlock::IsOverlapped(const Self &other) const noexcept
     return true;
 }
 
-void sharpen::SstDataBlock::EraseDeleted()
+void sharpen::SstDataBlock::EraseDeleted() noexcept
 {
     for (auto begin = this->Begin(),end = this->End(); begin != end; ++begin)
     {

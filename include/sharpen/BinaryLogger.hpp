@@ -31,24 +31,21 @@ namespace sharpen
         using Self = sharpen::BinaryLogger;
     
         sharpen::FileChannelPtr channel_;
-        std::string logName_;
         sharpen::Uint64 offset_;
     public:
-        BinaryLogger(const char *logName,sharpen::EventEngine &engine);
+        BinaryLogger(sharpen::FileChannelPtr channel);
     
         BinaryLogger(Self &&other) noexcept = default;
     
         Self &operator=(Self &&other) noexcept;
     
-        ~BinaryLogger() noexcept;
+        ~BinaryLogger() noexcept = default;
 
         void Log(const sharpen::WriteBatch &batch);
 
         std::list<sharpen::WriteBatch> GetWriteBatchs();
 
         void Clear();
-
-        void Remove();
     };
 }
 

@@ -4,22 +4,11 @@
 #include <sharpen/Varint.hpp>
 #include <sharpen/IntOps.hpp>
 
-sharpen::BinaryLogger::BinaryLogger(const char *logName,sharpen::EventEngine &engine)
-    :channel_(nullptr)
-    ,logName_(logName)
+sharpen::BinaryLogger::BinaryLogger(sharpen::FileChannelPtr channel)
+    :channel_(channel)
     ,offset_(0)
 {
-    this->channel_ = sharpen::MakeFileChannel(logName,sharpen::FileAccessModel::All,sharpen::FileOpenModel::CreateOrOpen);
-    this->channel_->Register(engine);
     this->offset_ = this->channel_->GetFileSize();
-}
-
-sharpen::BinaryLogger::~BinaryLogger() noexcept
-{
-    if(this->channel_)
-    {
-        this->channel_->Close();
-    }
 }
 
 sharpen::BinaryLogger &sharpen::BinaryLogger::operator=(Self &&other) noexcept
@@ -27,17 +16,10 @@ sharpen::BinaryLogger &sharpen::BinaryLogger::operator=(Self &&other) noexcept
     if(this != std::addressof(other))
     {
         this->channel_ = std::move(other.channel_);
-        this->logName_ = std::move(other.logName_);
         this->offset_ = other.offset_;
         other.offset_ = 0;
     }
     return *this;
-}
-
-void sharpen::BinaryLogger::Remove()
-{
-    this->channel_->Close();
-    sharpen::RemoveFile(this->logName_.c_str());   
 }
 
 void sharpen::BinaryLogger::Clear()

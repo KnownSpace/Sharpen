@@ -327,7 +327,7 @@ namespace sharpen
 
         bool IsOverlapped(const Self &other) const noexcept;
 
-        void EraseDeleted();
+        void EraseDeleted() noexcept;
     };
 }
 

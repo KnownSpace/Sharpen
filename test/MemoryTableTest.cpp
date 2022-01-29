@@ -13,9 +13,11 @@ void Entry()
     try
     {
         const char *log = "./binlog.log";
+        sharpen::FileChannelPtr logFile = sharpen::MakeFileChannel(log,sharpen::FileAccessModel::All,sharpen::FileOpenModel::CreateNew);
+        logFile->Register(sharpen::EventEngine::GetEngine());
         std::puts("memory table test begin");
         {
-            sharpen::MemoryTable<sharpen::BinaryLogger> table{log, sharpen::EventEngine::GetEngine()};
+            sharpen::MemoryTable<sharpen::BinaryLogger> table{logFile};
             table.Restore();
             sharpen::ByteBuffer key{"key", 3}, val{"val", 3};
             table.Put(key, val);
@@ -24,7 +26,7 @@ void Entry()
             table.Delete(key);
         }
         {
-            sharpen::MemoryTable<sharpen::BinaryLogger> table{log, sharpen::EventEngine::GetEngine()};
+            sharpen::MemoryTable<sharpen::BinaryLogger> table{logFile};
             table.Restore();
             sharpen::ByteBuffer key{"key", 3}, val;
             val = table[key];
@@ -33,7 +35,7 @@ void Entry()
             assert(table.Exist(key) == sharpen::ExistStatus::Deleted);
         }
         {
-            sharpen::MemoryTable<sharpen::BinaryLogger> table{log, sharpen::EventEngine::GetEngine()};
+            sharpen::MemoryTable<sharpen::BinaryLogger> table{logFile};
             table.Restore();
             sharpen::WriteBatch batch;
             sharpen::ByteBuffer key{"key", 3}, val{"val", 3};
