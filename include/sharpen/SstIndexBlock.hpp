@@ -143,6 +143,26 @@ namespace sharpen
         {
             return this->dataBlocks_.empty();
         }
+
+        inline sharpen::Size GetSize() const noexcept
+        {
+            return this->dataBlocks_.size();
+        }
+
+        inline void Reserve(sharpen::Size size)
+        {
+            this->dataBlocks_.reserve(this->GetSize() + size);
+        }
+
+        inline sharpen::SstBlockHandle &operator[](sharpen::Size index)
+        {
+            return this->dataBlocks_.at(index);
+        }
+
+        inline const sharpen::SstBlockHandle &operator[](sharpen::Size index) const
+        {
+            return this->dataBlocks_.at(index);
+        }
     };
 }
 
