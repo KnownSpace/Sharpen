@@ -25,6 +25,10 @@ namespace sharpen
 
         static constexpr sharpen::Size blockSize_{4*1024};
 
+        static constexpr sharpen::Size dataCacheSize_{32};
+
+        static constexpr sharpen::Size filterCacheSize_{32};
+
         void LoadRoot();
 
         sharpen::SstDataBlock LoadDataBlock(sharpen::Uint64 offset,sharpen::Uint64 size) const;
@@ -48,8 +52,8 @@ namespace sharpen
             :channel_(std::move(channel))
             ,root_()
             ,filterBits_(bitsOfElements)
-            ,dataCache_(64)
-            ,filterCache_(64)
+            ,dataCache_(dataCacheSize_)
+            ,filterCache_(filterCacheSize_)
         {
             sharpen::Uint64 size = this->channel_->GetFileSize();
             if(size)
