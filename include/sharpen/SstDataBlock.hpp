@@ -100,6 +100,11 @@ namespace sharpen
             {
                 block.Clear();
             }
+
+            static void Clear(Self &&block) noexcept
+            {
+                block.Clear();
+            }
         };
 
         static constexpr sharpen::Size maxKeyPerGroups_{16};
