@@ -53,11 +53,6 @@ namespace sharpen
         //the channel must be supported by selector
         void Bind(WeakChannelPtr channel);
         
-        sharpen::ISelector &GetSelector() const noexcept
-        {
-            return *this->selector_;
-        }
-        
         //queue a task to event loop
         //the task will be executed in next loop
         //if this thread own the loop
@@ -82,6 +77,12 @@ namespace sharpen
         static sharpen::FiberPtr GetLocalFiber() noexcept;
 
         bool IsWaiting() const noexcept;
+
+        //get selector pointer
+        inline ISelector *GetSelectorPtr() const noexcept
+        {
+            return this->selector_.get();
+        }
     };
 }
 
