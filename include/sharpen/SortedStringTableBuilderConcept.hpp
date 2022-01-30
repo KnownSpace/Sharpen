@@ -48,7 +48,8 @@ namespace sharpen
                                                         ,std::declval<sharpen::Size&>() /*writed size*/ = std::declval<const _Block&>().StoreTo(nullptr /*buf*/,0 /*size*/)
                                                         ,std::declval<sharpen::Size&>() /*writed size*/ = std::declval<const _Block&>().StoreTo(std::declval<sharpen::ByteBuffer&>() /*buf*/,0 /*offset*/)
                                                         ,std::declval<sharpen::Size&>() /*writed size*/ = std::declval<const _Block&>().StoreTo(std::declval<sharpen::ByteBuffer&>())
-                                                        ,std::declval<bool&>() = std::declval<const _Block&>().IsAtomic());
+                                                        ,std::declval<bool&>() = std::declval<const _Block&>().IsAtomic()
+                                                        ,std::declval<sharpen::Size&>() = std::declval<const _Block&>().GetSize());
 
     template<typename _Block>
     using IsSstDataBlock = sharpen::IsMatches<sharpen::InternalIsSstDataBlock,_Block>;

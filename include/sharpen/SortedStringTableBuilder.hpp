@@ -13,10 +13,10 @@ namespace sharpen
     {
     private:
         template<typename _Iterator>
-        struct Convertor
+        struct Helper
         {
             template<typename _Block>
-            static void Convert(_Block &block,_Iterator ite)
+            static void PutWalKv(_Block &block,_Iterator ite)
             {
                 if(!ite->second.IsDeleted())
                 {
@@ -30,10 +30,10 @@ namespace sharpen
         };
 
         template<typename _Iterator>
-        struct Convertor<std::move_iterator<_Iterator>>
+        struct Helper<std::move_iterator<_Iterator>>
         {
             template<typename _Block>
-            static void Convert(_Block &block,std::move_iterator<_Iterator> ite)
+            static void PutWalKv(_Block &block,std::move_iterator<_Iterator> ite)
             {
                 if(!ite->second.IsDeleted())
                 {
@@ -45,6 +45,25 @@ namespace sharpen
                 }
             }
         };
+
+        template<typename _Block,typename _Check = sharpen::EnableIf<sharpen::IsSstDataBlock<_Block>::Value>>
+        bool GetKv(_Block &block,sharpen::Size &groupIndex,sharpen::Size &keyIndex,sharpen::ByteBuffer &key,sharpen::ByteBuffer &value)
+        {
+            while (groupIndex != block.GetSize())
+            {
+                auto &group = *sharpen::IteratorForward(block.Begin(),groupIndex);
+                while (keyIndex != group.GetSize())
+                {
+                    auto &kv = *sharpen::IteratorForward(group.Begin(),keyIndex);
+                    key = kv->GetKey();
+                    value = kv->Value();
+                    ++keyIndex;
+                    return true;
+                }
+                ++groupIndex;
+            }
+            return false;
+        }
 
         using Self = sharpen::SortedStringTableBuilder;
     public:
@@ -92,7 +111,7 @@ namespace sharpen
                 }
                 blockSize += begin->first.GetSize();
                 blockSize += begin->second.Value().GetSize();
-                Self::Convertor<_Iterator>::Convert(blocks.back(),begin);
+                Self::Helper<_Iterator>::PutWalKv(blocks.back(),begin);
                 ++begin;
             }
             if(filterBits)
@@ -172,39 +191,59 @@ namespace sharpen
             return root;
         }
 
-        template<typename _Block,typename _Iterator>
+        //template<typename _Block,typename _Iterator>
+        template<typename _Iterator>
         static sharpen::SortedStringTable BuildTable(sharpen::FileChannelPtr channel,sharpen::FileChannelPtr leftChannel,_Iterator leftBegin,_Iterator leftEnd,sharpen::FileChannelPtr rightChannel,_Iterator rightBegin,_Iterator rightEnd,sharpen::Size filterBits,bool eraseDeleted)
         {
+            using _Block = sharpen::SstDataBlock;
             sharpen::SortedStringTable root;
             _Block block;
             sharpen::Size blockSize{0};
             sharpen::Optional<_Block> left;
             sharpen::Optional<_Block> right;
             //load first data block
-            sharpen::Size leftGroup{0};
-            sharpen::Size leftKey{0};
-            sharpen::Size rightGroup{0};
-            sharpen::Size rightKey{0};
+            sharpen::Size leftGroupIndex{0};
+            sharpen::Size leftKeyIndex{0};
+            sharpen::ByteBuffer leftKey;
+            sharpen::ByteBuffer leftVaue;
+            sharpen::Size rightGroupIndex{0};
+            sharpen::Size rightKeyIndex{0};
+            sharpen::ByteBuffer rightKey;
+            sharpen::ByteBuffer rightValue;
             do
             {
+                //init blocks
                 if(!left.Exist() && leftBegin != leftEnd)
                 {
-                    leftGroup = 0;
-                    leftKey = 0;
-                    left.Construct(Self::BuildDataBlock(leftChannel,leftBegin->Block().offset_,leftBegin->Block().offset_));
+                    leftGroupIndex = 0;
+                    leftKeyIndex = 0;
+                    left.Construct(Self::BuildDataBlock<_Block>(leftChannel,leftBegin->Block().offset_,leftBegin->Block().offset_));
                     ++leftBegin;
                 }
                 if(!right.Exist() && rightBegin != rightEnd)
                 {
-                    rightGroup = 0;
-                    rightKey = 0;
-                    right.Construct(Self::BuildDataBlock(rightChannel,rightBegin->Block().offset_,rightBegin->Block().offset_));
+                    rightGroupIndex = 0;
+                    rightKeyIndex = 0;
+                    right.Construct(Self::BuildDataBlock<_Block>(rightChannel,rightBegin->Block().offset_,rightBegin->Block().offset_));
                     ++rightBegin;
                 }
                 //for each every keys
+                leftKey.Clear();
+                leftVaue.Clear();
+                rightKey.Clear();
+                rightValue.Clear();
                 if(left.Exist())
                 {
-
+                    auto &group = left.Get()[leftGroupIndex];
+                    if(leftKeyIndex == group.GetSize())
+                    {
+                        leftKeyIndex = 0;
+                    }
+                    if(leftGroupIndex == left.Get().GetSize())
+                    {
+                        leftGroupIndex = 0;
+                        left.Reset();
+                    }
                 }
                 if(right.Exist())
                 {
