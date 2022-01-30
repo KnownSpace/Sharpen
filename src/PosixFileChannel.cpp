@@ -65,7 +65,7 @@ void sharpen::PosixFileChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSi
     {
         throw std::logic_error("should register to a loop first");
     }
-    this->DoRead(buf,bufSize,offset,&future);
+    this->loop_->RunInLoop(std::bind(&Self::DoRead,this,buf,bufSize,offset,&future));
 }
         
 void sharpen::PosixFileChannel::ReadAsync(sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)

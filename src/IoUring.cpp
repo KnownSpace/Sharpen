@@ -3,7 +3,6 @@
 #ifdef SHARPEN_HAS_IOURING
 
 #include <cstring>
-#include <stdatomic.h>
 #include <atomic>
 
 #include <sys/mman.h>
