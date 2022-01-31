@@ -49,6 +49,7 @@ add_executable(dnstest "${PROJECT_SOURCE_DIR}/test/DnsTest.cpp")
 add_executable(cachetest "${PROJECT_SOURCE_DIR}/test/CacheTest.cpp")
 #persistence test
 add_executable(persistencetest "${PROJECT_SOURCE_DIR}/test/PersistenceTest.cpp")
+#io_uring test
 
 #link
 target_link_libraries(awaittest sharpen)

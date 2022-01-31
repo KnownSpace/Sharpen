@@ -33,7 +33,7 @@ namespace sharpen
         
         void Write(EventFdValue value);
         
-        sharpen::FileHandle GetHandle() noexcept;
+        sharpen::FileHandle GetHandle() const noexcept;
     };
 }
 

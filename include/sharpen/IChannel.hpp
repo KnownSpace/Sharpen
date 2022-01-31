@@ -47,7 +47,7 @@ namespace sharpen
         //close channel
         void Close() noexcept;
         
-        sharpen::FileHandle GetHandle() noexcept
+        sharpen::FileHandle GetHandle() const noexcept
         {
             return this->handle_;
         }

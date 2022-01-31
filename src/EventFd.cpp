@@ -53,7 +53,7 @@ void sharpen::EventFd::Write(sharpen::EventFd::EventFdValue value)
     }
 }
 
-sharpen::FileHandle sharpen::EventFd::GetHandle() noexcept
+sharpen::FileHandle sharpen::EventFd::GetHandle() const noexcept
 {
     return this->handle_;
 }
