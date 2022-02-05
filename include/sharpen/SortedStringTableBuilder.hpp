@@ -6,6 +6,7 @@
 #include "BloomFilter.hpp"
 #include "SortedStringTable.hpp"
 #include "SortedStringTableBuilderConcept.hpp"
+#include "SstVector.hpp"
 
 namespace sharpen
 {
@@ -27,6 +28,12 @@ namespace sharpen
                     block.Delete(ite->first);
                 }
             }
+
+            static void AssignKv(_Iterator ite,sharpen::ByteBuffer &key,sharpen::ByteBuffer &value)
+            {
+                key = ite->first;
+                value = ite->second.Value();
+            }
         };
 
         template<typename _Iterator>
@@ -44,28 +51,70 @@ namespace sharpen
                     block.Delete(std::move(ite->first));
                 }
             }
+
+            static void AssignKv(std::move_iterator<_Iterator> ite,sharpen::ByteBuffer &key,sharpen::ByteBuffer &value)
+            {
+                key = std::move(ite->first);
+                value = std::move(ite->second.Value());
+            }
         };
 
         template<typename _Block,typename _Check = sharpen::EnableIf<sharpen::IsSstDataBlock<_Block>::Value>>
-        bool GetKv(_Block &block,sharpen::Size &groupIndex,sharpen::Size &keyIndex,sharpen::ByteBuffer &key,sharpen::ByteBuffer &value)
+        static bool GetKv(_Block &block,sharpen::Size &groupIndex,sharpen::Size &keyIndex,sharpen::ByteBuffer &key,sharpen::ByteBuffer &value)
         {
             while (groupIndex != block.GetSize())
             {
                 auto &group = *sharpen::IteratorForward(block.Begin(),groupIndex);
                 while (keyIndex != group.GetSize())
                 {
-                    auto &kv = *sharpen::IteratorForward(group.Begin(),keyIndex);
-                    key = kv->GetKey();
-                    value = kv->Value();
+                    auto kv = sharpen::IteratorForward(group.Begin(),keyIndex);
+                    key = std::move(*kv).MoveKey();
+                    value = std::move(kv->Value());
                     ++keyIndex;
                     return true;
                 }
+                keyIndex = 0;
                 ++groupIndex;
             }
             return false;
         }
 
+        template<typename _Block>
+        static void WriteBlock(const _Block &block,sharpen::FileChannelPtr channel,sharpen::SortedStringTable &root,sharpen::ByteBuffer &buf,sharpen::Size filterBits,std::vector<sharpen::BloomFilter<sharpen::ByteBuffer>> &filters,sharpen::Uint64 &offset)
+        {
+            if(filterBits)
+            {
+                filters.emplace_back(Self::BuildFilter(block,filterBits));
+                root.MetaIndexBlock().Put(block.LastKey(),sharpen::SstBlock{});
+            }
+            sharpen::ByteBuffer lastKey{block.LastKey()};
+            try
+            {
+                sharpen::Size size{block.StoreTo(buf)};
+                channel->WriteAsync(buf.Data(),size,offset);
+                sharpen::SstBlock pointer;
+                pointer.offset_ = offset;
+                pointer.size_ = size;
+                root.IndexBlock().Put(std::move(lastKey),pointer);
+                offset += size;
+            }
+            catch(const std::exception&)
+            {
+                channel->Truncate();
+                throw;
+            }
+        }
+
+        static void WriteFilters(sharpen::FileChannelPtr channel,const std::vector<sharpen::BloomFilter<sharpen::ByteBuffer>> &filters,sharpen::SortedStringTable &root,sharpen::Uint64 &offset,sharpen::ByteBuffer &buf);
+
         using Self = sharpen::SortedStringTableBuilder;
+
+        struct TableState
+        {
+            sharpen::Size blockIndex_;
+            sharpen::Size groupIndex_;
+            sharpen::Size keyIndex_;  
+        };
     public:
         template<typename _Block,typename _Check = sharpen::EnableIf<sharpen::IsSstDataBlock<_Block>::Value>>
         static sharpen::BloomFilter<sharpen::ByteBuffer> BuildFilter(const _Block &block,sharpen::Size bits)
@@ -82,7 +131,7 @@ namespace sharpen
         }
 
         template<typename _Block,typename _Check = sharpen::EnableIf<sharpen::IsSstDataBlock<_Block>::Value>>
-        static _Block BuildDataBlock(sharpen::FileChannelPtr channel,sharpen::Uint64 offset,sharpen::Uint64 size)
+        static _Block LoadDataBlock(sharpen::FileChannelPtr channel,sharpen::Uint64 offset,sharpen::Uint64 size)
         {
             _Block block;
             sharpen::ByteBuffer buf{sharpen::IntCast<sharpen::Size>(size)};
@@ -91,11 +140,12 @@ namespace sharpen
             return block;
         }
 
-        static sharpen::BloomFilter<sharpen::ByteBuffer> BuildFilter(sharpen::FileChannelPtr channel,sharpen::Uint64 offset,sharpen::Uint64 size,sharpen::Size bitsOfElements);
+        static sharpen::BloomFilter<sharpen::ByteBuffer> LoadFilter(sharpen::FileChannelPtr channel,sharpen::Uint64 offset,sharpen::Uint64 size,sharpen::Size bitsOfElements);
 
         template<typename _Block,typename _Iterator,typename _Check = sharpen::EnableIf<sharpen::IsWalKeyValuePairIterator<_Iterator>::Value && sharpen::IsSstDataBlock<_Block>::Value>>
-        static sharpen::SortedStringTable BuildTable(sharpen::FileChannelPtr channel,sharpen::Size blockBytes,_Iterator begin,_Iterator end,sharpen::Size filterBits,bool eraseDeleted)
+        static sharpen::SortedStringTable DumpWalToTable(sharpen::FileChannelPtr channel,sharpen::Size blockBytes,_Iterator begin,_Iterator end,sharpen::Size filterBits,bool eraseDeleted)
         {
+            assert(blockBytes);
             //build data block
             sharpen::SortedStringTable root;
             std::vector<_Block> blocks;
@@ -129,58 +179,12 @@ namespace sharpen
                 {
                     blockBegin->EraseDeleted();
                 }
-                //build filter
-                if(filterBits)
-                {
-                    sharpen::ByteBuffer lastKey{blockBegin->LastKey()};
-                    filters.emplace_back(Self::BuildFilter(*blockBegin,filterBits));
-                    sharpen::SstBlock block{};
-                    root.MetaIndexBlock().Put(std::move(lastKey),block);
-                }
-                sharpen::ByteBuffer lastKey{blockBegin->LastKey()};
-                //write data blocks
-                sharpen::Size size{blockBegin->StoreTo(buf)};
-                try
-                {
-                    channel->WriteAsync(buf.Data(),size,offset);
-                }
-                catch(const std::exception&)
-                {
-                    channel->Truncate();
-                    throw;
-                }
-                //build index block
-                sharpen::SstBlock block;
-                block.offset_ = offset;
-                block.size_ = size;
-                offset += size;
-                root.IndexBlock().Put(std::move(lastKey),block);
+                Self::WriteBlock(*blockBegin,channel,root,buf,filterBits,filters,offset);
             }
             sharpen::Size index{0};
             if(filterBits)
             {
-                for (auto blockBegin = blocks.begin(),blockEnd = blocks.end(); blockBegin != blockEnd; ++blockBegin)
-                {
-                    sharpen::ByteBuffer lastKey{blockBegin->LastKey()};
-                    //write filter
-                    sharpen::Size size{filters[index].GetSize()};
-                    buf.ExtendTo(size);
-                    filters[index].CopyTo(buf.Data(),buf.GetSize());
-                    try
-                    {
-                        channel->WriteAsync(buf.Data(),size,offset);
-                    }
-                    catch(const std::exception&)
-                    {
-                        channel->Truncate();
-                        throw;
-                    }
-                    //build meta index
-                    root.MetaIndexBlock()[index].Block().offset_ = offset;
-                    root.MetaIndexBlock()[index].Block().size_ = size;
-                    offset += size;
-                    index++;
-                }
+                Self::WriteFilters(channel,filters,root,offset,buf);
                 filters.clear();
                 filters.shrink_to_fit();
             }
@@ -191,66 +195,308 @@ namespace sharpen
             return root;
         }
 
-        //template<typename _Block,typename _Iterator>
-        template<typename _Iterator>
-        static sharpen::SortedStringTable BuildTable(sharpen::FileChannelPtr channel,sharpen::FileChannelPtr leftChannel,_Iterator leftBegin,_Iterator leftEnd,sharpen::FileChannelPtr rightChannel,_Iterator rightBegin,_Iterator rightEnd,sharpen::Size filterBits,bool eraseDeleted)
+        template<typename _Block,typename _Iterator,typename _Check = decltype(std::declval<sharpen::SstVector&>() = *std::declval<_Iterator>()),typename _CheckBlock = sharpen::EnableIf<sharpen::IsSstDataBlock<_Block>::Value>>
+        static sharpen::SortedStringTable CombineTables(sharpen::FileChannelPtr channel,_Iterator begin,_Iterator end,sharpen::Size filterBits,bool eraseDeleted)
         {
-            using _Block = sharpen::SstDataBlock;
             sharpen::SortedStringTable root;
-            _Block block;
-            sharpen::Size blockSize{0};
-            sharpen::Optional<_Block> left;
-            sharpen::Optional<_Block> right;
-            //load first data block
-            sharpen::Size leftGroupIndex{0};
-            sharpen::Size leftKeyIndex{0};
-            sharpen::ByteBuffer leftKey;
-            sharpen::ByteBuffer leftVaue;
-            sharpen::Size rightGroupIndex{0};
-            sharpen::Size rightKeyIndex{0};
-            sharpen::ByteBuffer rightKey;
-            sharpen::ByteBuffer rightValue;
-            do
+            std::vector<sharpen::BloomFilter<sharpen::ByteBuffer>> filters;
+            sharpen::Size blockNum{0};
+            for (auto ite = begin; ite != end; ++ite)
             {
-                //init blocks
-                if(!left.Exist() && leftBegin != leftEnd)
+                blockNum += begin->Root().IndexBlock().GetSize();   
+            }
+            root.IndexBlock().Reserve(blockNum);
+            if(filterBits)
+            {
+                filters.reserve(blockNum);
+                root.MetaIndexBlock().Reserve(blockNum);
+            }
+            sharpen::ByteBuffer buf;
+            sharpen::Uint64 offset{0};
+            while (begin != end)
+            {
+                auto &table = begin->Root();
+                for (auto blockBegin = table.IndexBlock().Begin(),blockEnd = table.IndexBlock().End(); blockBegin != blockEnd; ++blockBegin)
                 {
-                    leftGroupIndex = 0;
-                    leftKeyIndex = 0;
-                    left.Construct(Self::BuildDataBlock<_Block>(leftChannel,leftBegin->Block().offset_,leftBegin->Block().offset_));
-                    ++leftBegin;
-                }
-                if(!right.Exist() && rightBegin != rightEnd)
-                {
-                    rightGroupIndex = 0;
-                    rightKeyIndex = 0;
-                    right.Construct(Self::BuildDataBlock<_Block>(rightChannel,rightBegin->Block().offset_,rightBegin->Block().offset_));
-                    ++rightBegin;
-                }
-                //for each every keys
-                leftKey.Clear();
-                leftVaue.Clear();
-                rightKey.Clear();
-                rightValue.Clear();
-                if(left.Exist())
-                {
-                    auto &group = left.Get()[leftGroupIndex];
-                    if(leftKeyIndex == group.GetSize())
+                    _Block block{Self::LoadDataBlock<_Block>(begin->Channel(),blockBegin->Block().offset_,blockBegin->Block().size_)};
+                    if(eraseDeleted)
                     {
-                        leftKeyIndex = 0;
+                        block.EraseDeleted();
                     }
-                    if(leftGroupIndex == left.Get().GetSize())
-                    {
-                        leftGroupIndex = 0;
-                        left.Reset();
-                    }
-                }
-                if(right.Exist())
-                {
-
+                    Self::WriteBlock(block,channel,root,buf,filterBits,filters,offset);
                 }
             }
-            while (left.Exist() || right.Exist());
+            //write filter blocks
+            if(filterBits)
+            {
+                Self::WriteFilters(channel,filters,root,offset,buf);
+            }
+            root.StoreTo(channel,offset);
+            return root;
+        }
+
+        template<typename _Block,typename _Iterator,typename _Check = decltype(std::declval<sharpen::SstVector&>() = *std::declval<_Iterator>()),typename _CheckBlock = sharpen::EnableIf<sharpen::IsSstDataBlock<_Block>::Value>>
+        static sharpen::SortedStringTable MergeTables(sharpen::FileChannelPtr channel,sharpen::Size blockBytes,_Iterator begin,_Iterator end,sharpen::Size filterBits,bool eraseDeleted)
+        {
+            assert(blockBytes != 0);
+            sharpen::SortedStringTable root;
+            sharpen::Size len{sharpen::GetRangeSize(begin,end)};
+            if(len)
+            {
+                std::vector<_Block> blocks{len};
+                std::vector<sharpen::ByteBuffer> keys{len};
+                std::vector<sharpen::ByteBuffer> values{len};
+                sharpen::ByteBuffer *selectedKey{nullptr};
+                sharpen::ByteBuffer *selectedValue{nullptr};
+                _Block block;
+                sharpen::ByteBuffer buf;
+                std::vector<Self::TableState> states{len};
+                for (auto stateBegin = states.begin(),stateEnd = states.end(); stateBegin != stateEnd; ++stateBegin)
+                {
+                    std::memset(&(*stateBegin),0,sizeof(*stateBegin));
+                }
+                sharpen::Size blockNum{0};
+                for (auto ite = begin; ite != end; ++ite)
+                {
+                    sharpen::SstVector &vec = *ite;
+                    blockNum += vec.Root().IndexBlock().GetSize();
+                }
+                root.IndexBlock().Reserve(blockNum);
+                std::vector<sharpen::BloomFilter<sharpen::ByteBuffer>> filters;
+                if(filterBits)
+                {
+                    root.MetaIndexBlock().Reserve(blockNum);
+                    filters.reserve(blockNum);
+                }
+                sharpen::Size blockSize{0};
+                sharpen::Uint64 offset{0};
+                bool flag{true};
+                while (flag)
+                {
+                    for (sharpen::Size i = 0; i != len;)
+                    {
+                        if(!keys[i].Empty())
+                        {
+                            ++i;
+                            continue;
+                        }
+                        sharpen::SstVector &vec = *sharpen::IteratorForward(begin,i);
+                        if (blocks[i].Empty())
+                        {
+                            sharpen::Size index{states[i].blockIndex_};
+                            if(index != vec.Root().IndexBlock().GetSize())
+                            {
+                                auto pointer = vec.Root().IndexBlock()[index].Block();
+                                blocks[i] = Self::LoadDataBlock<_Block>(vec.Channel(),pointer.offset_,pointer.size_);
+                                states[i].groupIndex_ = 0;
+                                states[i].keyIndex_ = 0;
+                                states[i].blockIndex_ += 1;
+                            }  
+                        }
+                        if(!blocks[i].Empty())
+                        {
+                            if(!Self::GetKv(blocks[i],states[i].groupIndex_,states[i].keyIndex_,keys[i],values[i]))
+                            {
+                                blocks[i].Clear();
+                                continue;
+                            }
+                        }
+                        ++i;
+                    }
+                    //select key and value
+                    for (sharpen::Size i = 0; i != len; ++i)
+                    {
+                        if(!keys[i].Empty() && (!selectedKey || keys[i] <= *selectedKey))
+                        {
+                            assert(!keys[i].Empty());
+                            if(selectedKey && keys[i] == *selectedKey)
+                            {
+                                selectedKey->Clear();
+                            }
+                            selectedKey = &keys[i];
+                            selectedValue = &values[i];
+                        }
+                    }
+                    //move k,v to block
+                    if(selectedKey)
+                    {
+                        if(block.Contain(*selectedKey))
+                        {
+                            selectedKey->Clear();
+                            selectedKey = nullptr;
+                            continue;
+                        }
+                        blockSize += selectedKey->GetSize();
+                        blockSize += selectedValue->GetSize();
+                        assert(!selectedKey->Empty());
+                        block.Put(std::move(*selectedKey),std::move(*selectedValue));
+                        selectedKey = nullptr;
+                    }
+                    else
+                    {
+                        flag = false;
+                    }
+                    if(blockSize >= blockBytes || !flag)
+                    {
+                        if(eraseDeleted)
+                        {
+                            block.EraseDeleted();
+                        }
+                        Self::WriteBlock(block,channel,root,buf,filterBits,filters,offset);
+                        blockSize = 0;
+                        block.Clear();
+                    }
+                }
+                if(filterBits)
+                {
+                    Self::WriteFilters(channel,filters,root,offset,buf);
+                }
+                root.StoreTo(channel,offset);
+            }
+            return root;
+        }
+
+        template<typename _Block,typename _Iterator,typename _WalIterator,typename _Check = decltype(std::declval<sharpen::SstVector&>() = *std::declval<_Iterator>()),typename _CheckBlock = sharpen::EnableIf<sharpen::IsSstDataBlock<_Block>::Value>,typename _CheckWalIterator = sharpen::EnableIf<sharpen::IsWalKeyValuePairIterator<_Iterator>::Value && sharpen::IsSstDataBlock<_Block>::Value>>
+        static sharpen::SortedStringTable MergeTables(sharpen::FileChannelPtr channel,sharpen::Size blockBytes,_Iterator begin,_Iterator end,_WalIterator walBegin,_WalIterator walEnd,sharpen::Size filterBits,bool eraseDeleted)
+        {
+            assert(blockBytes != 0);
+            sharpen::SortedStringTable root;
+            sharpen::Size len{sharpen::GetRangeSize(begin,end)};
+            if(len)
+            {
+                //init table blocks
+                sharpen::Size reserveLen{len};
+                if(walBegin != walEnd)
+                {
+                    reserveLen += 1;
+                }
+                std::vector<_Block> blocks{reserveLen};
+                std::vector<sharpen::ByteBuffer> keys{reserveLen};
+                std::vector<sharpen::ByteBuffer> values{reserveLen};
+                sharpen::ByteBuffer *selectedKey{nullptr};
+                sharpen::ByteBuffer *selectedValue{nullptr};
+                _Block block;
+                sharpen::ByteBuffer buf;
+                std::vector<Self::TableState> states{len};
+                //init block states
+                for (auto stateBegin = states.begin(),stateEnd = states.end(); stateBegin != stateEnd; ++stateBegin)
+                {
+                    std::memset(&(*stateBegin),0,sizeof(*stateBegin));
+                }
+                //compute blocks count
+                sharpen::Size blockNum{0};
+                for (auto ite = begin; ite != end; ++ite)
+                {
+                    sharpen::SstVector &vec = *ite;
+                    blockNum += vec.Root().IndexBlock().GetSize();
+                }
+                if(walBegin != walEnd)
+                {
+                    blockNum += 1;    
+                }
+                root.IndexBlock().Reserve(blockNum);
+                std::vector<sharpen::BloomFilter<sharpen::ByteBuffer>> filters;
+                if(filterBits)
+                {
+                    root.MetaIndexBlock().Reserve(blockNum);
+                    filters.reserve(blockNum);
+                }
+                sharpen::Size blockSize{0};
+                sharpen::Uint64 offset{0};
+                bool flag{true};
+                while (flag)
+                {
+                    //load key and value from tables
+                    for (sharpen::Size i = 0; i != len;)
+                    {
+                        if(!keys[i].Empty())
+                        {
+                            ++i;
+                            continue;
+                        }
+                        sharpen::SstVector &vec = *sharpen::IteratorForward(begin,i);
+                        if (blocks[i].Empty())
+                        {
+                            sharpen::Size index{states[i].blockIndex_};
+                            if(index != vec.Root().IndexBlock().GetSize())
+                            {
+                                auto pointer = vec.Root().IndexBlock()[index].Block();
+                                blocks[i] = Self::LoadDataBlock<_Block>(vec.Channel(),pointer.offset_,pointer.size_);
+                                states[i].groupIndex_ = 0;
+                                states[i].keyIndex_ = 0;
+                                states[i].blockIndex_ += 1;
+                            }  
+                        }
+                        if(!blocks[i].Empty())
+                        {
+                            if(!Self::GetKv(blocks[i],states[i].groupIndex_,states[i].keyIndex_,keys[i],values[i]))
+                            {
+                                blocks[i].Clear();
+                                continue;
+                            }
+                        }
+                        ++i;
+                    }
+                    //load key and value from wal
+                    if(walBegin != walEnd && keys.back().Empty())
+                    {
+                        Self::Helper<_WalIterator>::AssignKv(walBegin,keys.back(),values.back());
+                        ++walBegin;
+                    }
+                    //select key and value
+                    for (sharpen::Size i = 0,count = keys.size(); i != count; ++i)
+                    {
+                        if(!keys[i].Empty() && (!selectedKey || keys[i] <= *selectedKey))
+                        {
+                            assert(!keys[i].Empty());
+                            if(keys[i] == *selectedKey)
+                            {
+                                selectedKey->Clear();
+                            }
+                            selectedKey = &keys[i];
+                            selectedValue = &values[i];
+                        }
+                    }
+                    //move key and value to block
+                    if(selectedKey)
+                    {
+                        if(block.Contain(*selectedKey))
+                        {
+                            selectedKey->Clear();
+                            selectedKey = nullptr;
+                            continue;
+                        }
+                        blockSize += selectedKey->GetSize();
+                        blockSize += selectedValue->GetSize();
+                        assert(!selectedKey->Empty());
+                        block.Put(std::move(*selectedKey),std::move(*selectedValue));
+                        selectedKey = nullptr;
+                    }
+                    else
+                    {
+                        flag = false;
+                    }
+                    if(blockSize >= blockBytes || !flag)
+                    {
+                        if(eraseDeleted)
+                        {
+                            block.EraseDeleted();
+                        }
+                        Self::WriteBlock(block,channel,root,buf,filterBits,filters,offset);
+                        blockSize = 0;
+                        block.Clear();
+                    }
+                }
+                if(filterBits)
+                {
+                    Self::WriteFilters(channel,filters,root,offset,buf);
+                }
+                root.StoreTo(channel,offset);
+            }
+            else if(walBegin != walEnd)
+            {
+                return Self::DumpWalToTable<_Block>(std::move(channel),blockBytes,walBegin,walEnd,filterBits,eraseDeleted);
+            }
             return root;
         }
     };

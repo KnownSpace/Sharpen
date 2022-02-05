@@ -328,6 +328,11 @@ namespace sharpen
         bool IsOverlapped(const Self &other) const noexcept;
 
         void EraseDeleted() noexcept;
+
+        inline bool Contain(const sharpen::ByteBuffer &key) const noexcept
+        {
+            return this->Exist(key) != sharpen::ExistStatus::NotExist;
+        }
     };
 }
 

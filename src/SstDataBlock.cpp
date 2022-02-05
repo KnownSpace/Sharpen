@@ -187,7 +187,7 @@ sharpen::SstDataBlock::ConstIterator sharpen::SstDataBlock::FindInsertGroup(cons
 sharpen::ExistStatus sharpen::SstDataBlock::Exist(const sharpen::ByteBuffer &key) const
 {
     auto ite = this->FindGroup(key);
-    if(ite->Exist(key))
+    if(ite != this->End() && ite->Exist(key))
     {
         if (!ite->Get(key).Value().Empty())
         {

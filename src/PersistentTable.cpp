@@ -3,15 +3,19 @@
 #include <cassert>
 
 sharpen::PersistentTable::PersistentTable(sharpen::FileChannelPtr channel)
-    :PersistentTable(std::move(channel),10)
+    :PersistentTable(std::move(channel),Self::dataCacheSize_,Self::filterCacheSize_)
 {}
 
-sharpen::PersistentTable::PersistentTable(sharpen::FileChannelPtr channel,sharpen::Size bitsOfElements)
+sharpen::PersistentTable::PersistentTable(sharpen::FileChannelPtr channel,sharpen::Size dataCache,sharpen::Size filterCache)
+    :PersistentTable(std::move(channel),10,dataCache,filterCache)
+{}
+
+sharpen::PersistentTable::PersistentTable(sharpen::FileChannelPtr channel,sharpen::Size bitsOfElements,sharpen::Size dataCache,sharpen::Size filterCache)
     :channel_(std::move(channel))
     ,root_()
     ,filterBits_(bitsOfElements)
-    ,dataCache_(64)
-    ,filterCache_(64)
+    ,dataCache_(dataCache)
+    ,filterCache_(bitsOfElements != 0 ? filterCache:0)
 {
     this->LoadRoot();
 }
@@ -32,7 +36,7 @@ bool sharpen::PersistentTable::Empty() const
 
 sharpen::SstDataBlock sharpen::PersistentTable::LoadDataBlock(sharpen::Uint64 offset,sharpen::Uint64 size) const
 {
-    return sharpen::SortedStringTableBuilder::BuildDataBlock<sharpen::SstDataBlock>(this->channel_,offset,size);
+    return sharpen::SortedStringTableBuilder::LoadDataBlock<sharpen::SstDataBlock>(this->channel_,offset,size);
 }
 
 sharpen::SstDataBlock sharpen::PersistentTable::LoadDataBlock(const sharpen::ByteBuffer &key) const
@@ -64,7 +68,7 @@ sharpen::BloomFilter<sharpen::ByteBuffer> sharpen::PersistentTable::LoadFilter(c
         throw std::invalid_argument("key doen't exist");
     }
     assert(this->filterBits_);
-    return sharpen::SortedStringTableBuilder::BuildFilter(this->channel_,ite->Block().offset_,ite->Block().size_,this->filterBits_);
+    return sharpen::SortedStringTableBuilder::LoadFilter(this->channel_,ite->Block().offset_,ite->Block().size_,this->filterBits_);
 }
 
 std::shared_ptr<sharpen::BloomFilter<sharpen::ByteBuffer>> sharpen::PersistentTable::LoadFilterCache(const std::string &cacheKey,sharpen::Uint64 offset,sharpen::Uint64 size) const
@@ -147,4 +151,17 @@ sharpen::Optional<sharpen::ByteBuffer> sharpen::PersistentTable::TryQuery(const 
         return sharpen::EmptyOpt;
     }
     return block->Get(key);
+}
+
+sharpen::PersistentTable &sharpen::PersistentTable::operator=(Self &&other) noexcept
+{
+    if(this != std::addressof(other))
+    {
+        this->channel_ = std::move(other.channel_);
+        this->root_ = std::move(other.root_);
+        this->filterBits_ = other.filterBits_;
+        this->dataCache_ = std::move(other.dataCache_);
+        this->filterCache_ = std::move(other.filterCache_);
+    }
+    return *this;
 }

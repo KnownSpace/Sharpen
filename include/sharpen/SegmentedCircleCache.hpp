@@ -8,7 +8,7 @@
 namespace sharpen
 {
     template<typename _T>
-    class SegmentedCircleCache:public sharpen::Noncopyable,public sharpen::Nonmovable
+    class SegmentedCircleCache:public sharpen::Noncopyable
     {
     private:
         using Self = sharpen::SegmentedCircleCache<_T>;
@@ -26,12 +26,15 @@ namespace sharpen
 
         void Release() noexcept
         {
-            for (sharpen::Size i = 0; i != this->size_; ++i)
+            if(this->caches_)
             {
-                this->caches_[i].~CircleCache<_T>();   
+                for (sharpen::Size i = 0; i != this->size_; ++i)
+                {
+                    this->caches_[i].~CircleCache<_T>();   
+                }
+                this->size_ = 0;
+                this->caches_ = nullptr;
             }
-            this->size_ = 0;
-            this->caches_ = nullptr;
         }
     public:
         explicit SegmentedCircleCache(sharpen::Size cacheSize)
@@ -61,10 +64,28 @@ namespace sharpen
                 }
             }
         }
+
+        SegmentedCircleCache(Self &&other) noexcept
+            :caches_(other.caches_)
+            ,size_(other.size_)
+        {
+            other.caches_ = nullptr;
+        }
     
         ~SegmentedCircleCache() noexcept
         {
             this->Release();
+        }
+
+        Self &operator=(Self &&other) noexcept
+        {
+            if(this != std::addressof(other))
+            {
+                this->Release();
+                this->caches_ = other.caches_;
+                this->size_ = other.size_;
+            }
+            return *this;
         }
 
         inline sharpen::Size GetSize() const noexcept
@@ -75,6 +96,7 @@ namespace sharpen
         inline std::shared_ptr<_T> Get(const std::string &key) const noexcept
         {
             assert(!key.empty());
+            assert(this->caches_);
             return this->caches_[this->HashKey(key)].Get(key);
         }
 
@@ -82,6 +104,7 @@ namespace sharpen
         inline std::shared_ptr<_T> GetOrEmplace(const std::string &key, _Args &&...args)
         {
             assert(!key.empty());
+            assert(this->caches_);
             return this->caches_[this->HashKey(key)].GetOrEmplace(key,std::forward<_Args>(args)...);
         }
     };
