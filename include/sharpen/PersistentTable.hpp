@@ -30,10 +30,6 @@ namespace sharpen
 
         void LoadRoot();
 
-        sharpen::SstDataBlock LoadDataBlock(sharpen::Uint64 offset,sharpen::Uint64 size) const;
-
-        sharpen::SstDataBlock LoadDataBlock(const sharpen::ByteBuffer &key) const;
-
         std::shared_ptr<sharpen::SstDataBlock> LoadDataBlockCache(const std::string &cacheKey,sharpen::Uint64 offset,sharpen::Uint64 size) const;
 
         sharpen::BloomFilter<sharpen::ByteBuffer> LoadFilter(const sharpen::ByteBuffer &key) const;
@@ -120,6 +116,10 @@ namespace sharpen
         Self &operator=(Self &&other) noexcept;
 
         sharpen::ExistStatus Exist(const sharpen::ByteBuffer &key) const;
+
+        sharpen::SstDataBlock LoadDataBlock(sharpen::Uint64 offset,sharpen::Uint64 size) const;
+
+        sharpen::SstDataBlock LoadDataBlock(const sharpen::ByteBuffer &key) const;
 
         std::shared_ptr<const sharpen::SstDataBlock> QueryDataBlock(const sharpen::ByteBuffer &key) const;
 
