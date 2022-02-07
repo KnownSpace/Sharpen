@@ -38,10 +38,38 @@ namespace sharpen
             std::shared_ptr<_T> result{nullptr};
             for (auto begin = this->buf_.begin(), end = this->buf_.end(); begin != end; ++begin)
             {
-                if ((*begin).cacheObj_ && (*begin).key_ == key)
+                if (begin->cacheObj_ && begin->key_ == key)
                 {
-                    result = (*begin).cacheObj_;
+                    result = begin->cacheObj_;
                     break;
+                }
+            }
+            return result;
+        }
+
+        template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
+        std::shared_ptr<_T> UnlockedGet(_Iterator keyBegin,_Iterator keyEnd) const noexcept
+        {
+            std::shared_ptr<_T> result{nullptr};
+            for (auto begin = this->buf_.begin(), end = this->buf_.end(); begin != end; ++begin)
+            {
+                if (begin->cacheObj_)
+                {
+                    bool match{true};
+                    sharpen::Size index{0};
+                    for (auto ite = keyBegin; ite != keyEnd; ++ite,++index)
+                    {
+                        if(*ite != begin->key_[index])
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+                    if(match)
+                    {
+                        result = begin->cacheObj_;
+                        break;
+                    }
                 }
             }
             return result;
@@ -65,16 +93,22 @@ namespace sharpen
         template <typename... _Args,typename _Check = decltype(new _T{std::declval<_Args>()...})>
         inline std::shared_ptr<_T> GetOrEmplace(const std::string &key, _Args &&...args)
         {
-            assert(!key.empty());
+            return this->GetOrEmplace(key.begin(),key.end(),std::forward<_Args>(args)...);
+        }
+
+        template <typename _Iterator,typename... _Args,typename _Check = decltype(new _T{std::declval<_Args>()...},static_cast<char>(0) == *std::declval<_Iterator>())>
+        inline std::shared_ptr<_T> GetOrEmplace(_Iterator begin,_Iterator end, _Args &&...args)
+        {
+            assert(begin != end);
             std::shared_ptr<_T> result{nullptr};
             {
                 std::unique_lock<Lock> lock(this->lock_);
-                result = this->UnlockedGet(key);
-                if (!result)
+                result = this->UnlockedGet(begin,end);
+                if(!result)
                 {
                     result = std::make_shared<_T>(std::forward<_Args>(args)...);
                     CacheItem item;
-                    item.key_ = key;
+                    item.key_.assign(begin,end);
                     item.cacheObj_ = result;
                     this->buf_[this->next_++ % this->buf_.size()] = std::move(item);
                 }
@@ -83,11 +117,18 @@ namespace sharpen
             return result;
         }
 
+
         std::shared_ptr<_T> Get(const std::string &key) const noexcept
         {
-            assert(!key.empty());
+            return this->Get(key.begin(),key.end());
+        }
+
+        template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
+        std::shared_ptr<_T> Get(_Iterator begin,_Iterator end) const noexcept
+        {
+            assert(begin != end);
             std::unique_lock<Lock> lock(this->lock_);
-            return this->UnlockedGet(key);
+            return this->UnlockedGet(begin,end);
         }
     };
 }

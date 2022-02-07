@@ -244,28 +244,12 @@ bool sharpen::Base64Decode(char *dst,sharpen::Size dstSize,const char *src,sharp
 
 sharpen::Size sharpen::BufferHash32(const char *data,sharpen::Size size) noexcept
 {
-    constexpr sharpen::Size offsetBasis = 0x811c9dc5;
-    constexpr sharpen::Size prime = 0x01000193;
-    sharpen::Size hash = offsetBasis;
-    for (auto begin = data,end = data + size; begin != end; ++begin)
-    {
-        hash ^= *begin;
-        hash *= prime;
-    }
-    return hash;
+    return sharpen::BufferHash32(data,data + size);
 } 
 
 sharpen::Uint64 sharpen::BufferHash64(const char *data,sharpen::Size size) noexcept
 {
-    constexpr sharpen::Uint64 offsetBasis = 0xcbf29ce484222325;
-    constexpr sharpen::Uint64 prime = 0x00000100000001B3;
-    sharpen::Uint64 hash = offsetBasis;
-    for (auto begin = data,end = data + size; begin != end; ++begin)
-    {
-        hash ^= *begin;
-        hash *= prime;
-    }
-    return hash;
+    return sharpen::BufferHash64(data,data + size);
 }
 
 sharpen::Int32 sharpen::BufferCompare(const char *leftBuf,sharpen::Size leftSize,const char *rightBuf,sharpen::Size rightSize) noexcept

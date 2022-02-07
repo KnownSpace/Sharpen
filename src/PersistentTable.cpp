@@ -49,13 +49,13 @@ sharpen::SstDataBlock sharpen::PersistentTable::LoadDataBlock(const sharpen::Byt
     return this->LoadDataBlock(ite->Block().offset_,ite->Block().size_);
 }
 
-std::shared_ptr<sharpen::SstDataBlock> sharpen::PersistentTable::LoadDataBlockCache(const std::string &cacheKey,sharpen::Uint64 offset,sharpen::Uint64 size) const
+std::shared_ptr<sharpen::SstDataBlock> sharpen::PersistentTable::LoadDataBlockCache(const sharpen::ByteBuffer &cacheKey,sharpen::Uint64 offset,sharpen::Uint64 size) const
 {
-    std::shared_ptr<sharpen::SstDataBlock> block{this->dataCache_.Get(cacheKey)};
+    std::shared_ptr<sharpen::SstDataBlock> block{this->dataCache_.Get(cacheKey.Begin(),cacheKey.End())};
     if(!block)
     {
         block = std::make_shared<sharpen::SstDataBlock>(this->LoadDataBlock(offset,size));
-        block = this->dataCache_.GetOrEmplace(cacheKey,std::move(*block));
+        block = this->dataCache_.GetOrEmplace(cacheKey.Begin(),cacheKey.End(),std::move(*block));
     }
     return block;
 }
@@ -71,14 +71,14 @@ sharpen::BloomFilter<sharpen::ByteBuffer> sharpen::PersistentTable::LoadFilter(c
     return sharpen::SortedStringTableBuilder::LoadFilter(this->channel_,ite->Block().offset_,ite->Block().size_,this->filterBits_);
 }
 
-std::shared_ptr<sharpen::BloomFilter<sharpen::ByteBuffer>> sharpen::PersistentTable::LoadFilterCache(const std::string &cacheKey,sharpen::Uint64 offset,sharpen::Uint64 size) const
+std::shared_ptr<sharpen::BloomFilter<sharpen::ByteBuffer>> sharpen::PersistentTable::LoadFilterCache(const sharpen::ByteBuffer &cacheKey,sharpen::Uint64 offset,sharpen::Uint64 size) const
 {
-    std::shared_ptr<sharpen::BloomFilter<sharpen::ByteBuffer>> filter{this->filterCache_.Get(cacheKey)};
+    std::shared_ptr<sharpen::BloomFilter<sharpen::ByteBuffer>> filter{this->filterCache_.Get(cacheKey.Begin(),cacheKey.End())};
     if(!filter)
     {
         sharpen::ByteBuffer buf{sharpen::IntCast<sharpen::Size>(size)};
         this->channel_->ReadAsync(buf,offset);
-        filter = this->filterCache_.GetOrEmplace(cacheKey,buf.Data(),buf.GetSize(),static_cast<sharpen::Size>(10));
+        filter = this->filterCache_.GetOrEmplace(cacheKey.Begin(),cacheKey.End(),buf.Data(),buf.GetSize(),static_cast<sharpen::Size>(10));
     }
     return filter;
 }
@@ -91,8 +91,8 @@ sharpen::ExistStatus sharpen::PersistentTable::Exist(const sharpen::ByteBuffer &
         return sharpen::ExistStatus::NotExist;
     }
     std::shared_ptr<sharpen::BloomFilter<sharpen::ByteBuffer>> filter{nullptr};
-    std::string cacheKey{filterIte->GetKey().Data(),filterIte->GetKey().GetSize()};
-    filter = this->LoadFilterCache(cacheKey,filterIte->Block().offset_,filterIte->Block().size_);
+    const sharpen::ByteBuffer *cacheKey = &filterIte->GetKey();
+    filter = this->LoadFilterCache(*cacheKey,filterIte->Block().offset_,filterIte->Block().size_);
     if(!filter->Containe(key))
     {
         return sharpen::ExistStatus::NotExist;
@@ -103,8 +103,8 @@ sharpen::ExistStatus sharpen::PersistentTable::Exist(const sharpen::ByteBuffer &
         return sharpen::ExistStatus::NotExist;
     }
     std::shared_ptr<sharpen::SstDataBlock> block{nullptr};
-    cacheKey.assign(blockIte->GetKey().Data(),blockIte->GetKey().GetSize());
-    block = this->LoadDataBlockCache(cacheKey,blockIte->Block().offset_,blockIte->Block().size_);
+    cacheKey = &blockIte->GetKey();
+    block = this->LoadDataBlockCache(*cacheKey,blockIte->Block().offset_,blockIte->Block().size_);
     return block->Exist(key);
 }
 
@@ -116,8 +116,8 @@ std::shared_ptr<const sharpen::SstDataBlock> sharpen::PersistentTable::QueryData
         return nullptr;
     }
     std::shared_ptr<sharpen::BloomFilter<sharpen::ByteBuffer>> filter{nullptr};
-    std::string cacheKey{filterIte->GetKey().Data(),filterIte->GetKey().GetSize()};
-    filter = this->LoadFilterCache(cacheKey,filterIte->Block().offset_,filterIte->Block().size_);
+    const sharpen::ByteBuffer *cacheKey = &filterIte->GetKey();
+    filter = this->LoadFilterCache(*cacheKey,filterIte->Block().offset_,filterIte->Block().size_);
     if(!filter->Containe(key))
     {
         return nullptr;
@@ -128,8 +128,8 @@ std::shared_ptr<const sharpen::SstDataBlock> sharpen::PersistentTable::QueryData
         return nullptr;
     }
     std::shared_ptr<sharpen::SstDataBlock> block{nullptr};
-    cacheKey.assign(blockIte->GetKey().Data(),blockIte->GetKey().GetSize());
-    block = this->LoadDataBlockCache(cacheKey,blockIte->Block().offset_,blockIte->Block().size_);
+    cacheKey = &blockIte->GetKey();
+    block = this->LoadDataBlockCache(*cacheKey,blockIte->Block().offset_,blockIte->Block().size_);
     return block;
 }
 

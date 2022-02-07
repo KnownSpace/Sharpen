@@ -20,7 +20,13 @@ namespace sharpen
 
         inline sharpen::Size HashKey(const std::string &key) const noexcept
         {
-            sharpen::Size hash{sharpen::BufferHash32(key.data(),key.size())};
+            return Self::HashKey(key.begin(),key.end());
+        }
+
+        template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
+        inline sharpen::Size HashKey(_Iterator begin,_Iterator end) const noexcept
+        {
+            sharpen::Size hash{sharpen::BufferHash32(begin,end)};
             return hash % this->size_;
         }
 
@@ -100,12 +106,28 @@ namespace sharpen
             return this->caches_[this->HashKey(key)].Get(key);
         }
 
+        template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
+        std::shared_ptr<_T> Get(_Iterator begin,_Iterator end) const noexcept
+        {
+            assert(begin != end);
+            assert(this->caches_);
+            return this->caches_[this->HashKey(begin,end)].Get(begin,end);
+        }
+
         template <typename... _Args,typename _Check = decltype(new _T{std::declval<_Args>()...})>
         inline std::shared_ptr<_T> GetOrEmplace(const std::string &key, _Args &&...args)
         {
             assert(!key.empty());
             assert(this->caches_);
             return this->caches_[this->HashKey(key)].GetOrEmplace(key,std::forward<_Args>(args)...);
+        }
+
+        template <typename _Iterator,typename... _Args,typename _Check = decltype(new _T{std::declval<_Args>()...},static_cast<char>(0) == *std::declval<_Iterator>())>
+        inline std::shared_ptr<_T> GetOrEmplace(_Iterator begin,_Iterator end, _Args &&...args)
+        {
+            assert(begin != end);
+            assert(this->caches_);
+            return this->caches_[this->HashKey(begin,end)].GetOrEmplace(begin,end,std::forward<_Args>(args)...);
         }
     };
 }
