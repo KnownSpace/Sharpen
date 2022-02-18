@@ -45,7 +45,7 @@ namespace sharpen
 
     inline int IoUringRegister(unsigned int fd,unsigned int opcode,void *arg,unsigned int nr_args)
     {
-        return (int)syscall(fd,opcode,arg,nr_args);
+        return (int)syscall(SYS_io_uring_register,fd,opcode,arg,nr_args);
     }
 
     struct IoSring 
