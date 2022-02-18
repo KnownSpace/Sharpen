@@ -7,6 +7,7 @@
 #include <cstring>
 #include <sharpen/ProcessInfo.hpp>
 #include <sharpen/HttpServer.hpp>
+#include <sharpen/Converter.hpp>
 
 class TestHttpServer:public sharpen::HttpServer
 {
@@ -54,7 +55,11 @@ int main(int argc, char const *argv[])
     sharpen::Size num = std::thread::hardware_concurrency();
     if (argc > 1)
     {
-        num = std::atoi(argv[1]);
+        num = sharpen::Atoi<sharpen::Size>(argv[1],std::strlen(argv[1]));
+        if(num == 0)
+        {
+            return -1;
+        }
     }
     sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine(num);
     engine.Startup(&Entry);
