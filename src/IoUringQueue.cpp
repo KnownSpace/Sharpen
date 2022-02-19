@@ -9,7 +9,11 @@
 #include <sharpen/IteratorOps.hpp>
 
 sharpen::IoUringQueue::IoUringQueue()
-    :eventFd_(0,O_CLOEXEC | O_NONBLOCK)
+    :IoUringQueue(false)
+{}
+
+sharpen::IoUringQueue::IoUringQueue(bool blockEventFd)
+    :eventFd_(0,O_CLOEXEC | (blockEventFd ? 0:O_NONBLOCK))
     ,ring_(Self::queueLength,0,0,0,0)
     ,compQueue_()
     ,subQueue_()

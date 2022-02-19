@@ -30,6 +30,8 @@ namespace sharpen
     public:
     
         IoUringQueue();
+
+        explicit IoUringQueue(bool blockEventFd);
     
         ~IoUringQueue() noexcept;
 
