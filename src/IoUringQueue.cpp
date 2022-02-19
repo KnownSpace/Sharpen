@@ -84,4 +84,23 @@ sharpen::Size sharpen::IoUringQueue::GetCompletionStatus(Cqe *cqes,sharpen::Size
     this->Submit();
     return index;
 }
+
+bool sharpen::TestIoUring() noexcept
+{
+    static int status{0};
+    if(!status)
+    {
+        try
+        {
+            sharpen::IoUringQueue queue;
+            status = 1;
+            static_cast<void>(queue);
+        }
+        catch(const std::exception&)
+        {
+            status = 2;   
+        }
+    }
+    return status == 1;
+}
 #endif

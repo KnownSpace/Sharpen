@@ -50,6 +50,9 @@ add_executable(cachetest "${PROJECT_SOURCE_DIR}/test/CacheTest.cpp")
 #persistence test
 add_executable(persistencetest "${PROJECT_SOURCE_DIR}/test/PersistenceTest.cpp")
 #io_uring test
+if(UNIX)
+    add_executable(iouringtest "${PROJECT_SOURCE_DIR}/test/IoUringTest.cpp")
+endif()
 
 #link
 target_link_libraries(awaittest sharpen)
@@ -75,6 +78,9 @@ target_link_libraries(ssttest sharpen)
 target_link_libraries(dnstest sharpen)
 target_link_libraries(cachetest sharpen)
 target_link_libraries(persistencetest sharpen)
+if(UNIX)
+    target_link_libraries(iouringtest sharpen)
+endif()
 #test
 enable_testing()
 #tests
@@ -106,3 +112,6 @@ add_test(NAME sst_test COMMAND "./ssttest${extname}")
 add_test(NAME dns_test COMMAND "./dnstest${extname}")
 add_test(NAME cache_test COMMAND "./cachetest${extname}")
 add_test(NAME persistence_test COMMAND "./persistencetest${extname}")
+if(UNIX)
+    add_test(NAME iouring_test COMMAND "./iouringtest${extname}")
+endif()

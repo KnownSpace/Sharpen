@@ -13,6 +13,8 @@
 #include "EventFd.hpp"
 #include "Nonmovable.hpp"
 #include "EpollEventStruct.hpp"
+#include "IoUringQueue.hpp"
+#include "IoUringStruct.hpp"
 
 namespace sharpen
 {
@@ -24,14 +26,17 @@ namespace sharpen
         using EventBuf = std::vector<sharpen::Epoll::Event>;
 
         sharpen::Epoll epoll_;
-    
         sharpen::EventFd eventfd_;
-
         Map map_;
-
         EventBuf eventBuf_;
+#ifdef SHARPEN_HAS_IOURING
+        std::unique_ptr<sharpen::IoUringQueue> ring_;
+        std::vector<io_uring_cqe> cqes_;
+#endif
 
         static bool CheckChannel(sharpen::ChannelPtr channel) noexcept;
+
+        void RegisterInternalEventFd(int fd);
     public:
 
         EpollSelector();
@@ -43,6 +48,10 @@ namespace sharpen
         virtual void Notify() override;
         
         virtual void Resister(WeakChannelPtr channel) override;
+
+#ifdef SHARPEN_HAS_IOURING
+        sharpen::IoUringQueue *GetRing() const noexcept;
+#endif
     };
 }
 

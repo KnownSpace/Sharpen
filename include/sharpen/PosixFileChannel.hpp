@@ -9,6 +9,11 @@
 #define SHARPEN_HAS_POSIXFILE
 
 #include "IFileChannel.hpp"
+#include "IoUringQueue.hpp"
+
+#ifdef SHARPEN_HAS_IOURING
+#include "IoUringStruct.hpp"
+#endif
 
 namespace sharpen
 {
@@ -18,9 +23,20 @@ namespace sharpen
         using MyBase = sharpen::IFileChannel;
         using Self = sharpen::PosixFileChannel;
 
+        void NormalRead(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> *future);
+
+        void NormalWrite(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> *future);
+
         void DoRead(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> *future);
 
         void DoWrite(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> *future);
+    
+#ifdef SHARPEN_HAS_IOURING
+        
+        sharpen::IoUringStruct *InitStruct(void *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future);
+
+        sharpen::IoUringQueue *queue_;
+#endif
     public:
 
         explicit PosixFileChannel(sharpen::FileHandle handle);
