@@ -85,6 +85,7 @@ void sharpen::EpollSelector::Select(EventVector &events)
         for (sharpen::Size i = 0; i != size; ++i)
         {
             sharpen::IoUringStruct *st = reinterpret_cast<sharpen::IoUringStruct*>(this->cqes_[i].user_data);
+            assert(st != nullptr);
             if(this->cqes_[i].res < 0)
             {
                 st->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Error);
