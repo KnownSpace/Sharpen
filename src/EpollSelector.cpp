@@ -18,22 +18,22 @@ sharpen::EpollSelector::EpollSelector()
 #endif
 {
     //register event fd
-    this->RegisterInternalEventFd(this->eventfd_.GetHandle());
+    this->RegisterInternalEventFd(this->eventfd_.GetHandle(),1);
 #ifdef SHARPEN_HAS_IOURING
     if(sharpen::TestIoUring())
     {
         ring_.reset(new sharpen::IoUringQueue());
-        this->RegisterInternalEventFd(this->ring_->EventFd().GetHandle());
+        this->RegisterInternalEventFd(this->ring_->EventFd().GetHandle(),2);
     }
 #endif
 }
 
-void sharpen::EpollSelector::RegisterInternalEventFd(int fd)
+void sharpen::EpollSelector::RegisterInternalEventFd(int fd,char internalVal)
 {
     Event &event = (this->map_[fd] = std::move(Event()));
     event.epollEvent_.data.ptr = &event;
     event.epollEvent_.events = EPOLLIN | EPOLLET;
-    event.internalEventfd_ = true;
+    event.internalEventfd_ = internalVal;
     this->epoll_.Add(fd,&(event.epollEvent_));
 }
 
@@ -46,6 +46,9 @@ bool sharpen::EpollSelector::CheckChannel(sharpen::ChannelPtr channel) noexcept
 void sharpen::EpollSelector::Select(EventVector &events)
 {
     sharpen::Uint32 count = this->epoll_.Wait(this->eventBuf_.data(),this->eventBuf_.size(),-1);
+#ifdef SHARPEN_HAS_IOURING
+    bool ringNotify{false};
+#endif
     for (sharpen::Size i = 0; i != count;++i)
     {
         auto &e = this->eventBuf_[i];
@@ -73,13 +76,19 @@ void sharpen::EpollSelector::Select(EventVector &events)
             event->ioEvent_.SetEvent(eventType);
             events.push_back(&(event->ioEvent_));
         }
+#ifdef SHARPEN_HAS_IOURING
+        else if(event->internalEventfd_ == 2)
+        {
+            ringNotify = true;
+        }
+#endif
     }
     if(count == this->eventBuf_.size())
     {
         this->eventBuf_.resize(count * 2);
     }
 #ifdef SHARPEN_HAS_IOURING
-    if(this->ring_)
+    if(this->ring_ && ringNotify)
     {
         sharpen::Size size = this->ring_->GetCompletionStatus(this->cqes_.data(),this->cqes_.size());
         for (sharpen::Size i = 0; i != size; ++i)

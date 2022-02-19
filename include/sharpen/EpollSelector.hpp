@@ -36,7 +36,7 @@ namespace sharpen
 
         static bool CheckChannel(sharpen::ChannelPtr channel) noexcept;
 
-        void RegisterInternalEventFd(int fd);
+        void RegisterInternalEventFd(int fd,char internalVal);
     public:
 
         EpollSelector();

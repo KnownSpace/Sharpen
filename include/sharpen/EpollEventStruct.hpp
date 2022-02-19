@@ -26,7 +26,7 @@ namespace sharpen
 
         sharpen::IoEvent ioEvent_;
 
-        bool internalEventfd_;
+        char internalEventfd_;
     };
 }
 
