@@ -16,7 +16,7 @@ void Entry()
         return;
     }
     sharpen::FileChannelPtr channel = sharpen::MakeFileChannel("./iouring.test",sharpen::FileAccessModel::All,sharpen::FileOpenModel::CreateNew);
-    sharpen::IoUringQueue queue;
+    sharpen::IoUringQueue queue{true};
     std::puts("write test");
     {
         io_uring_sqe sqe;
