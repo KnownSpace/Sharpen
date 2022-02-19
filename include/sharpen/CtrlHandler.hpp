@@ -11,7 +11,7 @@
 #endif
 
 #include <functional>
-#include <list>
+#include <vector>
 #include <mutex>
 
 namespace sharpen
@@ -27,7 +27,7 @@ namespace sharpen
     struct CtrlHelper
     {
         using Handler = std::function<void()>;
-        using Handlers = std::list<Handler>;
+        using Handlers = std::vector<Handler>;
 
         static Handlers onInterrupt_;
 

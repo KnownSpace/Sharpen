@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_OBJECTPOOL_HPP
 #define _SHARPEN_OBJECTPOOL_HPP
 
-#include <list>
+#include <vector>
 #include <functional>
 
 #include "Noncopyable.hpp"
@@ -15,11 +15,11 @@ namespace sharpen
     {
     private:
         using Self = sharpen::ObjectPool<_T>;
-        using List = std::list<_T>;
+        using Storage = std::vector<_T>;
         using Creator = std::function<_T()>;
         using Deletor = std::function<void(_T&)>;
         
-        List objects_;
+        Storage objects_;
         Creator creator_;
         Deletor deletor_;
         sharpen::Size maxReserved_;
@@ -84,8 +84,8 @@ namespace sharpen
             {
                 return std::move(this->creator_());
             }
-            _T obj(std::move(this->objects_.front()));
-            this->objects_.pop_front();
+            _T obj(std::move(this->objects_.back()));
+            this->objects_.pop_back();
             return std::move(obj);
         }
         

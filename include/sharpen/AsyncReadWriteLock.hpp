@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_ASYNCREADWRITELOCK_HPP
 #define _SHARPEN_ASYNCREADWRITELOCK_HPP
 
-#include <list>
+#include <vector>
 
 #include "AwaitableFuture.hpp"
 
@@ -20,11 +20,11 @@ namespace sharpen
     private:
         using MyFuture = sharpen::AwaitableFuture<void>;
         using MyFuturePtr = MyFuture*;
-        using List = std::list<MyFuturePtr>;
+        using Waiters = std::vector<MyFuturePtr>;
 
         sharpen::ReadWriteLockState state_;
-        List readWaiters_;
-        List writeWaiters_;
+        Waiters readWaiters_;
+        Waiters writeWaiters_;
         sharpen::SpinLock lock_;
         sharpen::Uint32 readers_;
 

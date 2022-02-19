@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_ASYNCSEMAPHORE_HPP
 #define _SHARPEN_ASYNCSEMAPHORE_HPP
 
-#include <list>
+#include <vector>
 
 #include "AwaitableFuture.hpp"
 #include "TypeDef.hpp"
@@ -16,9 +16,9 @@ namespace sharpen
     private:
         using MyFuture = sharpen::AwaitableFuture<void>;
         using MyFuturePtr = MyFuture*;
-        using List = std::list<MyFuturePtr>;
+        using Waiters = std::vector<MyFuturePtr>;
 
-        List waiters_;
+        Waiters waiters_;
         sharpen::SpinLock lock_;
         sharpen::Uint32 counter_;
 

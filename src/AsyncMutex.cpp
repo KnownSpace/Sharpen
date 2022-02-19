@@ -29,8 +29,8 @@ void sharpen::AsyncMutex::Unlock() noexcept
         this->locked_ = false;
         return;
     }
-    sharpen::AsyncMutex::MyFuturePtr futurePtr = this->waiters_.front();
-    this->waiters_.pop_front();
+    sharpen::AsyncMutex::MyFuturePtr futurePtr = this->waiters_.back();
+    this->waiters_.pop_back();
     lock.unlock();
     futurePtr->Complete();
 }

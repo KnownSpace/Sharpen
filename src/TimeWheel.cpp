@@ -12,7 +12,7 @@ void sharpen::TimeWheel::Tick()
     //collect timer
     TickBucket &bucket = this->buckets_[this->pos_ % this->buckets_.size()];
     using CompPtr = bool(*)(const TickCallback &,const TickCallback &);
-    std::list<TickCallback> cbs;
+    std::vector<TickCallback> cbs;
     {
         std::unique_lock<sharpen::SpinLock> lock(bucket.lock_);
         auto begin = bucket.cbs_.begin(),end = bucket.cbs_.end();

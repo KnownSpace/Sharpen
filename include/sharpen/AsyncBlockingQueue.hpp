@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_ASYNCBLOCKINGQUEUE_HPP
 #define _SHARPEN_ASYNCBLOCKINGQUEUE_HPP
 
-#include <list>
+#include <vector>
 
 #include "AsyncSemaphore.hpp"
 
@@ -12,7 +12,7 @@ namespace sharpen
     class AsyncBlockingQueue:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
-        using Storage = std::list<_T>;
+        using Storage = std::vector<_T>;
 
         sharpen::SpinLock lock_;
         sharpen::AsyncSemaphore sign_;
@@ -29,10 +29,12 @@ namespace sharpen
         _T Pop()
         {
             this->sign_.LockAsync();
-            std::unique_lock<sharpen::SpinLock> lock(this->lock_);
-            _T obj = std::move(this->list_.front());
-            this->list_.pop_front();
-            return obj;
+            {
+                std::unique_lock<sharpen::SpinLock> lock(this->lock_);
+                _T obj = std::move(this->list_.back());
+                this->list_.pop_back();
+                return obj;
+            }
         }
 
         void Push(_T obj)

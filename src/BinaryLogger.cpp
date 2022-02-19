@@ -45,9 +45,9 @@ void sharpen::BinaryLogger::Log(const sharpen::WriteBatch &batch)
     }
 }
 
-std::list<sharpen::WriteBatch> sharpen::BinaryLogger::GetWriteBatchs()
+std::vector<sharpen::WriteBatch> sharpen::BinaryLogger::GetWriteBatchs()
 {
-    std::list<sharpen::WriteBatch> batchs;
+    std::vector<sharpen::WriteBatch> batchs;
     sharpen::Uint64 offset{0};
     sharpen::ByteBuffer buf;
     while (offset != this->offset_)

@@ -38,8 +38,8 @@ void sharpen::AsyncBarrier::Notice() noexcept
         {
             return;
         }
-        futurePtr = this->waiters_.front();
-        this->waiters_.pop_front();
+        futurePtr = this->waiters_.back();
+        this->waiters_.pop_back();
     }
     futurePtr->Complete();
 }

@@ -43,7 +43,7 @@ namespace sharpen
 
         void Log(const sharpen::WriteBatch &batch);
 
-        std::list<sharpen::WriteBatch> GetWriteBatchs();
+        std::vector<sharpen::WriteBatch> GetWriteBatchs();
 
         void Clear();
     };

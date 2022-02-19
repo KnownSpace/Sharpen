@@ -32,7 +32,7 @@
 +----------------------+
 */
 
-#include <list>
+#include <vector>
 
 #include "ByteBuffer.hpp"
 #include "DataCorruptionException.hpp"
@@ -58,7 +58,7 @@ namespace sharpen
     private:
         
         using Self = sharpen::WriteBatch;
-        using Actions = std::list<Action>;
+        using Actions = std::vector<Action>;
         using Iterator = typename Actions::iterator;
         using ConstIterator = typename Actions::const_iterator;
 

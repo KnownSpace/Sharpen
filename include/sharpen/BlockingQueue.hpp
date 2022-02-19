@@ -4,7 +4,7 @@
 
 #include <mutex>
 #include <condition_variable>
-#include <list>
+#include <vector>
 #include <memory>
 #include <thread>
 
@@ -19,7 +19,7 @@ namespace sharpen
     class BlockingQueue:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
-        using Storage = std::list<_T>;
+        using Storage = std::vector<_T>;
         using Lock = std::mutex;
         using CondVar = std::condition_variable;
 
@@ -48,7 +48,7 @@ namespace sharpen
         {
             {
                 std::unique_lock<Lock> lock(this->lock_);
-                this->list_.emplace(std::forward<_Args>(args)...);
+                this->list_.emplace_back(std::forward<_Args>(args)...);
             }
             this->cond_.notify_one();
         }
@@ -60,8 +60,8 @@ namespace sharpen
             {
                 this->cond_.wait(lock);
             }
-            _T obj(std::move(this->list_.front()));
-            this->list_.pop_front();
+            _T obj(std::move(this->list_.back()));
+            this->list_.pop_back();
             return std::move(obj); 
         }
 
@@ -77,8 +77,8 @@ namespace sharpen
                     return false;
                 }
             }
-            obj = std::move(this->list_.front());
-            this->list_.pop_front();
+            obj = std::move(this->list_.back());
+            this->list_.pop_back();
             return true;
         }
     };

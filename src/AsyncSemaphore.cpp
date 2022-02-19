@@ -1,5 +1,7 @@
 #include <sharpen/AsyncSemaphore.hpp>
 
+#include <sharpen/IteratorOps.hpp>
+
 sharpen::AsyncSemaphore::AsyncSemaphore(sharpen::Uint32 count)
     :waiters_()
     ,lock_()
@@ -34,8 +36,8 @@ void sharpen::AsyncSemaphore::Unlock() noexcept
         this->counter_ += 1;
         return;
     }
-    sharpen::AsyncSemaphore::MyFuturePtr futurePtr = this->waiters_.front();
-    this->waiters_.pop_front();
+    sharpen::AsyncSemaphore::MyFuturePtr futurePtr = this->waiters_.back();
+    this->waiters_.pop_back();
     lock.unlock();
     futurePtr->Complete();
 }
@@ -50,7 +52,7 @@ void sharpen::AsyncSemaphore::Unlock(sharpen::Uint32 count) noexcept
     }
     if(count >= this->waiters_.size())
     {
-        sharpen::AsyncSemaphore::List futures;
+        sharpen::AsyncSemaphore::Waiters futures;
         this->waiters_.swap(futures);
         this->counter_ += static_cast<sharpen::Uint32>(count - this->waiters_.size());
         lock.unlock();
@@ -62,12 +64,8 @@ void sharpen::AsyncSemaphore::Unlock(sharpen::Uint32 count) noexcept
     else
     {
         auto begin = this->waiters_.begin();
-        auto end = begin;
-        for(;count != 0;--count)
-        {
-            ++end;
-        }
-        sharpen::AsyncSemaphore::List futures(std::make_move_iterator(begin),std::make_move_iterator(end));
+        auto end = sharpen::IteratorForward(begin,count);
+        sharpen::AsyncSemaphore::Waiters futures(std::make_move_iterator(begin),std::make_move_iterator(end));
         lock.unlock();
         begin = futures.begin();
         end = futures.end();

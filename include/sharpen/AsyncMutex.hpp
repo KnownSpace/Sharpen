@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_ASYNCMUTEX_HPP
 #define _SHARPEN_ASYNCMUTEX_HPP
 
-#include <list>
+#include <vector>
 
 #include "AwaitableFuture.hpp"
 #include "IAsyncLockable.hpp"
@@ -15,10 +15,10 @@ namespace sharpen
     private:
         using MyFuture = sharpen::AwaitableFuture<void>;
         using MyFuturePtr = MyFuture*;
-        using List = std::list<MyFuturePtr>;
+        using Waiters = std::vector<MyFuturePtr>;
 
         bool locked_;
-        List waiters_;
+        Waiters waiters_;
         sharpen::SpinLock lock_;
     public:
         AsyncMutex();

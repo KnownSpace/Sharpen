@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_RPCCLIENT_HPP
 #define _SHARPEN_RPCCLIENT_HPP
 
-#include <list>
+#include <deque>
 #include <cassert>
 
 #include "INetStreamChannel.hpp"
@@ -41,7 +41,7 @@ namespace sharpen
             sharpen::Future<sharpen::Size> writeFuture_;
         };
 
-        using WaiterList = std::list<sharpen::Future<_Response>*>;
+        using Waiters = std::deque<sharpen::Future<_Response>*>;
         using Lock = sharpen::SpinLock;
         using Pair = sharpen::CompressedPair<_Encoder,_Decoder>;
         using Self = sharpen::InternalRpcClient<_Request,_Encoder,_Response,_Decoder,void>;
@@ -52,7 +52,7 @@ namespace sharpen
         sharpen::Future<sharpen::Size> readFuture_;
         sharpen::NetStreamChannelPtr conn_;
         sharpen::ByteBuffer readBuf_;
-        WaiterList waiters_;
+        Waiters waiters_;
         _Response res_;
         sharpen::Size lastRead_;
         std::shared_ptr<bool> token_;
@@ -118,7 +118,7 @@ namespace sharpen
 
         void DealWithError(std::exception_ptr err)
         {
-            WaiterList waiters;
+            Waiters waiters;
             {
                 std::unique_lock<Lock> lock(this->lock_);
                 waiters.assign(std::make_move_iterator(this->waiters_.begin()),std::make_move_iterator(this->waiters_.end()));
