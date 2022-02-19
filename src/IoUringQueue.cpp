@@ -26,6 +26,10 @@ sharpen::IoUringQueue::~IoUringQueue() noexcept
 
 void sharpen::IoUringQueue::Submit()
 {
+    if(this->subQueue_.empty())
+    {
+        return;
+    }
     sharpen::Size moved{0};
     while (this->ring_.Requestable())
     {

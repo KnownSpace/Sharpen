@@ -19,6 +19,7 @@ sharpen::IoUring::IoUring(std::uint32_t entries,std::uint32_t flags,std::uint32_
     ,cring_()
     ,cringSize_(0)
     ,cringNumber_(0)
+    ,requestNumber_(0)
 {
     struct io_uring_params p;
     std::memset(&p,0,sizeof(p));
@@ -139,30 +140,29 @@ void sharpen::IoUring::Enter(unsigned int to_submit,unsigned int min_complete,un
 
 void sharpen::IoUring::SubmitToSring(const struct io_uring_sqe *sqe)
 {
-    unsigned index,tail;
-    tail = *this->sring_.tail_;
+    unsigned int index,tail;
+    tail = Self::Load(this->sring_.tail_);
     index = tail & *this->sring_.ringMask_;
     struct io_uring_sqe *s = &this->sqes_[index];
     std::memcpy(s,sqe,sizeof(*s));
     this->sring_.array_[index] = index;
     tail += 1;
-    //hope it work
-    reinterpret_cast<std::atomic_uint*>(this->sring_.tail_)->store(tail,std::memory_order::memory_order_release);
+    Self::Store(this->sring_.tail_,tail);
     this->requestNumber_ += 1;
 }
 
 bool sharpen::IoUring::GetFromCring(struct io_uring_cqe *cqe)
 {
-    unsigned head{0};
-    //hope it work
-    head = reinterpret_cast<std::atomic_uint*>(this->cring_.head_)->load(std::memory_order::memory_order_acquire);
-    if(head == *this->cring_.tail_)
+    unsigned int head{0},tail{0};
+    head = Self::Load(this->cring_.head_);
+    tail = Self::Load(this->cring_.tail_);
+    if(head == tail)
     {
         return false;
     }
     std::memcpy(cqe,this->cring_.cqes_ + (head & (*this->cring_.ringMask_)),sizeof(*cqe));
     head += 1;
-    reinterpret_cast<std::atomic_uint*>(this->cring_.head_)->store(head,std::memory_order::memory_order_release);
+    Self::Store(this->cring_.head_,head);
     this->requestNumber_ -= 1;
     return true;
 }

@@ -14,6 +14,7 @@
 
 #ifdef SHARPEN_HAS_IOURING
 #include <new>
+#include <cstring>
 
 #include <sharpen/EpollSelector.hpp>
 #endif
@@ -75,6 +76,7 @@ void sharpen::PosixFileChannel::DoWrite(const sharpen::Char *buf,sharpen::Size b
         return;
     }
     struct io_uring_sqe sqe;
+    std::memset(&sqe,0,sizeof(sqe));
     sqe.opcode = IORING_OP_WRITEV;
     st->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Write);
     sqe.user_data = reinterpret_cast<sharpen::Uint64>(st);
@@ -114,6 +116,7 @@ void sharpen::PosixFileChannel::DoRead(sharpen::Char *buf,sharpen::Size bufSize,
         return;
     }
     struct io_uring_sqe sqe;
+    std::memset(&sqe,0,sizeof(sqe));
     sqe.opcode = IORING_OP_READV;
     st->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Read);
     sqe.user_data = reinterpret_cast<sharpen::Uint64>(st);

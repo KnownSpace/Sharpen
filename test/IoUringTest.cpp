@@ -17,7 +17,7 @@ void Entry()
     }
     sharpen::FileChannelPtr channel = sharpen::MakeFileChannel("./iouring.test",sharpen::FileAccessModel::All,sharpen::FileOpenModel::CreateNew);
     sharpen::IoUringQueue queue;
-    std::puts("read test");
+    std::puts("write test");
     {
         io_uring_sqe sqe;
         sqe.opcode = IORING_OP_WRITEV;
@@ -35,10 +35,11 @@ void Entry()
         queue.GetCompletionStatus(&cqe,1);
         std::printf("result is %d\n",cqe.res);
     }
-    std::puts("write test");
+    std::puts("read test");
     {
         io_uring_sqe sqe;
         sqe.opcode = IORING_OP_READV;
+        sqe.fd = channel->GetHandle();
         char buf[16] = {0};
         iovec vec;
         vec.iov_base = buf;

@@ -72,6 +72,19 @@ namespace sharpen
     private:
         using Self = sharpen::IoUring;
     
+
+        template<typename _T>
+        inline static _T Load(const _T *p) noexcept
+        {
+            return std::atomic_load_explicit(reinterpret_cast<const std::atomic<_T>*>(p),std::memory_order_acquire);
+        }
+
+        template<typename _T>
+        inline static void Store(_T *p,_T value) noexcept
+        {
+            std::atomic_store_explicit(reinterpret_cast<std::atomic<_T>*>(p), value,std::memory_order_release);
+        }
+
         int ringFd_;
         void *sringAddr_;
         sharpen::IoSring sring_;
@@ -83,8 +96,7 @@ namespace sharpen
         sharpen::IoCring cring_;
         sharpen::Size cringSize_;
         sharpen::Size cringNumber_;
-        std::atomic_size_t requestNumber_;
-
+        sharpen::Size requestNumber_;
     public:
 
         IoUring(std::uint32_t entries,std::uint32_t flags,std::uint32_t sq_thread_cpu,std::uint32_t sq_thread_idle,std::uint32_t cq_entries);
