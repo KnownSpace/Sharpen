@@ -5,7 +5,7 @@ void ParallelTest(size_t n)
 {
     std::printf("parallel test begin\n");
     std::atomic_size_t ar{0};
-    sharpen::ParallelFor(0, n, [&ar](size_t i)
+    sharpen::ParallelFor(0, n,10, [&ar](size_t i)
     { 
         ar.fetch_add(i); 
     });
@@ -22,6 +22,6 @@ void ParallelTest(size_t n)
 int main()
 {
     sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine();
-    engine.Startup(&ParallelTest,static_cast<sharpen::Size>(1e4));
+    engine.Startup(&ParallelTest,static_cast<sharpen::Size>(1e3));
     return 0;
 }
