@@ -19,7 +19,7 @@ namespace sharpen
         using CompletionQueue = std::vector<Cqe>;
         using SubmitQueue = std::vector<Sqe>;
 
-        static constexpr sharpen::Size queueLength{256};
+        static constexpr sharpen::Size queueLength{64};
     
         sharpen::EventFd eventFd_;
         sharpen::IoUring ring_;
