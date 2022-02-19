@@ -7,6 +7,7 @@
 #ifdef SHARPEN_HAS_IOURING
 
 #include <vector>
+#include <deque>
 
 namespace sharpen
 {
@@ -17,7 +18,7 @@ namespace sharpen
         using Cqe = struct io_uring_cqe;
         using Sqe = struct io_uring_sqe;
         using CompletionQueue = std::vector<Cqe>;
-        using SubmitQueue = std::vector<Sqe>;
+        using SubmitQueue = std::deque<Sqe>;
 
         static constexpr sharpen::Size queueLength{64};
     

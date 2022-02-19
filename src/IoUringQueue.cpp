@@ -18,7 +18,6 @@ sharpen::IoUringQueue::IoUringQueue(bool blockEventFd)
     ,compQueue_()
     ,subQueue_()
 {
-    this->subQueue_.reserve(32);
     this->compQueue_.reserve(32);
     this->ring_.RegisterEventFd(this->eventFd_);
 }
@@ -34,13 +33,15 @@ void sharpen::IoUringQueue::Submit()
     {
         return;
     }
+    auto ite = this->subQueue_.begin();
     sharpen::Size moved{0};
     while (this->ring_.Requestable())
     {
-        this->ring_.SubmitToSring(&this->subQueue_.back() - moved);
+        this->ring_.SubmitToSring(&*ite);
+        ++ite;
         ++moved;
     }
-    this->subQueue_.erase(sharpen::IteratorBackward(this->subQueue_.end(),moved),this->subQueue_.end());
+    this->subQueue_.erase(this->subQueue_.begin(),ite);
     this->ring_.Enter(moved,0,0);
 }
 
