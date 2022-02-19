@@ -71,19 +71,24 @@ sharpen::Size sharpen::IoUringQueue::GetCompletionStatus(Cqe *cqes,sharpen::Size
         return size;
     }
     sharpen::Size index{0};
-    while (index != size && this->ring_.GetFromCring(cqes + index))
+    bool moreEv{false};
+    while (index != size)
     {
-        ++index;
-    }
-    size = size - index;
-    while (size != 0)
-    {
-        this->compQueue_.emplace_back();
-        if(!this->ring_.GetFromCring(&this->compQueue_.back()))
+        moreEv = this->ring_.GetFromCring(cqes + index);
+        if(!moreEv)
         {
             break;
         }
-        --size;
+        ++index;
+    }
+    while (moreEv)
+    {
+        this->compQueue_.emplace_back();
+        moreEv = this->ring_.GetFromCring(&this->compQueue_.back());
+        if(!moreEv)
+        {
+            this->compQueue_.pop_back();
+        }
     }
     this->Submit();
     return index;
