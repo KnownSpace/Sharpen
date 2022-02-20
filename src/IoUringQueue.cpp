@@ -59,11 +59,12 @@ void sharpen::IoUringQueue::SubmitIoRequest(const Sqe &sqe)
 
 sharpen::Size sharpen::IoUringQueue::GetCompletionStatus(Cqe *cqes,sharpen::Size size)
 {
+    sharpen::Size cqeNum{0};
     if(!this->compQueue_.empty())
     {
-        size = (std::min)(this->compQueue_.size(),size);
+        cqeNum = (std::min)(this->compQueue_.size(),size);
         auto begin = this->compQueue_.rbegin();
-        auto end = sharpen::IteratorForward(begin,size);
+        auto end = sharpen::IteratorForward(begin,cqeNum);
         sharpen::Size index{0};
         while (begin != end)
         {
@@ -71,20 +72,17 @@ sharpen::Size sharpen::IoUringQueue::GetCompletionStatus(Cqe *cqes,sharpen::Size
             ++begin;
             ++index;
         }
-        this->compQueue_.erase(sharpen::IteratorBackward(this->compQueue_.end(),size),this->compQueue_.end());
-        this->Submit();
-        return size;
+        this->compQueue_.erase(sharpen::IteratorBackward(this->compQueue_.end(),cqeNum),this->compQueue_.end());
     }
-    sharpen::Size index{0};
     bool moreEv{false};
-    while (index != size)
+    while (cqeNum != size)
     {
-        moreEv = this->ring_.GetFromCring(cqes + index);
+        moreEv = this->ring_.GetFromCring(cqes + cqeNum);
         if(!moreEv)
         {
             break;
         }
-        ++index;
+        ++cqeNum;
     }
     while (moreEv)
     {
@@ -96,7 +94,7 @@ sharpen::Size sharpen::IoUringQueue::GetCompletionStatus(Cqe *cqes,sharpen::Size
         }
     }
     this->Submit();
-    return index;
+    return cqeNum;
 }
 
 bool sharpen::TestIoUring() noexcept
