@@ -130,7 +130,7 @@ namespace sharpen
 
         void Put(sharpen::SstBlockHandle block);
 
-        void Put(sharpen::ByteBuffer key,const sharpen::SstBlock &block);
+        void Put(sharpen::ByteBuffer key,const sharpen::FilePointer &block);
 
         void Delete(const sharpen::ByteBuffer &key) noexcept;
 

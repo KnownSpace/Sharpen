@@ -12,7 +12,7 @@ void sharpen::SstIndexBlock::LoadFrom(const char *data,sharpen::Size size)
     this->dataBlocks_.clear();
     while (begin != end)
     {
-        if(sharpen::GetRangeSize(begin,end) < sizeof(sharpen::SstBlock) + sizeof(sharpen::Uint64))
+        if(sharpen::GetRangeSize(begin,end) < sizeof(sharpen::FilePointer) + sizeof(sharpen::Uint64))
         {
             this->dataBlocks_.clear();
             throw std::invalid_argument("invalid buffer");
@@ -22,7 +22,7 @@ void sharpen::SstIndexBlock::LoadFrom(const char *data,sharpen::Size size)
         begin += 8;
         sharpen::ByteBuffer key{begin,keySize};
         begin += keySize;
-        sharpen::SstBlock block;
+        sharpen::FilePointer block;
         if(sharpen::GetRangeSize(begin,end) < sizeof(block))
         {
             this->dataBlocks_.clear();
@@ -48,7 +48,7 @@ void sharpen::SstIndexBlock::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Si
 
 sharpen::Size sharpen::SstIndexBlock::ComputeNeedSize() const noexcept
 {
-    sharpen::Size needSize{this->dataBlocks_.size()*(sizeof(sharpen::SstBlock) + sizeof(sharpen::Uint64))};
+    sharpen::Size needSize{this->dataBlocks_.size()*(sizeof(sharpen::FilePointer) + sizeof(sharpen::Uint64))};
     for (auto begin = this->dataBlocks_.begin(),end = this->dataBlocks_.end(); begin != end; ++begin)
     {
         needSize += begin->GetKey().GetSize();
@@ -117,7 +117,7 @@ sharpen::SstIndexBlock::Iterator sharpen::SstIndexBlock::Find(const sharpen::Byt
     return std::lower_bound(this->dataBlocks_.begin(),this->dataBlocks_.end(),key,static_cast<FnPtr>(&Self::Comp));
 }
 
-void sharpen::SstIndexBlock::Put(sharpen::ByteBuffer key,const sharpen::SstBlock &block)
+void sharpen::SstIndexBlock::Put(sharpen::ByteBuffer key,const sharpen::FilePointer &block)
 {
     auto ite = this->Find(key);
     if(ite != this->End())

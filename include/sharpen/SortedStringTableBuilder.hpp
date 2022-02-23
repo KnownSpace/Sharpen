@@ -85,14 +85,14 @@ namespace sharpen
             if(filterBits)
             {
                 filters.emplace_back(Self::BuildFilter(block,filterBits));
-                root.MetaIndexBlock().Put(block.LastKey(),sharpen::SstBlock{});
+                root.MetaIndexBlock().Put(block.LastKey(),sharpen::FilePointer{});
             }
             sharpen::ByteBuffer lastKey{block.LastKey()};
             try
             {
                 sharpen::Size size{block.StoreTo(buf)};
                 channel->WriteAsync(buf.Data(),size,offset);
-                sharpen::SstBlock pointer;
+                sharpen::FilePointer pointer;
                 pointer.offset_ = offset;
                 pointer.size_ = size;
                 root.IndexBlock().Put(std::move(lastKey),pointer);

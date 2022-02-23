@@ -17,7 +17,7 @@ Footer Block
 
 #include <utility>
 
-#include "SstBlock.hpp"
+#include "FilePointer.hpp"
 #include "ByteBuffer.hpp"
 
 namespace sharpen
@@ -27,14 +27,14 @@ namespace sharpen
     private:
         using Self = sharpen::SstFooter;
     
-        sharpen::SstBlock indexBlock_;
-        sharpen::SstBlock metaIndexBlock_;
+        sharpen::FilePointer indexBlock_;
+        sharpen::FilePointer metaIndexBlock_;
 
         void InternalStoreTo(char *data) const noexcept;
     public:
         SstFooter() noexcept = default;
 
-        SstFooter(sharpen::SstBlock indexBlock,sharpen::SstBlock metaBlock)
+        SstFooter(sharpen::FilePointer indexBlock,sharpen::FilePointer metaBlock)
             :indexBlock_(indexBlock)
             ,metaIndexBlock_(metaBlock)
         {}
@@ -62,22 +62,22 @@ namespace sharpen
 
         ~SstFooter() noexcept = default;
 
-        const sharpen::SstBlock &IndexBlock() const noexcept
+        const sharpen::FilePointer &IndexBlock() const noexcept
         {
             return this->indexBlock_;
         }
 
-        sharpen::SstBlock &IndexBlock() noexcept
+        sharpen::FilePointer &IndexBlock() noexcept
         {
             return this->indexBlock_;
         }
 
-        const sharpen::SstBlock &MetaIndexBlock() const noexcept
+        const sharpen::FilePointer &MetaIndexBlock() const noexcept
         {
             return this->metaIndexBlock_;
         }
 
-        sharpen::SstBlock &MetaIndexBlock() noexcept
+        sharpen::FilePointer &MetaIndexBlock() noexcept
         {
             return this->metaIndexBlock_;
         }

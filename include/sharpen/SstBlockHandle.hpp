@@ -14,7 +14,7 @@
 +---------+
 */
 
-#include "SstBlock.hpp"
+#include "FilePointer.hpp"
 #include "ByteBuffer.hpp"
 #include "IFileChannel.hpp"
 
@@ -26,10 +26,10 @@ namespace sharpen
         using Self = sharpen::SstBlockHandle;
     
         sharpen::ByteBuffer key_;
-        sharpen::SstBlock block_;
+        sharpen::FilePointer block_;
     public:
     
-        SstBlockHandle(sharpen::ByteBuffer key,const sharpen::SstBlock &block) noexcept
+        SstBlockHandle(sharpen::ByteBuffer key,const sharpen::FilePointer &block) noexcept
             :key_(std::move(key))
             ,block_(block)
         {}
@@ -62,12 +62,12 @@ namespace sharpen
             return this->key_;
         }
 
-        const sharpen::SstBlock &Block() const noexcept
+        const sharpen::FilePointer &Block() const noexcept
         {
             return this->block_;
         }
 
-        sharpen::SstBlock &Block() noexcept
+        sharpen::FilePointer &Block() noexcept
         {
             return this->block_;
         }
