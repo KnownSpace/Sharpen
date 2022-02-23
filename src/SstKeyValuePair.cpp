@@ -124,6 +124,7 @@ sharpen::Size sharpen::SstKeyValuePair::StoreTo(char *data,sharpen::Size size) c
 
 sharpen::Size sharpen::SstKeyValuePair::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
 {
+    assert(buf.GetSize() >= offset);
     sharpen::Size needSize{this->ComputeSize()};
     sharpen::Size size{buf.GetSize() - offset};
     if(needSize > size)

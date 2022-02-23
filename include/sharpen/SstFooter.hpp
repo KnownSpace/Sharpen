@@ -30,7 +30,6 @@ namespace sharpen
         sharpen::FilePointer indexBlock_;
         sharpen::FilePointer metaIndexBlock_;
 
-        void InternalStoreTo(char *data) const noexcept;
     public:
         SstFooter() noexcept = default;
 
@@ -90,6 +89,8 @@ namespace sharpen
         {
             this->LoadFrom(buf,0);
         }
+
+        void UnsafeStoreTo(char *data) const noexcept;
 
         void StoreTo(char *data,sharpen::Size size) const;
 

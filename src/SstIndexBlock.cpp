@@ -28,10 +28,8 @@ void sharpen::SstIndexBlock::LoadFrom(const char *data,sharpen::Size size)
             this->dataBlocks_.clear();
             throw std::invalid_argument("invalid buffer");
         }
-        std::memcpy(&block.offset_,begin,sizeof(block.offset_));
-        begin += sizeof(block.offset_);
-        std::memcpy(&block.size_,begin,sizeof(block.size_));
-        begin += sizeof(block.size_);
+        std::memcpy(&block,begin,sizeof(block));
+        begin += sizeof(block);
         this->dataBlocks_.emplace_back(std::move(key),block);
     }
 }
@@ -69,10 +67,8 @@ sharpen::Size sharpen::SstIndexBlock::UnsafeStoreTo(char *data) const noexcept
             std::memcpy(data + offset,begin->GetKey().Data(),keySize);
             offset += keySize; 
         }
-        std::memcpy(data + offset,&begin->Block().offset_,sizeof(begin->Block().offset_));
-        offset += sizeof(begin->Block().offset_);
-        std::memcpy(data + offset,&begin->Block().size_,sizeof(begin->Block().size_));
-        offset += sizeof(begin->Block().size_);
+        std::memcpy(data + offset,&begin->Block(),sizeof(begin->Block()));
+        offset += sizeof(begin->Block());
     }
     return offset;
 }
