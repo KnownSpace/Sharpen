@@ -3,19 +3,15 @@
 #include <cassert>
 
 sharpen::SortedStringTable::SortedStringTable(sharpen::FileChannelPtr channel)
-    :SortedStringTable(std::move(channel),Self::dataCacheSize_,Self::filterCacheSize_)
+    :SortedStringTable(std::move(channel),sharpen::SstOption{})
 {}
 
-sharpen::SortedStringTable::SortedStringTable(sharpen::FileChannelPtr channel,sharpen::Size dataCache,sharpen::Size filterCache)
-    :SortedStringTable(std::move(channel),10,dataCache,filterCache)
-{}
-
-sharpen::SortedStringTable::SortedStringTable(sharpen::FileChannelPtr channel,sharpen::Size bitsOfElements,sharpen::Size dataCache,sharpen::Size filterCache)
+sharpen::SortedStringTable::SortedStringTable(sharpen::FileChannelPtr channel,sharpen::Size filtersBits,sharpen::SstOption opt)
     :channel_(std::move(channel))
     ,root_()
-    ,filterBits_(bitsOfElements)
-    ,dataCache_(dataCache)
-    ,filterCache_(bitsOfElements != 0 ? filterCache:0)
+    ,filterBits_(filtersBits)
+    ,dataCache_(opt.GetDataCacheSize())
+    ,filterCache_(filtersBits != 0 ? opt.GetFilterCacheSize():0)
 {
     this->LoadRoot();
 }
@@ -108,7 +104,18 @@ sharpen::ExistStatus sharpen::SortedStringTable::Exist(const sharpen::ByteBuffer
     return block->Exist(key);
 }
 
-std::shared_ptr<const sharpen::SstDataBlock> sharpen::SortedStringTable::QueryDataBlock(const sharpen::ByteBuffer &key) const
+std::shared_ptr<const sharpen::SstDataBlock> sharpen::SortedStringTable::GetDataBlockFromCache(const sharpen::ByteBuffer &key) const
+{
+    auto blockIte = this->root_.IndexBlock().Find(key);
+    if(blockIte == this->root_.IndexBlock().End())
+    {
+        return nullptr;
+    }
+    std::shared_ptr<sharpen::SstDataBlock> block{this->dataCache_.Get(key.Begin(),key.End())};
+    return block;
+}
+
+std::shared_ptr<const sharpen::SstDataBlock> sharpen::SortedStringTable::GetDataBlock(const sharpen::ByteBuffer &key,bool doCache) const
 {
     auto filterIte = this->root_.MetaIndexBlock().Find(key);
     if(filterIte == this->root_.MetaIndexBlock().End())
@@ -129,13 +136,24 @@ std::shared_ptr<const sharpen::SstDataBlock> sharpen::SortedStringTable::QueryDa
     }
     std::shared_ptr<sharpen::SstDataBlock> block{nullptr};
     cacheKey = &blockIte->GetKey();
-    block = this->LoadDataBlockCache(*cacheKey,blockIte->Block().offset_,blockIte->Block().size_);
+    if(doCache)
+    {
+        block = this->LoadDataBlockCache(*cacheKey,blockIte->Block().offset_,blockIte->Block().size_);
+    }
+    else
+    {
+        block = this->dataCache_.Get(cacheKey->Begin(),cacheKey->End());
+        if(!block)
+        {
+            block = std::make_shared<sharpen::SstDataBlock>(this->LoadDataBlock(blockIte->Block().offset_,blockIte->Block().size_));
+        }
+    }
     return block;
 }
 
-sharpen::ByteBuffer sharpen::SortedStringTable::Query(const sharpen::ByteBuffer &key) const
+sharpen::ByteBuffer sharpen::SortedStringTable::Get(const sharpen::ByteBuffer &key) const
 {
-    auto block = this->QueryDataBlock(key);
+    auto block = this->GetDataBlock(key);
     if(!block)
     {
         throw std::invalid_argument("key doesn't exist");
@@ -143,9 +161,9 @@ sharpen::ByteBuffer sharpen::SortedStringTable::Query(const sharpen::ByteBuffer 
     return block->Get(key);
 }
 
-sharpen::Optional<sharpen::ByteBuffer> sharpen::SortedStringTable::TryQuery(const sharpen::ByteBuffer &key) const
+sharpen::Optional<sharpen::ByteBuffer> sharpen::SortedStringTable::TryGet(const sharpen::ByteBuffer &key) const
 {
-    auto block = this->QueryDataBlock(key);
+    auto block = this->GetDataBlock(key);
     if(!block || block->Exist(key) == sharpen::ExistStatus::NotExist)
     {
         return sharpen::EmptyOpt;

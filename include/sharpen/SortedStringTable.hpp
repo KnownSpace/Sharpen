@@ -8,6 +8,7 @@
 #include "BloomFilter.hpp"
 #include "ExistStatus.hpp"
 #include "SortedStringTableBuilder.hpp"
+#include "SstOption.hpp"
 
 namespace sharpen
 {
@@ -16,17 +17,13 @@ namespace sharpen
     private:
         using Self = sharpen::SortedStringTable;
 
+        static constexpr sharpen::Size defaultFilterBits{10};
+
         sharpen::FileChannelPtr channel_;
         sharpen::SstRoot root_;
         sharpen::Size filterBits_;
         mutable sharpen::SegmentedCircleCache<sharpen::SstDataBlock> dataCache_;
         mutable sharpen::SegmentedCircleCache<sharpen::BloomFilter<sharpen::ByteBuffer>> filterCache_;
-
-        static constexpr sharpen::Size blockSize_{4*1024};
-
-        static constexpr sharpen::Size dataCacheSize_{512};
-
-        static constexpr sharpen::Size filterCacheSize_{512};
 
         void LoadRoot();
 
@@ -40,43 +37,55 @@ namespace sharpen
         //read
         explicit SortedStringTable(sharpen::FileChannelPtr channel);
 
-        SortedStringTable(sharpen::FileChannelPtr channel,sharpen::Size dataCache,sharpen::Size filterCache);
+        SortedStringTable(sharpen::FileChannelPtr channel,sharpen::SstOption opt)
+            :SortedStringTable(std::move(channel),Self::defaultFilterBits,opt)
+        {}
 
-        SortedStringTable(sharpen::FileChannelPtr channel,sharpen::Size bitsOfElements,sharpen::Size dataCache,sharpen::Size filterCache);
+        SortedStringTable(sharpen::FileChannelPtr channel,sharpen::Size bitsOfElements,sharpen::SstOption opt);
 
         template<typename _Iterator,typename _Check = sharpen::EnableIf<sharpen::IsWalKeyValuePairIterator<_Iterator>::Value>>
-        SortedStringTable(sharpen::FileChannelPtr channel,_Iterator begin,_Iterator end,sharpen::Size bitsOfElements,bool eraseDeleted,sharpen::Size dataCache,sharpen::Size filterCache)
+        SortedStringTable(sharpen::FileChannelPtr channel,_Iterator begin,_Iterator end,bool eraseDeleted)
+            :SortedStringTable(std::move(channel),begin,end,Self::defaultFilterBits,eraseDeleted)
+        {}
+
+        template<typename _Iterator,typename _Check = sharpen::EnableIf<sharpen::IsWalKeyValuePairIterator<_Iterator>::Value>>
+        SortedStringTable(sharpen::FileChannelPtr channel,_Iterator begin,_Iterator end,sharpen::Size filterBits,bool eraseDeleted)
+            :SortedStringTable(std::move(channel),begin,end,filterBits,eraseDeleted,sharpen::SstOption{})
+        {}
+
+        template<typename _Iterator,typename _Check = sharpen::EnableIf<sharpen::IsWalKeyValuePairIterator<_Iterator>::Value>>
+        SortedStringTable(sharpen::FileChannelPtr channel,_Iterator begin,_Iterator end,sharpen::Size filterBits,bool eraseDeleted,sharpen::SstOption opt)
             :channel_(std::move(channel))
             ,root_()
-            ,filterBits_(bitsOfElements)
-            ,dataCache_(dataCache)
-            ,filterCache_(bitsOfElements != 0 ? filterCache:0)
+            ,filterBits_(filterBits)
+            ,dataCache_(opt.GetDataCacheSize())
+            ,filterCache_(filterBits != 0 ? opt.GetFilterCacheSize():0)
         {
             sharpen::Uint64 size = this->channel_->GetFileSize();
             if(size)
             {
                 this->channel_->Truncate();
             }
-            this->root_ = sharpen::SortedStringTableBuilder::DumpWalToTable<sharpen::SstDataBlock>(this->channel_,blockSize_,begin,end,bitsOfElements,eraseDeleted);
+            this->root_ = sharpen::SortedStringTableBuilder::DumpWalToTable<sharpen::SstDataBlock>(this->channel_,opt.GetBlockSize(),begin,end,filterBits,eraseDeleted);
         }
 
-        template<typename _Iterator,typename _Check = sharpen::EnableIf<sharpen::IsWalKeyValuePairIterator<_Iterator>::Value>>
-        SortedStringTable(sharpen::FileChannelPtr channel,_Iterator begin,_Iterator end,bool eraseDeleted,sharpen::Size dataCache,sharpen::Size filterCache)
-            :SortedStringTable(std::move(channel),begin,end,10,eraseDeleted,dataCache,filterCache)
-        {}
-
-        template<typename _Iterator,typename _Check = sharpen::EnableIf<sharpen::IsWalKeyValuePairIterator<_Iterator>::Value>>
-        SortedStringTable(sharpen::FileChannelPtr channel,_Iterator begin,_Iterator end,bool eraseDeleted)
-            :SortedStringTable(std::move(channel),begin,end,eraseDeleted,Self::dataCacheSize_,Self::filterCacheSize_)
+        template<typename _Iterator,typename _Check = decltype(std::declval<Self*&>() = &(*std::declval<_Iterator>()))>
+        SortedStringTable(sharpen::FileChannelPtr channel,_Iterator begin,_Iterator end,bool eraseDeleted,bool ordered)
+            :SortedStringTable(std::move(channel),begin,end,Self::defaultFilterBits,eraseDeleted,ordered)
         {}
 
         template<typename _Iterator,typename _Check = decltype(std::declval<Self*&>() = &(*std::declval<_Iterator>()))>
-        SortedStringTable(sharpen::FileChannelPtr channel,_Iterator begin,_Iterator end,sharpen::Size bitsOfElements,bool eraseDeleted,bool ordered,sharpen::Size dataCache,sharpen::Size filterCache)
+        SortedStringTable(sharpen::FileChannelPtr channel,_Iterator begin,_Iterator end,sharpen::Size filtersBits,bool eraseDeleted,bool ordered)
+            :SortedStringTable(std::move(channel),begin,end,filtersBits,eraseDeleted,ordered,sharpen::SstOption{})
+        {}
+
+        template<typename _Iterator,typename _Check = decltype(std::declval<Self*&>() = &(*std::declval<_Iterator>()))>
+        SortedStringTable(sharpen::FileChannelPtr channel,_Iterator begin,_Iterator end,sharpen::Size filtersBits,bool eraseDeleted,bool ordered,sharpen::SstOption opt)
             :channel_(std::move(channel))
             ,root_()
-            ,filterBits_(bitsOfElements)
-            ,dataCache_(dataCache)
-            ,filterCache_(bitsOfElements != 0 ? filterCache:0)
+            ,filterBits_(filtersBits)
+            ,dataCache_(opt.GetDataCacheSize())
+            ,filterCache_(filtersBits != 0 ? opt.GetFilterCacheSize():0)
         {
             sharpen::Uint64 size = this->channel_->GetFileSize();
             if(size)
@@ -95,19 +104,9 @@ namespace sharpen
             }
             else
             {
-                this->root_ = sharpen::SortedStringTableBuilder::MergeTables<sharpen::SstDataBlock>(this->channel_,Self::blockSize_,vec.begin(),vec.end(),filterBits_,eraseDeleted);
+                this->root_ = sharpen::SortedStringTableBuilder::MergeTables<sharpen::SstDataBlock>(this->channel_,opt.GetBlockSize(),vec.begin(),vec.end(),filterBits_,eraseDeleted);
             }
         }
-
-        template<typename _Iterator,typename _Check = decltype(std::declval<Self*&>() = &(*std::declval<_Iterator>()))>
-        SortedStringTable(sharpen::FileChannelPtr channel,_Iterator begin,_Iterator end,bool eraseDeleted,bool ordered,sharpen::Size dataCache,sharpen::Size filterCache)
-            :SortedStringTable(std::move(channel),begin,end,10,eraseDeleted,ordered,dataCache,filterCache)
-        {}
-
-        template<typename _Iterator,typename _Check = decltype(std::declval<Self*&>() = &(*std::declval<_Iterator>()))>
-        SortedStringTable(sharpen::FileChannelPtr channel,_Iterator begin,_Iterator end,bool eraseDeleted,bool ordered)
-            :SortedStringTable(std::move(channel),begin,end,eraseDeleted,ordered,Self::dataCacheSize_,Self::filterCacheSize_)
-        {}
 
         SortedStringTable(Self &&other) noexcept = default;
     
@@ -121,11 +120,18 @@ namespace sharpen
 
         sharpen::SstDataBlock LoadDataBlock(const sharpen::ByteBuffer &key) const;
 
-        std::shared_ptr<const sharpen::SstDataBlock> QueryDataBlock(const sharpen::ByteBuffer &key) const;
+        std::shared_ptr<const sharpen::SstDataBlock> GetDataBlockFromCache(const sharpen::ByteBuffer &key) const;
 
-        sharpen::ByteBuffer Query(const sharpen::ByteBuffer &key) const;
+        std::shared_ptr<const sharpen::SstDataBlock> GetDataBlock(const sharpen::ByteBuffer &key,bool doCache) const;
 
-        sharpen::Optional<sharpen::ByteBuffer> TryQuery(const sharpen::ByteBuffer &key) const;
+        inline std::shared_ptr<const sharpen::SstDataBlock> GetDataBlock(const sharpen::ByteBuffer &key) const
+        {
+            return this->GetDataBlock(key,true);
+        }
+
+        sharpen::ByteBuffer Get(const sharpen::ByteBuffer &key) const;
+
+        sharpen::Optional<sharpen::ByteBuffer> TryGet(const sharpen::ByteBuffer &key) const;
 
         bool Empty() const;
 
