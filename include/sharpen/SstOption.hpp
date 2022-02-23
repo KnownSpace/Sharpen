@@ -17,9 +17,9 @@ namespace sharpen
 
         static constexpr sharpen::Size defaultDataCacheSize_{512};
 
+        sharpen::Size blockSize_;
         sharpen::Size dataCacheSize_;
         sharpen::Size filtersCacheSize_;
-        sharpen::Size blockSize_;
     public:
     
         SstOption() noexcept
