@@ -5,7 +5,7 @@
 #include "IFileChannel.hpp"
 #include "MemoryTable.hpp"
 #include "BinaryLogger.hpp"
-#include "PersistentTable.hpp"
+#include "SortedStringTable.hpp"
 
 namespace sharpen
 {
@@ -20,7 +20,7 @@ namespace sharpen
         sharpen::FileChannelPtr logChannel_;
         sharpen::FileChannelPtr tableChannel_;
         MemLogger memLogger_;
-        sharpen::Optional<sharpen::PersistentTable> persLogger_;
+        sharpen::Optional<sharpen::SortedStringTable> persLogger_;
     public:
     
         explicit PersistentLogger(const char *logName);

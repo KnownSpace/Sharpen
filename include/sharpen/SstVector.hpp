@@ -4,7 +4,7 @@
 
 #include <cassert>
 
-#include "SortedStringTable.hpp"
+#include "SstRoot.hpp"
 #include "IFileChannel.hpp"
 
 namespace sharpen
@@ -14,7 +14,7 @@ namespace sharpen
     private:
         using Self = sharpen::SstVector;
     
-        const sharpen::SortedStringTable *root_;
+        const sharpen::SstRoot *root_;
         sharpen::FileChannelPtr channel_;
     public:
     
@@ -23,7 +23,7 @@ namespace sharpen
             ,channel_(nullptr)
         {}
 
-        SstVector(const sharpen::SortedStringTable *root,sharpen::FileChannelPtr channel) noexcept
+        SstVector(const sharpen::SstRoot *root,sharpen::FileChannelPtr channel) noexcept
             :root_(root)
             ,channel_(std::move(channel))
         {
@@ -69,7 +69,7 @@ namespace sharpen
             return this->channel_;
         }
 
-        const sharpen::SortedStringTable &Root() const noexcept
+        const sharpen::SstRoot &Root() const noexcept
         {
             assert(this->root_);
             return *this->root_;

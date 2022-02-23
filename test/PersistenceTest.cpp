@@ -1,6 +1,6 @@
 #include <cstdio>
 #include <cassert>
-#include <sharpen/PersistentTable.hpp>
+#include <sharpen/SortedStringTable.hpp>
 #include <sharpen/MemoryTable.hpp>
 #include <sharpen/BinaryLogger.hpp>
 #include <sharpen/FileOps.hpp>
@@ -25,10 +25,10 @@ void Entry()
             mt.Put(sharpen::ByteBuffer{"key_b",5},sharpen::ByteBuffer{"val",3});
             mt.Put(sharpen::ByteBuffer{"abc",3},sharpen::ByteBuffer{"val",3});
             mt.Put(sharpen::ByteBuffer{"other",5},sharpen::ByteBuffer{"val",3});
-            sharpen::PersistentTable pt{table,mt.Begin(),mt.End(),true};
+            sharpen::SortedStringTable pt{table,mt.Begin(),mt.End(),true};
         }
         {
-            sharpen::PersistentTable pt{table};
+            sharpen::SortedStringTable pt{table};
             auto r = pt.TryQuery(sharpen::ByteBuffer{"key_a",5});
             assert(r.Exist());
             assert(r.Get() == sharpen::ByteBuffer("val",3));
@@ -51,13 +51,13 @@ void Entry()
             mt.Restore();
             mt.Put(sharpen::ByteBuffer{"key_c",5},sharpen::ByteBuffer{"val",3});
             mt.Put(sharpen::ByteBuffer{"key_d",5},sharpen::ByteBuffer{"val",3});
-            std::vector<sharpen::PersistentTable> pts;
+            std::vector<sharpen::SortedStringTable> pts;
             pts.emplace_back(table);
             pts.emplace_back(table2,mt.Begin(),mt.End(),true);
-            sharpen::PersistentTable pt3{table3,pts.begin(),pts.end(),true,false};
+            sharpen::SortedStringTable pt3{table3,pts.begin(),pts.end(),true,false};
         }
         {
-            sharpen::PersistentTable pt{table3};
+            sharpen::SortedStringTable pt{table3};
             auto r = pt.TryQuery(sharpen::ByteBuffer{"key_a",5});
             assert(r.Exist());
             assert(r.Get() == sharpen::ByteBuffer("val",3));

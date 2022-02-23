@@ -1,166 +1,138 @@
 #pragma once
 #ifndef _SHARPEN_SORTEDSTRINGTABLE_HPP
 #define _SHARPEN_SORTEDSTRINGTABLE_HPP
-/*
-Sorted String Table
-+------------------+
-|Data Blocks       |
-+------------------+
-|Filter Blocks     |
-+------------------+
-|Meta Index Block  | 
-+------------------+
-|Meta Index Chksum | 2 bytes - Crc16
-+------------------+
-|Index Block       | 
-+------------------+
-|Index Chksum      | 2 bytes - Crc16
-+------------------+
-|Footer Block      | 32 bytes
-+------------------+
 
-Footer Block
-+----------------------------+
-|Offset of Index Blocks      |  8 bytes
-+----------------------------+
-|Size of Index Blocks        |  8 bytes
-+----------------------------+
-|Offset of Meta Index Blocks |  8 bytes
-+----------------------------+
-|Size of Meta Index Blocks   |  8 bytes
-+----------------------------+
-
-Index Block
-+---------------------+
-|Data Block1 Key Size | 8 bytes
-+---------------------+
-|Data Block1 Key      |
-+---------------------+
-|Offset of Data Block1| 8 bytes
-+---------------------+
-|Size of Data Block1  | 8 bytes
-+---------------------+
-|        .....        |
-+---------------------+
-|Data BlockN Key Size | 8 bytes
-+---------------------+
-|Data BlockN Key      |
-+---------------------+
-|Offset of Data BlockN| 8 bytes
-+---------------------+
-|Size of Data BlockN  | 8 bytes
-+---------------------+
-
-Meta Index Block
-+------------------------+
-|Filter Block1 Key size  | 8 bytes
-+------------------------+
-|Filter Block1 Key       |
-+------------------------+
-|Offset of Filter Block1 | 8 bytes
-+------------------------+
-|Size of Filter Block1   | 8 bytes
-+------------------------+
-|         .....          |
-+------------------------+
-|Filter BlockN Key size  |
-+------------------------+
-|Filter BlockN Key       |
-+------------------------+
-|Offset of Filter BlockN | 8 bytes
-+------------------------+
-|Size of Filter BlockN   | 8 bytes
-+------------------------+
-
-Filter Block
-+-------------------+
-|defined by user    |
-+-------------------+
-
-Data Block
-+-------------------+
-|defined by user    |
-+-------------------+
-*/
-
-#include <vector>
-
-#include "TypeDef.hpp"
-#include "SstFooter.hpp"
-#include "SstIndexBlock.hpp"
-#include "DataCorruptionException.hpp"
+#include "SstRoot.hpp"
+#include "SstDataBlock.hpp"
+#include "SegmentedCircleCache.hpp"
+#include "BloomFilter.hpp"
+#include "ExistStatus.hpp"
+#include "SortedStringTableBuilder.hpp"
 
 namespace sharpen
 {
-    class SortedStringTable
-    {        
+    class SortedStringTable:public sharpen::Noncopyable
+    {
     private:
         using Self = sharpen::SortedStringTable;
 
-        //load from file
-        mutable sharpen::SstFooter footer_;
-        sharpen::SstIndexBlock indexBlock_;
-        sharpen::SstIndexBlock metaIndexBlock_;
+        sharpen::FileChannelPtr channel_;
+        sharpen::SstRoot root_;
+        sharpen::Size filterBits_;
+        mutable sharpen::SegmentedCircleCache<sharpen::SstDataBlock> dataCache_;
+        mutable sharpen::SegmentedCircleCache<sharpen::BloomFilter<sharpen::ByteBuffer>> filterCache_;
+
+        static constexpr sharpen::Size blockSize_{4*1024};
+
+        static constexpr sharpen::Size dataCacheSize_{512};
+
+        static constexpr sharpen::Size filterCacheSize_{512};
+
+        void LoadRoot();
+
+        std::shared_ptr<sharpen::SstDataBlock> LoadDataBlockCache(const sharpen::ByteBuffer &cacheKey,sharpen::Uint64 offset,sharpen::Uint64 size) const;
+
+        sharpen::BloomFilter<sharpen::ByteBuffer> LoadFilter(const sharpen::ByteBuffer &key) const;
+
+        std::shared_ptr<sharpen::BloomFilter<sharpen::ByteBuffer>> LoadFilterCache(const sharpen::ByteBuffer &cacheKey,sharpen::Uint64 offset,sharpen::Uint64 size) const;
+
     public:
-        SortedStringTable() noexcept = default;
-    
-        SortedStringTable(const Self &other) = default;
-    
-        SortedStringTable(Self &&other) noexcept = default;
-    
-        inline Self &operator=(const Self &other)
+        //read
+        explicit SortedStringTable(sharpen::FileChannelPtr channel);
+
+        SortedStringTable(sharpen::FileChannelPtr channel,sharpen::Size dataCache,sharpen::Size filterCache);
+
+        SortedStringTable(sharpen::FileChannelPtr channel,sharpen::Size bitsOfElements,sharpen::Size dataCache,sharpen::Size filterCache);
+
+        template<typename _Iterator,typename _Check = sharpen::EnableIf<sharpen::IsWalKeyValuePairIterator<_Iterator>::Value>>
+        SortedStringTable(sharpen::FileChannelPtr channel,_Iterator begin,_Iterator end,sharpen::Size bitsOfElements,bool eraseDeleted,sharpen::Size dataCache,sharpen::Size filterCache)
+            :channel_(std::move(channel))
+            ,root_()
+            ,filterBits_(bitsOfElements)
+            ,dataCache_(dataCache)
+            ,filterCache_(bitsOfElements != 0 ? filterCache:0)
         {
-            Self tmp{other};
-            std::swap(tmp,*this);
-            return *this;
-        }
-    
-        Self &operator=(Self &&other) noexcept
-        {
-            if(this != std::addressof(other))
+            sharpen::Uint64 size = this->channel_->GetFileSize();
+            if(size)
             {
-                this->footer_ = std::move(other.footer_);
-                this->indexBlock_ = std::move(other.indexBlock_);
-                this->metaIndexBlock_ = std::move(other.metaIndexBlock_);
+                this->channel_->Truncate();
             }
-            return *this;
+            this->root_ = sharpen::SortedStringTableBuilder::DumpWalToTable<sharpen::SstDataBlock>(this->channel_,blockSize_,begin,end,bitsOfElements,eraseDeleted);
         }
+
+        template<typename _Iterator,typename _Check = sharpen::EnableIf<sharpen::IsWalKeyValuePairIterator<_Iterator>::Value>>
+        SortedStringTable(sharpen::FileChannelPtr channel,_Iterator begin,_Iterator end,bool eraseDeleted,sharpen::Size dataCache,sharpen::Size filterCache)
+            :SortedStringTable(std::move(channel),begin,end,10,eraseDeleted,dataCache,filterCache)
+        {}
+
+        template<typename _Iterator,typename _Check = sharpen::EnableIf<sharpen::IsWalKeyValuePairIterator<_Iterator>::Value>>
+        SortedStringTable(sharpen::FileChannelPtr channel,_Iterator begin,_Iterator end,bool eraseDeleted)
+            :SortedStringTable(std::move(channel),begin,end,eraseDeleted,Self::dataCacheSize_,Self::filterCacheSize_)
+        {}
+
+        template<typename _Iterator,typename _Check = decltype(std::declval<Self*&>() = &(*std::declval<_Iterator>()))>
+        SortedStringTable(sharpen::FileChannelPtr channel,_Iterator begin,_Iterator end,sharpen::Size bitsOfElements,bool eraseDeleted,bool ordered,sharpen::Size dataCache,sharpen::Size filterCache)
+            :channel_(std::move(channel))
+            ,root_()
+            ,filterBits_(bitsOfElements)
+            ,dataCache_(dataCache)
+            ,filterCache_(bitsOfElements != 0 ? filterCache:0)
+        {
+            sharpen::Uint64 size = this->channel_->GetFileSize();
+            if(size)
+            {
+                this->channel_->Truncate();
+            }
+            std::vector<sharpen::SstVector> vec;
+            vec.reserve(sharpen::GetRangeSize(begin,end));
+            for (sharpen::Size i = 0;begin != end; ++begin,++i)
+            {
+                vec.emplace_back(&begin->Root(),begin->channel_);
+            }
+            if (ordered)
+            {
+                this->root_ = sharpen::SortedStringTableBuilder::CombineTables<sharpen::SstDataBlock>(this->channel_,vec.begin(),vec.end(),this->filterBits_,eraseDeleted);
+            }
+            else
+            {
+                this->root_ = sharpen::SortedStringTableBuilder::MergeTables<sharpen::SstDataBlock>(this->channel_,Self::blockSize_,vec.begin(),vec.end(),filterBits_,eraseDeleted);
+            }
+        }
+
+        template<typename _Iterator,typename _Check = decltype(std::declval<Self*&>() = &(*std::declval<_Iterator>()))>
+        SortedStringTable(sharpen::FileChannelPtr channel,_Iterator begin,_Iterator end,bool eraseDeleted,bool ordered,sharpen::Size dataCache,sharpen::Size filterCache)
+            :SortedStringTable(std::move(channel),begin,end,10,eraseDeleted,ordered,dataCache,filterCache)
+        {}
+
+        template<typename _Iterator,typename _Check = decltype(std::declval<Self*&>() = &(*std::declval<_Iterator>()))>
+        SortedStringTable(sharpen::FileChannelPtr channel,_Iterator begin,_Iterator end,bool eraseDeleted,bool ordered)
+            :SortedStringTable(std::move(channel),begin,end,eraseDeleted,ordered,Self::dataCacheSize_,Self::filterCacheSize_)
+        {}
+
+        SortedStringTable(Self &&other) noexcept = default;
     
         ~SortedStringTable() noexcept = default;
 
-        sharpen::SstFooter &Footer() noexcept
+        Self &operator=(Self &&other) noexcept;
+
+        sharpen::ExistStatus Exist(const sharpen::ByteBuffer &key) const;
+
+        sharpen::SstDataBlock LoadDataBlock(sharpen::Uint64 offset,sharpen::Uint64 size) const;
+
+        sharpen::SstDataBlock LoadDataBlock(const sharpen::ByteBuffer &key) const;
+
+        std::shared_ptr<const sharpen::SstDataBlock> QueryDataBlock(const sharpen::ByteBuffer &key) const;
+
+        sharpen::ByteBuffer Query(const sharpen::ByteBuffer &key) const;
+
+        sharpen::Optional<sharpen::ByteBuffer> TryQuery(const sharpen::ByteBuffer &key) const;
+
+        bool Empty() const;
+
+        const sharpen::SstRoot &Root() noexcept
         {
-            return this->footer_;
+            return this->root_;
         }
-
-        const sharpen::SstFooter &Footer() const noexcept
-        {
-            return this->footer_;
-        }
-
-        sharpen::SstIndexBlock &IndexBlock() noexcept
-        {
-            return this->indexBlock_;
-        }
-
-        const sharpen::SstIndexBlock &IndexBlock() const noexcept
-        {
-            return this->indexBlock_;
-        }
-
-        sharpen::SstIndexBlock &MetaIndexBlock() noexcept
-        {
-            return this->metaIndexBlock_;
-        }
-
-        const sharpen::SstIndexBlock &MetaIndexBlock() const noexcept
-        {
-            return this->metaIndexBlock_;
-        }
-
-        void LoadFrom(sharpen::FileChannelPtr channel);
-
-        void StoreTo(sharpen::FileChannelPtr channel,sharpen::Uint64 offset) const;
     };
 }
 

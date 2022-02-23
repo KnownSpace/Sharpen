@@ -8,7 +8,7 @@ sharpen::BloomFilter<sharpen::ByteBuffer> sharpen::SortedStringTableBuilder::Loa
     return filter;
 }
 
-void sharpen::SortedStringTableBuilder::WriteFilters(sharpen::FileChannelPtr channel,const std::vector<sharpen::BloomFilter<sharpen::ByteBuffer>> &filters,sharpen::SortedStringTable &root,sharpen::Uint64 &offset,sharpen::ByteBuffer &buf)
+void sharpen::SortedStringTableBuilder::WriteFilters(sharpen::FileChannelPtr channel,const std::vector<sharpen::BloomFilter<sharpen::ByteBuffer>> &filters,sharpen::SstRoot &root,sharpen::Uint64 &offset,sharpen::ByteBuffer &buf)
 {
     for (sharpen::Size i = 0, count = filters.size(); i != count; ++i)
     {
