@@ -61,7 +61,7 @@ namespace sharpen
             ,dataCache_(opt.GetDataCacheSize())
             ,filterCache_(filterBits != 0 ? opt.GetFilterCacheSize():0)
         {
-            this->Rebuild(begin,end,eraseDeleted);
+            this->Rebuild(begin,end,opt.GetBlockSize(),eraseDeleted);
         }
 
         template<typename _Iterator,typename _Check = decltype(std::declval<Self*&>() = &(*std::declval<_Iterator>()))>
@@ -118,14 +118,14 @@ namespace sharpen
         }
 
         template<typename _Iterator,typename _Check = sharpen::EnableIf<sharpen::IsWalKeyValuePairIterator<_Iterator>::Value>>
-        void Rebuild(_Iterator begin,_Iterator end,bool eraseDeleted)
+        void Rebuild(_Iterator begin,_Iterator end,sharpen::Size blockSize,bool eraseDeleted)
         {
             sharpen::Uint64 size = this->channel_->GetFileSize();
             if(size)
             {
                 this->channel_->Truncate();
             }
-            this->root_ = sharpen::SortedStringTableBuilder::DumpWalToTable<sharpen::SstDataBlock>(this->channel_,opt.GetBlockSize(),begin,end,this->filterBits_,eraseDeleted);
+            this->root_ = sharpen::SortedStringTableBuilder::DumpWalToTable<sharpen::SstDataBlock>(this->channel_,blockSize,begin,end,this->filterBits_,eraseDeleted);
         }
 
         template<typename _Iterator,typename _Check = decltype(std::declval<Self*&>() = &(*std::declval<_Iterator>()))>
