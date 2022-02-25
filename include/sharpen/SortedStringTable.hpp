@@ -82,7 +82,7 @@ namespace sharpen
             ,dataCache_(opt.GetDataCacheSize())
             ,filterCache_(filtersBits != 0 ? opt.GetFilterCacheSize():0)
         {
-            this->Rebuild(begin,end,eraseDeleted,ordered);
+            this->Rebuild(begin,end,opt.GetBlockSize(),eraseDeleted,ordered);
         }
 
         SortedStringTable(Self &&other) noexcept = default;
@@ -129,7 +129,7 @@ namespace sharpen
         }
 
         template<typename _Iterator,typename _Check = decltype(std::declval<Self*&>() = &(*std::declval<_Iterator>()))>
-        void Rebuild(_Iterator begin,_Iterator end,bool eraseDeleted,bool ordered)
+        void Rebuild(_Iterator begin,_Iterator end,sharpen::Size blockSize,bool eraseDeleted,bool ordered)
         {
             sharpen::Uint64 size = this->channel_->GetFileSize();
             if(size)
@@ -147,7 +147,7 @@ namespace sharpen
                 this->root_ = sharpen::SortedStringTableBuilder::CombineTables<sharpen::SstDataBlock>(this->channel_,vec.begin(),vec.end(),this->filterBits_,eraseDeleted);
                 return;
             }
-            this->root_ = sharpen::SortedStringTableBuilder::MergeTables<sharpen::SstDataBlock>(this->channel_,opt.GetBlockSize(),vec.begin(),vec.end(),this->filterBits_,eraseDeleted);
+            this->root_ = sharpen::SortedStringTableBuilder::MergeTables<sharpen::SstDataBlock>(this->channel_,blockSize,vec.begin(),vec.end(),this->filterBits_,eraseDeleted);
         }
     };
 }
