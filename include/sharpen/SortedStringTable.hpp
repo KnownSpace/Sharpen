@@ -2,6 +2,119 @@
 #ifndef _SHARPEN_SORTEDSTRINGTABLE_HPP
 #define _SHARPEN_SORTEDSTRINGTABLE_HPP
 
+/*
+Sorted String Table
++------------------+
+|Data Blocks       |
++------------------+
+|Filter Blocks     |
++------------------+
+|Meta Index Block  | 
++------------------+
+|Meta Index Chksum | 2 bytes - Crc16
++------------------+
+|Index Block       | 
++------------------+
+|Index Chksum      | 2 bytes - Crc16
++------------------+
+|Footer Block      | 32 bytes
++------------------+
+
+Footer Block
++----------------------------+
+|Offset of Index Blocks      |  8 bytes
++----------------------------+
+|Size of Index Blocks        |  8 bytes
++----------------------------+
+|Offset of Meta Index Blocks |  8 bytes
++----------------------------+
+|Size of Meta Index Blocks   |  8 bytes
++----------------------------+
+
+Index Block
++---------------------+
+|Data Block1 Key Size | 8 bytes
++---------------------+
+|Data Block1 Key      |
++---------------------+
+|Offset of Data Block1| 8 bytes
++---------------------+
+|Size of Data Block1  | 8 bytes
++---------------------+
+|        .....        |
++---------------------+
+|Data BlockN Key Size | 8 bytes
++---------------------+
+|Data BlockN Key      |
++---------------------+
+|Offset of Data BlockN| 8 bytes
++---------------------+
+|Size of Data BlockN  | 8 bytes
++---------------------+
+
+Meta Index Block
++------------------------+
+|Filter Block1 Key size  | 8 bytes
++------------------------+
+|Filter Block1 Key       |
++------------------------+
+|Offset of Filter Block1 | 8 bytes
++------------------------+
+|Size of Filter Block1   | 8 bytes
++------------------------+
+|         .....          |
++------------------------+
+|Filter BlockN Key size  |
++------------------------+
+|Filter BlockN Key       |
++------------------------+
+|Offset of Filter BlockN | 8 bytes
++------------------------+
+|Size of Filter BlockN   | 8 bytes
++------------------------+
+
+Key Value Pair
++---------------+
+| SharedKeySize | varint
++---------------+
+| UniqueKeySize | varint
++---------------+
+| UniqueKey     |
++---------------+
+| ValueSize     | varint 
++---------------+
+| Value         |
++---------------+
+
+Key Value Group
++-----------------+
+| Key Value Pair1 |
++-----------------+
+|       ...       |
++-----------------+
+| Key Value PairN |
++-----------------+
+
+DataBlock                   about 4*1024 bytes
++-------------------------+
+| Crc16                   | 2 bytes
++-------------------------+
+| Number of Group         | varint
++-------------------------+
+| Key Value Group Offset1 | relative offset - 8 bytes
++-------------------------+
+|          ...            |
++-------------------------+
+| Key Value Group OffsetN |
++-------------------------+
+| Key Value Group1        |
++-------------------------+
+|          ...            |
++-------------------------+
+| Key Value GroupN        |
++-------------------------+
+*/
+
 #include "SstRoot.hpp"
 #include "SstDataBlock.hpp"
 #include "SegmentedCircleCache.hpp"
