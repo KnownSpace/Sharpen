@@ -55,7 +55,14 @@ namespace sharpen
             return *this;
         }
     
-        Self &operator=(Self &&other) noexcept = default;
+        inline Self &operator=(Self &&other) noexcept
+        {
+            if(this != std::addressof(other))
+            {
+                this->pairs_ = std::move(other.pairs_);
+            }
+            return *this;
+        }
     
         ~SstKeyValueGroup() noexcept = default;
 

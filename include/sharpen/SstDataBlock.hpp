@@ -131,7 +131,14 @@ namespace sharpen
             return *this;
         }
     
-        Self &operator=(Self &&other) noexcept = default;
+        inline Self &operator=(Self &&other) noexcept
+        {
+            if(this != std::addressof(other))
+            {
+                this->groups_ = std::move(other.groups_);
+            }
+            return *this;
+        }
     
         ~SstDataBlock() noexcept = default;
 

@@ -58,7 +58,19 @@ namespace sharpen
             return *this;
         }
     
-        Self &operator=(Self &&other) noexcept = default;
+        inline Self &operator=(Self &&other) noexcept
+        {
+            if(this != std::addressof(other))
+            {
+                this->sharedSize_ = other.sharedSize_;
+                this->uniquedSize_ = other.uniquedSize_;
+                this->key_ = std::move(other.key_);
+                this->value_ = std::move(other.value_);
+                other.sharedSize_ = 0;
+                other.uniquedSize_ = 0;
+            }
+            return *this;
+        }
     
         ~SstKeyValuePair() noexcept = default;
 

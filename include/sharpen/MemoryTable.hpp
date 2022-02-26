@@ -40,7 +40,14 @@ namespace sharpen
             return *this;
         }
     
-        Self &operator=(Self &&other) noexcept = default;
+        inline Self &operator=(Self &&other) noexcept
+        {
+            if(this != std::addressof(other))
+            {
+                this->value_ = std::move(other.value_);
+            }
+            return *this;
+        }
     
         ~MemoryTableItem() noexcept = default;
 

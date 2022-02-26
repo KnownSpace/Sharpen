@@ -213,9 +213,21 @@ namespace sharpen
 
         InternalMicroRpcVariable(Self &&other) = default;
 
-        Self &operator=(const Self &other) = default;
+        inline Self &operator=(const Self &other)
+        {
+            Self tmp{other};
+            std::swap(other,*this);
+            return *this;
+        }
 
-        Self &operator=(Self &&other) noexcept = default;
+        inline Self &operator=(Self &&other) noexcept
+        {
+            if(this != std::addressof(other))
+            {
+                this->data_ = std::move(other.data_);
+            }
+            return *this;
+        }
 
         ~InternalMicroRpcVariable() noexcept = default;
 

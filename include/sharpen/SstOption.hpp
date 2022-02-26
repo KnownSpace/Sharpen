@@ -51,7 +51,16 @@ namespace sharpen
             return *this;
         }
     
-        Self &operator=(Self &&other) noexcept = default;
+        inline Self &operator=(Self &&other) noexcept
+        {
+            if(this != std::addressof(other))
+            {
+                this->blockSize_ = other.blockSize_;
+                this->dataCacheSize_ = other.dataCacheSize_;
+                this->filtersCacheSize_ = other.filtersCacheSize_;
+            }
+            return *this;
+        }
     
         ~SstOption() noexcept = default;
 
