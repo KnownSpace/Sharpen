@@ -5,13 +5,14 @@
 #include <sharpen/BinaryLogger.hpp>
 #include <sharpen/FileOps.hpp>
 #include <sharpen/EventEngine.hpp>
+#include <sharpen/BalancedTable.hpp>
 
 void Entry()
 {
-    const char *logName = "./log";
-    const char *tableName = "./sst";
-    const char *tableName2 = "./sst2";
-    const char *tableName3 = "./sst3";
+    const char *logName = "./wal.log";
+    const char *tableName = "./1.table";
+    const char *tableName2 = "./2.table";
+    const char *tableName3 = "./3.table";
     try
     {
         std::puts("persistence test begin");
@@ -76,6 +77,140 @@ void Entry()
             r = pt.TryGet(sharpen::ByteBuffer{"abc",3});
             assert(r.Exist());
             assert(r.Get() == sharpen::ByteBuffer("val",3));
+        }
+        table->Truncate();
+        {
+            sharpen::BalancedTable pt{table,3};
+            {
+                sharpen::ByteBuffer key{"key1",4};
+                sharpen::ByteBuffer value{"val",3};
+                pt.Put(key,value);
+            }
+            {
+                sharpen::ByteBuffer key{"key2",4};
+                sharpen::ByteBuffer value{"val",3};
+                pt.Put(key,value);
+            }
+            {
+                sharpen::ByteBuffer key{"key3",4};
+                sharpen::ByteBuffer value{"val",3};
+                pt.Put(key,value);
+            }
+            {
+                sharpen::ByteBuffer key{"key4",4};
+                sharpen::ByteBuffer value{"val",3};
+                pt.Put(key,value);
+            }
+            {
+                sharpen::ByteBuffer key{"key5",4};
+                sharpen::ByteBuffer value{"val",3};
+                pt.Put(key,value);
+            }
+            {
+                sharpen::ByteBuffer key{"key6",4};
+                sharpen::ByteBuffer value{"val",3};
+                pt.Put(key,value);
+            }
+            {
+                sharpen::ByteBuffer key{"key7",4};
+                sharpen::ByteBuffer value{"val",3};
+                pt.Put(key,value);
+            }
+            {
+                sharpen::ByteBuffer key{"key8",4};
+                sharpen::ByteBuffer value{"val",3};
+                pt.Put(key,value);
+            } 
+            assert(pt.GetDepth() == 2);
+        }
+        {
+            sharpen::BalancedTable pt{table,3};
+            assert(pt.GetDepth() == 2);
+            {
+                sharpen::ByteBuffer key{"key1",4};
+                sharpen::ByteBuffer value{"val",3};
+                assert(pt.Get(key) == value);
+            }
+            {
+                sharpen::ByteBuffer key{"key2",4};
+                sharpen::ByteBuffer value{"val",3};
+                assert(pt.Get(key) == value);
+            }
+            {
+                sharpen::ByteBuffer key{"key3",4};
+                sharpen::ByteBuffer value{"val",3};
+                assert(pt.Get(key) == value);
+            }
+            {
+                sharpen::ByteBuffer key{"key4",4};
+                sharpen::ByteBuffer value{"val",3};
+                assert(pt.Get(key) == value);
+            }
+            {
+                sharpen::ByteBuffer key{"key5",4};
+                sharpen::ByteBuffer value{"val",3};
+                assert(pt.Get(key) == value);
+            }
+            {
+                sharpen::ByteBuffer key{"key6",4};
+                sharpen::ByteBuffer value{"val",3};
+                assert(pt.Get(key) == value);
+            }
+            {
+                sharpen::ByteBuffer key{"key7",4};
+                sharpen::ByteBuffer value{"val",3};
+                assert(pt.Get(key) == value);
+            }
+            {
+                sharpen::ByteBuffer key{"key8",4};
+                sharpen::ByteBuffer value{"val",3};
+                assert(pt.Get(key) == value);
+            }
+        }
+        table->Truncate();
+        {
+            sharpen::BalancedTable pt{table,3};
+            {
+                sharpen::ByteBuffer key{"key1",4};
+                sharpen::ByteBuffer value{"val",3};
+                pt.Put(key,value);
+            }
+            {
+                sharpen::ByteBuffer key{"key2",4};
+                sharpen::ByteBuffer value{"val",3};
+                pt.Put(key,value);
+            }
+            {
+                sharpen::ByteBuffer key{"key3",4};
+                sharpen::ByteBuffer value{"val",3};
+                pt.Put(key,value);
+            }
+            {
+                sharpen::ByteBuffer key{"key4",4};
+                sharpen::ByteBuffer value{"val",3};
+                pt.Put(key,value);
+            }
+            {
+                sharpen::ByteBuffer key{"key1",4};
+                pt.Delete(key);
+            }
+            {
+                sharpen::ByteBuffer key{"key2",4};
+                pt.Delete(key);
+            }
+            assert(pt.GetDepth() == 0);
+        }
+        {
+            sharpen::BalancedTable pt{table,3};
+            assert(pt.GetDepth() == 0);
+            {
+                sharpen::ByteBuffer key{"key1",4};
+                assert(pt.Exist(key) == sharpen::ExistStatus::NotExist);
+            }
+            {
+                sharpen::ByteBuffer key{"key2",4};
+                assert(pt.Exist(key) == sharpen::ExistStatus::NotExist);
+            }
         }
         log->Close();
         table->Close();
