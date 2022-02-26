@@ -140,7 +140,7 @@ namespace sharpen
 
         void LoadRoot();
 
-        std::shared_ptr<sharpen::SstDataBlock> LoadDataBlockCache(const sharpen::ByteBuffer &cacheKey,sharpen::Uint64 offset,sharpen::Uint64 size) const;
+        std::shared_ptr<sharpen::SstDataBlock> LoadBlockCache(const sharpen::ByteBuffer &cacheKey,sharpen::Uint64 offset,sharpen::Uint64 size) const;
 
         sharpen::BloomFilter<sharpen::ByteBuffer> LoadFilter(const sharpen::ByteBuffer &key) const;
 
@@ -206,17 +206,17 @@ namespace sharpen
 
         sharpen::ExistStatus Exist(const sharpen::ByteBuffer &key) const;
 
-        sharpen::SstDataBlock LoadDataBlock(sharpen::Uint64 offset,sharpen::Uint64 size) const;
+        sharpen::SstDataBlock LoadBlock(sharpen::Uint64 offset,sharpen::Uint64 size) const;
 
-        sharpen::SstDataBlock LoadDataBlock(const sharpen::ByteBuffer &key) const;
+        sharpen::SstDataBlock LoadBlock(const sharpen::ByteBuffer &key) const;
 
-        std::shared_ptr<const sharpen::SstDataBlock> GetDataBlockFromCache(const sharpen::ByteBuffer &key) const;
+        std::shared_ptr<const sharpen::SstDataBlock> GetBlockFromCache(const sharpen::ByteBuffer &key) const;
 
-        std::shared_ptr<const sharpen::SstDataBlock> GetDataBlock(const sharpen::ByteBuffer &key,bool doCache) const;
+        std::shared_ptr<const sharpen::SstDataBlock> FindBlock(const sharpen::ByteBuffer &key,bool doCache) const;
 
-        inline std::shared_ptr<const sharpen::SstDataBlock> GetDataBlock(const sharpen::ByteBuffer &key) const
+        inline std::shared_ptr<const sharpen::SstDataBlock> FindBlock(const sharpen::ByteBuffer &key) const
         {
-            return this->GetDataBlock(key,true);
+            return this->FindBlock(key,true);
         }
 
         sharpen::ByteBuffer Get(const sharpen::ByteBuffer &key) const;

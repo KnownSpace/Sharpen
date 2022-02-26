@@ -30,27 +30,27 @@ bool sharpen::SortedStringTable::Empty() const
     return this->root_.IndexBlock().Empty();
 }
 
-sharpen::SstDataBlock sharpen::SortedStringTable::LoadDataBlock(sharpen::Uint64 offset,sharpen::Uint64 size) const
+sharpen::SstDataBlock sharpen::SortedStringTable::LoadBlock(sharpen::Uint64 offset,sharpen::Uint64 size) const
 {
     return sharpen::SortedStringTableBuilder::LoadDataBlock<sharpen::SstDataBlock>(this->channel_,offset,size);
 }
 
-sharpen::SstDataBlock sharpen::SortedStringTable::LoadDataBlock(const sharpen::ByteBuffer &key) const
+sharpen::SstDataBlock sharpen::SortedStringTable::LoadBlock(const sharpen::ByteBuffer &key) const
 {
     auto ite = this->root_.IndexBlock().Find(key);
     if(ite == this->root_.IndexBlock().End())
     {
         throw std::invalid_argument("key doesn't exist");
     }
-    return this->LoadDataBlock(ite->Block().offset_,ite->Block().size_);
+    return this->LoadBlock(ite->Block().offset_,ite->Block().size_);
 }
 
-std::shared_ptr<sharpen::SstDataBlock> sharpen::SortedStringTable::LoadDataBlockCache(const sharpen::ByteBuffer &cacheKey,sharpen::Uint64 offset,sharpen::Uint64 size) const
+std::shared_ptr<sharpen::SstDataBlock> sharpen::SortedStringTable::LoadBlockCache(const sharpen::ByteBuffer &cacheKey,sharpen::Uint64 offset,sharpen::Uint64 size) const
 {
     std::shared_ptr<sharpen::SstDataBlock> block{this->dataCache_.Get(cacheKey.Begin(),cacheKey.End())};
     if(!block)
     {
-        block = std::make_shared<sharpen::SstDataBlock>(this->LoadDataBlock(offset,size));
+        block = std::make_shared<sharpen::SstDataBlock>(this->LoadBlock(offset,size));
         block = this->dataCache_.GetOrEmplace(cacheKey.Begin(),cacheKey.End(),std::move(*block));
     }
     return block;
@@ -100,11 +100,11 @@ sharpen::ExistStatus sharpen::SortedStringTable::Exist(const sharpen::ByteBuffer
     }
     std::shared_ptr<sharpen::SstDataBlock> block{nullptr};
     cacheKey = &blockIte->GetKey();
-    block = this->LoadDataBlockCache(*cacheKey,blockIte->Block().offset_,blockIte->Block().size_);
+    block = this->LoadBlockCache(*cacheKey,blockIte->Block().offset_,blockIte->Block().size_);
     return block->Exist(key);
 }
 
-std::shared_ptr<const sharpen::SstDataBlock> sharpen::SortedStringTable::GetDataBlockFromCache(const sharpen::ByteBuffer &key) const
+std::shared_ptr<const sharpen::SstDataBlock> sharpen::SortedStringTable::GetBlockFromCache(const sharpen::ByteBuffer &key) const
 {
     auto blockIte = this->root_.IndexBlock().Find(key);
     if(blockIte == this->root_.IndexBlock().End())
@@ -115,7 +115,7 @@ std::shared_ptr<const sharpen::SstDataBlock> sharpen::SortedStringTable::GetData
     return block;
 }
 
-std::shared_ptr<const sharpen::SstDataBlock> sharpen::SortedStringTable::GetDataBlock(const sharpen::ByteBuffer &key,bool doCache) const
+std::shared_ptr<const sharpen::SstDataBlock> sharpen::SortedStringTable::FindBlock(const sharpen::ByteBuffer &key,bool doCache) const
 {
     auto filterIte = this->root_.MetaIndexBlock().Find(key);
     if(filterIte == this->root_.MetaIndexBlock().End())
@@ -138,14 +138,14 @@ std::shared_ptr<const sharpen::SstDataBlock> sharpen::SortedStringTable::GetData
     cacheKey = &blockIte->GetKey();
     if(doCache)
     {
-        block = this->LoadDataBlockCache(*cacheKey,blockIte->Block().offset_,blockIte->Block().size_);
+        block = this->LoadBlockCache(*cacheKey,blockIte->Block().offset_,blockIte->Block().size_);
     }
     else
     {
         block = this->dataCache_.Get(cacheKey->Begin(),cacheKey->End());
         if(!block)
         {
-            block = std::make_shared<sharpen::SstDataBlock>(this->LoadDataBlock(blockIte->Block().offset_,blockIte->Block().size_));
+            block = std::make_shared<sharpen::SstDataBlock>(this->LoadBlock(blockIte->Block().offset_,blockIte->Block().size_));
         }
     }
     return block;
@@ -153,7 +153,7 @@ std::shared_ptr<const sharpen::SstDataBlock> sharpen::SortedStringTable::GetData
 
 sharpen::ByteBuffer sharpen::SortedStringTable::Get(const sharpen::ByteBuffer &key) const
 {
-    auto block = this->GetDataBlock(key);
+    auto block = this->FindBlock(key);
     if(!block)
     {
         throw std::invalid_argument("key doesn't exist");
@@ -163,7 +163,7 @@ sharpen::ByteBuffer sharpen::SortedStringTable::Get(const sharpen::ByteBuffer &k
 
 sharpen::Optional<sharpen::ByteBuffer> sharpen::SortedStringTable::TryGet(const sharpen::ByteBuffer &key) const
 {
-    auto block = this->GetDataBlock(key);
+    auto block = this->FindBlock(key);
     if(!block || block->Exist(key) == sharpen::ExistStatus::NotExist)
     {
         return sharpen::EmptyOpt;
