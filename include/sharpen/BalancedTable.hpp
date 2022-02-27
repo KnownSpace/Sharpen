@@ -100,6 +100,11 @@ namespace sharpen
 
         sharpen::ExistStatus Exist(const sharpen::ByteBuffer &key) const;
 
+        inline sharpen::BtBlock LoadBlock(sharpen::FilePointer pointer) const
+        {
+            return this->LoadBlock(pointer.offset_,pointer.size_);
+        }
+
         sharpen::BtBlock LoadBlock(sharpen::Uint64 offset,sharpen::Uint64 size) const;
 
         sharpen::BtBlock LoadBlock(const sharpen::ByteBuffer &key) const;
