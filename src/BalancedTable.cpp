@@ -242,7 +242,7 @@ sharpen::BtBlock sharpen::BalancedTable::LoadBlock(sharpen::Uint64 offset,sharpe
     return this->LoadBlock(offset,size,buf);
 }
 
-sharpen::BtBlock sharpen::BalancedTable::LoadBlock(const sharpen::ByteBuffer &key) const
+std::pair<sharpen::BtBlock,sharpen::FilePointer> sharpen::BalancedTable::LoadBlockAndPointer(const sharpen::ByteBuffer &key) const
 {
     auto ite = this->root_.Find(key);
     sharpen::Size depth{this->GetDepth()};
@@ -250,17 +250,23 @@ sharpen::BtBlock sharpen::BalancedTable::LoadBlock(const sharpen::ByteBuffer &ke
     {
         sharpen::ByteBuffer buf;
         sharpen::BtBlock block;
+        sharpen::FilePointer pointer;
+        std::memset(&pointer,0,sizeof(pointer));
         for (sharpen::Size i = 0,count = depth; i != count; ++i)
         {
-            sharpen::FilePointer pointer;
             assert(sizeof(pointer) == ite->Value().GetSize());
             std::memcpy(&pointer,ite->Value().Data(),sizeof(pointer));   
             block = this->LoadBlock(pointer.offset_,pointer.size_,buf);
             ite = block.Find(key);
         }
-        return block;
+        return std::make_pair(std::move(block),pointer);
     }
-    return this->root_;
+    return std::make_pair(this->root_,this->rootPointer_);
+}
+
+sharpen::BtBlock sharpen::BalancedTable::LoadBlock(const sharpen::ByteBuffer &key) const
+{
+    return this->LoadBlockAndPointer(key).first;
 }
 
 std::vector<std::pair<sharpen::BtBlock,sharpen::FilePointer>> sharpen::BalancedTable::GetPath(const sharpen::ByteBuffer &key) const

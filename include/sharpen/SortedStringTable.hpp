@@ -115,6 +115,8 @@ DataBlock                   about 4*1024 bytes
 +-------------------------+
 */
 
+#include <cassert>
+
 #include "SstRoot.hpp"
 #include "SstDataBlock.hpp"
 #include "SegmentedCircleCache.hpp"
@@ -261,6 +263,28 @@ namespace sharpen
                 return;
             }
             this->root_ = sharpen::SortedStringTableBuilder::MergeTables<sharpen::SstDataBlock>(this->channel_,blockSize,vec.begin(),vec.end(),this->filterBits_,eraseDeleted);
+        }
+
+        template<typename _InsertIterator,typename _Check = decltype(*std::declval<_InsertIterator&>()++ = std::declval<sharpen::FilePointer>())>
+        inline void RangeQuery(_InsertIterator inserter,const sharpen::ByteBuffer &beginKey,const sharpen::ByteBuffer &endKey) const
+        {
+            assert(beginKey <= endKey);
+            //query index block
+            auto begin = this->root_.IndexBlock().Find(beginKey);
+            if(begin == this->root_.IndexBlock().End())
+            {
+                return;
+            }
+            auto end = this->root_.IndexBlock().Find(endKey);
+            while (begin != end)
+            {
+                *inserter++ = begin->Block();
+                ++begin;
+            }
+            if (begin != this->root_.IndexBlock().End())
+            {
+                *inserter++ = begin->Block();
+            }
         }
     };
 }

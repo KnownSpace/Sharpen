@@ -14,6 +14,8 @@
 +-------------------+
 */
 
+#include <cassert>
+
 #include "BtBlock.hpp"
 #include "IFileChannel.hpp"
 #include "Optional.hpp"
@@ -61,6 +63,8 @@ namespace sharpen
         void InsertToRoot(sharpen::ByteBuffer key,sharpen::ByteBuffer value);
 
         void DeleteFromRoot(const sharpen::ByteBuffer &key);
+
+        std::pair<sharpen::BtBlock,sharpen::FilePointer> LoadBlockAndPointer(const sharpen::ByteBuffer &key) const;
     public:
     
         explicit BalancedTable(sharpen::FileChannelPtr channel);
@@ -100,6 +104,42 @@ namespace sharpen
 
         sharpen::BtBlock LoadBlock(const sharpen::ByteBuffer &key) const;
 
+        template<typename _InsertIterator,typename _Check = decltype(*std::declval<_InsertIterator&>()++ = std::declval<sharpen::FilePointer>())>
+        inline void RangeQuery(_InsertIterator inserter,const sharpen::ByteBuffer &beginKey,const sharpen::ByteBuffer &endKey) const
+        {
+            assert(beginKey <= endKey);
+            //get block and pointer
+            auto beginPair{this->LoadBlockAndPointer(beginKey)};
+            if(!beginPair.second.offset_ || !beginPair.second.size_)
+            {
+                return;
+            }
+            auto endPair{this->LoadBlockAndPointer(endKey)};
+            auto beginPointer{beginPair.second};
+            auto endPointer{endPair.second};
+            //load next pointer
+            sharpen::Uint64 nextPointer{beginPair.first.ComputeNextPointer()};
+            sharpen::FilePointer next{beginPair.first.Next()};
+            while (beginPointer.offset_ != endPointer.offset_)
+            {
+                //load pointer
+                sharpen::FilePointer pointer;
+                std::memset(&pointer,0,sizeof(pointer));
+                if(next.offset_ && next.size_)
+                {
+                    this->channel_->ReadAsync(reinterpret_cast<char*>(&pointer),sizeof(pointer),next.offset_ + nextPointer);
+                }
+                *inserter++ = beginPointer;
+                //set begin pointer
+                beginPointer = next;
+                //set next pointer
+                next = pointer;
+            }
+            if(beginPointer.offset_ && beginPointer.size_)
+            {
+                *inserter++ = beginPointer;
+            }
+        }
     };
 }
 
