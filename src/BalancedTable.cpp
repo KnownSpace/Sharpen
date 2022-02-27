@@ -261,8 +261,7 @@ std::pair<sharpen::BtBlock,sharpen::FilePointer> sharpen::BalancedTable::LoadBlo
         std::memset(&pointer,0,sizeof(pointer));
         for (sharpen::Size i = 0,count = depth; i != count; ++i)
         {
-            assert(sizeof(pointer) == ite->Value().GetSize());
-            std::memcpy(&pointer,ite->Value().Data(),sizeof(pointer));   
+            pointer = ite->ValueAsPointer();   
             block = this->LoadBlock(pointer.offset_,pointer.size_,buf);
             ite = block.Find(key);
         }
@@ -287,9 +286,7 @@ std::vector<std::pair<sharpen::BtBlock,sharpen::FilePointer>> sharpen::BalancedT
         sharpen::ByteBuffer buf;
         for (sharpen::Size i = 0,count = depth; i != count; ++i)
         {
-            sharpen::FilePointer pointer;
-            assert(sizeof(pointer) == ite->Value().GetSize());
-            std::memcpy(&pointer,ite->Value().Data(),sizeof(pointer));   
+            sharpen::FilePointer pointer{ite->ValueAsPointer()};
             sharpen::BtBlock block{this->LoadBlock(pointer.offset_,pointer.size_,buf)};
             path.emplace_back(std::move(block),pointer);
             ite = path.back().first.Find(key);
