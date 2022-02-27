@@ -119,6 +119,11 @@ namespace sharpen
             {
                 return;
             }
+            assert(!beginPair.first.Empty());
+            if (beginPair.first.Begin()->GetKey() > beginKey)
+            {
+                return;
+            }
             auto endPair{this->LoadBlockAndPointer(endKey)};
             auto beginPointer{beginPair.second};
             auto endPointer{endPair.second};

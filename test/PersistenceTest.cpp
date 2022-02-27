@@ -68,6 +68,31 @@ void Entry()
                     }
                 }
             }
+            //range query
+            pointers.clear();
+            pt.RangeQuery(std::back_inserter(pointers),sharpen::ByteBuffer{"othera",6},sharpen::ByteBuffer{"otherz",6});
+            std::printf("sst range query need to load %zu blocks\n",pointers.size());
+            for (auto begin = pointers.begin(),end = pointers.end(); begin != end; ++begin)
+            {
+                sharpen::SstDataBlock block{pt.LoadBlock(begin->offset_,begin->size_)};
+                for (auto groupBegin = block.Begin(),groupEnd = block.End(); groupBegin != groupEnd; ++groupBegin)
+                {
+                    for (auto keyBegin = groupBegin->Begin(),keyEnd = groupBegin->End(); keyBegin != keyEnd; ++keyBegin)
+                    {
+                        std::fputs("key is ",stdout);
+                        for (sharpen::Size i = 0; i != keyBegin->GetKey().GetSize(); ++i)
+                        {
+                            std::putchar(keyBegin->GetKey()[i]);   
+                        }
+                        std::fputs(" value is ",stdout);
+                        for (sharpen::Size i = 0; i != keyBegin->Value().GetSize(); ++i)
+                        {
+                            std::putchar(keyBegin->Value()[i]);   
+                        }
+                        std::putchar('\n');
+                    }
+                }
+            }
         }
         sharpen::FileChannelPtr table2 = sharpen::MakeFileChannel(tableName2,sharpen::FileAccessModel::All,sharpen::FileOpenModel::CreateNew);
         table2->Register(sharpen::EventEngine::GetEngine());
@@ -261,6 +286,31 @@ void Entry()
             {
                 sharpen::ByteBuffer key{"key2",4};
                 assert(pt.Exist(key) == sharpen::ExistStatus::NotExist);
+            }
+            {
+                sharpen::ByteBuffer beginKey{"key1",4};
+                sharpen::ByteBuffer endKey{"key2",4};
+                std::vector<sharpen::FilePointer> pointers;
+                pt.RangeQuery(std::back_inserter(pointers),beginKey,endKey);
+                std::printf("bt range query need to load %zu blocks\n",pointers.size());
+                for (auto begin = pointers.begin(),end = pointers.end(); begin != end; ++begin)
+                {
+                    sharpen::BtBlock block{pt.LoadBlock(begin->offset_,begin->size_)};
+                    for (auto keyBegin = block.Begin(),keyEnd = block.End(); keyBegin != keyEnd; ++keyBegin)
+                    {
+                        std::fputs("key is ",stdout);
+                        for (sharpen::Size i = 0; i != keyBegin->GetKey().GetSize(); ++i)
+                        {
+                            std::putchar(keyBegin->GetKey()[i]);   
+                        }
+                        std::fputs(" value is ",stdout);
+                        for (sharpen::Size i = 0; i != keyBegin->Value().GetSize(); ++i)
+                        {
+                            std::putchar(keyBegin->Value()[i]);   
+                        }
+                        std::putchar('\n');
+                    }
+                }
             }
         }
         log->Close();
