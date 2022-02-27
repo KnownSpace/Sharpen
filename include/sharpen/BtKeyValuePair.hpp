@@ -14,6 +14,8 @@
 +------------+
 */
 
+#include <cassert>
+
 #include "ByteBuffer.hpp"
 #include "DataCorruptionException.hpp"
 
