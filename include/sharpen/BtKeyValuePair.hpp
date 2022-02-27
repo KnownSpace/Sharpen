@@ -18,6 +18,7 @@
 
 #include "ByteBuffer.hpp"
 #include "DataCorruptionException.hpp"
+#include "FilePointer.hpp"
 
 namespace sharpen
 {
@@ -86,6 +87,11 @@ namespace sharpen
         {
             assert(this->Value().GetSize() == sizeof(sharpen::FilePointer));
             return *reinterpret_cast<const sharpen::FilePointer*>(this->Value().Data());
+        }
+
+        inline bool MayBePointer() const noexcept
+        {
+            return this->Value().GetSize() == sizeof(sharpen::FilePointer);
         }
 
         sharpen::Size ComputeSize() const noexcept;
