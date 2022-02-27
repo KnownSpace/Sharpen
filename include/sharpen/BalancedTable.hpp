@@ -90,6 +90,11 @@ namespace sharpen
             return this->root_.GetDepth();
         }
 
+        inline const sharpen::BtBlock &Root() const noexcept
+        {
+            return this->root_;
+        }
+
         void Put(sharpen::ByteBuffer key,sharpen::ByteBuffer value);
 
         void Delete(const sharpen::ByteBuffer &key);
