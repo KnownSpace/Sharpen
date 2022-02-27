@@ -107,7 +107,7 @@ namespace sharpen
         }
 
         template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
-        std::shared_ptr<_T> Get(_Iterator begin,_Iterator end) const noexcept
+        inline std::shared_ptr<_T> Get(_Iterator begin,_Iterator end) const noexcept
         {
             assert(begin != end);
             assert(this->caches_);
@@ -128,6 +128,21 @@ namespace sharpen
             assert(begin != end);
             assert(this->caches_);
             return this->caches_[this->HashKey(begin,end)].GetOrEmplace(begin,end,std::forward<_Args>(args)...);
+        }
+
+        template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
+        inline void Delete(_Iterator begin,_Iterator end) noexcept
+        {
+            assert(begin != end);
+            assert(this->caches_);
+            return this->caches_[this->HashKey(begin,end)].Delete(begin,end);
+        }
+
+        inline void Delete(const std::string &key) noexcept
+        {
+            assert(!key.empty());
+            assert(this->caches_);
+            return this->caches_[this->HashKey(key)].Delete(key);
         }
     };
 }

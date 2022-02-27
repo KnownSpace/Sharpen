@@ -28,29 +28,16 @@ namespace sharpen
         using Self = sharpen::CircleCache<_T>;
         using Buffer = std::vector<typename Self::CacheItem>;
         using Lock = sharpen::SpinLock;
+        using Iterator = typename Buffer::iterator;
+        using ConstIterator = typename Buffer::const_iterator;
 
         Buffer buf_;
         mutable Lock lock_;
         sharpen::Size next_;
 
-        std::shared_ptr<_T> UnlockedGet(const std::string &key) const noexcept
-        {
-            std::shared_ptr<_T> result{nullptr};
-            for (auto begin = this->buf_.begin(), end = this->buf_.end(); begin != end; ++begin)
-            {
-                if (begin->cacheObj_ && begin->key_ == key)
-                {
-                    result = begin->cacheObj_;
-                    break;
-                }
-            }
-            return result;
-        }
-
         template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
-        std::shared_ptr<_T> UnlockedGet(_Iterator keyBegin,_Iterator keyEnd) const noexcept
+        ConstIterator Find(_Iterator keyBegin,_Iterator keyEnd) const noexcept
         {
-            std::shared_ptr<_T> result{nullptr};
             for (auto begin = this->buf_.begin(), end = this->buf_.end(); begin != end; ++begin)
             {
                 if (begin->cacheObj_)
@@ -67,12 +54,59 @@ namespace sharpen
                     }
                     if(match)
                     {
-                        result = begin->cacheObj_;
-                        break;
+                        return begin;
                     }
                 }
             }
+            return this->buf_.end();
+        }
+
+        template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
+        Iterator Find(_Iterator keyBegin,_Iterator keyEnd) noexcept
+        {
+            for (auto begin = this->buf_.begin(), end = this->buf_.end(); begin != end; ++begin)
+            {
+                if (begin->cacheObj_)
+                {
+                    bool match{true};
+                    sharpen::Size index{0};
+                    for (auto ite = keyBegin; ite != keyEnd; ++ite,++index)
+                    {
+                        if(*ite != begin->key_[index])
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+                    if(match)
+                    {
+                        return begin;
+                    }
+                }
+            }
+            return this->buf_.end();
+        }
+
+        template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
+        std::shared_ptr<_T> UnlockedGet(_Iterator keyBegin,_Iterator keyEnd) const noexcept
+        {
+            std::shared_ptr<_T> result{nullptr};
+            auto ite = this->Find(keyBegin,keyEnd);
+            if(ite != this->buf_.end())
+            {
+                result = ite->cacheObj_;
+            }
             return result;
+        }
+
+        template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
+        void UnlockedDelete(_Iterator keyBegin,_Iterator keyEnd) noexcept
+        {
+            auto ite = this->Find(keyBegin,keyEnd);
+            if(ite != this->buf_.end())
+            {
+                ite->cacheObj_.reset();
+            }
         }
     public:
         explicit CircleCache(sharpen::Size size)
@@ -129,6 +163,19 @@ namespace sharpen
             assert(begin != end);
             std::unique_lock<Lock> lock(this->lock_);
             return this->UnlockedGet(begin,end);
+        }
+
+        template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
+        void Delete(_Iterator begin,_Iterator end) noexcept
+        {
+            assert(begin != end);
+            std::unique_lock<Lock> lock(this->lock_);
+            return this->UnlockedDelete(begin,end);
+        }
+
+        void Delete(const std::string &key) noexcept
+        {
+            return this->Delete(key.begin(),key.end());
         }
     };
 }
