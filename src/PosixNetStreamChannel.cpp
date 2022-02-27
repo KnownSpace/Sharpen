@@ -43,7 +43,11 @@ bool sharpen::PosixNetStreamChannel::IsAcceptBlock(sharpen::ErrorCode err) noexc
 
 sharpen::FileHandle sharpen::PosixNetStreamChannel::DoAccept()
 {
-    sharpen::FileHandle s = ::accept4(this->handle_, nullptr, nullptr, SOCK_NONBLOCK | SOCK_CLOEXEC);
+    sharpen::FileHandle s;
+    do
+    {
+        s = ::accept4(this->handle_, nullptr, nullptr, SOCK_NONBLOCK | SOCK_CLOEXEC);
+    } while (s == -1 && sharpen::GetLastError() == EINTR);
     return s;
 }
 
@@ -231,7 +235,7 @@ void sharpen::PosixNetStreamChannel::TryConnect(const sharpen::IEndPoint &endPoi
     if(r == -1)
     {
         sharpen::ErrorCode err = sharpen::GetLastError();
-        if (err != EINPROGRESS)
+        if (err != EINPROGRESS && err != EINTR)
         {
             this->status_ = sharpen::PosixNetStreamChannel::IoStatus::Io;
             cb();
