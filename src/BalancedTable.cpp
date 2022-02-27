@@ -134,9 +134,9 @@ sharpen::FilePointer sharpen::BalancedTable::WriteEndOfBlock(sharpen::BtBlock &b
     }
     sharpen::ByteBuffer buf;
     block.ReverseBegin()->StoreTo(buf);
-    this->channel_->WriteAsync(buf,offset + pointer.offset_);
     sharpen::Uint16 keyCount{sharpen::IntCast<sharpen::Uint16>(block.GetSize())};
     this->channel_->WriteAsync(reinterpret_cast<char*>(&keyCount),sizeof(keyCount),pointer.offset_ + block.ComputeCounterPointer());
+    this->channel_->WriteAsync(buf,offset + pointer.offset_);
     return pointer;
 }
 
@@ -160,10 +160,12 @@ sharpen::FilePointer sharpen::BalancedTable::WriteBlock(sharpen::BtBlock &block,
             this->FreeMemory(newPointer);
             throw;
         }
+        //set prev's next pointer
         if(block.Prev().offset_ && block.Prev().size_)
         {
             this->channel_->WriteAsync(reinterpret_cast<char*>(&newPointer),sizeof(newPointer),block.ComputeNextPointer() + block.Prev().offset_);
         }
+        //set next's prev pointer
         if(block.Next().offset_ && block.Next().size_)
         {
             this->channel_->WriteAsync(reinterpret_cast<char*>(&newPointer),sizeof(newPointer),block.ComputePrevPointer() + block.Next().offset_);
@@ -210,9 +212,14 @@ sharpen::FilePointer sharpen::BalancedTable::InsertRecord(sharpen::BtBlock &bloc
         nextPointer.size_ = 0;
         nextBlock.Next() = block.Next();
         nextBlock.Prev() = pointer;
+        //write block
         nextPointer = this->WriteBlock(nextBlock,nextPointer);
+        //set new block next pointer
         block.Next() = nextPointer;
-        this->WriteBlock(block,pointer);
+        //rewrite old block
+        sharpen::FilePointer oldPointer{this->WriteBlock(block,pointer)};
+        assert(oldPointer.offset_ == pointer.offset_);
+        static_cast<void>(oldPointer);
         splitedBlock.Construct(std::move(nextBlock));
         return pointer;
     }
@@ -399,7 +406,6 @@ void sharpen::BalancedTable::Delete(const sharpen::ByteBuffer &key)
     {
         return;
     }
-    //TODO delete 
     if(lastBlock->GetSize() != 1)
     {
         lastBlock->Delete(key);
