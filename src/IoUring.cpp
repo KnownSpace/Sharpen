@@ -124,7 +124,12 @@ sharpen::IoUring::~IoUring() noexcept
 
 void sharpen::IoUring::Enter(unsigned int to_submit,unsigned int min_complete,unsigned int flags,sigset_t *sig)
 {
-    if(sharpen::IoUringEnter(this->ringFd_,to_submit,min_complete,flags,sig) == -1)
+    int r;
+    do
+    {
+        r = sharpen::IoUringEnter(this->ringFd_,to_submit,min_complete,flags,sig);
+    } while (r == -1 && sharpen::GetLastError() == EINTR);
+    if(r == -1)
     {
         sharpen::ThrowLastError();
     }
@@ -132,7 +137,12 @@ void sharpen::IoUring::Enter(unsigned int to_submit,unsigned int min_complete,un
 
 void sharpen::IoUring::Enter(unsigned int to_submit,unsigned int min_complete,unsigned int flags,void *arg,size_t argsz)
 {
-    if(sharpen::IoUringEnterEx(this->ringFd_,to_submit,min_complete,flags,arg,argsz) == -1)
+    int r;
+    do
+    {
+        r = sharpen::IoUringEnterEx(this->ringFd_,to_submit,min_complete,flags,arg,argsz);
+    } while (r == -1 && sharpen::GetLastError() == EINTR);
+    if(r == -1)
     {
         sharpen::ThrowLastError();
     }
