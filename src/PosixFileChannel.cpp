@@ -31,7 +31,11 @@ sharpen::PosixFileChannel::PosixFileChannel(sharpen::FileHandle handle)
 
 void sharpen::PosixFileChannel::NormalWrite(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> *future)
 {
-    ssize_t r = ::pwrite64(this->handle_,buf,bufSize,offset);
+    ssize_t r;
+    do
+    {
+        r = ::pwrite64(this->handle_,buf,bufSize,offset);
+    } while (r == -1 && sharpen::GetLastError() == EINTR);
     if(r == -1)
     {
         future->Fail(sharpen::MakeLastErrorPtr());
@@ -92,7 +96,11 @@ void sharpen::PosixFileChannel::DoWrite(const sharpen::Char *buf,sharpen::Size b
 
 void sharpen::PosixFileChannel::NormalRead(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> *future)
 {
-    ssize_t r = ::pread64(this->handle_,buf,bufSize,offset);
+    ssize_t r;
+    do
+    {
+        r = ::pread64(this->handle_,buf,bufSize,offset);
+    } while (r == -1 && sharpen::GetLastError() == EINTR);
     if(r == -1)
     {
         future->Fail(sharpen::MakeLastErrorPtr());

@@ -15,7 +15,11 @@ void sharpen::PosixIoReader::DoExecute(sharpen::FileHandle handle,bool &executed
     blocking = false;
     IoBuffer *bufs = this->GetFirstBuffer();
     Callback *cbs = this->GetFirstCallback();
-    ssize_t bytes = ::readv(handle,bufs,size);
+    ssize_t bytes;
+    do
+    {
+        bytes = ::readv(handle,bufs,size);
+    } while (bytes == -1 && sharpen::GetLastError() == EINTR);
     if(bytes == -1)
     {
         //blocking

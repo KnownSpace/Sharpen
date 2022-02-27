@@ -15,7 +15,11 @@ void sharpen::PosixIoWriter::DoExecute(sharpen::FileHandle handle,bool &executed
     blocking = false;
     IoBuffer *bufs = this->GetFirstBuffer();
     Callback *cbs = this->GetFirstCallback();
-    ssize_t bytes = ::writev(handle,bufs,size);
+    ssize_t bytes;
+    do
+    {
+        bytes = ::writev(handle,bufs,size);
+    } while (bytes == -1 && sharpen::GetLastError() == EINTR);
     if (bytes == -1)
     {
         sharpen::ErrorCode err = sharpen::GetLastError();
