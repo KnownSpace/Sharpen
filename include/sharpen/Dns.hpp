@@ -35,7 +35,7 @@ namespace sharpen
         static ResolveResult ConvertAddrInfoToResolveResult(addrinfo *addrInfo);
 
         template<typename _InsertIterator,typename _Check = decltype(std::declval<_InsertIterator>() = std::declval<ResolveResult>())>
-        inline static void ResolveName(const char *name,_InsertIterator insertor,int af)
+        inline static void ResolveName(const char *name,_InsertIterator inserter,int af)
         {
             addrinfo *addrs{nullptr};
             //ignore error
@@ -47,7 +47,7 @@ namespace sharpen
             {
                 for (auto begin = addrs; begin; begin = begin->ai_next)
                 {
-                    *insertor++ = sharpen::Dns::ConvertAddrInfoToResolveResult(begin);
+                    *inserter++ = sharpen::Dns::ConvertAddrInfoToResolveResult(begin);
                 }
                 ::freeaddrinfo(addrs);
             }
@@ -60,16 +60,16 @@ namespace sharpen
     public:
 
         template<typename _InsertIterator,typename _Check = decltype(std::declval<_InsertIterator>() = std::declval<ResolveResult>())>
-        inline static void ResolveName(const char *name,_InsertIterator insertor)
+        inline static void ResolveName(const char *name,_InsertIterator inserter)
         {
-            sharpen::Dns::ResolveName(name,insertor,AF_UNSPEC);
+            sharpen::Dns::ResolveName(name,inserter,AF_UNSPEC);
         }
 
         template<typename _InsertIterator,typename _Check = decltype(std::declval<_InsertIterator>() = std::declval<ResolveResult>())>
-        static void ResolveName(const char *name,sharpen::AddressFamily af,_InsertIterator insertor)
+        static void ResolveName(const char *name,sharpen::AddressFamily af,_InsertIterator inserter)
         {
             int intAf = af == sharpen::AddressFamily::Ip ? AF_INET : AF_INET6;
-            sharpen::Dns::ResolveName(name,insertor,intAf);
+            sharpen::Dns::ResolveName(name,inserter,intAf);
         }
     };
 }
