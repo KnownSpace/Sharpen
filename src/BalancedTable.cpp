@@ -509,6 +509,8 @@ void sharpen::BalancedTable::Delete(const sharpen::ByteBuffer &key)
     while (lastBlock->GetSize() == 1)
     {
         deletedKey = std::move(*lastBlock->Begin()).MoveKey();
+        sharpen::FilePointer pointer{path.back().second};
+        this->DeleteFromCache(pointer);
         sharpen::FilePointer prev;
         sharpen::FilePointer next;
         std::memcpy(&next,&lastBlock->Next(),sizeof(next));
@@ -521,9 +523,7 @@ void sharpen::BalancedTable::Delete(const sharpen::ByteBuffer &key)
         {
             this->channel_->WriteAsync(reinterpret_cast<char*>(&prev),sizeof(prev),lastBlock->ComputePrevPointer() + next.offset_);
         }
-        sharpen::FilePointer pointer{path.back().second};
         path.pop_back();
-        this->DeleteFromCache(pointer);
         this->FreeMemory(pointer);
         if(!path.empty())
         {

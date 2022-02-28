@@ -5,6 +5,7 @@
 #include <vector>
 #include <algorithm>
 #include <functional>
+#include <cassert>
 
 #include "Noncopyable.hpp"
 #include "TypeDef.hpp"
