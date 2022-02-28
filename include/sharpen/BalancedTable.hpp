@@ -19,6 +19,7 @@
 #include "BtBlock.hpp"
 #include "IFileChannel.hpp"
 #include "Optional.hpp"
+#include "SegmentedCircleCache.hpp"
 
 namespace sharpen
 {
@@ -33,6 +34,7 @@ namespace sharpen
         sharpen::BtBlock root_;
         sharpen::Uint64 offset_;
         sharpen::FilePointer rootPointer_;
+        mutable sharpen::SegmentedCircleCache<sharpen::BtBlock> caches_;
 
         constexpr static sharpen::Size blockSize_{4*1024};
 
@@ -48,6 +50,14 @@ namespace sharpen
 
         void InitFile();
 
+        std::shared_ptr<sharpen::BtBlock> LoadCache(sharpen::FilePointer pointer) const;
+
+        std::shared_ptr<sharpen::BtBlock> LoadCache(sharpen::FilePointer pointer,sharpen::ByteBuffer &buf) const;
+
+        std::shared_ptr<sharpen::BtBlock> LoadFromCache(sharpen::FilePointer pointer) const;
+
+        void DeleteFromCache(sharpen::FilePointer pointer);
+
         void WriteRootPointer(sharpen::FilePointer pointer);
 
         sharpen::FilePointer WriteEndOfBlock(sharpen::BtBlock &block,sharpen::Uint64 offset,sharpen::FilePointer pointer);
@@ -58,7 +68,12 @@ namespace sharpen
     
         sharpen::BtBlock LoadBlock(sharpen::Uint64 offset,sharpen::Uint64 size,sharpen::ByteBuffer &buf) const;
 
-        std::vector<std::pair<sharpen::BtBlock,sharpen::FilePointer>> GetPath(const sharpen::ByteBuffer &key) const;
+        std::vector<std::pair<std::shared_ptr<sharpen::BtBlock>,sharpen::FilePointer>> GetPath(const sharpen::ByteBuffer &key,bool doCache) const;
+
+        inline std::vector<std::pair<std::shared_ptr<sharpen::BtBlock>,sharpen::FilePointer>> GetPath(const sharpen::ByteBuffer &key) const
+        {
+            return this->GetPath(key,true);
+        }
 
         void InsertToRoot(sharpen::ByteBuffer key,sharpen::ByteBuffer value);
 
@@ -113,6 +128,15 @@ namespace sharpen
         sharpen::BtBlock LoadBlock(sharpen::Uint64 offset,sharpen::Uint64 size) const;
 
         sharpen::BtBlock LoadBlock(const sharpen::ByteBuffer &key) const;
+
+        std::shared_ptr<const sharpen::BtBlock> FindBlockFromCache(const sharpen::ByteBuffer &key) const;
+
+        std::shared_ptr<const sharpen::BtBlock> FindBlock(const sharpen::ByteBuffer &key,bool doCache) const;
+
+        inline std::shared_ptr<const sharpen::BtBlock> FindBlock(const sharpen::ByteBuffer &key) const
+        {
+            return this->FindBlock(key,true);
+        }
 
         template<typename _InsertIterator,typename _Check = decltype(*std::declval<_InsertIterator&>()++ = std::declval<sharpen::FilePointer>())>
         inline void RangeQuery(_InsertIterator inserter,const sharpen::ByteBuffer &beginKey,const sharpen::ByteBuffer &endKey) const

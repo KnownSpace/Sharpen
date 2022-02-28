@@ -79,14 +79,12 @@ namespace sharpen
 
         inline sharpen::FilePointer &ValueAsPointer() noexcept
         {
-            assert(this->Value().GetSize() == sizeof(sharpen::FilePointer));
-            return *reinterpret_cast<sharpen::FilePointer*>(this->Value().Data());
+            return this->Value().As<sharpen::FilePointer>();
         }
 
         inline const sharpen::FilePointer &ValueAsPointer() const noexcept
         {
-            assert(this->Value().GetSize() == sizeof(sharpen::FilePointer));
-            return *reinterpret_cast<const sharpen::FilePointer*>(this->Value().Data());
+            return this->Value().As<const sharpen::FilePointer>();
         }
 
         inline bool MayBePointer() const noexcept

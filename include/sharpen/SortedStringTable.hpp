@@ -208,16 +208,13 @@ namespace sharpen
 
         sharpen::ExistStatus Exist(const sharpen::ByteBuffer &key) const;
 
-        inline sharpen::SstDataBlock LoadBlock(sharpen::FilePointer pointer) const
-        {
-            return this->LoadBlock(pointer.offset_,pointer.size_);
-        }
+        sharpen::SstDataBlock LoadBlock(sharpen::FilePointer pointer) const;
 
         sharpen::SstDataBlock LoadBlock(sharpen::Uint64 offset,sharpen::Uint64 size) const;
 
         sharpen::SstDataBlock LoadBlock(const sharpen::ByteBuffer &key) const;
 
-        std::shared_ptr<const sharpen::SstDataBlock> GetBlockFromCache(const sharpen::ByteBuffer &key) const;
+        std::shared_ptr<const sharpen::SstDataBlock> FindBlockFromCache(const sharpen::ByteBuffer &key) const;
 
         std::shared_ptr<const sharpen::SstDataBlock> FindBlock(const sharpen::ByteBuffer &key,bool doCache) const;
 

@@ -30,6 +30,11 @@ bool sharpen::SortedStringTable::Empty() const
     return this->root_.IndexBlock().Empty();
 }
 
+sharpen::SstDataBlock sharpen::SortedStringTable::LoadBlock(sharpen::FilePointer pointer) const
+{
+    return sharpen::SortedStringTableBuilder::LoadDataBlock<sharpen::SstDataBlock>(this->channel_,pointer.offset_,pointer.size_);
+}
+
 sharpen::SstDataBlock sharpen::SortedStringTable::LoadBlock(sharpen::Uint64 offset,sharpen::Uint64 size) const
 {
     return sharpen::SortedStringTableBuilder::LoadDataBlock<sharpen::SstDataBlock>(this->channel_,offset,size);
@@ -104,7 +109,7 @@ sharpen::ExistStatus sharpen::SortedStringTable::Exist(const sharpen::ByteBuffer
     return block->Exist(key);
 }
 
-std::shared_ptr<const sharpen::SstDataBlock> sharpen::SortedStringTable::GetBlockFromCache(const sharpen::ByteBuffer &key) const
+std::shared_ptr<const sharpen::SstDataBlock> sharpen::SortedStringTable::FindBlockFromCache(const sharpen::ByteBuffer &key) const
 {
     auto blockIte = this->root_.IndexBlock().Find(key);
     if(blockIte == this->root_.IndexBlock().End())

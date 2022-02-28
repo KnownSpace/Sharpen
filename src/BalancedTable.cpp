@@ -100,12 +100,46 @@ void sharpen::BalancedTable::InitRoot()
     }
 }
 
+std::shared_ptr<sharpen::BtBlock> sharpen::BalancedTable::LoadFromCache(sharpen::FilePointer pointer) const
+{
+    char *keyBegin = reinterpret_cast<char*>(&pointer);
+    char *keyEnd = keyBegin + sizeof(pointer);
+    std::shared_ptr<sharpen::BtBlock> result{this->caches_.Get(keyBegin,keyEnd)};
+    return result;
+}
+
+void sharpen::BalancedTable::DeleteFromCache(sharpen::FilePointer pointer)
+{
+    char *keyBegin = reinterpret_cast<char*>(&pointer);
+    char *keyEnd = keyBegin + sizeof(pointer);
+    this->caches_.Delete(keyBegin,keyEnd);
+}
+
+std::shared_ptr<sharpen::BtBlock> sharpen::BalancedTable::LoadCache(sharpen::FilePointer pointer) const
+{
+    sharpen::ByteBuffer buf;
+    return this->LoadCache(pointer,buf);
+}
+
+std::shared_ptr<sharpen::BtBlock> sharpen::BalancedTable::LoadCache(sharpen::FilePointer pointer,sharpen::ByteBuffer &buf) const
+{
+    char *keyBegin = reinterpret_cast<char*>(&pointer);
+    char *keyEnd = keyBegin + sizeof(pointer);
+    std::shared_ptr<sharpen::BtBlock> result{this->caches_.Get(keyBegin,keyEnd)};
+    if(!result)
+    {
+        result = this->caches_.GetOrEmplace(keyBegin,keyEnd,this->LoadBlock(pointer.offset_,pointer.size_,buf));
+    }
+    return result;
+}
+
 sharpen::BalancedTable::BalancedTable(sharpen::FileChannelPtr channel,sharpen::Uint16 maxRecordOfBlock)
     :channel_(std::move(channel))
     ,freeArea_()
     ,maxRecordsOfBlock_((std::max)(static_cast<sharpen::Uint16>(3),maxRecordOfBlock))
     ,root_(0,this->maxRecordsOfBlock_)
     ,offset_(0)
+    ,caches_(64)
 {
     this->freeArea_.reserve(64);
     sharpen::Uint64 size{this->channel_->GetFileSize()};
@@ -163,13 +197,28 @@ sharpen::FilePointer sharpen::BalancedTable::WriteBlock(sharpen::BtBlock &block,
         //set prev's next pointer
         if(block.Prev().offset_ && block.Prev().size_)
         {
+            //write file
             this->channel_->WriteAsync(reinterpret_cast<char*>(&newPointer),sizeof(newPointer),block.ComputeNextPointer() + block.Prev().offset_);
+            //flush cache
+            auto cahce{this->LoadFromCache(block.Prev())};
+            if(cahce)
+            {
+                cahce->Next() = newPointer;
+            }
         }
         //set next's prev pointer
         if(block.Next().offset_ && block.Next().size_)
         {
+            //write file
             this->channel_->WriteAsync(reinterpret_cast<char*>(&newPointer),sizeof(newPointer),block.ComputePrevPointer() + block.Next().offset_);
+            //flush cache
+            auto cache{this->LoadFromCache(block.Next())};
+            if(cache)
+            {
+                cache->Prev() = newPointer;
+            }
         }
+        this->DeleteFromCache(pointer);
         this->FreeMemory(pointer);
         return newPointer;
     }
@@ -192,8 +241,13 @@ sharpen::Uint64 sharpen::BalancedTable::ComputeBlockSize(const sharpen::BtBlock 
 
 sharpen::FilePointer sharpen::BalancedTable::InsertRecord(sharpen::BtBlock &block,sharpen::ByteBuffer key,sharpen::ByteBuffer value,sharpen::FilePointer pointer,sharpen::Optional<sharpen::BtBlock> &splitedBlock)
 {
+    //query put tage
     auto tag = block.QueryPutTage(key);
     sharpen::Size offset{0};
+    //if append or motify end
+    //we just write to the end of block
+    //if normal
+    //we must rewrite the block
     if(tag == sharpen::BtBlock::PutTage::Append)
     {
         offset = block.GetAppendPointer();
@@ -202,27 +256,30 @@ sharpen::FilePointer sharpen::BalancedTable::InsertRecord(sharpen::BtBlock &bloc
     {
         offset = block.ComputeMotifyEndPointer();
     }
+    //put key and value to block
     block.Put(std::move(key),std::move(value));
-    //split block
+    //split block if we needed
     if (block.GetSize() > this->maxRecordsOfBlock_)
     {
+        //init new block
         sharpen::BtBlock nextBlock{block.Split()};
         sharpen::FilePointer nextPointer;
-        nextPointer.offset_ = 0;
-        nextPointer.size_ = 0;
+        std::memset(&nextPointer,0,sizeof(nextPointer));
         nextBlock.Next() = block.Next();
         nextBlock.Prev() = pointer;
-        //write block
+        //write new block
         nextPointer = this->WriteBlock(nextBlock,nextPointer);
         //set new block next pointer
         block.Next() = nextPointer;
         //rewrite old block
         sharpen::FilePointer oldPointer{this->WriteBlock(block,pointer)};
+        //never overflow
         assert(oldPointer.offset_ == pointer.offset_);
         static_cast<void>(oldPointer);
         splitedBlock.Construct(std::move(nextBlock));
         return pointer;
     }
+    //write to file
     if(tag == sharpen::BtBlock::PutTage::Normal)
     {
         pointer = this->WriteBlock(block,pointer);
@@ -251,19 +308,28 @@ sharpen::BtBlock sharpen::BalancedTable::LoadBlock(sharpen::Uint64 offset,sharpe
 
 std::pair<sharpen::BtBlock,sharpen::FilePointer> sharpen::BalancedTable::LoadBlockAndPointer(const sharpen::ByteBuffer &key) const
 {
-    auto ite = this->root_.Find(key);
     sharpen::Size depth{this->GetDepth()};
     if(depth)
     {
+        auto ite = this->root_.Find(key);
         sharpen::ByteBuffer buf;
         sharpen::BtBlock block;
         sharpen::FilePointer pointer;
         std::memset(&pointer,0,sizeof(pointer));
+        std::shared_ptr<sharpen::BtBlock> blockRef{nullptr};
         for (sharpen::Size i = 0,count = depth; i != count; ++i)
         {
-            pointer = ite->ValueAsPointer();   
-            block = this->LoadBlock(pointer.offset_,pointer.size_,buf);
-            ite = block.Find(key);
+            pointer = ite->ValueAsPointer();
+            blockRef = this->LoadFromCache(pointer);
+            if(!blockRef)
+            {
+                block = this->LoadBlock(pointer.offset_,pointer.size_,buf);
+                ite = block.Find(key);
+            }
+            else
+            {
+                ite = blockRef->Find(key);
+            }
         }
         return std::make_pair(std::move(block),pointer);
     }
@@ -275,10 +341,10 @@ sharpen::BtBlock sharpen::BalancedTable::LoadBlock(const sharpen::ByteBuffer &ke
     return this->LoadBlockAndPointer(key).first;
 }
 
-std::vector<std::pair<sharpen::BtBlock,sharpen::FilePointer>> sharpen::BalancedTable::GetPath(const sharpen::ByteBuffer &key) const
+std::vector<std::pair<std::shared_ptr<sharpen::BtBlock>,sharpen::FilePointer>> sharpen::BalancedTable::GetPath(const sharpen::ByteBuffer &key,bool doCache) const
 {
     sharpen::Size depth{this->GetDepth()};
-    std::vector<std::pair<sharpen::BtBlock,sharpen::FilePointer>> path;
+    std::vector<std::pair<std::shared_ptr<sharpen::BtBlock>,sharpen::FilePointer>> path;
     if(depth)
     {
         auto ite = this->root_.Find(key);
@@ -287,9 +353,21 @@ std::vector<std::pair<sharpen::BtBlock,sharpen::FilePointer>> sharpen::BalancedT
         for (sharpen::Size i = 0,count = depth; i != count; ++i)
         {
             sharpen::FilePointer pointer{ite->ValueAsPointer()};
-            sharpen::BtBlock block{this->LoadBlock(pointer.offset_,pointer.size_,buf)};
+            std::shared_ptr<sharpen::BtBlock> block{nullptr};
+            if(doCache)
+            {
+                block = this->LoadCache(pointer);
+            }
+            else
+            {
+                block = this->LoadFromCache(pointer);
+                if(!block)
+                {
+                    block = std::make_shared<sharpen::BtBlock>(this->LoadBlock(pointer.offset_,pointer.size_,buf));
+                }
+            }
             path.emplace_back(std::move(block),pointer);
-            ite = path.back().first.Find(key);
+            ite = path.back().first->Find(key);
         }
     }
     return path;
@@ -306,16 +384,21 @@ void sharpen::BalancedTable::InsertToRoot(sharpen::ByteBuffer key,sharpen::ByteB
     }
     if(splitedBlock.Exist())
     {
+        //we need a new root
         sharpen::BtBlock newRoot{0};
+        //increase depth
         newRoot.SetDepth(this->GetDepth() + 1);
+        //set path
         sharpen::ByteBuffer buf{sizeof(sharpen::FilePointer)};
         std::memcpy(buf.Data(),&this->rootPointer_,sizeof(this->rootPointer_));
         newRoot.Put(this->root_.Begin()->GetKey(),std::move(buf));
         buf.ExtendTo(sizeof(this->rootPointer_));
         std::memcpy(buf.Data(),&this->root_.Next(),sizeof(this->root_.Next()));
         newRoot.Put(splitedBlock.Get().Begin()->GetKey(),std::move(buf));
+        //write new root
         std::memset(&pointer,0,sizeof(pointer));
         pointer = this->WriteBlock(newRoot,pointer);
+        //write root pointer
         this->rootPointer_ = pointer;
         this->root_ = std::move(newRoot);
         this->WriteRootPointer(this->rootPointer_);
@@ -324,14 +407,27 @@ void sharpen::BalancedTable::InsertToRoot(sharpen::ByteBuffer key,sharpen::ByteB
 
 void sharpen::BalancedTable::Put(sharpen::ByteBuffer key,sharpen::ByteBuffer value)
 {
+    //if depth == 0
+    //we only have root
     if (!this->GetDepth())
     {
         return this->InsertToRoot(std::move(key),std::move(value));
     }
+    //find path
     auto path{this->GetPath(key)};
-    sharpen::BtBlock *lastBlock = &path.back().first;
+    std::shared_ptr<sharpen::BtBlock> lastBlock{std::move(path.back().first)};
     sharpen::Optional<sharpen::BtBlock> splitedBlock;
-    path.back().second = this->InsertRecord(*lastBlock,std::move(key),std::move(value),path.back().second,splitedBlock);
+    try
+    {
+        path.back().second = this->InsertRecord(*lastBlock,std::move(key),std::move(value),path.back().second,splitedBlock);
+    }
+    catch(const std::exception&)
+    {
+        //we must flush cache
+        //if we failed
+        this->DeleteFromCache(path.back().second);
+        throw;
+    }
     while (splitedBlock.Exist())
     {
         sharpen::ByteBuffer next{sizeof(lastBlock->Next())};
@@ -341,7 +437,7 @@ void sharpen::BalancedTable::Put(sharpen::ByteBuffer key,sharpen::ByteBuffer val
         splitedBlock.Reset();
         if(!path.empty())
         {
-            lastBlock = &path.back().first;
+            lastBlock = std::move(path.back().first);
             path.back().second = this->InsertRecord(*lastBlock,std::move(*splited.Begin()).MoveKey(),std::move(next),path.back().second,splitedBlock);
         }
         else
@@ -397,7 +493,7 @@ void sharpen::BalancedTable::Delete(const sharpen::ByteBuffer &key)
         return this->DeleteFromRoot(key);
     }
     auto path{this->GetPath(key)};
-    sharpen::BtBlock *lastBlock = &path.back().first;
+    std::shared_ptr<sharpen::BtBlock> lastBlock{std::move(path.back().first)};
     auto ite = lastBlock->Find(key);
     if(ite == lastBlock->End() || ite->GetKey() != key)
     {
@@ -427,10 +523,11 @@ void sharpen::BalancedTable::Delete(const sharpen::ByteBuffer &key)
         }
         sharpen::FilePointer pointer{path.back().second};
         path.pop_back();
+        this->DeleteFromCache(pointer);
         this->FreeMemory(pointer);
         if(!path.empty())
         {
-            lastBlock = &path.back().first;
+            lastBlock = std::move(path.back().first);
         }
         else
         {
@@ -441,6 +538,7 @@ void sharpen::BalancedTable::Delete(const sharpen::ByteBuffer &key)
                 std::memcpy(&pointer,this->root_.Begin()->Value().Data(),sizeof(pointer));
                 std::swap(this->rootPointer_,pointer);
                 this->WriteRootPointer(this->rootPointer_);
+                //we never put root to caches
                 this->FreeMemory(pointer);
                 this->root_ = this->LoadBlock(this->rootPointer_.offset_,this->rootPointer_.size_);
                 return;
@@ -451,4 +549,56 @@ void sharpen::BalancedTable::Delete(const sharpen::ByteBuffer &key)
     }
     lastBlock->FuzzingDelete(deletedKey);
     this->WriteBlock(*lastBlock,path.back().second);
+}
+
+std::shared_ptr<const sharpen::BtBlock> sharpen::BalancedTable::FindBlock(const sharpen::ByteBuffer &key,bool doCache) const
+{
+    sharpen::Size depth{this->GetDepth()};
+    if(depth)
+    {
+        auto ite = this->root_.Find(key);
+        std::shared_ptr<sharpen::BtBlock> block{nullptr};
+        sharpen::ByteBuffer buf;
+        for (sharpen::Size i = 0,count = depth; i != count; ++i)
+        {
+            sharpen::FilePointer pointer{ite->ValueAsPointer()};
+            if(doCache)
+            {
+                block = this->LoadCache(pointer);
+            }
+            else
+            {
+                block = this->LoadFromCache(pointer);
+                if(!block)
+                {
+                    block = std::make_shared<sharpen::BtBlock>(this->LoadBlock(pointer.offset_,pointer.size_,buf));
+                }
+            }
+            ite = block->Find(key);
+        }
+        return block;
+    }
+    return std::make_shared<sharpen::BtBlock>(this->root_);
+}
+
+std::shared_ptr<const sharpen::BtBlock> sharpen::BalancedTable::FindBlockFromCache(const sharpen::ByteBuffer &key) const
+{
+    sharpen::Size depth{this->GetDepth()};
+    if(depth)
+    {
+        auto ite = this->root_.Find(key);
+        std::shared_ptr<sharpen::BtBlock> block{nullptr};
+        for (sharpen::Size i = 0,count = depth; i != count; ++i)
+        {
+            sharpen::FilePointer pointer{ite->ValueAsPointer()};
+            block = this->LoadFromCache(pointer);
+            if(!block)
+            {
+                return nullptr;
+            }
+            ite = block->Find(key);
+        }
+        return block;
+    }
+    return std::make_shared<sharpen::BtBlock>(this->root_);
 }
