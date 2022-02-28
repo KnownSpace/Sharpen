@@ -18,26 +18,26 @@ namespace sharpen
     template<typename _LogIterator>
     using IsRaftLogIterator = sharpen::IsRaftLog<decltype(*std::declval<_LogIterator>())>;
 
-    template<typename _PersistenceStorage,typename _Log,typename _Id>
-    using InternalIsRaftPersistenceStorage = auto(*)()->decltype(std::declval<_PersistenceStorage>().AppendLog(std::declval<const _Log&>()/*log*/)
-                                                                ,std::declval<_PersistenceStorage>().SetVotedFor(std::declval<const _Id&>()/*voteforId*/)
-                                                                ,std::declval<_PersistenceStorage>().SetCurrentTerm(std::declval<sharpen::Uint64>()/*current term*/)
-                                                                ,std::declval<_PersistenceStorage>().AddCurrentTerm()
-                                                                ,std::declval<sharpen::Uint64&>() = std::declval<const _PersistenceStorage&>().GetCurrentTerm()
-                                                                ,std::declval<_Id&>() = std::declval<const _PersistenceStorage&>().GetVotedFor()
-                                                                ,std::declval<bool&>() = std::declval<const _PersistenceStorage&>().IsVotedFor()
-                                                                ,std::declval<_PersistenceStorage>().EraseLog(std::declval<sharpen::Uint64>()/*log index*/)
-                                                                ,std::declval<bool&>() = std::declval<const _PersistenceStorage&>().ContainLog(std::declval<sharpen::Uint64>()/*log index*/)
-                                                                ,std::declval<_Log&>() = std::declval<const _PersistenceStorage&>().GetLog(std::declval<sharpen::Uint64>()/*log index*/)
-                                                                ,std::declval<_Log&>() = std::declval<const _PersistenceStorage&>().LastLog()
-                                                                ,std::declval<sharpen::Size&>() = std::declval<const _PersistenceStorage&>().LogsCount()
-                                                                ,std::declval<bool&>() = std::declval<const _PersistenceStorage&>().EmptyLogs()
-                                                                ,std::declval<_PersistenceStorage>().ResetVotedFor()
-                                                                ,std::declval<bool&>() = std::declval<const _PersistenceStorage&>().CheckLog(std::declval<sharpen::Uint64>()/*log index*/,std::declval<sharpen::Uint64>()/*expected log term*/)
-                                                                ,std::declval<sharpen::Uint64&>() = std::declval<const _PersistenceStorage&>().LastLogIndex());
+    template<typename _PersistentStorage,typename _Log,typename _Id>
+    using InternalIsRaftPersistenceStorage = auto(*)()->decltype(std::declval<_PersistentStorage>().AppendLog(std::declval<const _Log&>()/*log*/)
+                                                                ,std::declval<_PersistentStorage>().SetVotedFor(std::declval<const _Id&>()/*voteforId*/)
+                                                                ,std::declval<_PersistentStorage>().SetCurrentTerm(std::declval<sharpen::Uint64>()/*current term*/)
+                                                                ,std::declval<_PersistentStorage>().AddCurrentTerm()
+                                                                ,std::declval<sharpen::Uint64&>() = std::declval<const _PersistentStorage&>().GetCurrentTerm()
+                                                                ,std::declval<_Id&>() = std::declval<const _PersistentStorage&>().GetVotedFor()
+                                                                ,std::declval<bool&>() = std::declval<const _PersistentStorage&>().IsVotedFor()
+                                                                ,std::declval<_PersistentStorage>().EraseLog(std::declval<sharpen::Uint64>()/*log index*/)
+                                                                ,std::declval<bool&>() = std::declval<const _PersistentStorage&>().ContainLog(std::declval<sharpen::Uint64>()/*log index*/)
+                                                                ,std::declval<_Log&>() = std::declval<const _PersistentStorage&>().GetLog(std::declval<sharpen::Uint64>()/*log index*/)
+                                                                ,std::declval<_Log&>() = std::declval<const _PersistentStorage&>().LastLog()
+                                                                ,std::declval<sharpen::Size&>() = std::declval<const _PersistentStorage&>().LogsCount()
+                                                                ,std::declval<bool&>() = std::declval<const _PersistentStorage&>().EmptyLogs()
+                                                                ,std::declval<_PersistentStorage>().ResetVotedFor()
+                                                                ,std::declval<bool&>() = std::declval<const _PersistentStorage&>().CheckLog(std::declval<sharpen::Uint64>()/*log index*/,std::declval<sharpen::Uint64>()/*expected log term*/)
+                                                                ,std::declval<sharpen::Uint64&>() = std::declval<const _PersistentStorage&>().LastLogIndex());
 
-    template<typename _PersistenceStorage,typename _Log,typename _Id>
-    using IsRaftPersistenceStorage = sharpen::IsMatches<sharpen::InternalIsRaftPersistenceStorage,_PersistenceStorage,_Log,_Id>;
+    template<typename _PersistentStorage,typename _Log,typename _Id>
+    using IsRaftPersistenceStorage = sharpen::IsMatches<sharpen::InternalIsRaftPersistenceStorage,_PersistentStorage,_Log,_Id>;
 
     template<typename _Id,typename _Member>
     using InternalIsRaftMember = auto(*)()->decltype(std::declval<_Id&>() = std::declval<const _Member&>().Id()

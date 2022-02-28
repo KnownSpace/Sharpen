@@ -51,6 +51,7 @@ DataBlock                   about 4*1024 bytes
 #include "SstKeyValueGroup.hpp"
 #include "DataCorruptionException.hpp"
 #include "ExistStatus.hpp"
+#include "TwoWayIterator.hpp"
 
 namespace sharpen
 {
@@ -66,6 +67,8 @@ namespace sharpen
         using ConstIterator = typename Groups::const_iterator;
         using ReverseIterator = typename Groups::reverse_iterator;
         using ConstReverseIterator = typename Groups::const_reverse_iterator;
+        using TwoWayIterator = sharpen::TwoWayIterator<Iterator>;
+        using ConstTwoWayIterator = sharpen::ConstTwoWayIterator<ConstIterator>;
     private:
 
         template<typename _Iterator>
@@ -339,6 +342,34 @@ namespace sharpen
         inline bool Contain(const sharpen::ByteBuffer &key) const noexcept
         {
             return this->Exist(key) != sharpen::ExistStatus::NotExist;
+        }
+
+        inline TwoWayIterator TwoWayBegin() noexcept
+        {
+            if(this->Empty())
+            {
+                return TwoWayIterator{this->Begin(),this->End(),{}};
+            }
+            return TwoWayIterator{this->Begin(),this->End(),this->Begin()->Begin()};
+        }
+
+        inline ConstTwoWayIterator TwoWayBegin() const noexcept
+        {
+            if(this->Empty())
+            {
+                return ConstTwoWayIterator{this->Begin(),this->End(),{}};
+            }
+            return ConstTwoWayIterator{this->Begin(),this->End(),this->Begin()->Begin()};
+        }
+
+        inline TwoWayIterator TwoWayEnd()
+        {
+            return TwoWayIterator{this->End(),this->End(),{}};
+        }
+
+        inline ConstTwoWayIterator TwoWayEnd() const
+        {
+            return ConstTwoWayIterator{this->End(),this->End(),{}};
         }
     };
 }

@@ -20,16 +20,16 @@
 namespace sharpen
 {
 
-    template<typename _Id,typename  _Log,typename _Application,typename _PersistenceStorage,typename _Member>
+    template<typename _Id,typename  _Log,typename _Application,typename _PersistentStorage,typename _Member>
     using RaftStateMachineRequires = sharpen::BoolType<sharpen::IsRaftLog<_Log>::Value
                                                         && sharpen::IsRaftMember<_Id,_Member>::Value
-                                                        && sharpen::IsRaftPersistenceStorage<_PersistenceStorage,_Log,_Id>::Value>;
+                                                        && sharpen::IsRaftPersistenceStorage<_PersistentStorage,_Log,_Id>::Value>;
 
-    template<typename _Id,typename  _Log,typename _Application,typename _PersistenceStorage,typename _Member,typename _Check = void>
+    template<typename _Id,typename  _Log,typename _Application,typename _PersistentStorage,typename _Member,typename _Check = void>
     class InternalRaftStateMachine;
 
-    template<typename _Id,typename  _Log,typename _Application,typename _PersistenceStorage,typename _Member>
-    class InternalRaftStateMachine<_Id,_Log,_Application,_PersistenceStorage,_Member,sharpen::EnableIf<sharpen::RaftStateMachineRequires<_Id,_Log,_Application,_PersistenceStorage,_Member>::Value>>:public sharpen::Noncopyable,public sharpen::Nonmovable
+    template<typename _Id,typename  _Log,typename _Application,typename _PersistentStorage,typename _Member>
+    class InternalRaftStateMachine<_Id,_Log,_Application,_PersistentStorage,_Member,sharpen::EnableIf<sharpen::RaftStateMachineRequires<_Id,_Log,_Application,_PersistentStorage,_Member>::Value>>:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
         using MemberMap = std::unordered_map<_Id,_Member>;
@@ -41,7 +41,7 @@ namespace sharpen
         //current term
         //logs[]
         //voted for
-        _PersistenceStorage pm_;
+        _PersistentStorage pm_;
 
         //volatile status
         //current role and commiter
@@ -63,12 +63,12 @@ namespace sharpen
             this->rolePair_.Second() = role;
         }
 
-        _PersistenceStorage &PersistenceStorage() noexcept
+        _PersistentStorage &PersistenceStorage() noexcept
         {
             return this->pm_;
         }
 
-        const _PersistenceStorage &PersistenceStorage() const noexcept
+        const _PersistentStorage &PersistenceStorage() const noexcept
         {
             return this->pm_;
         }
@@ -95,11 +95,11 @@ namespace sharpen
             this->SetCurrentTerm(term);
         }
     public:
-        InternalRaftStateMachine(_Id id,_PersistenceStorage pm)
+        InternalRaftStateMachine(_Id id,_PersistentStorage pm)
             :InternalRaftStateMachine(std::move(id),std::move(pm),_Application{})
         {}
 
-        InternalRaftStateMachine(_Id id,_PersistenceStorage pm,_Application commiter)
+        InternalRaftStateMachine(_Id id,_PersistentStorage pm,_Application commiter)
             :selfId_(std::move(id))
             ,pm_(std::move(pm))
             ,rolePair_(std::move(commiter),sharpen::RaftRole::Follower)
@@ -318,7 +318,7 @@ namespace sharpen
 
         //return true if we continue
         //this impl is optional
-        template<typename _UCommiter = _Application,typename _Check = decltype(std::declval<_UCommiter>().InstallSnapshot(std::declval<_PersistenceStorage>(),0,0,0,0,nullptr,false))>
+        template<typename _UCommiter = _Application,typename _Check = decltype(std::declval<_UCommiter>().InstallSnapshot(std::declval<_PersistentStorage>(),0,0,0,0,nullptr,false))>
         bool InstallSnapshot(const _Id &leaderId,sharpen::Uint64 leaderTerm,sharpen::Uint64 lastIncludedIndex,sharpen::Uint64 lastIncludedTerm,sharpen::Uint64 offset,const char *data,bool done)
         {
             //check term
@@ -409,8 +409,8 @@ namespace sharpen
         ~InternalRaftStateMachine() noexcept = default;
     };
 
-    template<typename _Id,typename  _Log,typename _Application,typename _PersistenceStorage,typename _Member>
-    using RaftStateMachine = sharpen::InternalRaftStateMachine<_Id,_Log,_Application,_PersistenceStorage,_Member>;
+    template<typename _Id,typename  _Log,typename _Application,typename _PersistentStorage,typename _Member>
+    using RaftStateMachine = sharpen::InternalRaftStateMachine<_Id,_Log,_Application,_PersistentStorage,_Member>;
 }
 
 #endif

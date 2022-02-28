@@ -53,6 +53,8 @@ add_executable(persistencetest "${PROJECT_SOURCE_DIR}/test/PersistenceTest.cpp")
 if(UNIX)
     add_executable(iouringtest "${PROJECT_SOURCE_DIR}/test/IoUringTest.cpp")
 endif()
+#iterator test
+add_executable(iteratortest "${PROJECT_SOURCE_DIR}/test/IteratorTest.cpp")
 
 #link
 target_link_libraries(awaittest sharpen)
@@ -81,6 +83,7 @@ target_link_libraries(persistencetest sharpen)
 if(UNIX)
     target_link_libraries(iouringtest sharpen)
 endif()
+target_link_libraries(iteratortest sharpen)
 #test
 enable_testing()
 #tests
@@ -115,3 +118,4 @@ add_test(NAME persistence_test COMMAND "./persistencetest${extname}")
 if(UNIX)
     add_test(NAME iouring_test COMMAND "./iouringtest${extname}")
 endif()
+add_test(NAME iterator_test COMMAND "./iteratortest${extname}")

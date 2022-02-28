@@ -35,11 +35,14 @@ namespace sharpen
     private:
         using Self = sharpen::BtBlock;
         using Pairs = std::vector<sharpen::BtKeyValuePair>;
+
+    public:
         using Iterator = typename Pairs::iterator;
         using ConstIterator = typename Pairs::const_iterator;
         using ReverseIterator = typename Pairs::reverse_iterator;
         using ConstReverseIterator = typename Pairs::const_reverse_iterator;
 
+    private:
         static constexpr sharpen::Size defaultMaxRecordCount_{32};
 
         //persisent status
