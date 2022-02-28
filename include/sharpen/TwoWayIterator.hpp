@@ -56,7 +56,7 @@ namespace sharpen
     
 
     template<typename _Iterator,typename _SubIterator = decltype(sharpen::TwoWayIteratorHelper::GetBegin(std::declval<_Iterator>())),typename _Value = typename std::remove_reference<decltype(*std::declval<_SubIterator>())>::type>
-    class TwoWayIterator:public sharpen::DefaultIteratorTemplate<std::forward_iterator_tag,_Value>
+    class TwoWayIterator:public sharpen::DefaultIteratorTemplate<std::bidirectional_iterator_tag,_Value>
     {
     private:
         using Self = sharpen::TwoWayIterator<_Iterator,_SubIterator,_Value>;
