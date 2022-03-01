@@ -291,14 +291,14 @@ namespace sharpen
             return this->vector_.empty();
         }
 
-        template<typename _T,typename _Check = sharpen::EnableIf<std::is_trivial<_T>::value>>
+        template<typename _T,typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>
         _T &As() noexcept
         {
             assert(this->GetSize() == sizeof(_T));
             return *reinterpret_cast<_T*>(this->Data());
         }
 
-        template<typename _T,typename _Check = sharpen::EnableIf<std::is_trivial<_T>::value>>
+        template<typename _T,typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>
         const _T &As() const noexcept
         {
             assert(this->GetSize() == sizeof(_T));

@@ -133,13 +133,13 @@ std::shared_ptr<sharpen::BtBlock> sharpen::BalancedTable::LoadCache(sharpen::Fil
     return result;
 }
 
-sharpen::BalancedTable::BalancedTable(sharpen::FileChannelPtr channel,sharpen::Uint16 maxRecordOfBlock)
+sharpen::BalancedTable::BalancedTable(sharpen::FileChannelPtr channel,sharpen::BtOption opt)
     :channel_(std::move(channel))
     ,freeArea_()
-    ,maxRecordsOfBlock_((std::max)(static_cast<sharpen::Uint16>(3),maxRecordOfBlock))
+    ,maxRecordsOfBlock_((std::max)(static_cast<sharpen::Uint16>(3),opt.GetMaxRecordsOfBlock()))
     ,root_(0,this->maxRecordsOfBlock_)
     ,offset_(0)
-    ,caches_(64)
+    ,caches_(opt.GetCacheSize())
 {
     this->freeArea_.reserve(64);
     sharpen::Uint64 size{this->channel_->GetFileSize()};
@@ -152,7 +152,7 @@ sharpen::BalancedTable::BalancedTable(sharpen::FileChannelPtr channel,sharpen::U
 }
 
 sharpen::BalancedTable::BalancedTable(sharpen::FileChannelPtr channel)
-    :BalancedTable(std::move(channel),32)
+    :BalancedTable(std::move(channel),sharpen::BtOption{})
 {}
 
 void sharpen::BalancedTable::WriteRootPointer(sharpen::FilePointer pointer)

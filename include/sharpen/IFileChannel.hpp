@@ -48,6 +48,8 @@ namespace sharpen
         virtual void Truncate() = 0;
 
         virtual void Truncate(sharpen::Uint64 size) = 0;
+
+        virtual void Flush() = 0;
     };
 
     using FileChannelPtr = std::shared_ptr<sharpen::IFileChannel>;

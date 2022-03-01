@@ -184,4 +184,12 @@ void sharpen::WinFileChannel::Truncate(sharpen::Uint64 size)
     ::SetFilePointerEx(this->handle_,old,nullptr,FILE_BEGIN);
 }
 
+void sharpen::WinFileChannel::Flush()
+{
+    if (::FlushFileBuffers(this->handle_) == FALSE)
+    {
+        sharpen::ThrowLastError();
+    }
+}
+
 #endif

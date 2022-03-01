@@ -126,7 +126,7 @@ void Entry()
         }
         table->Truncate();
         {
-            sharpen::BalancedTable pt{table, 3};
+            sharpen::BalancedTable pt{table,sharpen::BtOption{3}};
             {
                 sharpen::ByteBuffer key{"key1", 4};
                 sharpen::ByteBuffer value{"val", 3};
@@ -170,7 +170,7 @@ void Entry()
             assert(pt.GetDepth() == 2);
         }
         {
-            sharpen::BalancedTable pt{table, 3};
+            sharpen::BalancedTable pt{table,sharpen::BtOption{3}};
             assert(pt.GetDepth() == 2);
             {
                 sharpen::ByteBuffer key{"key1", 4};
@@ -241,7 +241,7 @@ void Entry()
         }
         table->Truncate();
         {
-            sharpen::BalancedTable pt{table, 3};
+            sharpen::BalancedTable pt{table,sharpen::BtOption{3}};
             {
                 sharpen::ByteBuffer key{"key1", 4};
                 sharpen::ByteBuffer value{"val", 3};
@@ -273,7 +273,7 @@ void Entry()
             assert(pt.GetDepth() == 0);
         }
         {
-            sharpen::BalancedTable pt{table, 3};
+            sharpen::BalancedTable pt{table,sharpen::BtOption{3}};
             assert(pt.GetDepth() == 0);
             {
                 sharpen::ByteBuffer key{"key1", 4};

@@ -238,4 +238,12 @@ void sharpen::PosixFileChannel::Truncate(sharpen::Uint64 size)
     }
 }
 
+void sharpen::PosixFileChannel::Flush()
+{
+    if(::fsync(this->handle_) == -1)
+    {
+        sharpen::ThrowLastError();
+    }
+}
+
 #endif

@@ -20,6 +20,7 @@
 #include "IFileChannel.hpp"
 #include "Optional.hpp"
 #include "SegmentedCircleCache.hpp"
+#include "BtOption.hpp"
 
 namespace sharpen
 {
@@ -84,7 +85,7 @@ namespace sharpen
     
         explicit BalancedTable(sharpen::FileChannelPtr channel);
 
-        BalancedTable(sharpen::FileChannelPtr channel,sharpen::Uint16 maxRecordOfBlock);
+        BalancedTable(sharpen::FileChannelPtr channel,sharpen::BtOption opt);
     
         BalancedTable(Self &&other) noexcept = default;
     
@@ -186,6 +187,12 @@ namespace sharpen
         //and BtBlock::Next() to iterate full table
         //put key & value to a new table
         bool IsFault() const;
+
+        inline void Flush()
+        {
+            assert(this->channel_);
+            this->channel_->Flush();
+        }
     };
 }
 

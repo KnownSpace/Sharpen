@@ -50,6 +50,8 @@ namespace sharpen
         virtual void Truncate() override;
 
         virtual void Truncate(sharpen::Uint64 size) override;
+        
+        virtual void Flush() override;
     };
 }
 
