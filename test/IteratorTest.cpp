@@ -1,4 +1,5 @@
 #include <vector>
+#include <numeric>
 #include <algorithm>
 #include <sharpen/TwoWayIterator.hpp>
 #include <sharpen/TypeTraits.hpp>
@@ -6,9 +7,9 @@
 
 int main(int argc, char const *argv[])
 {
-    //[0,1,2]
-    //[1,2,3]
-    //[2,3,4]
+    //[0,1,2] 3
+    //[1,2,3] 6
+    //[2,3,4] 9
     std::vector<std::vector<int>> vec;
     int checker[9] = {0,1,2,1,2,3,2,3,4};
     for (int i = 0; i != 3; ++i)
@@ -57,6 +58,11 @@ int main(int argc, char const *argv[])
         {
             assert(copy[i] == checker[i]);   
         }
+    }
+    {
+        TwoWayIterator begin{vec.begin(),vec.end(),vec.begin()->begin()};
+        TwoWayIterator end{vec.end(),vec.end(),SubIterator{}};
+        std::printf("accumulate is %d\n",std::accumulate(begin,end,0));
     }
     return 0;
 }
