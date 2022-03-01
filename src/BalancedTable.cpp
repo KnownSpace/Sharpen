@@ -602,3 +602,41 @@ std::shared_ptr<const sharpen::BtBlock> sharpen::BalancedTable::FindBlockFromCac
     }
     return std::make_shared<sharpen::BtBlock>(this->root_);
 }
+
+bool sharpen::BalancedTable::IsFault() const
+{
+    //root never has next pointer
+    if(this->root_.Next().offset_)
+    {
+        return true;
+    }
+    sharpen::BtBlock leaf{this->root_};
+    sharpen::Size depth{this->GetDepth()};
+    if(depth)
+    {
+        sharpen::FilePointer prevPointer;
+        for (sharpen::Size i = 0; i != depth; ++i)
+        {
+            auto it = leaf.Begin();
+            assert(it != leaf.End());
+            prevPointer = it->ValueAsPointer();
+            leaf = this->LoadBlock(prevPointer);
+        }
+        while (leaf.Next().offset_)
+        {
+            sharpen::FilePointer nextPointer{leaf.Next()};
+            sharpen::BtBlock block{this->LoadBlock(nextPointer)};
+            for (auto begin = block.Begin(),end = block.End(); begin != end; begin++)
+            {
+                //we lost this block
+                //it must be fault
+                if (this->Exist(begin->GetKey()) == sharpen::ExistStatus::NotExist)
+                {
+                    return true;
+                }
+            }
+            leaf = std::move(block);
+        }
+    }
+    return false;
+}

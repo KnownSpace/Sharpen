@@ -236,6 +236,7 @@ void Entry()
                         std::putchar('\n');
                     }
                 }
+                assert(pt.IsFault() == false);
             }
         }
         table->Truncate();
@@ -306,6 +307,7 @@ void Entry()
                         std::putchar('\n');
                     }
                 }
+                assert(pt.IsFault() == false);
             }
         }
         log->Close();

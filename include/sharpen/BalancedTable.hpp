@@ -179,6 +179,13 @@ namespace sharpen
                 *inserter++ = beginPointer;
             }
         }
+
+        //if return true
+        //we should rebuild the table
+        //using full table range query
+        //and BtBlock::Next() to iterate full table
+        //put key & value to a new table
+        bool IsFault() const;
     };
 }
 
