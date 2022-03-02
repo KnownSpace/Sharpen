@@ -6,12 +6,12 @@ sharpen::SortedStringTable::SortedStringTable(sharpen::FileChannelPtr channel)
     :SortedStringTable(std::move(channel),sharpen::SstOption{})
 {}
 
-sharpen::SortedStringTable::SortedStringTable(sharpen::FileChannelPtr channel,sharpen::Size filtersBits,sharpen::SstOption opt)
+sharpen::SortedStringTable::SortedStringTable(sharpen::FileChannelPtr channel,sharpen::SstOption opt)
     :channel_(std::move(channel))
     ,root_()
-    ,filterBits_(filtersBits)
+    ,filterBitsOfElement_(opt.GetFilterBitsOfElement())
     ,dataCache_(opt.GetDataCacheSize())
-    ,filterCache_(filtersBits != 0 ? opt.GetFilterCacheSize():0)
+    ,filterCache_(opt.GetFilterCacheSize())
 {
     this->LoadRoot();
 }
@@ -68,8 +68,7 @@ sharpen::BloomFilter<sharpen::ByteBuffer> sharpen::SortedStringTable::LoadFilter
     {
         throw std::invalid_argument("key doen't exist");
     }
-    assert(this->filterBits_);
-    return sharpen::SortedStringTableBuilder::LoadFilter(this->channel_,ite->Block().offset_,ite->Block().size_,this->filterBits_);
+    return sharpen::SortedStringTableBuilder::LoadFilter(this->channel_,ite->Block().offset_,ite->Block().size_,this->filterBitsOfElement_);
 }
 
 std::shared_ptr<sharpen::BloomFilter<sharpen::ByteBuffer>> sharpen::SortedStringTable::LoadFilterCache(const sharpen::ByteBuffer &cacheKey,sharpen::Uint64 offset,sharpen::Uint64 size) const
@@ -182,7 +181,6 @@ sharpen::SortedStringTable &sharpen::SortedStringTable::operator=(Self &&other) 
     {
         this->channel_ = std::move(other.channel_);
         this->root_ = std::move(other.root_);
-        this->filterBits_ = other.filterBits_;
         this->dataCache_ = std::move(other.dataCache_);
         this->filterCache_ = std::move(other.filterCache_);
     }

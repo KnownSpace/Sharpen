@@ -27,7 +27,8 @@ void Entry()
             mt.Put(sharpen::ByteBuffer{"key_b", 5}, sharpen::ByteBuffer{"val", 3});
             mt.Put(sharpen::ByteBuffer{"abc", 3}, sharpen::ByteBuffer{"val", 3});
             mt.Put(sharpen::ByteBuffer{"other", 5}, sharpen::ByteBuffer{"val", 3});
-            sharpen::SortedStringTable pt{table, mt.Begin(), mt.End(), 10, true};
+            sharpen::SortedStringTable pt{table};
+            pt.BuildFromMemory(mt.Begin(),mt.End(),sharpen::SstBuildOption{true});
         }
         {
             sharpen::SortedStringTable pt{table};
@@ -100,8 +101,13 @@ void Entry()
             mt.Put(sharpen::ByteBuffer{"key_d", 5}, sharpen::ByteBuffer{"val", 3});
             std::vector<sharpen::SortedStringTable> pts;
             pts.emplace_back(table);
-            pts.emplace_back(table2, mt.Begin(), mt.End(), 10, true);
-            sharpen::SortedStringTable pt3{table3, pts.begin(), pts.end(), 10, true, false};
+            {
+                sharpen::SortedStringTable pt2{table2};
+                pt2.BuildFromMemory(mt.Begin(),mt.End(),sharpen::SstBuildOption{true});
+            }
+            pts.emplace_back(table2);
+            sharpen::SortedStringTable pt3{table3};
+            pt3.MergeFromTables(pts.begin(),pts.end(),sharpen::SstBuildOption{true},false);
         }
         {
             sharpen::SortedStringTable pt{table3};

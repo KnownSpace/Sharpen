@@ -12,31 +12,31 @@ namespace sharpen
     {
     private:
         using Self = sharpen::SstOption;
-    
-        static constexpr sharpen::Size defaultBlockSize_{4*1024};
 
         static constexpr sharpen::Size defaultDataCacheSize_{512};
 
-        sharpen::Size blockSize_;
+        static constexpr sharpen::Size defaultFilterBitsOfElement_{10};
+
         sharpen::Size dataCacheSize_;
+        sharpen::Size filterBitsOfElement_;
         sharpen::Size filtersCacheSize_;
     public:
     
         SstOption() noexcept
-            :SstOption(defaultBlockSize_)
+            :SstOption(Self::defaultFilterBitsOfElement_)
         {}
 
-        explicit SstOption(sharpen::Size blockSize) noexcept
-            :SstOption(blockSize,defaultDataCacheSize_)
+        explicit SstOption(sharpen::Size filterBitsOfElement) noexcept
+            :SstOption(filterBitsOfElement,defaultDataCacheSize_)
         {}
 
-        SstOption(sharpen::Size blockSize,sharpen::Size dataCacheSize) noexcept
-            :SstOption(blockSize,dataCacheSize,dataCacheSize)
+        SstOption(sharpen::Size filterBitsOfElement,sharpen::Size dataCacheSize) noexcept
+            :SstOption(filterBitsOfElement,dataCacheSize,dataCacheSize)
         {}
 
-        SstOption(sharpen::Size blockSize,sharpen::Size dataCacheSize,sharpen::Size filtersCacheSize) noexcept
-            :blockSize_(blockSize)
-            ,dataCacheSize_(dataCacheSize)
+        SstOption(sharpen::Size filterBitsOfElement,sharpen::Size dataCacheSize,sharpen::Size filtersCacheSize) noexcept
+            :dataCacheSize_(dataCacheSize)
+            ,filterBitsOfElement_(filterBitsOfElement)
             ,filtersCacheSize_(filtersCacheSize)
         {}
     
@@ -55,8 +55,8 @@ namespace sharpen
         {
             if(this != std::addressof(other))
             {
-                this->blockSize_ = other.blockSize_;
                 this->dataCacheSize_ = other.dataCacheSize_;
+                this->filterBitsOfElement_ = other.filterBitsOfElement_;
                 this->filtersCacheSize_ = other.filtersCacheSize_;
             }
             return *this;
@@ -64,19 +64,28 @@ namespace sharpen
     
         ~SstOption() noexcept = default;
 
-        inline sharpen::Size GetBlockSize() const
+        inline bool EnableFilter() const noexcept
         {
-            return this->blockSize_;
+            return this->filterBitsOfElement_;
         }
 
-        inline sharpen::Size GetDataCacheSize() const
+        inline sharpen::Size GetDataCacheSize() const noexcept
         {
             return this->dataCacheSize_;
         }
 
-        inline sharpen::Size GetFilterCacheSize() const
+        inline sharpen::Size GetFilterCacheSize() const noexcept
         {
+            if(!this->EnableFilter())
+            {
+                return 0;
+            }
             return this->filtersCacheSize_;
+        }
+
+        inline sharpen::Size GetFilterBitsOfElement() const noexcept
+        {
+            return this->filterBitsOfElement_;
         }
     };   
 }
