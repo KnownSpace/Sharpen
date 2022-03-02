@@ -147,6 +147,7 @@ namespace sharpen
 
         static sharpen::BloomFilter<sharpen::ByteBuffer> LoadFilter(sharpen::FileChannelPtr channel,sharpen::Uint64 offset,sharpen::Uint64 size,sharpen::Size bitsOfElements);
 
+        //dump wal table to sst
         template<typename _Block,typename _Iterator,typename _Check = sharpen::EnableIf<sharpen::IsWalKeyValuePairIterator<_Iterator>::Value && sharpen::IsSstDataBlock<_Block>::Value>>
         static sharpen::SstRoot DumpWalToTable(sharpen::FileChannelPtr channel,sharpen::Size blockBytes,_Iterator begin,_Iterator end,sharpen::Size filterBits,bool eraseDeleted)
         {
@@ -200,6 +201,7 @@ namespace sharpen
             return root;
         }
 
+        //Combine ordered tables
         template<typename _Block,typename _Iterator,typename _Check = decltype(std::declval<sharpen::SstVector&>() = *std::declval<_Iterator>()),typename _CheckBlock = sharpen::EnableIf<sharpen::IsSstDataBlock<_Block>::Value>>
         static sharpen::SstRoot CombineTables(sharpen::FileChannelPtr channel,_Iterator begin,_Iterator end,sharpen::Size filterBits,bool eraseDeleted)
         {
@@ -240,6 +242,7 @@ namespace sharpen
             return root;
         }
 
+        //2PMMS
         template<typename _Block,typename _Iterator,typename _WalIterator,typename _Check = decltype(std::declval<sharpen::SstVector&>() = *std::declval<_Iterator>()),typename _CheckBlock = sharpen::EnableIf<sharpen::IsSstDataBlock<_Block>::Value>,typename _CheckWalIterator = sharpen::EnableIf<sharpen::IsWalKeyValuePairIterator<_Iterator>::Value && sharpen::IsSstDataBlock<_Block>::Value>>
         static sharpen::SstRoot MergeTables(sharpen::FileChannelPtr channel,sharpen::Size blockBytes,_Iterator begin,_Iterator end,_WalIterator walBegin,_WalIterator walEnd,sharpen::Size filterBits,bool eraseDeleted)
         {
@@ -384,6 +387,7 @@ namespace sharpen
             return root;
         }
 
+        //2PMMS
         template<typename _Block,typename _Iterator,typename _InsertIterator,typename _Check = decltype(std::declval<sharpen::SstVector&>() = *std::declval<_Iterator>()),typename _CheckBlock = sharpen::EnableIf<sharpen::IsSstDataBlock<_Block>::Value>,typename _CheckInsertor = decltype(*std::declval<_InsertIterator&>()++ = std::declval<sharpen::SstRoot&>())>
         static void MergeTables(std::function<sharpen::FileChannelPtr()> channelMaker,sharpen::Size blockBytes,sharpen::Size tableBlocks,_Iterator begin,_Iterator end,sharpen::Size filterBits,bool eraseDeleted,_InsertIterator insertor)
         {
@@ -519,6 +523,7 @@ namespace sharpen
             }
         }
 
+        //2PMMS
         template<typename _Block,typename _Iterator,typename _Check = decltype(std::declval<sharpen::SstVector&>() = *std::declval<_Iterator>()),typename _CheckBlock = sharpen::EnableIf<sharpen::IsSstDataBlock<_Block>::Value>>
         static sharpen::SstRoot MergeTables(sharpen::FileChannelPtr channel,sharpen::Size blockBytes,_Iterator begin,_Iterator end,sharpen::Size filterBits,bool eraseDeleted)
         {
