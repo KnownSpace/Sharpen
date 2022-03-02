@@ -15,6 +15,8 @@
 
 namespace sharpen
 {
+    //LRU Cache
+    //second chances 
     template <typename _T>
     class CircleCache : public sharpen::Noncopyable, public sharpen::Nonmovable
     {
@@ -23,6 +25,7 @@ namespace sharpen
         {
             std::string key_;
             std::shared_ptr<_T> cacheObj_;
+            sharpen::Size chances_;
         };
 
         using Self = sharpen::CircleCache<_T>;
@@ -31,12 +34,12 @@ namespace sharpen
         using Iterator = typename Buffer::iterator;
         using ConstIterator = typename Buffer::const_iterator;
 
-        Buffer buf_;
+        mutable Buffer buf_;
         mutable Lock lock_;
         sharpen::Size next_;
 
         template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
-        ConstIterator Find(_Iterator keyBegin,_Iterator keyEnd) const noexcept
+        Iterator Find(_Iterator keyBegin,_Iterator keyEnd) const noexcept
         {
             for (auto begin = this->buf_.begin(), end = this->buf_.end(); begin != end; ++begin)
             {
@@ -54,32 +57,7 @@ namespace sharpen
                     }
                     if(match)
                     {
-                        return begin;
-                    }
-                }
-            }
-            return this->buf_.end();
-        }
-
-        template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
-        Iterator Find(_Iterator keyBegin,_Iterator keyEnd) noexcept
-        {
-            for (auto begin = this->buf_.begin(), end = this->buf_.end(); begin != end; ++begin)
-            {
-                if (begin->cacheObj_)
-                {
-                    bool match{true};
-                    sharpen::Size index{0};
-                    for (auto ite = keyBegin; ite != keyEnd; ++ite,++index)
-                    {
-                        if(*ite != begin->key_[index])
-                        {
-                            match = false;
-                            break;
-                        }
-                    }
-                    if(match)
-                    {
+                        begin->chances_ = 1;
                         return begin;
                     }
                 }
@@ -105,6 +83,7 @@ namespace sharpen
             auto ite = this->Find(keyBegin,keyEnd);
             if(ite != this->buf_.end())
             {
+                ite->chances_ = 0;
                 ite->cacheObj_.reset();
             }
         }
@@ -144,7 +123,15 @@ namespace sharpen
                     CacheItem item;
                     item.key_.assign(begin,end);
                     item.cacheObj_ = result;
-                    this->buf_[this->next_++ % this->buf_.size()] = std::move(item);
+                    item.chances_ = 1;
+                    sharpen::Size index = this->next_ % this->buf_.size();
+                    while (this->buf_[index].chances_)
+                    {
+                        this->buf_[index].chances_ -= 1;
+                        ++this->next_;
+                        index = this->next_ % this->buf_.size();
+                    }
+                    this->buf_[index] = std::move(item);
                 }
             }
             assert(result != nullptr);
