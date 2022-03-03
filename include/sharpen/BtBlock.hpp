@@ -268,7 +268,7 @@ namespace sharpen
 
         inline sharpen::Size ComputeMotifyEndPointer() const noexcept
         {
-            return this->usedSize_ - this->End()->ComputeSize();
+            return this->usedSize_ - this->ReverseBegin()->ComputeSize();
         }
 
         sharpen::Size ComputeCounterPointer() const noexcept;

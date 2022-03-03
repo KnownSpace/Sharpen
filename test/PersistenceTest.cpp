@@ -259,6 +259,11 @@ void Entry()
                 pt.Put(key, value);
             }
             {
+                sharpen::ByteBuffer key{"key4", 4};
+                sharpen::ByteBuffer value{"value", 5};
+                pt.Put(key, value);
+            }
+            {
                 sharpen::ByteBuffer key{"key3", 4};
                 sharpen::ByteBuffer value{"val", 3};
                 pt.Put(key, value);

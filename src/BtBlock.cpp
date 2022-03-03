@@ -179,18 +179,24 @@ void sharpen::BtBlock::Put(sharpen::ByteBuffer key,sharpen::ByteBuffer value)
 {
     auto ite = this->BinaryFind(key);
     sharpen::BtKeyValuePair pair{std::move(key),std::move(value)};
-    if(ite == this->End() || ite->GetKey() != key)
+    if(ite != this->End())
     {
-        
+        if (ite->GetKey() == pair.GetKey())
+        {
+            sharpen::Size size{this->usedSize_};
+            size -= ite->ComputeSize();
+            size += pair.ComputeSize();
+            ite->Value() = std::move(pair.Value());
+            this->usedSize_ = size;
+            return;
+        }
         this->usedSize_ += pair.ComputeSize();
-        this->pairs_.emplace_back(std::move(pair));
+        this->pairs_.emplace(ite,std::move(pair));
         return;
     }
-    sharpen::Size size{this->usedSize_};
-    size -= ite->ComputeSize();
-    size += pair.ComputeSize();
-    ite->Value() = std::move(pair.Value());
-    this->usedSize_ = size;
+    this->usedSize_ += pair.ComputeSize();
+    this->pairs_.emplace_back(std::move(pair));
+    return;
 }
 
 void sharpen::BtBlock::Delete(const sharpen::ByteBuffer &key)
