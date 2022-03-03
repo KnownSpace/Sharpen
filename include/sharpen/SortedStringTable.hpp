@@ -246,6 +246,11 @@ namespace sharpen
                 *inserter++ = begin->Block();
             }
         }
+
+        inline sharpen::Uint64 GetSize() const
+        {
+            return this->channel_->GetFileSize();
+        }
     };
 }
 

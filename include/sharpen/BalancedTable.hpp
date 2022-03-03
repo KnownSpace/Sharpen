@@ -193,6 +193,11 @@ namespace sharpen
             assert(this->channel_);
             this->channel_->Flush();
         }
+
+        inline sharpen::Uint64 GetSize() const noexcept
+        {
+            return this->offset_;
+        }
     };
 }
 
