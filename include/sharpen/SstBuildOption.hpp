@@ -2,7 +2,9 @@
 #ifndef _SHARPEN_SSTBUILDOPTION_HPP
 #define _SHARPEN_SSTBUILDOPTION_HPP
 
-#include "SstOption.hpp"
+#include <utility>
+
+#include "TypeDef.hpp"
 
 namespace sharpen
 {
@@ -11,7 +13,7 @@ namespace sharpen
     private:
         using Self = sharpen::SstBuildOption;
 
-        // 1% - error
+        // 1% - fake positive rate
         static constexpr sharpen::Size defaultBitsOfElement_{10};
 
         //default block size is 4kb
@@ -24,9 +26,11 @@ namespace sharpen
         //size of every block
         sharpen::Size blockSize_;
     public:
+
         explicit SstBuildOption(bool eraseDeleted)
-            :SstBuildOption(eraseDeleted,10)
+            :SstBuildOption(eraseDeleted,Self::defaultBitsOfElement_)
         {}
+
         SstBuildOption(bool eraseDeleted,sharpen::Size bitsOfElement)
             :SstBuildOption(eraseDeleted,bitsOfElement,Self::defaultBlockSize_)
         {}

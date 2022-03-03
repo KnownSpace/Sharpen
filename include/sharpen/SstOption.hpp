@@ -15,6 +15,7 @@ namespace sharpen
 
         static constexpr sharpen::Size defaultDataCacheSize_{512};
 
+        //1% - fake positive rate
         static constexpr sharpen::Size defaultFilterBitsOfElement_{10};
 
         sharpen::Size dataCacheSize_;
