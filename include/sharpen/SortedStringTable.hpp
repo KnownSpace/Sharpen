@@ -199,6 +199,7 @@ namespace sharpen
             }
             this->root_ = sharpen::SortedStringTableBuilder::DumpWalToTable<sharpen::SstDataBlock>(this->channel_,opt.GetBlockSize(),begin,end,opt.GetFilterBitsOfElement(),opt.IsEraseDeleted());
             this->filterBitsOfElement_ = opt.GetFilterBitsOfElement();
+            this->channel_->Flush();
         }
 
         template<typename _Iterator,typename _Check = decltype(std::declval<Self*&>() = &(*std::declval<_Iterator>()))>
@@ -223,6 +224,7 @@ namespace sharpen
             }
             this->filterBitsOfElement_ = opt.GetFilterBitsOfElement();
             this->root_ = sharpen::SortedStringTableBuilder::MergeTables<sharpen::SstDataBlock>(this->channel_,opt.GetBlockSize(),vec.begin(),vec.end(),opt.GetFilterBitsOfElement(),opt.IsEraseDeleted());
+            this->channel_->Flush();
         }
 
         template<typename _InsertIterator,typename _Check = decltype(*std::declval<_InsertIterator&>()++ = std::declval<sharpen::FilePointer>())>

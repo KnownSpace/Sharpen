@@ -14,11 +14,15 @@ sharpen::BtKeyValuePair::BtKeyValuePair(sharpen::ByteBuffer key,sharpen::ByteBuf
 sharpen::Size sharpen::BtKeyValuePair::ComputeSize(const sharpen::ByteBuffer &key,const sharpen::ByteBuffer &value) noexcept
 {
     sharpen::Size size{0};
+    //key size
     sharpen::Varuint64 builder{key.GetSize()};
     size += builder.ComputeSize();
+    //value size
     builder.Set(value.GetSize());
     size += builder.ComputeSize();
+    //key
     size += key.GetSize();
+    //value
     size += value.GetSize();
     return size;
 }
@@ -34,7 +38,7 @@ sharpen::Size sharpen::BtKeyValuePair::UnsafeStoreTo(char *data) const
     //store key size
     sharpen::Varuint64 builder{this->key_.GetSize()};
     sharpen::Size size{builder.ComputeSize()};
-    std::memcpy(data + offset,builder.Data(),size);
+    std::memcpy(data,builder.Data(),size);
     offset += size;
     //store value size
     builder.Set(this->value_.GetSize());

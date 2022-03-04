@@ -61,8 +61,6 @@ namespace sharpen
 
         void WriteRootPointer(sharpen::FilePointer pointer);
 
-        sharpen::FilePointer WriteEndOfBlock(sharpen::BtBlock &block,sharpen::Uint64 offset,sharpen::FilePointer pointer);
-
         sharpen::FilePointer WriteBlock(sharpen::BtBlock &block,sharpen::FilePointer pointer);
 
         sharpen::FilePointer InsertRecord(sharpen::BtBlock &block,sharpen::ByteBuffer key,sharpen::ByteBuffer value,sharpen::FilePointer pointer,sharpen::Optional<sharpen::BtBlock> &splitedBlock);

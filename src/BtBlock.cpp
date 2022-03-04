@@ -19,7 +19,7 @@ sharpen::BtBlock::BtBlock(sharpen::Size blockSize,sharpen::Size maxRecordCount)
     ,prev_()
     ,pairs_()
     ,blockSize_(blockSize)
-    ,usedSize_(1 + sizeof(this->next_) + sizeof(sharpen::Uint16))
+    ,usedSize_(1 + sizeof(this->next_) + sizeof(this->prev_) + Self::GetCounterSize())
 {
     std::memset(&this->next_,0,sizeof(this->next_));
     std::memset(&this->prev_,0,sizeof(this->prev_));
@@ -92,8 +92,8 @@ sharpen::Size sharpen::BtBlock::UnsafeStoreTo(char *data) const
     offset += sizeof(this->prev_);
     //store counter
     sharpen::Uint16 count{sharpen::IntCast<sharpen::Uint16>(this->pairs_.size())};
-    std::memcpy(data + offset,&count,sizeof(count));
-    offset += sizeof(count);
+    std::memcpy(data + offset,&count,Self::GetCounterSize());
+    offset += Self::GetCounterSize();
     //store records
     for (auto begin = this->Begin(),end = this->End(); begin != end; ++begin)
     {
@@ -236,7 +236,7 @@ const sharpen::ByteBuffer &sharpen::BtBlock::Get(const sharpen::ByteBuffer &key)
     auto ite = this->BinaryFind(key);
     if(ite == this->End() || ite->GetKey() != key)
     {
-        throw std::out_of_range("key doesn't exist");
+        throw std::out_of_range("key doesn't exists");
     }
     return ite->Value();
 }
@@ -301,12 +301,12 @@ void sharpen::BtBlock::Combine(Self other)
 
 sharpen::Size sharpen::BtBlock::ComputeCounterPointer() const noexcept
 {
-    if(this->depth_ < 128)
-    {
-        return 1 + sizeof(this->next_) + sizeof(this->prev_);
-    }
+    // if(this->depth_ < 128)
+    // {
+    //     return 1 + sizeof(this->next_) + sizeof(this->prev_);
+    // }
     sharpen::Varuint64 builder{this->depth_};
-    return sizeof(this->next_) + builder.ComputeSize() + sizeof(this->prev_);
+    return  builder.ComputeSize() + sizeof(this->prev_) + sizeof(this->next_);
 }
 
 sharpen::Size sharpen::BtBlock::ComputeNextPointer() const noexcept

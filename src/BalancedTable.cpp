@@ -97,6 +97,7 @@ void sharpen::BalancedTable::InitRoot()
         sharpen::ByteBuffer buf{pointer.size_};
         this->channel_->ReadAsync(buf,pointer.offset_);
         this->root_.LoadFrom(buf);
+        this->root_.SetBlockSize(sharpen::IntCast<sharpen::Size>(pointer.size_));
     }
 }
 
@@ -147,6 +148,10 @@ sharpen::BalancedTable::BalancedTable(sharpen::FileChannelPtr channel,sharpen::B
     {
         this->InitFile();
     }
+    else
+    {
+        this->offset_ = size;
+    }
     this->InitFreeArea();
     this->InitRoot();
 }
@@ -158,20 +163,6 @@ sharpen::BalancedTable::BalancedTable(sharpen::FileChannelPtr channel)
 void sharpen::BalancedTable::WriteRootPointer(sharpen::FilePointer pointer)
 {
     this->channel_->WriteAsync(reinterpret_cast<char*>(&pointer),sizeof(pointer),sizeof(pointer));
-}
-
-sharpen::FilePointer sharpen::BalancedTable::WriteEndOfBlock(sharpen::BtBlock &block,sharpen::Uint64 offset,sharpen::FilePointer pointer)
-{
-    if(block.IsOverflow())
-    {
-        return this->WriteBlock(block,pointer);
-    }
-    sharpen::ByteBuffer buf;
-    block.ReverseBegin()->StoreTo(buf);
-    sharpen::Uint16 keyCount{sharpen::IntCast<sharpen::Uint16>(block.GetSize())};
-    this->channel_->WriteAsync(reinterpret_cast<char*>(&keyCount),sizeof(keyCount),pointer.offset_ + block.ComputeCounterPointer());
-    this->channel_->WriteAsync(buf,offset + pointer.offset_);
-    return pointer;
 }
 
 sharpen::FilePointer sharpen::BalancedTable::WriteBlock(sharpen::BtBlock &block,sharpen::FilePointer pointer)
@@ -241,21 +232,6 @@ sharpen::Uint64 sharpen::BalancedTable::ComputeBlockSize(const sharpen::BtBlock 
 
 sharpen::FilePointer sharpen::BalancedTable::InsertRecord(sharpen::BtBlock &block,sharpen::ByteBuffer key,sharpen::ByteBuffer value,sharpen::FilePointer pointer,sharpen::Optional<sharpen::BtBlock> &splitedBlock)
 {
-    //query put tage
-    auto tag = block.QueryPutTage(key);
-    sharpen::Size offset{0};
-    //if append or motify end
-    //we just write to the end of block
-    //if normal
-    //we must rewrite the block
-    if(tag == sharpen::BtBlock::PutTage::Append)
-    {
-        offset = block.GetAppendPointer();
-    }
-    else if (tag == sharpen::BtBlock::PutTage::MotifyEnd)
-    {
-        offset = block.ComputeMotifyEndPointer();
-    }
     //put key and value to block
     block.Put(std::move(key),std::move(value));
     //split block if we needed
@@ -280,14 +256,7 @@ sharpen::FilePointer sharpen::BalancedTable::InsertRecord(sharpen::BtBlock &bloc
         return pointer;
     }
     //write to file
-    if(tag == sharpen::BtBlock::PutTage::Normal)
-    {
-        pointer = this->WriteBlock(block,pointer);
-    }
-    else
-    {
-        pointer = this->WriteEndOfBlock(block,offset,pointer);
-    }
+    pointer = this->WriteBlock(block,pointer);
     return pointer;
 }
 
@@ -464,7 +433,7 @@ sharpen::ByteBuffer sharpen::BalancedTable::Get(const sharpen::ByteBuffer &key) 
     sharpen::Optional<sharpen::ByteBuffer> opt{this->TryGet(key)};
     if(!opt.Exist())
     {
-        throw std::out_of_range("key doesn't exist");
+        throw std::out_of_range("key doesn't exists");
     }
     return opt.Get();
 }
