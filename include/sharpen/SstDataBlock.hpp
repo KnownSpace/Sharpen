@@ -327,7 +327,7 @@ namespace sharpen
 
         const sharpen::ByteBuffer &LastKey() const
         {
-            return this->ReverseBegin()->First().GetKey();
+            return this->ReverseBegin()->ReverseBegin()->GetKey();
         }
 
         inline void Clear() noexcept

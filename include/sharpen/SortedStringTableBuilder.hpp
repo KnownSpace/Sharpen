@@ -154,39 +154,47 @@ namespace sharpen
             assert(blockBytes);
             //build data block
             sharpen::SstRoot root;
-            std::vector<_Block> blocks;
             std::vector<sharpen::BloomFilter<sharpen::ByteBuffer>> filters;
-            blocks.reserve(8);
+            _Block block;
+            sharpen::Size blockCount{0};
             sharpen::Size blockSize{0};
-            while (begin != end)
-            {
-                if(blocks.empty() || blockSize > blockBytes)
-                {
-                    blockSize = 0;
-                    blocks.emplace_back();
-                }
-                blockSize += begin->first.GetSize();
-                blockSize += begin->second.Value().GetSize();
-                Self::Helper<_Iterator>::PutWalKv(blocks.back(),begin);
-                ++begin;
-            }
-            if(filterBits)
-            {
-                filters.reserve(blocks.size());
-                root.MetaIndexBlock().Reserve(blocks.size());
-            }
-            root.IndexBlock().Reserve(blocks.size());
             sharpen::ByteBuffer buf;
             sharpen::Uint64 offset{0};
-            //foreach blocks
-            for (auto blockBegin = blocks.begin(),blockEnd = blocks.end(); blockBegin != blockEnd; ++blockBegin)
+            while (begin != end)
+            {
+                blockSize += begin->first.GetSize();
+                blockSize += begin->second.Value().GetSize();
+                Self::Helper<_Iterator>::PutWalKv(block,begin);
+                if(blockSize >= blockBytes)
+                {
+                    if(eraseDeleted)
+                    {
+                       block.EraseDeleted();
+                    }
+                    Self::WriteBlock(block,channel,root,buf,filterBits,filters,offset);
+                    block.Clear();
+                    blockSize = 0;
+                    blockCount += 1;
+                }
+                ++begin;
+            }
+            if(!block.Empty())
             {
                 if(eraseDeleted)
                 {
-                    blockBegin->EraseDeleted();
+                    block.EraseDeleted();
                 }
-                Self::WriteBlock(*blockBegin,channel,root,buf,filterBits,filters,offset);
+                Self::WriteBlock(block,channel,root,buf,filterBits,filters,offset);
+                block.Clear();
+                blockSize = 0;
+                blockCount += 1;
             }
+            if(filterBits)
+            {
+                filters.reserve(blockCount);
+                root.MetaIndexBlock().Reserve(blockCount);
+            }
+            root.IndexBlock().Reserve(blockCount);
             sharpen::Size index{0};
             if(filterBits)
             {
@@ -194,8 +202,6 @@ namespace sharpen
                 filters.clear();
                 filters.shrink_to_fit();
             }
-            blocks.clear();
-            blocks.shrink_to_fit();
             //write footer
             root.StoreTo(channel,offset);
             return root;

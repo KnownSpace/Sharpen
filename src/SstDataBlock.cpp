@@ -200,6 +200,10 @@ sharpen::ExistStatus sharpen::SstDataBlock::Exist(const sharpen::ByteBuffer &key
 
 void sharpen::SstDataBlock::Put(sharpen::ByteBuffer key, sharpen::ByteBuffer value)
 {
+    if(this->groups_.capacity() < this->groups_.size() + 1)
+    {
+        this->groups_.reserve(this->groups_.size() + 1);
+    }
     auto ite = this->FindInsertGroup(key);
     if (ite != this->groups_.end())
     {
@@ -213,7 +217,6 @@ void sharpen::SstDataBlock::Put(sharpen::ByteBuffer key, sharpen::ByteBuffer val
                 auto begin = sharpen::IteratorForward(ite->Begin(), maxKeyPerGroups_);
                 auto end = ite->End();
                 group.Reserve(sharpen::GetRangeSize(begin, end) + 1);
-                this->groups_.reserve(this->groups_.size() + 1);
                 for (auto i = begin; i != end; ++i)
                 {
                     sharpen::ByteBuffer v{std::move(i->Value())};
@@ -281,7 +284,7 @@ sharpen::ByteBuffer &sharpen::SstDataBlock::Get(const sharpen::ByteBuffer &key)
     auto ite = this->FindGroup(key);
     if (ite == this->groups_.end())
     {
-        throw std::out_of_range("key doesn't exists");
+        throw std::out_of_range("key doesn't exists(group not found)");
     }
     return ite->GetValue(key);
 }
@@ -291,7 +294,7 @@ const sharpen::ByteBuffer &sharpen::SstDataBlock::Get(const sharpen::ByteBuffer 
     auto ite = this->FindGroup(key);
     if (ite == this->groups_.end())
     {
-        throw std::out_of_range("key doesn't exists");
+        throw std::out_of_range("key doesn't exists(group not found)");
     }
     return ite->GetValue(key);
 }
