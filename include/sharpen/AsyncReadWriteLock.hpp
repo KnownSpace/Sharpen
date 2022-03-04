@@ -31,6 +31,7 @@ namespace sharpen
         void WriteUnlock() noexcept;
 
         void ReadUnlock() noexcept;
+
     public:
         AsyncReadWriteLock();
 
@@ -47,6 +48,14 @@ namespace sharpen
         inline void unlock() noexcept
         {
             this->Unlock();
+        }
+
+        //basic lockable requirement
+        //never use me
+        //you should use LockWrite or LockRead
+        inline void lock()
+        {
+            this->LockWrite();
         }
 
         ~AsyncReadWriteLock() noexcept = default;
