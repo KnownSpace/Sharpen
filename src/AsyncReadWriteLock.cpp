@@ -9,7 +9,7 @@ sharpen::AsyncReadWriteLock::AsyncReadWriteLock()
     ,readers_(0)
 {}
 
-void sharpen::AsyncReadWriteLock::LockReadAsync()
+void sharpen::AsyncReadWriteLock::LockRead()
 {
     sharpen::AsyncReadWriteLock::MyFuture future;
     {
@@ -25,7 +25,25 @@ void sharpen::AsyncReadWriteLock::LockReadAsync()
     future.Await();
 }
 
-void sharpen::AsyncReadWriteLock::LockWriteAsync()
+bool sharpen::AsyncReadWriteLock::TryLockRead()
+{
+    {
+        if(!this->lock_.TryLock())
+        {
+            return false;
+        }
+        std::unique_lock<sharpen::SpinLock> lock{this->lock_,std::adopt_lock};
+        if (this->state_ != sharpen::ReadWriteLockState::UniquedWriting)
+        {
+            this->readers_ += 1;
+            this->state_ = sharpen::ReadWriteLockState::SharedReading;
+            return true;
+        }
+        return false;
+    }
+}
+
+void sharpen::AsyncReadWriteLock::LockWrite()
 {
     sharpen::AsyncReadWriteLock::MyFuture future;
     {
@@ -38,6 +56,23 @@ void sharpen::AsyncReadWriteLock::LockWriteAsync()
         this->writeWaiters_.push_back(&future);	
     }
     future.Await();
+}
+
+bool sharpen::AsyncReadWriteLock::TryLockWrite()
+{
+    {
+        if (!this->lock_.TryLock())
+        {
+            return false;
+        }
+        std::unique_lock<sharpen::SpinLock> lock{this->lock_,std::adopt_lock};
+        if (this->state_ == sharpen::ReadWriteLockState::Free)
+        {
+            this->state_ = sharpen::ReadWriteLockState::UniquedWriting;
+            return true;
+        }
+        return false;
+    }
 }
 
 void sharpen::AsyncReadWriteLock::WriteUnlock() noexcept

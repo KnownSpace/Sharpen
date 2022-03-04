@@ -34,21 +34,19 @@ namespace sharpen
     public:
         AsyncReadWriteLock();
 
-        void LockReadAsync();
+        void LockRead();
 
-        void LockWriteAsync();
+        bool TryLockRead();
+
+        void LockWrite();
+
+        bool TryLockWrite();
 
         void Unlock() noexcept;
 
         inline void unlock() noexcept
         {
             this->Unlock();
-        }
-
-        //never use me
-        inline void lock()
-        {
-            this->LockReadAsync();
         }
 
         ~AsyncReadWriteLock() noexcept = default;

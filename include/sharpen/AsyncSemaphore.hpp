@@ -32,6 +32,13 @@ namespace sharpen
         
         void Unlock(sharpen::Uint32 count) noexcept;
 
+        bool TryLock();
+
+        inline bool try_lock()
+        {
+            return this->TryLock();
+        }
+
         ~AsyncSemaphore() noexcept = default;
     };
     

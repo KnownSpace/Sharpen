@@ -30,12 +30,19 @@ namespace sharpen
         //use by stl
         void unlock() noexcept;
 
-        void Unlock() noexcept
+        inline void Unlock() noexcept
         {
             this->unlock();
         }
 
-        ~SpinLock() = default;
+        bool TryLock();
+
+        inline bool try_lock()
+        {
+            return this->TryLock();
+        }
+
+        ~SpinLock() noexcept = default;
     };
 
 } 

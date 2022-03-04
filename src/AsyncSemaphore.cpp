@@ -23,6 +23,23 @@ void sharpen::AsyncSemaphore::LockAsync()
     future.Await();
 }
 
+bool sharpen::AsyncSemaphore::TryLock()
+{
+    {
+        if(!this->lock_.TryLock())
+        {
+            return false;
+        }
+        std::unique_lock<sharpen::SpinLock> lock{this->lock_,std::adopt_lock};
+        if (!this->NeedWait())
+        {
+            this->counter_ -= 1;
+            return true;
+        }
+        return false;
+    }
+}
+
 bool sharpen::AsyncSemaphore::NeedWait() const
 {
     return this->counter_ == 0;

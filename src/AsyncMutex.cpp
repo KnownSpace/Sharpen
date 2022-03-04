@@ -21,6 +21,20 @@ void sharpen::AsyncMutex::LockAsync()
     future.Await();
 }
 
+bool sharpen::AsyncMutex::TryLock()
+{
+    {
+        if (!this->lock_.TryLock())
+        {
+            return false;
+        }
+        std::unique_lock<sharpen::SpinLock> lock{this->lock_,std::adopt_lock};
+        bool locked{true};
+        std::swap(locked,this->locked_);
+        return !locked;
+    }
+}
+
 void sharpen::AsyncMutex::Unlock() noexcept
 {
     std::unique_lock<sharpen::SpinLock> lock(this->lock_);

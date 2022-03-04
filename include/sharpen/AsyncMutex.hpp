@@ -27,6 +27,13 @@ namespace sharpen
 
         virtual void Unlock() noexcept override;
 
+        bool TryLock();
+
+        inline bool try_lock()
+        {
+            return this->TryLock();
+        }
+
         ~AsyncMutex() noexcept = default;
     };
     

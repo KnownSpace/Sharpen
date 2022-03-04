@@ -16,3 +16,8 @@ void sharpen::SpinLock::unlock() noexcept
 {
     this->flag_.clear(std::memory_order::memory_order_release);
 }
+
+bool sharpen::SpinLock::TryLock()
+{
+    return !this->flag_.test_and_set(std::memory_order::memory_order_acquire);
+}
