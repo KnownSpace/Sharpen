@@ -57,7 +57,6 @@ namespace sharpen
                     }
                     if(match)
                     {
-                        begin->chances_ = 1;
                         return begin;
                     }
                 }
@@ -72,6 +71,7 @@ namespace sharpen
             auto ite = this->Find(keyBegin,keyEnd);
             if(ite != this->buf_.end())
             {
+                ite->chances_ = 1;
                 result = ite->cacheObj_;
             }
             return result;
