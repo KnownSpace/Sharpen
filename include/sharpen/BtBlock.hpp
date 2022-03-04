@@ -55,10 +55,6 @@ namespace sharpen
         sharpen::Size usedSize_;
 
         static bool Comp(const sharpen::BtKeyValuePair &pair,const sharpen::ByteBuffer &key) noexcept;
-
-        Iterator BinaryFind(const sharpen::ByteBuffer &key) noexcept;
-
-        ConstIterator BinaryFind(const sharpen::ByteBuffer &key) const noexcept;
     public:
 
         enum class PutTage
@@ -194,6 +190,14 @@ namespace sharpen
         {
             return this->pairs_.empty();
         }
+
+        Iterator BinaryFind(const sharpen::ByteBuffer &key) noexcept;
+
+        ConstIterator BinaryFind(const sharpen::ByteBuffer &key) const noexcept;
+
+        Iterator FuzzingFind(const sharpen::ByteBuffer &key) noexcept;
+
+        ConstIterator FuzzingFind(const sharpen::ByteBuffer &key) const noexcept;
 
         Iterator Find(const sharpen::ByteBuffer &key) noexcept;
 

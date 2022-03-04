@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cassert>
 #include <iterator>
+#include <random>
 #include <sharpen/SortedStringTable.hpp>
 #include <sharpen/MemoryTable.hpp>
 #include <sharpen/BinaryLogger.hpp>
@@ -14,6 +15,7 @@ void Entry()
     const char *tableName = "./1.table";
     const char *tableName2 = "./2.table";
     const char *tableName3 = "./3.table";
+    std::mt19937 random;
     try
     {
         std::puts("persistence test begin");
@@ -115,6 +117,20 @@ void Entry()
                 std::printf("sst check %u/%u\n",i,count - 1);
                 assert(pt.Get(key) == value);
             }
+        }
+        table->Truncate();
+        {
+            sharpen::MemoryTable<sharpen::BinaryLogger> mt{log};
+            for (sharpen::Uint32 i = 0,count = 114515; i != count;++i)
+            {
+                sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};
+                key.As<sharpen::Uint32>() = random();
+                sharpen::ByteBuffer value{sizeof(sharpen::Uint32)};
+                value.As<sharpen::Uint32>() = random();
+                mt.Put(std::move(key),std::move(value));
+            }
+            sharpen::SortedStringTable pt{table};
+            pt.BuildFromMemory(mt.Begin(),mt.End(),sharpen::SstBuildOption{true});
         }
         sharpen::FileChannelPtr table2 = sharpen::MakeFileChannel(tableName2, sharpen::FileAccessModel::All, sharpen::FileOpenModel::CreateNew);
         table2->Register(sharpen::EventEngine::GetEngine());
@@ -368,6 +384,18 @@ void Entry()
                     value.As<sharpen::Uint32>() = i;
                     std::printf("bt check %u/%u\n",i,count - 1);
                     assert(pt.Get(key) == value);
+                }
+            }
+            table->Truncate();
+            {
+                sharpen::BalancedTable pt{table,sharpen::BtOption{}};
+                for (sharpen::Uint32 i = 0,count = 114515; i != count;++i)
+                {
+                    sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};
+                    key.As<sharpen::Uint32>() = random();
+                    sharpen::ByteBuffer value{sizeof(sharpen::Uint32)};
+                    value.As<sharpen::Uint32>() = random();
+                    pt.Put(std::move(key),std::move(value));
                 }
             }
         }

@@ -280,7 +280,7 @@ std::pair<sharpen::BtBlock,sharpen::FilePointer> sharpen::BalancedTable::LoadBlo
     sharpen::Size depth{this->GetDepth()};
     if(depth)
     {
-        auto ite = this->root_.Find(key);
+        auto ite = this->root_.FuzzingFind(key);
         sharpen::ByteBuffer buf;
         sharpen::BtBlock block;
         sharpen::FilePointer pointer;
@@ -293,11 +293,11 @@ std::pair<sharpen::BtBlock,sharpen::FilePointer> sharpen::BalancedTable::LoadBlo
             if(!blockRef)
             {
                 block = this->LoadBlock(pointer.offset_,pointer.size_,buf);
-                ite = block.Find(key);
+                ite = block.FuzzingFind(key);
             }
             else
             {
-                ite = blockRef->Find(key);
+                ite = blockRef->FuzzingFind(key);
             }
         }
         return std::make_pair(std::move(block),pointer);
@@ -316,7 +316,7 @@ std::vector<std::pair<std::shared_ptr<sharpen::BtBlock>,sharpen::FilePointer>> s
     std::vector<std::pair<std::shared_ptr<sharpen::BtBlock>,sharpen::FilePointer>> path;
     if(depth)
     {
-        auto ite = this->root_.Find(key);
+        auto ite = this->root_.FuzzingFind(key);
         path.reserve(depth);
         sharpen::ByteBuffer buf;
         for (sharpen::Size i = 0,count = depth; i != count; ++i)
@@ -336,7 +336,7 @@ std::vector<std::pair<std::shared_ptr<sharpen::BtBlock>,sharpen::FilePointer>> s
                 }
             }
             path.emplace_back(std::move(block),pointer);
-            ite = path.back().first->Find(key);
+            ite = path.back().first->FuzzingFind(key);
         }
     }
     return path;

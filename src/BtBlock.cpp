@@ -139,6 +139,34 @@ sharpen::BtBlock::ConstIterator sharpen::BtBlock::BinaryFind(const sharpen::Byte
     return std::lower_bound(this->Begin(),this->End(),key,static_cast<FnPtr>(&Self::Comp));
 }
 
+sharpen::BtBlock::Iterator sharpen::BtBlock::FuzzingFind(const sharpen::ByteBuffer &key) noexcept
+{
+    auto ite = this->BinaryFind(key);
+    if (ite == this->End() && !this->Empty())
+    {
+        ite = sharpen::IteratorBackward(ite,1);
+    }
+    if (ite->GetKey() > key && this->Begin() != ite)
+    {
+        ite = sharpen::IteratorBackward(ite,1);
+    }
+    return ite;
+}
+
+sharpen::BtBlock::ConstIterator sharpen::BtBlock::FuzzingFind(const sharpen::ByteBuffer &key) const noexcept
+{
+    auto ite = this->BinaryFind(key);
+    if (ite == this->End() && !this->Empty())
+    {
+        ite = sharpen::IteratorBackward(ite,1);
+    }
+    if (ite->GetKey() > key && this->Begin() != ite)
+    {
+        ite = sharpen::IteratorBackward(ite,1);
+    }
+    return ite;
+}
+
 sharpen::BtBlock::Iterator sharpen::BtBlock::Find(const sharpen::ByteBuffer &key) noexcept
 {
     auto ite = this->BinaryFind(key);
