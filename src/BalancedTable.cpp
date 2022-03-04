@@ -78,9 +78,10 @@ void sharpen::BalancedTable::InitFreeArea()
     sharpen::FilePointer pointer;
     std::memset(&pointer,0,sizeof(pointer));
     this->channel_->ReadAsync(reinterpret_cast<char*>(&pointer),sizeof(pointer),0);
-    while(pointer.offset_)
+    while(pointer.offset_ && pointer.offset_ < this->offset_)
     {
         sharpen::FilePointer next;
+        std::memset(&next,0,sizeof(next));
         this->channel_->ReadAsync(reinterpret_cast<char*>(&next),sizeof(next),pointer.offset_);
         pointer = next;
         this->freeArea_.emplace_back(pointer);
