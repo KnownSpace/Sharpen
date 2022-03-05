@@ -228,7 +228,7 @@ namespace sharpen
         }
 
         template<typename _InsertIterator,typename _Check = decltype(*std::declval<_InsertIterator&>()++ = std::declval<sharpen::FilePointer>())>
-        inline void RangeQuery(_InsertIterator inserter,const sharpen::ByteBuffer &beginKey,const sharpen::ByteBuffer &endKey) const
+        inline void TableScan(_InsertIterator inserter,const sharpen::ByteBuffer &beginKey,const sharpen::ByteBuffer &endKey) const
         {
             assert(beginKey <= endKey);
             //query index block
@@ -246,6 +246,15 @@ namespace sharpen
             if (begin != this->root_.IndexBlock().End())
             {
                 *inserter++ = begin->Block();
+            }
+        }
+
+        template<typename _InsertIterator,typename _Check = decltype(*std::declval<_InsertIterator&>()++ = std::declval<sharpen::FilePointer>())>
+        inline void TableScan(_InsertIterator inserter) const
+        {
+            for (auto begin = this->root_.IndexBlock().Begin(),end = this->root_.IndexBlock().End(); begin != end; ++begin)
+            {
+                *inserter++ - begin->Block();   
             }
         }
 

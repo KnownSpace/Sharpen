@@ -138,7 +138,7 @@ namespace sharpen
         }
 
         template<typename _InsertIterator,typename _Check = decltype(*std::declval<_InsertIterator&>()++ = std::declval<sharpen::FilePointer>())>
-        inline void RangeQuery(_InsertIterator inserter,const sharpen::ByteBuffer &beginKey,const sharpen::ByteBuffer &endKey) const
+        inline void TableScan(_InsertIterator inserter,const sharpen::ByteBuffer &beginKey,const sharpen::ByteBuffer &endKey) const
         {
             assert(beginKey <= endKey);
             //get block and pointer
@@ -163,7 +163,7 @@ namespace sharpen
                 //load pointer
                 sharpen::FilePointer pointer;
                 std::memset(&pointer,0,sizeof(pointer));
-                if(next.offset_ && next.size_)
+                if(next.size_)
                 {
                     this->channel_->ReadAsync(reinterpret_cast<char*>(&pointer),sizeof(pointer),next.offset_ + nextPointer);
                 }
@@ -173,9 +173,35 @@ namespace sharpen
                 //set next pointer
                 next = pointer;
             }
-            if(beginPointer.offset_ && beginPointer.size_)
+            if(beginPointer.size_)
             {
                 *inserter++ = beginPointer;
+            }
+        }
+
+        template<typename _InsertIterator,typename _Check = decltype(*std::declval<_InsertIterator&>()++ = std::declval<sharpen::FilePointer>())>
+        inline void TableScan(_InsertIterator inserter) const
+        {
+            sharpen::Size depth{this->GetDepth()};
+            if(!depth)
+            {
+                *inserter++ = this->rootPointer_;
+            }
+            sharpen::BtBlock leaf{this->root_};
+            sharpen::FilePointer prevPointer;
+            for (sharpen::Size i = 0; i != depth; ++i)
+            {
+                auto it = leaf.Begin();
+                assert(it != leaf.End());
+                prevPointer = it->ValueAsPointer();
+                leaf = this->LoadBlock(prevPointer);
+            }
+            *inserter++ = prevPointer;
+            sharpen::FilePointer next{leaf.Next()};
+            while (next.offset_)
+            {  
+                *inserter++ = next;
+                this->channel_->ReadAsync(reinterpret_cast<char*>(&next),sizeof(next),next.offset_ + leaf.ComputeNextPointer());
             }
         }
 

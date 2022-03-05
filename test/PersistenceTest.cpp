@@ -1,7 +1,6 @@
 #include <cstdio>
 #include <cassert>
 #include <iterator>
-#include <random>
 #include <sharpen/SortedStringTable.hpp>
 #include <sharpen/MemoryTable.hpp>
 #include <sharpen/BinaryLogger.hpp>
@@ -15,7 +14,6 @@ void Entry()
     const char *tableName = "./1.table";
     const char *tableName2 = "./2.table";
     const char *tableName3 = "./3.table";
-    std::mt19937 random;
     try
     {
         std::puts("persistence test begin");
@@ -48,7 +46,7 @@ void Entry()
             assert(r.Get() == sharpen::ByteBuffer("val", 3));
             // range query
             std::vector<sharpen::FilePointer> pointers;
-            pt.RangeQuery(std::back_inserter(pointers), sharpen::ByteBuffer{"abc", 3}, sharpen::ByteBuffer{"other", 5});
+            pt.TableScan(std::back_inserter(pointers), sharpen::ByteBuffer{"abc", 3}, sharpen::ByteBuffer{"other", 5});
             std::printf("sst range query need to load %zu blocks\n", pointers.size());
             for (auto begin = pointers.begin(), end = pointers.end(); begin != end; ++begin)
             {
@@ -70,14 +68,13 @@ void Entry()
             }
             // range query
             pointers.clear();
-            pt.RangeQuery(std::back_inserter(pointers), sharpen::ByteBuffer{"othera", 6}, sharpen::ByteBuffer{"otherz", 6});
+            pt.TableScan(std::back_inserter(pointers), sharpen::ByteBuffer{"othera", 6}, sharpen::ByteBuffer{"otherz", 6});
             std::printf("sst range query need to load %zu blocks\n", pointers.size());
             for (auto begin = pointers.begin(), end = pointers.end(); begin != end; ++begin)
             {
                 sharpen::SstDataBlock block{pt.LoadBlock(begin->offset_, begin->size_)};
                 for (auto keyBegin = block.TwoWayBegin(), keyEnd = block.TwoWayEnd(); keyBegin != keyEnd; ++keyBegin)
                 {
-
                     std::fputs("key is ", stdout);
                     for (sharpen::Size i = 0; i != keyBegin->GetKey().GetSize(); ++i)
                     {
@@ -117,21 +114,23 @@ void Entry()
                 std::printf("sst check %u/%u\n",i,count - 1);
                 assert(pt.Get(key) == value);
             }
+            {
+                sharpen::Size count{0};
+                for (auto blockBegin = pt.Root().IndexBlock().Begin(),blockEnd = pt.Root().IndexBlock().End(); blockBegin != blockEnd; ++blockBegin)
+                {
+                    sharpen::FilePointer pointer{blockBegin->Block()};
+                    sharpen::SstDataBlock block{pt.LoadBlock(pointer)};
+                    for (auto begin = block.TwoWayBegin(),end = block.TwoWayEnd(); begin != end; ++begin)
+                    {
+                        count += 1;
+                        std::printf("sst table scan %u:%u\n",begin->GetKey().As<sharpen::Uint32>(),begin->Value().As<sharpen::Uint32>());
+                    }
+                }
+                std::printf("sst scan %zu keys\n",count);
+                assert(count == static_cast<sharpen::Uint32>(1e5));
+            }
         }
         table->Truncate();
-        {
-            sharpen::MemoryTable<sharpen::BinaryLogger> mt{log};
-            for (sharpen::Uint32 i = 0,count = 114515; i != count;++i)
-            {
-                sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};
-                key.As<sharpen::Uint32>() = random();
-                sharpen::ByteBuffer value{sizeof(sharpen::Uint32)};
-                value.As<sharpen::Uint32>() = random();
-                mt.Put(std::move(key),std::move(value));
-            }
-            sharpen::SortedStringTable pt{table};
-            pt.BuildFromMemory(mt.Begin(),mt.End(),sharpen::SstBuildOption{true});
-        }
         sharpen::FileChannelPtr table2 = sharpen::MakeFileChannel(tableName2, sharpen::FileAccessModel::All, sharpen::FileOpenModel::CreateNew);
         table2->Register(sharpen::EventEngine::GetEngine());
         sharpen::FileChannelPtr table3 = sharpen::MakeFileChannel(tableName3, sharpen::FileAccessModel::All, sharpen::FileOpenModel::CreateNew);
@@ -264,7 +263,7 @@ void Entry()
                 sharpen::ByteBuffer beginKey{"key1", 4};
                 sharpen::ByteBuffer endKey{"key8", 4};
                 std::vector<sharpen::FilePointer> pointers;
-                pt.RangeQuery(std::back_inserter(pointers), beginKey, endKey);
+                pt.TableScan(std::back_inserter(pointers), beginKey, endKey);
                 std::printf("bt range query need to load %zu blocks\n", pointers.size());
                 for (auto begin = pointers.begin(), end = pointers.end(); begin != end; ++begin)
                 {
@@ -340,7 +339,7 @@ void Entry()
                 sharpen::ByteBuffer beginKey{"key1", 4};
                 sharpen::ByteBuffer endKey{"key2", 4};
                 std::vector<sharpen::FilePointer> pointers;
-                pt.RangeQuery(std::back_inserter(pointers), beginKey, endKey);
+                pt.TableScan(std::back_inserter(pointers), beginKey, endKey);
                 std::printf("bt range query need to load %zu blocks\n", pointers.size());
                 for (auto begin = pointers.begin(), end = pointers.end(); begin != end; ++begin)
                 {
@@ -384,6 +383,22 @@ void Entry()
                     value.As<sharpen::Uint32>() = i;
                     std::printf("bt check %u/%u\n",i,count - 1);
                     assert(pt.Get(key) == value);
+                }
+                {
+                    sharpen::Size count{0};
+                    std::vector<sharpen::FilePointer> blocks;
+                    pt.TableScan(std::back_inserter(blocks));
+                    for (auto blockBegin = blocks.begin(),blockEnd = blocks.end(); blockBegin != blockEnd; ++blockBegin)
+                    {
+                        sharpen::FilePointer pointer{*blockBegin};
+                        sharpen::BtBlock block{pt.LoadBlock(pointer)};
+                        for (auto begin = block.Begin(),end = block.End(); begin != end; ++begin)
+                        {
+                            count += 1;
+                            std::printf("bt table scan %u:%u\n",begin->GetKey().As<sharpen::Uint32>(),begin->Value().As<sharpen::Uint32>());
+                        }
+                    }
+                    std::printf("bt scan %zu keys\n",count);
                 }
             }
             table->Truncate();
