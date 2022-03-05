@@ -18,30 +18,34 @@ sharpen::FilePointer sharpen::BalancedTable::AllocMemory(sharpen::Uint64 size)
 {
     if(!this->freeArea_.empty())
     {
-        sharpen::Size moved{0};
-        auto ite = this->freeArea_.end();
-        for (auto begin = this->freeArea_.rbegin(),end = this->freeArea_.rend(); begin != end; ++begin)
+        auto ite = this->freeArea_.begin();
+        while (ite != this->freeArea_.end())
         {
-            moved += 1;
-            if(begin->size_ > size)
+            if(ite->size_ >= size)
             {
-                ite = sharpen::IteratorBackward(this->freeArea_.end(),moved + 1);
                 break;
             }
+            ++ite;
         }
         if (ite != this->freeArea_.end())
         {
             sharpen::FilePointer pointer{*ite};
-            if(moved)
+            auto nextIte = sharpen::IteratorForward(ite,1);
+            sharpen::FilePointer next;
+            std::memset(&next,0,sizeof(next));
+            if(nextIte != this->freeArea_.end())
             {
-                sharpen::FilePointer next{*sharpen::IteratorForward(ite,1)};
-                sharpen::Uint64 prev{0};
-                if (ite != this->freeArea_.begin())
-                {
-                    prev = sharpen::IteratorBackward(ite,1)->offset_;
-                }
-                this->channel_->WriteAsync(reinterpret_cast<char*>(&next),sizeof(next),prev);
+                next = *nextIte;
             }
+            sharpen::FilePointer prev;
+            std::memset(&prev,0,sizeof(prev));
+            prev.size_ = sizeof(sharpen::FilePointer);
+            if(ite != this->freeArea_.begin())
+            {
+                auto prevIte = sharpen::IteratorBackward(ite,1);
+                prev = *prevIte;
+            }
+            this->channel_->WriteAsync(reinterpret_cast<char*>(&next),sizeof(next),prev.offset_);
             this->freeArea_.erase(ite);
             return pointer;
         }
@@ -84,7 +88,10 @@ void sharpen::BalancedTable::InitFreeArea()
         std::memset(&next,0,sizeof(next));
         this->channel_->ReadAsync(reinterpret_cast<char*>(&next),sizeof(next),pointer.offset_);
         pointer = next;
-        this->freeArea_.emplace_back(pointer);
+        if(pointer.size_)
+        {
+            this->freeArea_.emplace_back(pointer);
+        }
     }
 }
 
