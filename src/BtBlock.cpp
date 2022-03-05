@@ -329,10 +329,10 @@ void sharpen::BtBlock::Combine(Self other)
 
 sharpen::Size sharpen::BtBlock::ComputeCounterPointer() const noexcept
 {
-    // if(this->depth_ < 128)
-    // {
-    //     return 1 + sizeof(this->next_) + sizeof(this->prev_);
-    // }
+    if(this->depth_ < 128)
+    {
+        return 1 + sizeof(this->next_) + sizeof(this->prev_);
+    }
     sharpen::Varuint64 builder{this->depth_};
     return  builder.ComputeSize() + sizeof(this->prev_) + sizeof(this->next_);
 }

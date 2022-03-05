@@ -95,7 +95,7 @@ void Entry()
         table->Truncate();
         {
             sharpen::MemoryTable<sharpen::BinaryLogger> mt{log};
-            for (sharpen::Uint32 i = 0,count = 114515; i != count;++i)
+            for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(1e5); i != count;++i)
             {
                 sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};
                 key.As<sharpen::Uint32>() = i;
@@ -108,7 +108,7 @@ void Entry()
         }
         {
             sharpen::SortedStringTable pt{table};
-            for (sharpen::Uint32 i = 0,count = 114515; i != count;++i)
+            for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(1e5); i != count;++i)
             {
                 sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};
                 key.As<sharpen::Uint32>() = i;
@@ -365,7 +365,7 @@ void Entry()
             table->Truncate();
             {
                 sharpen::BalancedTable pt{table,sharpen::BtOption{}};
-                for (sharpen::Uint32 i = 0,count = 114515; i != count;++i)
+                for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(1e5); i != count;++i)
                 {
                     sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};
                     key.As<sharpen::Uint32>() = i;
@@ -376,7 +376,7 @@ void Entry()
             }
             {
                 sharpen::BalancedTable pt{table,sharpen::BtOption{}};
-                for (sharpen::Uint32 i = 0,count = 114515; i != count;++i)
+                for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(1e5); i != count;++i)
                 {
                     sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};
                     key.As<sharpen::Uint32>() = i;
@@ -387,17 +387,6 @@ void Entry()
                 }
             }
             table->Truncate();
-            {
-                sharpen::BalancedTable pt{table,sharpen::BtOption{}};
-                for (sharpen::Uint32 i = 0,count = 114515; i != count;++i)
-                {
-                    sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};
-                    key.As<sharpen::Uint32>() = random();
-                    sharpen::ByteBuffer value{sizeof(sharpen::Uint32)};
-                    value.As<sharpen::Uint32>() = random();
-                    pt.Put(std::move(key),std::move(value));
-                }
-            }
         }
         log->Close();
         table->Close();
