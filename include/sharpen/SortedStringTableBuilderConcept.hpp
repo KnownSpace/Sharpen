@@ -54,8 +54,9 @@ namespace sharpen
                                                         ,std::declval<sharpen::ByteBuffer&>() = std::declval<const _Block&>().FirstKey()
                                                         ,std::declval<_Block&>().Clear()
                                                         ,std::declval<bool&>() = std::declval<const _Block&>().Contain(std::declval<const sharpen::ByteBuffer&>() /*key*/)
-                                                        ,std::declval<void*&>() = std::declval<const _Block&>().GetComparator()
-                                                        ,std::declval<_Block&>().SetComparator(nullptr /*comparator*/));
+                                                        ,std::declval<const _Block&>().GetComparator()
+                                                        ,std::declval<_Block&>().SetComparator(nullptr /*comparator*/)
+                                                        );
 
     template<typename _Block>
     using IsSstDataBlock = sharpen::IsMatches<sharpen::InternalIsSstDataBlock,_Block>;

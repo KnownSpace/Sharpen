@@ -12,8 +12,10 @@ namespace sharpen
 {
     struct SortedStringTableBuilder
     {
-    private:
+    public:
         using Comparator = sharpen::Int32(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
+    private:
+        
 
         template<typename _Iterator>
         struct Helper
