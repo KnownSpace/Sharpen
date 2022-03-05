@@ -1,5 +1,10 @@
 #include <sharpen/SstDataBlock.hpp>
 
+sharpen::SstDataBlock::SstDataBlock()
+    :groups_()
+    ,comp_(nullptr)
+{}
+
 void sharpen::SstDataBlock::LoadFrom(const char *data, sharpen::Size size)
 {
     if (size < 3)
@@ -64,6 +69,7 @@ void sharpen::SstDataBlock::LoadFrom(const char *data, sharpen::Size size)
         try
         {
             group.LoadFrom(data + begin->first, begin->second);
+            group.SetComparator(this->GetComparator());
             this->groups_.emplace_back(std::move(group));
         }
         catch (const std::exception &)
@@ -138,22 +144,50 @@ sharpen::Size sharpen::SstDataBlock::StoreTo(sharpen::ByteBuffer &buf, sharpen::
     return this->UnsafeStoreTo(buf.Data());
 }
 
-bool sharpen::SstDataBlock::Less(const sharpen::SstKeyValueGroup &group, const sharpen::ByteBuffer &key) noexcept
+bool sharpen::SstDataBlock::WarppedComp(Comparator comp,const sharpen::SstKeyValueGroup &group,const sharpen::ByteBuffer &key) noexcept
+{
+    if(comp)
+    {
+        return comp(group.Last().GetKey(),key) == -1;
+    }
+    return Self::Comp(group,key);
+}
+
+bool sharpen::SstDataBlock::Comp(const sharpen::SstKeyValueGroup &group, const sharpen::ByteBuffer &key) noexcept
 {
     assert(!group.Empty());
     return group.Last().GetKey() < key;
 }
 
+sharpen::Int32 sharpen::SstDataBlock::CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept
+{
+    if(this->comp_)
+    {
+        return this->comp_(left,right);
+    }
+    return left.CompareWith(right);
+}
+
 sharpen::SstDataBlock::Iterator sharpen::SstDataBlock::FindGroup(const sharpen::ByteBuffer &key)
 {
+    if(this->comp_)
+    {
+        using Warp = bool(*)(Comparator,const sharpen::SstKeyValueGroup&,const sharpen::ByteBuffer&);
+        return std::lower_bound(this->groups_.begin(),this->groups_.end(),key,std::bind(static_cast<Warp>(&Self::WarppedComp),this->comp_,std::placeholders::_1,std::placeholders::_2));
+    }
     using FnPtr = bool (*)(const sharpen::SstKeyValueGroup &, const sharpen::ByteBuffer &);
-    return std::lower_bound(this->groups_.begin(), this->groups_.end(), key, static_cast<FnPtr>(&Self::Less));
+    return std::lower_bound(this->groups_.begin(), this->groups_.end(), key, static_cast<FnPtr>(&Self::Comp));
 }
 
 sharpen::SstDataBlock::ConstIterator sharpen::SstDataBlock::FindGroup(const sharpen::ByteBuffer &key) const
 {
+    if(this->comp_)
+    {
+        using Warp = bool(*)(Comparator,const sharpen::SstKeyValueGroup&,const sharpen::ByteBuffer&);
+        return std::lower_bound(this->groups_.begin(),this->groups_.end(),key,std::bind(static_cast<Warp>(&Self::WarppedComp),this->comp_,std::placeholders::_1,std::placeholders::_2));
+    }
     using FnPtr = bool (*)(const sharpen::SstKeyValueGroup &, const sharpen::ByteBuffer &);
-    return std::lower_bound(this->groups_.begin(), this->groups_.end(), key, static_cast<FnPtr>(&Self::Less));
+    return std::lower_bound(this->groups_.begin(), this->groups_.end(), key, static_cast<FnPtr>(&Self::Comp));
 }
 
 sharpen::SstDataBlock::Iterator sharpen::SstDataBlock::FindInsertGroup(const sharpen::ByteBuffer &key)
@@ -163,7 +197,7 @@ sharpen::SstDataBlock::Iterator sharpen::SstDataBlock::FindInsertGroup(const sha
     {
         ite = sharpen::IteratorBackward(ite, 1);
     }
-    else if(ite != this->Begin() && key < ite->First().GetKey() && !ite->CheckKey(key))
+    else if(ite != this->Begin() && this->CompKey(key,ite->First().GetKey()) == -1 && !ite->CheckKey(key))
     {
         ite = sharpen::IteratorBackward(ite,1);
     }
@@ -177,7 +211,7 @@ sharpen::SstDataBlock::ConstIterator sharpen::SstDataBlock::FindInsertGroup(cons
     {
         ite = sharpen::IteratorBackward(ite, 1);
     }
-    else if(ite != this->Begin() && key < ite->First().GetKey() && !ite->CheckKey(key))
+    else if(ite != this->Begin() && this->CompKey(key,ite->First().GetKey()) == -1 && !ite->CheckKey(key))
     {
         ite = sharpen::IteratorBackward(ite,1);
     }
@@ -244,8 +278,9 @@ void sharpen::SstDataBlock::Put(sharpen::ByteBuffer key, sharpen::ByteBuffer val
         }
         //need to create a new group
         sharpen::SstKeyValueGroup group;
+        group.SetComparator(this->GetComparator());
         group.Put(std::move(key), std::move(value));
-        if(group.First().GetKey() > ite->First().GetKey())
+        if(this->CompKey(group.First().GetKey(),ite->First().GetKey()) == 1)
         {
             ite = sharpen::IteratorForward(ite, 1);
         }
@@ -260,6 +295,7 @@ void sharpen::SstDataBlock::Put(sharpen::ByteBuffer key, sharpen::ByteBuffer val
         return;
     }
     sharpen::SstKeyValueGroup group;
+    group.SetComparator(this->GetComparator());
     group.Put(std::move(key), std::move(value));
     this->groups_.emplace_back(std::move(group));
 }

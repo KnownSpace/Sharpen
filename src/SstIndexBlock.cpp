@@ -5,6 +5,11 @@
 
 #include <sharpen/IteratorOps.hpp>
 
+sharpen::SstIndexBlock::SstIndexBlock()
+    :dataBlocks_()
+    ,comp_(nullptr)
+{}
+
 void sharpen::SstIndexBlock::LoadFrom(const char *data,sharpen::Size size)
 {
     const char *begin = data;
@@ -96,19 +101,47 @@ sharpen::Size sharpen::SstIndexBlock::StoreTo(sharpen::ByteBuffer &buf,sharpen::
     return this->UnsafeStoreTo(data);
 }
 
+bool sharpen::SstIndexBlock::WarppedComp(Comparator comp,const sharpen::SstBlockHandle &block,const sharpen::ByteBuffer &key) noexcept
+{
+    if(comp)
+    {
+        return comp(block.GetKey(),key) == -1;
+    }
+    return Self::Comp(block,key);
+}
+
 bool sharpen::SstIndexBlock::Comp(const sharpen::SstBlockHandle &block,const sharpen::ByteBuffer &key) noexcept
 {
     return block.GetKey() < key;
 }
 
+sharpen::Int32 sharpen::SstIndexBlock::CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept
+{
+    if(this->comp_)
+    {
+        return this->comp_(left,right);
+    }
+    return left.CompareWith(right);
+}
+
 sharpen::SstIndexBlock::ConstIterator sharpen::SstIndexBlock::Find(const sharpen::ByteBuffer &key) const noexcept
 {
+    if(this->comp_)
+    {
+        using Warp = bool(*)(Comparator,const sharpen::SstBlockHandle&,const sharpen::ByteBuffer&);
+        return std::lower_bound(this->dataBlocks_.begin(),this->dataBlocks_.end(),key,std::bind(static_cast<Warp>(&Self::WarppedComp),this->comp_,std::placeholders::_1,std::placeholders::_2));
+    }
     using FnPtr = bool(*)(const sharpen::SstBlockHandle&,const sharpen::ByteBuffer&);
     return std::lower_bound(this->dataBlocks_.begin(),this->dataBlocks_.end(),key,static_cast<FnPtr>(&Self::Comp));
 }
 
 sharpen::SstIndexBlock::Iterator sharpen::SstIndexBlock::Find(const sharpen::ByteBuffer &key) noexcept
 {
+    if(this->comp_)
+    {
+        using Warp = bool(*)(Comparator,const sharpen::SstBlockHandle&,const sharpen::ByteBuffer&);
+        return std::lower_bound(this->dataBlocks_.begin(),this->dataBlocks_.end(),key,std::bind(static_cast<Warp>(&Self::WarppedComp),this->comp_,std::placeholders::_1,std::placeholders::_2));
+    }
     using FnPtr = bool(*)(const sharpen::SstBlockHandle&,const sharpen::ByteBuffer&);
     return std::lower_bound(this->dataBlocks_.begin(),this->dataBlocks_.end(),key,static_cast<FnPtr>(&Self::Comp));
 }
@@ -118,7 +151,7 @@ void sharpen::SstIndexBlock::Put(sharpen::ByteBuffer key,const sharpen::FilePoin
     auto ite = this->Find(key);
     if(ite != this->End())
     {
-        if(ite->GetKey() == key)
+        if(this->CompKey(ite->GetKey(),key) == 0)
         {
             ite->Block() = block;
             return;
@@ -134,7 +167,7 @@ void sharpen::SstIndexBlock::Put(sharpen::SstBlockHandle block)
     auto ite = this->Find(block.GetKey());
     if(ite != this->End())
     {
-        if(ite->GetKey() == block.GetKey())
+        if(this->CompKey(ite->GetKey(),block.GetKey()) == 0)
         {
             ite->Block() = std::move(block.Block());
             return;
@@ -148,7 +181,7 @@ void sharpen::SstIndexBlock::Put(sharpen::SstBlockHandle block)
 void sharpen::SstIndexBlock::Delete(const sharpen::ByteBuffer &key) noexcept
 {
     auto ite = this->Find(key);
-    if (ite != this->End() && ite->GetKey() == key)
+    if (ite != this->End() && this->CompKey(ite->GetKey(),key) == 0)
     {
         this->dataBlocks_.erase(ite);
     }

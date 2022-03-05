@@ -33,16 +33,23 @@ namespace sharpen
         using ConstIterator = typename Pairs::const_iterator;
         using ReverseIterator = typename Pairs::reverse_iterator;
         using ConstReverseIterator = typename Pairs::const_reverse_iterator;
+        using Comparator = sharpen::Int32(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
     private:
     
         Pairs pairs_;
 
+        Comparator comp_;
+
         static bool Comp(const sharpen::SstKeyValuePair &pair,const sharpen::ByteBuffer &key) noexcept;
+
+        static bool WarppedComp(Comparator comp,const sharpen::SstKeyValuePair &pair,const sharpen::ByteBuffer &key) noexcept;
+
+        sharpen::Int32 CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept;
 
         std::pair<sharpen::Uint64,sharpen::Uint64> ComputeKeySizes(const sharpen::ByteBuffer &key) const noexcept;
     public:
     
-        SstKeyValueGroup() = default;
+        SstKeyValueGroup();
     
         SstKeyValueGroup(const Self &other) = default;
     
@@ -60,6 +67,8 @@ namespace sharpen
             if(this != std::addressof(other))
             {
                 this->pairs_ = std::move(other.pairs_);
+                this->comp_ = other.comp_;
+                other.comp_ = nullptr;
             }
             return *this;
         }
@@ -214,6 +223,16 @@ namespace sharpen
         inline const sharpen::SstKeyValuePair &operator[](sharpen::Size index) const
         {
             return this->pairs_.at(index);
+        }
+
+        inline Comparator GetComparator() const noexcept
+        {
+            return this->comp_;
+        }
+
+        inline void SetComparator(Comparator comp) noexcept
+        {
+            this->comp_ = comp;
         }
     };
 }

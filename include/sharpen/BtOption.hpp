@@ -23,19 +23,19 @@ namespace sharpen
         Comparator comp_;
     public:
 
-        BtOption()
+        BtOption() noexcept
             :BtOption(Self::defaultMaxRecordsOfBlock)
         {}
 
-        explicit BtOption(sharpen::Uint16 maxRecordOfBlock)
+        explicit BtOption(sharpen::Uint16 maxRecordOfBlock) noexcept
             :BtOption(nullptr,maxRecordOfBlock,Self::defaultCacheSize_)
         {}
 
-        explicit BtOption(Comparator comp)
+        explicit BtOption(Comparator comp) noexcept
             :BtOption(comp,Self::defaultMaxRecordsOfBlock,Self::defaultCacheSize_)
         {}
 
-        BtOption(Comparator comp,sharpen::Uint16 maxRecordOfBlock,sharpen::Size cacheSize)
+        BtOption(Comparator comp,sharpen::Uint16 maxRecordOfBlock,sharpen::Size cacheSize) noexcept
             :maxRecordsOfBlock_(maxRecordOfBlock)
             ,cacheSize_(cacheSize)
             ,comp_(comp)
@@ -58,6 +58,7 @@ namespace sharpen
             {
                 this->cacheSize_ = other.cacheSize_;
                 this->maxRecordsOfBlock_ = other.maxRecordsOfBlock_;
+                this->comp_ = other.comp_;
             }
             return *this;
         }

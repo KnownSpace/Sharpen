@@ -13,6 +13,8 @@ namespace sharpen
     struct SortedStringTableBuilder
     {
     private:
+        using Comparator = sharpen::Int32(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
+
         template<typename _Iterator>
         struct Helper
         {
@@ -136,11 +138,12 @@ namespace sharpen
         }
 
         template<typename _Block,typename _Check = sharpen::EnableIf<sharpen::IsSstDataBlock<_Block>::Value>>
-        static _Block LoadDataBlock(sharpen::FileChannelPtr channel,sharpen::Uint64 offset,sharpen::Uint64 size)
+        static _Block LoadDataBlock(sharpen::FileChannelPtr channel,sharpen::Uint64 offset,sharpen::Uint64 size,Comparator comp)
         {
             _Block block;
             sharpen::ByteBuffer buf{sharpen::IntCast<sharpen::Size>(size)};
             channel->ReadAsync(buf,offset);
+            block.SetComparator(comp);
             block.LoadFrom(buf);
             return block;
         }
@@ -149,13 +152,16 @@ namespace sharpen
 
         //dump wal table to sst
         template<typename _Block,typename _Iterator,typename _Check = sharpen::EnableIf<sharpen::IsWalKeyValuePairIterator<_Iterator>::Value && sharpen::IsSstDataBlock<_Block>::Value>>
-        static sharpen::SstRoot DumpWalToTable(sharpen::FileChannelPtr channel,sharpen::Size blockBytes,_Iterator begin,_Iterator end,sharpen::Size filterBits,bool eraseDeleted)
+        static sharpen::SstRoot DumpWalToTable(sharpen::FileChannelPtr channel,sharpen::Size blockBytes,_Iterator begin,_Iterator end,sharpen::Size filterBits,bool eraseDeleted,Comparator comp)
         {
             assert(blockBytes);
             //build data block
             sharpen::SstRoot root;
+            root.IndexBlock().SetComparator(comp);
+            root.MetaIndexBlock().SetComparator(comp);
             std::vector<sharpen::BloomFilter<sharpen::ByteBuffer>> filters;
             _Block block;
+            block.SetComparator(comp);
             sharpen::Size blockCount{0};
             sharpen::Size blockSize{0};
             sharpen::ByteBuffer buf;
@@ -209,9 +215,11 @@ namespace sharpen
 
         //Combine ordered tables
         template<typename _Block,typename _Iterator,typename _Check = decltype(std::declval<sharpen::SstVector&>() = *std::declval<_Iterator>()),typename _CheckBlock = sharpen::EnableIf<sharpen::IsSstDataBlock<_Block>::Value>>
-        static sharpen::SstRoot CombineTables(sharpen::FileChannelPtr channel,_Iterator begin,_Iterator end,sharpen::Size filterBits,bool eraseDeleted)
+        static sharpen::SstRoot CombineTables(sharpen::FileChannelPtr channel,_Iterator begin,_Iterator end,sharpen::Size filterBits,bool eraseDeleted,Comparator comp)
         {
             sharpen::SstRoot root;
+            root.IndexBlock().SetComparator(comp);
+            root.MetaIndexBlock().SetComparator(comp);
             std::vector<sharpen::BloomFilter<sharpen::ByteBuffer>> filters;
             sharpen::Size blockNum{0};
             for (auto ite = begin; ite != end; ++ite)
@@ -231,7 +239,8 @@ namespace sharpen
                 auto &table = begin->Root();
                 for (auto blockBegin = table.IndexBlock().Begin(),blockEnd = table.IndexBlock().End(); blockBegin != blockEnd; ++blockBegin)
                 {
-                    _Block block{Self::LoadDataBlock<_Block>(begin->Channel(),blockBegin->Block().offset_,blockBegin->Block().size_)};
+                    _Block block{Self::LoadDataBlock<_Block>(begin->Channel(),blockBegin->Block().offset_,blockBegin->Block().size_,comp)};
+                    block.SetComparator(comp);
                     if(eraseDeleted)
                     {
                         block.EraseDeleted();
@@ -250,10 +259,12 @@ namespace sharpen
 
         //2PMMS
         template<typename _Block,typename _Iterator,typename _WalIterator,typename _Check = decltype(std::declval<sharpen::SstVector&>() = *std::declval<_Iterator>()),typename _CheckBlock = sharpen::EnableIf<sharpen::IsSstDataBlock<_Block>::Value>,typename _CheckWalIterator = sharpen::EnableIf<sharpen::IsWalKeyValuePairIterator<_Iterator>::Value && sharpen::IsSstDataBlock<_Block>::Value>>
-        static sharpen::SstRoot MergeTables(sharpen::FileChannelPtr channel,sharpen::Size blockBytes,_Iterator begin,_Iterator end,_WalIterator walBegin,_WalIterator walEnd,sharpen::Size filterBits,bool eraseDeleted)
+        static sharpen::SstRoot MergeTables(sharpen::FileChannelPtr channel,sharpen::Size blockBytes,_Iterator begin,_Iterator end,_WalIterator walBegin,_WalIterator walEnd,sharpen::Size filterBits,bool eraseDeleted,Comparator comp)
         {
             assert(blockBytes != 0);
             sharpen::SstRoot root;
+            root.IndexBlock().SetComparator(comp);
+            root.MetaIndexBlock().SetComparator(comp);
             sharpen::Size len{sharpen::GetRangeSize(begin,end)};
             if(len)
             {
@@ -269,6 +280,7 @@ namespace sharpen
                 sharpen::ByteBuffer *selectedKey{nullptr};
                 sharpen::ByteBuffer *selectedValue{nullptr};
                 _Block block;
+                block.SetComparator(comp);
                 sharpen::ByteBuffer buf;
                 std::vector<Self::TableState> states{len};
                 //init block states
@@ -314,7 +326,7 @@ namespace sharpen
                             if(index != vec.Root().IndexBlock().GetSize())
                             {
                                 auto pointer = vec.Root().IndexBlock()[index].Block();
-                                blocks[i] = Self::LoadDataBlock<_Block>(vec.Channel(),pointer.offset_,pointer.size_);
+                                blocks[i] = Self::LoadDataBlock<_Block>(vec.Channel(),pointer.offset_,pointer.size_,comp);
                                 states[i].groupIndex_ = 0;
                                 states[i].keyIndex_ = 0;
                                 states[i].blockIndex_ += 1;
@@ -339,7 +351,7 @@ namespace sharpen
                     //select key and value
                     for (sharpen::Size i = 0,count = keys.size(); i != count; ++i)
                     {
-                        if(!keys[i].Empty() && (!selectedKey || keys[i] <= *selectedKey))
+                        if(!keys[i].Empty() && (!selectedKey || comp(*selectedKey,keys[i]) != -1 /*keys[i] <= *selectedKey*/))
                         {
                             assert(!keys[i].Empty());
                             if(keys[i] == *selectedKey)
@@ -388,26 +400,29 @@ namespace sharpen
             }
             else if(walBegin != walEnd)
             {
-                return Self::DumpWalToTable<_Block>(std::move(channel),blockBytes,walBegin,walEnd,filterBits,eraseDeleted);
+                return Self::DumpWalToTable<_Block>(std::move(channel),blockBytes,walBegin,walEnd,filterBits,eraseDeleted,comp);
             }
             return root;
         }
 
         //2PMMS
         template<typename _Block,typename _Iterator,typename _InsertIterator,typename _Check = decltype(std::declval<sharpen::SstVector&>() = *std::declval<_Iterator>()),typename _CheckBlock = sharpen::EnableIf<sharpen::IsSstDataBlock<_Block>::Value>,typename _CheckInsertor = decltype(*std::declval<_InsertIterator&>()++ = std::declval<sharpen::SstRoot&>())>
-        static void MergeTables(std::function<sharpen::FileChannelPtr()> channelMaker,sharpen::Size blockBytes,sharpen::Size tableBlocks,_Iterator begin,_Iterator end,sharpen::Size filterBits,bool eraseDeleted,_InsertIterator insertor)
+        static void MergeTables(std::function<sharpen::FileChannelPtr()> channelMaker,sharpen::Size blockBytes,sharpen::Size tableBlocks,_Iterator begin,_Iterator end,sharpen::Size filterBits,bool eraseDeleted,_InsertIterator insertor,Comparator comp)
         {
             assert(blockBytes != 0);
             sharpen::Size len{sharpen::GetRangeSize(begin,end)};
             if(len)
             {
                 sharpen::SstRoot root;
+                root.IndexBlock().SetComparator(comp);
+                root.MetaIndexBlock().SetComparator(comp);
                 std::vector<_Block> blocks{len};
                 std::vector<sharpen::ByteBuffer> keys{len};
                 std::vector<sharpen::ByteBuffer> values{len};
                 sharpen::ByteBuffer *selectedKey{nullptr};
                 sharpen::ByteBuffer *selectedValue{nullptr};
                 _Block block;
+                block.SetComparator(comp);
                 sharpen::ByteBuffer buf;
                 std::vector<Self::TableState> states{len};
                 for (auto stateBegin = states.begin(),stateEnd = states.end(); stateBegin != stateEnd; ++stateBegin)
@@ -442,7 +457,7 @@ namespace sharpen
                             if(index != vec.Root().IndexBlock().GetSize())
                             {
                                 auto pointer = vec.Root().IndexBlock()[index].Block();
-                                blocks[i] = Self::LoadDataBlock<_Block>(vec.Channel(),pointer.offset_,pointer.size_);
+                                blocks[i] = Self::LoadDataBlock<_Block>(vec.Channel(),pointer.offset_,pointer.size_,comp);
                                 states[i].groupIndex_ = 0;
                                 states[i].keyIndex_ = 0;
                                 states[i].blockIndex_ += 1;
@@ -461,7 +476,7 @@ namespace sharpen
                     //select key and value
                     for (sharpen::Size i = 0; i != len; ++i)
                     {
-                        if(!keys[i].Empty() && (!selectedKey || keys[i] <= *selectedKey))
+                        if(!keys[i].Empty() && (!selectedKey || comp(*selectedKey,keys[i]) != -1 /*keys[i] <= *selectedKey*/))
                         {
                             assert(!keys[i].Empty());
                             if(selectedKey && keys[i] == *selectedKey)
@@ -531,11 +546,11 @@ namespace sharpen
 
         //2PMMS
         template<typename _Block,typename _Iterator,typename _Check = decltype(std::declval<sharpen::SstVector&>() = *std::declval<_Iterator>()),typename _CheckBlock = sharpen::EnableIf<sharpen::IsSstDataBlock<_Block>::Value>>
-        static sharpen::SstRoot MergeTables(sharpen::FileChannelPtr channel,sharpen::Size blockBytes,_Iterator begin,_Iterator end,sharpen::Size filterBits,bool eraseDeleted)
+        static sharpen::SstRoot MergeTables(sharpen::FileChannelPtr channel,sharpen::Size blockBytes,_Iterator begin,_Iterator end,sharpen::Size filterBits,bool eraseDeleted,Comparator comp)
         {
             sharpen::SstRoot root;
             using Maker = sharpen::FileChannelPtr(*)(sharpen::FileChannelPtr);
-            Self::MergeTables<_Block>(std::bind(static_cast<Maker>(&Self::GetChannel),channel),blockBytes,0,begin,end,filterBits,eraseDeleted,&root);
+            Self::MergeTables<_Block>(std::bind(static_cast<Maker>(&Self::GetChannel),channel),blockBytes,0,begin,end,filterBits,eraseDeleted,&root,comp);
             return root;
         }
     };

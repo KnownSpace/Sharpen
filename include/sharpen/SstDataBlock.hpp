@@ -69,6 +69,7 @@ namespace sharpen
         using ConstReverseIterator = typename Groups::const_reverse_iterator;
         using TwoWayIterator = sharpen::TwoWayIterator<Iterator>;
         using ConstTwoWayIterator = sharpen::ConstTwoWayIterator<ConstIterator>;
+        using Comparator = sharpen::Int32(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
     private:
 
         template<typename _Iterator>
@@ -114,14 +115,20 @@ namespace sharpen
 
         Groups groups_;
 
-        static bool Less(const sharpen::SstKeyValueGroup &group,const sharpen::ByteBuffer &key) noexcept;
+        Comparator comp_;
+
+        static bool WarppedComp(Comparator comp,const sharpen::SstKeyValueGroup &group,const sharpen::ByteBuffer &key) noexcept;
+
+        static bool Comp(const sharpen::SstKeyValueGroup &group,const sharpen::ByteBuffer &key) noexcept;
+
+        sharpen::Int32 CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept;
 
         Iterator FindInsertGroup(const sharpen::ByteBuffer &key);
 
         ConstIterator FindInsertGroup(const sharpen::ByteBuffer &key) const;
     public:
     
-        SstDataBlock() = default;
+        SstDataBlock();
     
         SstDataBlock(const Self &other) = default;
     
@@ -139,6 +146,8 @@ namespace sharpen
             if(this != std::addressof(other))
             {
                 this->groups_ = std::move(other.groups_);
+                this->comp_ = other.comp_;
+                other.comp_ = nullptr;
             }
             return *this;
         }
@@ -370,6 +379,16 @@ namespace sharpen
         inline ConstTwoWayIterator TwoWayEnd() const
         {
             return ConstTwoWayIterator{this->End(),this->End(),{}};
+        }
+
+        inline Comparator GetComparator() const noexcept
+        {
+            return this->comp_;
+        }
+
+        inline void SetComparator(Comparator comp) noexcept
+        {
+            this->comp_ = comp;
         }
     };
 }

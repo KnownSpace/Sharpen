@@ -102,7 +102,7 @@ namespace sharpen
         sharpen::SstIndexBlock indexBlock_;
         sharpen::SstIndexBlock metaIndexBlock_;
     public:
-        SstRoot() noexcept = default;
+        SstRoot() = default;
     
         SstRoot(const Self &other) = default;
     

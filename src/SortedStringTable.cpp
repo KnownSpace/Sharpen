@@ -6,13 +6,16 @@ sharpen::SortedStringTable::SortedStringTable(sharpen::FileChannelPtr channel)
     :SortedStringTable(std::move(channel),sharpen::SstOption{})
 {}
 
-sharpen::SortedStringTable::SortedStringTable(sharpen::FileChannelPtr channel,sharpen::SstOption opt)
+sharpen::SortedStringTable::SortedStringTable(sharpen::FileChannelPtr channel,const sharpen::SstOption &opt)
     :channel_(std::move(channel))
     ,root_()
     ,filterBitsOfElement_(opt.GetFilterBitsOfElement())
     ,dataCache_(opt.GetDataCacheSize())
     ,filterCache_(opt.GetFilterCacheSize())
+    ,comp_(opt.GetComparator())
 {
+    this->root_.IndexBlock().SetComparator(this->comp_);
+    this->root_.MetaIndexBlock().SetComparator(this->comp_);
     this->LoadRoot();
 }
 
@@ -30,14 +33,23 @@ bool sharpen::SortedStringTable::Empty() const
     return this->root_.IndexBlock().Empty();
 }
 
+sharpen::Int32 sharpen::SortedStringTable::CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept
+{
+    if(this->comp_)
+    {
+        return this->comp_(left,right);
+    }
+    return left.CompareWith(right);
+}
+
 sharpen::SstDataBlock sharpen::SortedStringTable::LoadBlock(sharpen::FilePointer pointer) const
 {
-    return sharpen::SortedStringTableBuilder::LoadDataBlock<sharpen::SstDataBlock>(this->channel_,pointer.offset_,pointer.size_);
+    return sharpen::SortedStringTableBuilder::LoadDataBlock<sharpen::SstDataBlock>(this->channel_,pointer.offset_,pointer.size_,this->comp_);
 }
 
 sharpen::SstDataBlock sharpen::SortedStringTable::LoadBlock(sharpen::Uint64 offset,sharpen::Uint64 size) const
 {
-    return sharpen::SortedStringTableBuilder::LoadDataBlock<sharpen::SstDataBlock>(this->channel_,offset,size);
+    return sharpen::SortedStringTableBuilder::LoadDataBlock<sharpen::SstDataBlock>(this->channel_,offset,size,this->comp_);
 }
 
 sharpen::SstDataBlock sharpen::SortedStringTable::LoadBlock(const sharpen::ByteBuffer &key) const

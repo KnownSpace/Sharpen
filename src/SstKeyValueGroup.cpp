@@ -1,5 +1,10 @@
 #include <sharpen/SstKeyValueGroup.hpp>
 
+sharpen::SstKeyValueGroup::SstKeyValueGroup()
+    :pairs_()
+    ,comp_(nullptr)
+{}
+
 void sharpen::SstKeyValueGroup::LoadFrom(const char *data,sharpen::Size size)
 {
     this->pairs_.clear();
@@ -75,19 +80,47 @@ sharpen::Size sharpen::SstKeyValueGroup::StoreTo(sharpen::ByteBuffer &buf,sharpe
     return this->UnsafeStoreTo(buf.Data() + offset);
 }
 
+bool sharpen::SstKeyValueGroup::WarppedComp(Comparator comp,const sharpen::SstKeyValuePair &pair,const sharpen::ByteBuffer &key) noexcept
+{
+    if(!comp)
+    {
+        return Self::Comp(pair,key);
+    }
+    return comp(pair.GetKey(),key) == -1;
+}
+
 bool sharpen::SstKeyValueGroup::Comp(const sharpen::SstKeyValuePair &pair,const sharpen::ByteBuffer &key) noexcept
 {
     return pair.GetKey() < key;
 }
 
+sharpen::Int32 sharpen::SstKeyValueGroup::CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept
+{
+    if (!this->comp_)
+    {
+        return left.CompareWith(right);
+    }
+    return this->comp_(left,right);
+}
+
 sharpen::SstKeyValueGroup::Iterator sharpen::SstKeyValueGroup::Find(const sharpen::ByteBuffer &key)
 {
+    if(this->comp_)
+    {
+        using Warp = bool(*)(Comparator,const sharpen::SstKeyValuePair&,const sharpen::ByteBuffer &);
+        return std::lower_bound(this->pairs_.begin(),this->pairs_.end(),key,std::bind(static_cast<Warp>(&Self::WarppedComp),this->comp_,std::placeholders::_1,std::placeholders::_2));
+    }
     using FnPtr = bool(*)(const sharpen::SstKeyValuePair&,const sharpen::ByteBuffer&);
     return std::lower_bound(this->pairs_.begin(),this->pairs_.end(),key,static_cast<FnPtr>(&Self::Comp));
 }
 
 sharpen::SstKeyValueGroup::ConstIterator sharpen::SstKeyValueGroup::Find(const sharpen::ByteBuffer &key) const
 {
+    if(this->comp_)
+    {
+        using Warp = bool(*)(Comparator,const sharpen::SstKeyValuePair&,const sharpen::ByteBuffer &);
+        return std::lower_bound(this->pairs_.begin(),this->pairs_.end(),key,std::bind(static_cast<Warp>(&Self::WarppedComp),this->comp_,std::placeholders::_1,std::placeholders::_2));
+    }
     using FnPtr = bool(*)(const sharpen::SstKeyValuePair&,const sharpen::ByteBuffer&);
     return std::lower_bound(this->pairs_.begin(),this->pairs_.end(),key,static_cast<FnPtr>(&Self::Comp));
 }
@@ -95,13 +128,13 @@ sharpen::SstKeyValueGroup::ConstIterator sharpen::SstKeyValueGroup::Find(const s
 bool sharpen::SstKeyValueGroup::Exist(const sharpen::ByteBuffer &key) const
 {
     auto ite = this->Find(key);
-    return ite != this->End() && ite->GetKey() == key;
+    return ite != this->End() && this->CompKey(ite->GetKey(),key) == 0;
 }
 
 sharpen::SstKeyValuePair &sharpen::SstKeyValueGroup::Get(const sharpen::ByteBuffer &key)
 {
     auto ite = this->Find(key);
-    if(ite == this->End() || ite->GetKey() != key)
+    if(ite == this->End() || this->CompKey(ite->GetKey(),key) != 0)
     {
         throw std::out_of_range("key doesn't exists");
     }
@@ -111,7 +144,7 @@ sharpen::SstKeyValuePair &sharpen::SstKeyValueGroup::Get(const sharpen::ByteBuff
 const sharpen::SstKeyValuePair &sharpen::SstKeyValueGroup::Get(const sharpen::ByteBuffer &key) const
 {
     auto ite = this->Find(key);
-    if(ite == this->End() || ite->GetKey() != key)
+    if(ite == this->End() || this->CompKey(ite->GetKey(),key) != 0)
     {
         throw std::out_of_range("key doesn't exists");
     }
@@ -121,7 +154,7 @@ const sharpen::SstKeyValuePair &sharpen::SstKeyValueGroup::Get(const sharpen::By
 void sharpen::SstKeyValueGroup::Delete(const sharpen::ByteBuffer &key)
 {
     auto ite = this->Find(key);
-    if(ite != this->End() && ite->GetKey() == key)
+    if(ite != this->End() && this->CompKey(ite->GetKey(),key) == 0)
     {
         this->pairs_.erase(ite);
     }
@@ -142,7 +175,7 @@ bool sharpen::SstKeyValueGroup::TryPut(sharpen::ByteBuffer key,sharpen::ByteBuff
     if(ite != this->End())
     {
         //key already exist
-        if(ite->GetKey() == key)
+        if(this->CompKey(ite->GetKey(),key) == 0)
         {
             ite->Value() = std::move(value);
             return true;

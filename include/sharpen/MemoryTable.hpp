@@ -74,16 +74,16 @@ namespace sharpen
         }
     };
 
-    template<typename _Logger,typename _Check = void>
+    template<typename _Logger,typename _Pred,typename _Check = void>
     class InternalMemoryTable;
 
-    template<typename _Logger>
-    class InternalMemoryTable<_Logger,sharpen::EnableIf<sharpen::IsMemoryTableLogger<_Logger>::Value>>:public sharpen::Noncopyable
+    template<typename _Logger,typename _Pred>
+    class InternalMemoryTable<_Logger,_Pred,sharpen::EnableIf<sharpen::IsMemoryTableLogger<_Logger>::Value>>:public sharpen::Noncopyable
     {
     private:
-        using Self = sharpen::InternalMemoryTable<_Logger,sharpen::EnableIf<sharpen::IsMemoryTableLogger<_Logger>::Value>>;
+        using Self = sharpen::InternalMemoryTable<_Logger,_Pred,sharpen::EnableIf<sharpen::IsMemoryTableLogger<_Logger>::Value>>;
         using StoreItem = sharpen::MemoryTableItem;
-        using MapType = std::map<sharpen::ByteBuffer,StoreItem>;
+        using MapType = std::map<sharpen::ByteBuffer,StoreItem,_Pred>;
         using ConstIterator = typename MapType::const_iterator;
     
         sharpen::CompressedPair<_Logger,MapType> pair_;
@@ -282,8 +282,8 @@ namespace sharpen
         }
     };
 
-    template<typename _Logger>
-    using MemoryTable = sharpen::InternalMemoryTable<_Logger>;
+    template<typename _Logger,typename _Pred = std::less<sharpen::ByteBuffer>,typename _NotUsed = int>
+    using MemoryTable = sharpen::InternalMemoryTable<_Logger,_Pred>;
 }
 
 #endif

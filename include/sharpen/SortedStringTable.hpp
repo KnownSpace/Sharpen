@@ -130,6 +130,8 @@ namespace sharpen
 {
     class SortedStringTable:public sharpen::Noncopyable
     {
+    public:
+        using Comparator = sharpen::Int32(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
     private:
         using Self = sharpen::SortedStringTable;
 
@@ -140,6 +142,9 @@ namespace sharpen
         sharpen::Size filterBitsOfElement_;
         mutable sharpen::SegmentedCircleCache<sharpen::SstDataBlock> dataCache_;
         mutable sharpen::SegmentedCircleCache<sharpen::BloomFilter<sharpen::ByteBuffer>> filterCache_;
+        Comparator comp_;
+
+        sharpen::Int32 CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept;
 
         void LoadRoot();
 
@@ -150,10 +155,9 @@ namespace sharpen
         std::shared_ptr<sharpen::BloomFilter<sharpen::ByteBuffer>> LoadFilterCache(const sharpen::ByteBuffer &cacheKey,sharpen::Uint64 offset,sharpen::Uint64 size) const;
 
     public:
-        //read
         explicit SortedStringTable(sharpen::FileChannelPtr channel);
 
-        SortedStringTable(sharpen::FileChannelPtr channel,sharpen::SstOption opt);
+        SortedStringTable(sharpen::FileChannelPtr channel,const sharpen::SstOption &opt);
 
         SortedStringTable(Self &&other) noexcept = default;
     
@@ -190,20 +194,20 @@ namespace sharpen
         }
 
         template<typename _Iterator,typename _Check = sharpen::EnableIf<sharpen::IsWalKeyValuePairIterator<_Iterator>::Value>>
-        void BuildFromMemory(_Iterator begin,_Iterator end,sharpen::SstBuildOption opt)
+        void BuildFromMemory(_Iterator begin,_Iterator end,const sharpen::SstBuildOption &opt)
         {
             sharpen::Uint64 size = this->channel_->GetFileSize();
             if(size)
             {
                 this->channel_->Truncate();
             }
-            this->root_ = sharpen::SortedStringTableBuilder::DumpWalToTable<sharpen::SstDataBlock>(this->channel_,opt.GetBlockSize(),begin,end,opt.GetFilterBitsOfElement(),opt.IsEraseDeleted());
+            this->root_ = sharpen::SortedStringTableBuilder::DumpWalToTable<sharpen::SstDataBlock>(this->channel_,opt.GetBlockSize(),begin,end,opt.GetFilterBitsOfElement(),opt.IsEraseDeleted(),this->comp_);
             this->filterBitsOfElement_ = opt.GetFilterBitsOfElement();
             this->channel_->Flush();
         }
 
         template<typename _Iterator,typename _Check = decltype(std::declval<Self*&>() = &(*std::declval<_Iterator>()))>
-        void MergeFromTables(_Iterator begin,_Iterator end,sharpen::SstBuildOption opt,bool ordered)
+        void MergeFromTables(_Iterator begin,_Iterator end,const sharpen::SstBuildOption &opt,bool ordered)
         {
             sharpen::Uint64 size = this->channel_->GetFileSize();
             if(size)
@@ -218,12 +222,12 @@ namespace sharpen
             }
             if (ordered)
             {
-                this->root_ = sharpen::SortedStringTableBuilder::CombineTables<sharpen::SstDataBlock>(this->channel_,vec.begin(),vec.end(),opt.GetFilterBitsOfElement(),opt.IsEraseDeleted());
+                this->root_ = sharpen::SortedStringTableBuilder::CombineTables<sharpen::SstDataBlock>(this->channel_,vec.begin(),vec.end(),opt.GetFilterBitsOfElement(),opt.IsEraseDeleted(),this->comp_);
                 this->filterBitsOfElement_ = opt.GetFilterBitsOfElement();
                 return;
             }
             this->filterBitsOfElement_ = opt.GetFilterBitsOfElement();
-            this->root_ = sharpen::SortedStringTableBuilder::MergeTables<sharpen::SstDataBlock>(this->channel_,opt.GetBlockSize(),vec.begin(),vec.end(),opt.GetFilterBitsOfElement(),opt.IsEraseDeleted());
+            this->root_ = sharpen::SortedStringTableBuilder::MergeTables<sharpen::SstDataBlock>(this->channel_,opt.GetBlockSize(),vec.begin(),vec.end(),opt.GetFilterBitsOfElement(),opt.IsEraseDeleted(),this->comp_);
             this->channel_->Flush();
         }
 

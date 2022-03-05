@@ -10,6 +10,8 @@ namespace sharpen
 {
     class SstOption
     {
+    public:
+        using Comparator = sharpen::Int32(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
     private:
         using Self = sharpen::SstOption;
 
@@ -21,6 +23,7 @@ namespace sharpen
         sharpen::Size dataCacheSize_;
         sharpen::Size filterBitsOfElement_;
         sharpen::Size filtersCacheSize_;
+        Comparator comp_;
     public:
     
         SstOption() noexcept
@@ -31,14 +34,23 @@ namespace sharpen
             :SstOption(filterBitsOfElement,defaultDataCacheSize_)
         {}
 
-        SstOption(sharpen::Size filterBitsOfElement,sharpen::Size dataCacheSize) noexcept
-            :SstOption(filterBitsOfElement,dataCacheSize,dataCacheSize)
+        explicit SstOption(Comparator comp) noexcept
+            :SstOption(comp,Self::defaultDataCacheSize_)
         {}
 
-        SstOption(sharpen::Size filterBitsOfElement,sharpen::Size dataCacheSize,sharpen::Size filtersCacheSize) noexcept
+        SstOption(Comparator comp,sharpen::Size dataCacheSize) noexcept
+            :SstOption(comp,Self::defaultFilterBitsOfElement_,dataCacheSize,dataCacheSize)
+        {}
+
+        SstOption(sharpen::Size filterBitsOfElement,sharpen::Size dataCacheSize) noexcept
+            :SstOption(nullptr,filterBitsOfElement,dataCacheSize,dataCacheSize)
+        {}
+
+        SstOption(Comparator comp,sharpen::Size filterBitsOfElement,sharpen::Size dataCacheSize,sharpen::Size filtersCacheSize) noexcept
             :dataCacheSize_(dataCacheSize)
             ,filterBitsOfElement_(filterBitsOfElement)
             ,filtersCacheSize_(filtersCacheSize)
+            ,comp_(comp)
         {}
     
         SstOption(const Self &other) noexcept = default;
@@ -59,6 +71,7 @@ namespace sharpen
                 this->dataCacheSize_ = other.dataCacheSize_;
                 this->filterBitsOfElement_ = other.filterBitsOfElement_;
                 this->filtersCacheSize_ = other.filtersCacheSize_;
+                this->comp_ = other.comp_;
             }
             return *this;
         }
@@ -87,6 +100,11 @@ namespace sharpen
         inline sharpen::Size GetFilterBitsOfElement() const noexcept
         {
             return this->filterBitsOfElement_;
+        }
+
+        inline Comparator GetComparator() const noexcept
+        {
+            return this->comp_;
         }
     };   
 }

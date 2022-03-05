@@ -23,6 +23,16 @@ static sharpen::Int32 CompAsU32(const sharpen::ByteBuffer &left,const sharpen::B
     return 0;
 }
 
+
+struct MapPred
+{
+    bool operator()(const sharpen::ByteBuffer &lhs, const sharpen::ByteBuffer &rhs) const 
+    {
+        return lhs.As<sharpen::Uint32>() < rhs.As<sharpen::Uint32>();
+    }
+};
+
+
 void Entry()
 {
     const char *logName = "./wal.log";
@@ -104,9 +114,9 @@ void Entry()
                 }
             }
         }
-        /*table->Truncate();
+        table->Truncate();
         {
-            sharpen::MemoryTable<sharpen::BinaryLogger> mt{log};
+            sharpen::MemoryTable<sharpen::BinaryLogger,MapPred> mt{log};
             for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(1e5); i != count;++i)
             {
                 sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};
@@ -115,11 +125,11 @@ void Entry()
                 value.As<sharpen::Uint32>() = i;
                 mt.Put(std::move(key),std::move(value));
             }
-            sharpen::SortedStringTable pt{table};
+            sharpen::SortedStringTable pt{table,sharpen::SstOption{&CompAsU32}};
             pt.BuildFromMemory(mt.Begin(),mt.End(),sharpen::SstBuildOption{true});
         }
         {
-            sharpen::SortedStringTable pt{table};
+            sharpen::SortedStringTable pt{table,sharpen::SstOption{&CompAsU32}};
             for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(1e5); i != count;++i)
             {
                 sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};
@@ -144,7 +154,7 @@ void Entry()
                 std::printf("sst scan %zu keys\n",count);
                 assert(count == static_cast<sharpen::Uint32>(1e5));
             }
-        }*/
+        }
         table->Truncate();
         sharpen::FileChannelPtr table2 = sharpen::MakeFileChannel(tableName2, sharpen::FileAccessModel::All, sharpen::FileOpenModel::CreateNew);
         table2->Register(sharpen::EventEngine::GetEngine());

@@ -33,6 +33,8 @@ namespace sharpen
 {
     class SstIndexBlock
     {
+    public:
+        using Comparator = sharpen::Int32(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
     private:
         using Self = SstIndexBlock;
         using DataBlockHandles = std::vector<sharpen::SstBlockHandle>;
@@ -40,11 +42,16 @@ namespace sharpen
         using ConstIterator = typename DataBlockHandles::const_iterator;
     
         DataBlockHandles dataBlocks_;
+        Comparator comp_;
 
         static bool Comp(const sharpen::SstBlockHandle &block,const sharpen::ByteBuffer &key) noexcept;
+
+        static bool WarppedComp(Comparator comp,const sharpen::SstBlockHandle &block,const sharpen::ByteBuffer &key) noexcept;
+
+        sharpen::Int32 CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept;
     public:
     
-        SstIndexBlock() noexcept = default;
+        SstIndexBlock();
 
         explicit SstIndexBlock(DataBlockHandles blocks) noexcept
             :dataBlocks_(std::move(blocks))
@@ -66,6 +73,8 @@ namespace sharpen
             if(this != std::addressof(other))
             {
                 this->dataBlocks_ = std::move(other.dataBlocks_);
+                this->comp_ = other.comp_;
+                other.comp_ = nullptr;
             }
             return *this;
         }
@@ -162,6 +171,16 @@ namespace sharpen
         inline const sharpen::SstBlockHandle &operator[](sharpen::Size index) const
         {
             return this->dataBlocks_.at(index);
+        }
+
+        inline Comparator GetComparator() const noexcept
+        {
+            return this->comp_;
+        }
+
+        inline void SetComparator(Comparator comp) noexcept
+        {
+            this->comp_ = comp;
         }
     };
 }
