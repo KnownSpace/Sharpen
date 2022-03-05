@@ -10,6 +10,8 @@ namespace sharpen
 {
     class BtOption
     {
+    public:
+        using Comparator = sharpen::Int32(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
     private:
         using Self = sharpen::BtOption;
 
@@ -18,6 +20,7 @@ namespace sharpen
         
         sharpen::Uint16 maxRecordsOfBlock_;
         sharpen::Size cacheSize_;
+        Comparator comp_;
     public:
 
         BtOption()
@@ -25,12 +28,17 @@ namespace sharpen
         {}
 
         explicit BtOption(sharpen::Uint16 maxRecordOfBlock)
-            :BtOption(maxRecordOfBlock,Self::defaultCacheSize_)
+            :BtOption(nullptr,maxRecordOfBlock,Self::defaultCacheSize_)
         {}
 
-        BtOption(sharpen::Uint16 maxRecordOfBlock,sharpen::Size cacheSize)
+        explicit BtOption(Comparator comp)
+            :BtOption(comp,Self::defaultMaxRecordsOfBlock,Self::defaultCacheSize_)
+        {}
+
+        BtOption(Comparator comp,sharpen::Uint16 maxRecordOfBlock,sharpen::Size cacheSize)
             :maxRecordsOfBlock_(maxRecordOfBlock)
             ,cacheSize_(cacheSize)
+            ,comp_(comp)
         {}
     
         BtOption(const Self &other) = default;
@@ -64,6 +72,11 @@ namespace sharpen
         inline sharpen::Uint16 GetMaxRecordsOfBlock() const noexcept
         {
             return this->maxRecordsOfBlock_;
+        }
+
+        inline Comparator GetComparator() const noexcept
+        {
+            return this->comp_;
         }
     };
 }

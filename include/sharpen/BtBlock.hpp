@@ -41,6 +41,7 @@ namespace sharpen
         using ConstIterator = typename Pairs::const_iterator;
         using ReverseIterator = typename Pairs::reverse_iterator;
         using ConstReverseIterator = typename Pairs::const_reverse_iterator;
+        using Comparator = sharpen::Int32(*)(const sharpen::ByteBuffer &,const sharpen::ByteBuffer &);
 
     private:
         static constexpr sharpen::Size defaultMaxRecordCount_{32};
@@ -53,8 +54,14 @@ namespace sharpen
         //volatile status
         sharpen::Size blockSize_;
         sharpen::Size usedSize_;
+        //comparator
+        Comparator comp_;
 
         static bool Comp(const sharpen::BtKeyValuePair &pair,const sharpen::ByteBuffer &key) noexcept;
+
+        static bool WarppedComp(Comparator comp,const sharpen::BtKeyValuePair &pair,const sharpen::ByteBuffer &key) noexcept;
+
+        sharpen::Int32 CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept;
     public:
 
         enum class PutTage
@@ -91,9 +98,11 @@ namespace sharpen
                 this->pairs_ = std::move(other.pairs_);
                 this->blockSize_ = other.blockSize_;
                 this->usedSize_ = other.usedSize_;
+                this->comp_ = other.comp_;
                 other.usedSize_ = sizeof(this->next_) + 1 + sizeof(sharpen::Uint16);
                 other.depth_ = 0;
                 other.blockSize_ = 0;
+                other.comp_ = nullptr;
             }
             return *this;
         }
@@ -285,6 +294,16 @@ namespace sharpen
         {
             //we use 2 bytes
             return sizeof(sharpen::Uint16);
+        }
+
+        inline Comparator GetComparator() const noexcept
+        {
+            return this->comp_;
+        }
+
+        inline void SetComparator(Comparator comp) noexcept
+        {
+            this->comp_ = comp;
         }
     };
 }

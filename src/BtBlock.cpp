@@ -20,6 +20,7 @@ sharpen::BtBlock::BtBlock(sharpen::Size blockSize,sharpen::Size maxRecordCount)
     ,pairs_()
     ,blockSize_(blockSize)
     ,usedSize_(1 + sizeof(this->next_) + sizeof(this->prev_) + Self::GetCounterSize())
+    ,comp_(nullptr)
 {
     std::memset(&this->next_,0,sizeof(this->next_));
     std::memset(&this->prev_,0,sizeof(this->prev_));
@@ -122,19 +123,47 @@ sharpen::Size sharpen::BtBlock::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size o
     return this->UnsafeStoreTo(buf.Data() + offset);
 }
 
+bool sharpen::BtBlock::WarppedComp(Comparator comp,const sharpen::BtKeyValuePair &pair,const sharpen::ByteBuffer &key) noexcept
+{
+    if(!comp)
+    {
+        return Self::Comp(pair,key);
+    }
+    return comp(pair.GetKey(),key) == -1;
+}
+
 bool sharpen::BtBlock::Comp(const sharpen::BtKeyValuePair &pair,const sharpen::ByteBuffer &key) noexcept
 {
     return pair.GetKey() < key;
 }
 
+sharpen::Int32 sharpen::BtBlock::CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept
+{
+    if(this->comp_)
+    {
+        return this->comp_(left,right);
+    }
+    return left.CompareWith(right);
+}
+
 sharpen::BtBlock::Iterator sharpen::BtBlock::BinaryFind(const sharpen::ByteBuffer &key) noexcept
 {
+    if(this->comp_)
+    {
+        using Warp = bool(*)(Comparator,const sharpen::BtKeyValuePair&,const sharpen::ByteBuffer &);
+        return std::lower_bound(this->Begin(),this->End(),key,std::bind(static_cast<Warp>(&Self::WarppedComp),this->comp_,std::placeholders::_1,std::placeholders::_2));
+    }
     using FnPtr = bool(*)(const sharpen::BtKeyValuePair &,const sharpen::ByteBuffer &);
     return std::lower_bound(this->Begin(),this->End(),key,static_cast<FnPtr>(&Self::Comp));
 }
 
 sharpen::BtBlock::ConstIterator sharpen::BtBlock::BinaryFind(const sharpen::ByteBuffer &key) const noexcept
 {
+    if(this->comp_)
+    {
+        using Warp = bool(*)(Comparator,const sharpen::BtKeyValuePair&,const sharpen::ByteBuffer &);
+        return std::lower_bound(this->Begin(),this->End(),key,std::bind(static_cast<Warp>(&Self::WarppedComp),this->comp_,std::placeholders::_1,std::placeholders::_2));
+    }
     using FnPtr = bool(*)(const sharpen::BtKeyValuePair &,const sharpen::ByteBuffer &);
     return std::lower_bound(this->Begin(),this->End(),key,static_cast<FnPtr>(&Self::Comp));
 }
@@ -146,7 +175,7 @@ sharpen::BtBlock::Iterator sharpen::BtBlock::FuzzingFind(const sharpen::ByteBuff
     {
         ite = sharpen::IteratorBackward(ite,1);
     }
-    if (ite->GetKey() > key && this->Begin() != ite)
+    if (this->CompKey(ite->GetKey(),key) == 1 && this->Begin() != ite)
     {
         ite = sharpen::IteratorBackward(ite,1);
     }
@@ -160,7 +189,7 @@ sharpen::BtBlock::ConstIterator sharpen::BtBlock::FuzzingFind(const sharpen::Byt
     {
         ite = sharpen::IteratorBackward(ite,1);
     }
-    if (ite->GetKey() > key && this->Begin() != ite)
+    if (this->CompKey(ite->GetKey(),key) == 1 && this->Begin() != ite)
     {
         ite = sharpen::IteratorBackward(ite,1);
     }
@@ -169,38 +198,20 @@ sharpen::BtBlock::ConstIterator sharpen::BtBlock::FuzzingFind(const sharpen::Byt
 
 sharpen::BtBlock::Iterator sharpen::BtBlock::Find(const sharpen::ByteBuffer &key) noexcept
 {
-    auto ite = this->BinaryFind(key);
-    if (!this->depth_)
+    if(this->depth_)
     {
-        return ite;
+        return this->FuzzingFind(key);
     }
-    if (ite == this->End() && !this->Empty())
-    {
-        ite = sharpen::IteratorBackward(ite,1);
-    }
-    if (ite->GetKey() > key && this->Begin() != ite)
-    {
-        ite = sharpen::IteratorBackward(ite,1);
-    }
-    return ite;
+    return this->BinaryFind(key);
 }
 
 sharpen::BtBlock::ConstIterator sharpen::BtBlock::Find(const sharpen::ByteBuffer &key) const noexcept
 {
-    auto ite = this->BinaryFind(key);
-    if (!this->depth_)
+    if(this->depth_)
     {
-        return ite;
+        return this->FuzzingFind(key);
     }
-    if (ite == this->End() && !this->Empty())
-    {
-        ite = sharpen::IteratorBackward(ite,1);
-    }
-    if (ite->GetKey() > key && this->Begin() != ite)
-    {
-        ite = sharpen::IteratorBackward(ite,1);
-    }
-    return ite;
+    return this->BinaryFind(key);
 }
 
 void sharpen::BtBlock::Put(sharpen::ByteBuffer key,sharpen::ByteBuffer value)
@@ -209,7 +220,7 @@ void sharpen::BtBlock::Put(sharpen::ByteBuffer key,sharpen::ByteBuffer value)
     sharpen::BtKeyValuePair pair{std::move(key),std::move(value)};
     if(ite != this->End())
     {
-        if (ite->GetKey() == pair.GetKey())
+        if (this->CompKey(ite->GetKey(),pair.GetKey()) == 0)
         {
             sharpen::Size size{this->usedSize_};
             size -= ite->ComputeSize();
@@ -230,7 +241,7 @@ void sharpen::BtBlock::Put(sharpen::ByteBuffer key,sharpen::ByteBuffer value)
 void sharpen::BtBlock::Delete(const sharpen::ByteBuffer &key)
 {
     auto ite = this->BinaryFind(key);
-    if(ite != this->End() && ite->GetKey() == key)
+    if(ite != this->End() && this->CompKey(ite->GetKey(),key) == 0)
     {
         sharpen::Size size{ite->ComputeSize()};
         this->pairs_.erase(ite);
@@ -252,7 +263,7 @@ void sharpen::BtBlock::FuzzingDelete(const sharpen::ByteBuffer &key)
 sharpen::ByteBuffer &sharpen::BtBlock::Get(const sharpen::ByteBuffer &key)
 {
     auto ite = this->BinaryFind(key);
-    if(ite == this->End() || ite->GetKey() != key)
+    if(ite == this->End() || this->CompKey(ite->GetKey(),key) != 0)
     {
         throw std::out_of_range("key doesn't exist");
     }
@@ -262,7 +273,7 @@ sharpen::ByteBuffer &sharpen::BtBlock::Get(const sharpen::ByteBuffer &key)
 const sharpen::ByteBuffer &sharpen::BtBlock::Get(const sharpen::ByteBuffer &key) const
 {
     auto ite = this->BinaryFind(key);
-    if(ite == this->End() || ite->GetKey() != key)
+    if(ite == this->End() || this->CompKey(ite->GetKey(),key) != 0)
     {
         throw std::out_of_range("key doesn't exists");
     }
@@ -272,7 +283,7 @@ const sharpen::ByteBuffer &sharpen::BtBlock::Get(const sharpen::ByteBuffer &key)
 sharpen::ExistStatus sharpen::BtBlock::Exist(const sharpen::ByteBuffer &key) const
 {
     auto ite = this->BinaryFind(key);
-    if(ite == this->End() || ite->GetKey() != key)
+    if(ite == this->End() || this->CompKey(ite->GetKey(),key) != 0)
     {
         return sharpen::ExistStatus::NotExist;
     }
@@ -281,12 +292,12 @@ sharpen::ExistStatus sharpen::BtBlock::Exist(const sharpen::ByteBuffer &key) con
 
 sharpen::BtBlock::PutTage sharpen::BtBlock::QueryPutTage(const sharpen::ByteBuffer &key) const noexcept
 {
-    if(this->Empty() || this->ReverseBegin()->GetKey() < key)
+    if(this->Empty() || this->CompKey(this->ReverseBegin()->GetKey(),key) == -1)
     {
         return sharpen::BtBlock::PutTage::Append;
     }
     auto ite = this->BinaryFind(key);
-    if(ite != this->End() && ite->GetKey() == this->ReverseBegin()->GetKey())
+    if(ite != this->End() && this->CompKey(ite->GetKey(),this->ReverseBegin()->GetKey()) == 0)
     {
         return sharpen::BtBlock::PutTage::MotifyEnd;
     }
@@ -297,6 +308,7 @@ sharpen::BtBlock sharpen::BtBlock::Split()
 {
     sharpen::BtBlock block{0};
     block.depth_ = this->depth_;
+    block.comp_ = this->comp_;
     if(!this->IsAtomic())
     {
         sharpen::Size size{this->GetSize()/2};

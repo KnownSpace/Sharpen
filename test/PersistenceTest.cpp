@@ -8,6 +8,21 @@
 #include <sharpen/EventEngine.hpp>
 #include <sharpen/BalancedTable.hpp>
 
+static sharpen::Int32 CompAsU32(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) noexcept
+{
+    sharpen::Uint32 l{left.As<sharpen::Uint32>()};
+    sharpen::Uint32 r{right.As<sharpen::Uint32>()};
+    if(l < r)
+    {
+        return -1;
+    }
+    else if(l > r)
+    {
+        return 1;
+    }
+    return 0;
+}
+
 void Entry()
 {
     const char *logName = "./wal.log";
@@ -89,7 +104,7 @@ void Entry()
                 }
             }
         }
-        table->Truncate();
+        /*table->Truncate();
         {
             sharpen::MemoryTable<sharpen::BinaryLogger> mt{log};
             for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(1e5); i != count;++i)
@@ -129,7 +144,7 @@ void Entry()
                 std::printf("sst scan %zu keys\n",count);
                 assert(count == static_cast<sharpen::Uint32>(1e5));
             }
-        }
+        }*/
         table->Truncate();
         sharpen::FileChannelPtr table2 = sharpen::MakeFileChannel(tableName2, sharpen::FileAccessModel::All, sharpen::FileOpenModel::CreateNew);
         table2->Register(sharpen::EventEngine::GetEngine());
@@ -363,7 +378,7 @@ void Entry()
             }
             table->Truncate();
             {
-                sharpen::BalancedTable pt{table,sharpen::BtOption{}};
+                sharpen::BalancedTable pt{table,sharpen::BtOption{CompAsU32}};
                 for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(1e5); i != count;++i)
                 {
                     sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};
@@ -374,7 +389,7 @@ void Entry()
                 }
             }
             {
-                sharpen::BalancedTable pt{table,sharpen::BtOption{}};
+                sharpen::BalancedTable pt{table,sharpen::BtOption{CompAsU32}};
                 for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(1e5); i != count;++i)
                 {
                     sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};

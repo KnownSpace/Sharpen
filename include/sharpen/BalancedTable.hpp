@@ -41,6 +41,8 @@ namespace sharpen
 
         static sharpen::Uint64 ComputeBlockSize(const sharpen::BtBlock &block) noexcept;
 
+        sharpen::Int32 CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept;
+
         sharpen::FilePointer AllocMemory(sharpen::Uint64 size);
 
         void FreeMemory(sharpen::FilePointer pointer);
@@ -83,7 +85,7 @@ namespace sharpen
     
         explicit BalancedTable(sharpen::FileChannelPtr channel);
 
-        BalancedTable(sharpen::FileChannelPtr channel,sharpen::BtOption opt);
+        BalancedTable(sharpen::FileChannelPtr channel,const sharpen::BtOption &opt);
     
         BalancedTable(Self &&other) noexcept = default;
     
@@ -148,7 +150,7 @@ namespace sharpen
                 return;
             }
             assert(!beginPair.first.Empty());
-            if (beginPair.first.Begin()->GetKey() > beginKey)
+            if (this->CompKey(beginPair.first.Begin()->GetKey(),beginKey) == 1)
             {
                 return;
             }
@@ -186,6 +188,7 @@ namespace sharpen
             if(!depth)
             {
                 *inserter++ = this->rootPointer_;
+                return;
             }
             sharpen::BtBlock leaf{this->root_};
             sharpen::FilePointer prevPointer;

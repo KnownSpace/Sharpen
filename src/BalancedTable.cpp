@@ -6,6 +6,15 @@
 #include <sharpen/IteratorOps.hpp>
 #include <sharpen/IntOps.hpp>
 
+sharpen::Int32 sharpen::BalancedTable::CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept
+{
+    if(this->root_.GetComparator())
+    {
+        return this->root_.GetComparator()(left,right);
+    }
+    return left.CompareWith(right);
+}
+
 void sharpen::BalancedTable::InitFile()
 {
     sharpen::FilePointer pointers[2];
@@ -142,7 +151,7 @@ std::shared_ptr<sharpen::BtBlock> sharpen::BalancedTable::LoadCache(sharpen::Fil
     return result;
 }
 
-sharpen::BalancedTable::BalancedTable(sharpen::FileChannelPtr channel,sharpen::BtOption opt)
+sharpen::BalancedTable::BalancedTable(sharpen::FileChannelPtr channel,const sharpen::BtOption &opt)
     :channel_(std::move(channel))
     ,freeArea_()
     ,maxRecordsOfBlock_((std::max)(static_cast<sharpen::Uint16>(3),opt.GetMaxRecordsOfBlock()))
@@ -162,6 +171,8 @@ sharpen::BalancedTable::BalancedTable(sharpen::FileChannelPtr channel,sharpen::B
     }
     this->InitFreeArea();
     this->InitRoot();
+    //set comparator
+    this->root_.SetComparator(opt.GetComparator());
 }
 
 sharpen::BalancedTable::BalancedTable(sharpen::FileChannelPtr channel)
@@ -274,6 +285,7 @@ sharpen::BtBlock sharpen::BalancedTable::LoadBlock(sharpen::Uint64 offset,sharpe
     this->channel_->ReadAsync(buf.Data(),size,offset);
     sharpen::BtBlock block{sharpen::IntCast<sharpen::Size>(size)};
     block.LoadFrom(buf);
+    block.SetComparator(this->root_.GetComparator());
     return block;
 }
 
@@ -301,11 +313,13 @@ std::pair<sharpen::BtBlock,sharpen::FilePointer> sharpen::BalancedTable::LoadBlo
             if(!blockRef)
             {
                 block = this->LoadBlock(pointer.offset_,pointer.size_,buf);
+                assert(block.GetComparator() == this->root_.GetComparator());
                 ite = block.FuzzingFind(key);
             }
             else
             {
                 ite = blockRef->FuzzingFind(key);
+                assert(blockRef->GetComparator() == this->root_.GetComparator());
             }
         }
         return std::make_pair(std::move(block),pointer);
@@ -334,6 +348,7 @@ std::vector<std::pair<std::shared_ptr<sharpen::BtBlock>,sharpen::FilePointer>> s
             if(doCache)
             {
                 block = this->LoadCache(pointer);
+                assert(block->GetComparator() == this->root_.GetComparator());
             }
             else
             {
@@ -342,6 +357,7 @@ std::vector<std::pair<std::shared_ptr<sharpen::BtBlock>,sharpen::FilePointer>> s
                 {
                     block = std::make_shared<sharpen::BtBlock>(this->LoadBlock(pointer.offset_,pointer.size_,buf));
                 }
+                assert(block->GetComparator() == this->root_.GetComparator());
             }
             path.emplace_back(std::move(block),pointer);
             ite = path.back().first->FuzzingFind(key);
@@ -363,6 +379,7 @@ void sharpen::BalancedTable::InsertToRoot(sharpen::ByteBuffer key,sharpen::ByteB
     {
         //we need a new root
         sharpen::BtBlock newRoot{0};
+        newRoot.SetComparator(this->root_.GetComparator());
         //increase depth
         newRoot.SetDepth(this->GetDepth() + 1);
         //set path
@@ -429,7 +446,7 @@ sharpen::Optional<sharpen::ByteBuffer> sharpen::BalancedTable::TryGet(const shar
 {
     sharpen::BtBlock block{this->LoadBlock(key)};
     auto ite = block.Find(key);
-    if(ite != block.End() && ite->GetKey() == key)
+    if(ite != block.End() && this->CompKey(ite->GetKey(),key) == 0)
     {
         return ite->Value();
     }
@@ -450,7 +467,7 @@ sharpen::ExistStatus sharpen::BalancedTable::Exist(const sharpen::ByteBuffer &ke
 {
     sharpen::BtBlock block{this->LoadBlock(key)};
     auto ite = block.Find(key);
-    if(ite != block.End() && ite->GetKey() == key)
+    if(ite != block.End() && this->CompKey(ite->GetKey(),key) == 0)
     {
         return sharpen::ExistStatus::Exist;
     }
@@ -472,7 +489,7 @@ void sharpen::BalancedTable::Delete(const sharpen::ByteBuffer &key)
     auto path{this->GetPath(key)};
     std::shared_ptr<sharpen::BtBlock> lastBlock{std::move(path.back().first)};
     auto ite = lastBlock->Find(key);
-    if(ite == lastBlock->End() || ite->GetKey() != key)
+    if(ite == lastBlock->End() || this->CompKey(ite->GetKey(),key) != 0)
     {
         return;
     }
