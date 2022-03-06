@@ -397,6 +397,7 @@ void sharpen::BalancedTable::InsertToRoot(sharpen::ByteBuffer key,sharpen::ByteB
         std::memset(&pointer,0,sizeof(pointer));
         pointer = this->WriteBlock(newRoot,pointer);
         //write root pointer
+        this->DeleteFromCache(this->rootPointer_);
         this->rootPointer_ = pointer;
         this->root_ = std::move(newRoot);
         this->WriteRootPointer(this->rootPointer_);
@@ -536,10 +537,20 @@ void sharpen::BalancedTable::Delete(const sharpen::ByteBuffer &key)
         std::memcpy(&prev,&lastBlock->Prev(),sizeof(prev));
         if (prev.offset_ && prev.size_)
         {
+            auto prevBlock{this->LoadFromCache(prev)};
+            if(prevBlock)
+            {
+                prevBlock->Next() = next;
+            }
             this->channel_->WriteAsync(reinterpret_cast<char*>(&next),sizeof(next),lastBlock->ComputeNextPointer() + prev.offset_);
         }
         if(next.offset_ && next.size_)
         {
+            auto nextBlock{this->LoadFromCache(next)};
+            if(nextBlock)
+            {
+                nextBlock->Prev() = prev;
+            }
             this->channel_->WriteAsync(reinterpret_cast<char*>(&prev),sizeof(prev),lastBlock->ComputePrevPointer() + next.offset_);
         }
         path.pop_back();
