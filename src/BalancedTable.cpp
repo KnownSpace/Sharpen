@@ -414,6 +414,7 @@ void sharpen::BalancedTable::Put(sharpen::ByteBuffer key,sharpen::ByteBuffer val
     try
     {
         path.back().second = this->InsertRecord(*lastBlock,std::move(key),std::move(value),path.back().second,splitedBlock);
+        this->DeleteFromCache(path.back().second);
     }
     catch(const std::exception&)
     {
@@ -433,6 +434,7 @@ void sharpen::BalancedTable::Put(sharpen::ByteBuffer key,sharpen::ByteBuffer val
         {
             lastBlock = std::move(path.back().first);
             path.back().second = this->InsertRecord(*lastBlock,std::move(*splited.Begin()).MoveKey(),std::move(next),path.back().second,splitedBlock);
+            this->DeleteFromCache(path.back().second);
         }
         else
         {
@@ -444,9 +446,9 @@ void sharpen::BalancedTable::Put(sharpen::ByteBuffer key,sharpen::ByteBuffer val
 
 sharpen::Optional<sharpen::ByteBuffer> sharpen::BalancedTable::TryGet(const sharpen::ByteBuffer &key) const
 {
-    sharpen::BtBlock block{this->LoadBlock(key)};
-    auto ite = block.Find(key);
-    if(ite != block.End() && this->CompKey(ite->GetKey(),key) == 0)
+    auto block{this->FindBlock(key)};
+    auto ite = block->Find(key);
+    if(ite != block->End() && this->CompKey(ite->GetKey(),key) == 0)
     {
         return ite->Value();
     }
@@ -465,9 +467,9 @@ sharpen::ByteBuffer sharpen::BalancedTable::Get(const sharpen::ByteBuffer &key) 
 
 sharpen::ExistStatus sharpen::BalancedTable::Exist(const sharpen::ByteBuffer &key) const
 {
-    sharpen::BtBlock block{this->LoadBlock(key)};
-    auto ite = block.Find(key);
-    if(ite != block.End() && this->CompKey(ite->GetKey(),key) == 0)
+    auto block{this->FindBlock(key)};
+    auto ite = block->Find(key);
+    if(ite != block->End() && this->CompKey(ite->GetKey(),key) == 0)
     {
         return sharpen::ExistStatus::Exist;
     }
@@ -497,6 +499,7 @@ void sharpen::BalancedTable::Delete(const sharpen::ByteBuffer &key)
     {
         lastBlock->Delete(key);
         this->WriteBlock(*lastBlock,path.back().second);
+        this->DeleteFromCache(path.back().second);
         return;
     }
     sharpen::ByteBuffer deletedKey;
