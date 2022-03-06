@@ -450,6 +450,15 @@ void sharpen::BalancedTable::Put(sharpen::ByteBuffer key,sharpen::ByteBuffer val
 
 sharpen::Optional<sharpen::ByteBuffer> sharpen::BalancedTable::TryGet(const sharpen::ByteBuffer &key) const
 {
+    if(!this->GetDepth())
+    {
+        auto ite = this->root_.Find(key);
+        if(ite != this->root_.End() && this->CompKey(ite->GetKey(),key) == 0)
+        {
+            return ite->Value();
+        }
+        return sharpen::EmptyOpt;
+    }
     auto block{this->FindBlock(key)};
     auto ite = block->Find(key);
     if(ite != block->End() && this->CompKey(ite->GetKey(),key) == 0)
@@ -471,6 +480,15 @@ sharpen::ByteBuffer sharpen::BalancedTable::Get(const sharpen::ByteBuffer &key) 
 
 sharpen::ExistStatus sharpen::BalancedTable::Exist(const sharpen::ByteBuffer &key) const
 {
+    if(!this->GetDepth())
+    {
+        auto ite = this->root_.Find(key);
+        if(ite != this->root_.End() && this->CompKey(ite->GetKey(),key) == 0)
+        {
+            return sharpen::ExistStatus::Exist;
+        }
+        return sharpen::ExistStatus::NotExist;
+    }
     auto block{this->FindBlock(key)};
     auto ite = block->Find(key);
     if(ite != block->End() && this->CompKey(ite->GetKey(),key) == 0)
