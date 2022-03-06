@@ -322,6 +322,10 @@ std::pair<sharpen::BtBlock,sharpen::FilePointer> sharpen::BalancedTable::LoadBlo
                 assert(blockRef->GetComparator() == this->root_.GetComparator());
             }
         }
+        if(blockRef)
+        {
+            return std::make_pair(*blockRef,pointer);
+        }
         return std::make_pair(std::move(block),pointer);
     }
     return std::make_pair(this->root_,this->rootPointer_);
