@@ -4,11 +4,17 @@
 
 /*
 +-------------------+
-| Free Area Pointer |
+| Free Area Offset  | 8 bytes
 +-------------------+
-| Root Pointer      |
+| Free Area Size    | 8 bytes - Point to the head of free areas list
++-------------------+
+| Root Offset       | 8 bytes
++-------------------+
+| Root Size         | 8 bytes Point to root node
 +-------------------+
 | Block1            |
++-------------------+
+|       ....        |
 +-------------------+
 | BlockN            |
 +-------------------+

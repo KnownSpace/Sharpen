@@ -57,7 +57,7 @@ sharpen::SstDataBlock sharpen::SortedStringTable::LoadBlock(const sharpen::ByteB
     auto ite = this->root_.IndexBlock().Find(key);
     if(ite == this->root_.IndexBlock().End())
     {
-        throw std::invalid_argument("key doesn't exist(block not found)");
+        throw std::out_of_range("key doesn't exist(block not found)");
     }
     return this->LoadBlock(ite->Block().offset_,ite->Block().size_);
 }
@@ -78,7 +78,7 @@ sharpen::BloomFilter<sharpen::ByteBuffer> sharpen::SortedStringTable::LoadFilter
     auto ite = this->root_.MetaIndexBlock().Find(key);
     if(ite == this->root_.MetaIndexBlock().End())
     {
-        throw std::invalid_argument("key doen't exist");
+        throw std::out_of_range("key doen't exist");
     }
     return sharpen::SortedStringTableBuilder::LoadFilter(this->channel_,ite->Block().offset_,ite->Block().size_,this->filterBitsOfElement_);
 }
@@ -172,7 +172,7 @@ sharpen::ByteBuffer sharpen::SortedStringTable::Get(const sharpen::ByteBuffer &k
     auto block = this->FindBlock(key);
     if(!block)
     {
-        throw std::invalid_argument("key doesn't exists(block not found)");
+        throw std::out_of_range("key doesn't exists(block not found)");
     }
     return block->Get(key);
 }

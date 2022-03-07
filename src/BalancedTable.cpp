@@ -167,6 +167,10 @@ sharpen::BalancedTable::BalancedTable(sharpen::FileChannelPtr channel,const shar
     }
     else
     {
+        if(size < sizeof(sharpen::FilePointer)*2)
+        {
+            throw std::invalid_argument("not a balance table file");
+        }
         this->offset_ = size;
     }
     this->InitFreeArea();
@@ -415,10 +419,11 @@ void sharpen::BalancedTable::Put(sharpen::ByteBuffer key,sharpen::ByteBuffer val
     //find path
     auto path{this->GetPath(key)};
     std::shared_ptr<sharpen::BtBlock> lastBlock{std::move(path.back().first)};
-    sharpen::Optional<sharpen::BtBlock> splitedBlock;
+    sharpen::Optional<sharpen::BtBlock> newBlock;
     try
     {
-        path.back().second = this->InsertRecord(*lastBlock,std::move(key),std::move(value),path.back().second,splitedBlock);
+        path.back().second = this->InsertRecord(*lastBlock,std::move(key),std::move(value),path.back().second,newBlock);
+        //flush cache
         this->DeleteFromCache(path.back().second);
     }
     catch(const std::exception&)
@@ -428,17 +433,17 @@ void sharpen::BalancedTable::Put(sharpen::ByteBuffer key,sharpen::ByteBuffer val
         this->DeleteFromCache(path.back().second);
         throw;
     }
-    while (splitedBlock.Exist())
+    while (newBlock.Exist())
     {
         sharpen::ByteBuffer next{sizeof(lastBlock->Next())};
         std::memcpy(next.Data(),&lastBlock->Next(),sizeof(lastBlock->Next()));
         path.pop_back();
-        sharpen::BtBlock splited{std::move(splitedBlock.Get())};
-        splitedBlock.Reset();
+        sharpen::BtBlock splited{std::move(newBlock.Get())};
+        newBlock.Reset();
         if(!path.empty())
         {
             lastBlock = std::move(path.back().first);
-            path.back().second = this->InsertRecord(*lastBlock,std::move(*splited.Begin()).MoveKey(),std::move(next),path.back().second,splitedBlock);
+            path.back().second = this->InsertRecord(*lastBlock,std::move(*splited.Begin()).MoveKey(),std::move(next),path.back().second,newBlock);
             this->DeleteFromCache(path.back().second);
         }
         else
