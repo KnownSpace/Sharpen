@@ -18,7 +18,7 @@ namespace sharpen
     class AsyncReadWriteLock:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
-        using MyFuture = sharpen::AwaitableFuture<void>;
+        using MyFuture = sharpen::AwaitableFuture<sharpen::ReadWriteLockState>;
         using MyFuturePtr = MyFuture*;
         using Waiters = std::vector<MyFuturePtr>;
 
@@ -35,13 +35,19 @@ namespace sharpen
     public:
         AsyncReadWriteLock();
 
-        void LockRead();
+        //return prev status
+        sharpen::ReadWriteLockState LockRead();
 
         bool TryLockRead();
 
-        void LockWrite();
+        bool TryLockRead(sharpen::ReadWriteLockState &prevStatus);
+
+        //return prev status
+        sharpen::ReadWriteLockState LockWrite();
 
         bool TryLockWrite();
+
+        bool TryLockWrite(sharpen::ReadWriteLockState &prevStatus);
 
         void Unlock() noexcept;
 

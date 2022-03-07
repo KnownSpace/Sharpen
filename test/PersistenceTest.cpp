@@ -8,7 +8,7 @@
 #include <sharpen/EventEngine.hpp>
 #include <sharpen/BalancedTable.hpp>
 
-static sharpen::Int32 CompAsU32(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) noexcept
+static sharpen::Int32 CompAsUint32(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) noexcept
 {
     sharpen::Uint32 l{left.As<sharpen::Uint32>()};
     sharpen::Uint32 r{right.As<sharpen::Uint32>()};
@@ -125,11 +125,11 @@ void Entry()
                 value.As<sharpen::Uint32>() = i;
                 mt.Put(std::move(key),std::move(value));
             }
-            sharpen::SortedStringTable pt{table,sharpen::SstOption{&CompAsU32}};
+            sharpen::SortedStringTable pt{table,sharpen::SstOption{&CompAsUint32}};
             pt.BuildFromMemory(mt.Begin(),mt.End(),sharpen::SstBuildOption{true});
         }
         {
-            sharpen::SortedStringTable pt{table,sharpen::SstOption{&CompAsU32}};
+            sharpen::SortedStringTable pt{table,sharpen::SstOption{&CompAsUint32}};
             for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(1e5); i != count;++i)
             {
                 sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};
@@ -388,7 +388,7 @@ void Entry()
             }
             table->Truncate();
             {
-                sharpen::BalancedTable pt{table,sharpen::BtOption{CompAsU32}};
+                sharpen::BalancedTable pt{table,sharpen::BtOption{CompAsUint32}};
                 for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(1e5); i != count;++i)
                 {
                     sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};
@@ -399,7 +399,7 @@ void Entry()
                 }
             }
             {
-                sharpen::BalancedTable pt{table,sharpen::BtOption{CompAsU32}};
+                sharpen::BalancedTable pt{table,sharpen::BtOption{CompAsUint32}};
                 for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(1e5); i != count;++i)
                 {
                     sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};

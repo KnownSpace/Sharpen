@@ -4,13 +4,13 @@
 
 /*
 +--------------+
-| Depth        | Varint
+| Depth        | varint - current depth
 +--------------+
-| Next         | 16 Bytes
+| Next         | 16 bytes - point to next block
 +--------------+
-| Prev         | 16 Bytes
+| Prev         | 16 bytes - point to prev block
 +--------------+
-| Record Count |  2 Bytes
+| Record Count |  2 bytes - record count
 +--------------+
 | Record1      | 
 +--------------+
@@ -99,7 +99,7 @@ namespace sharpen
                 this->blockSize_ = other.blockSize_;
                 this->usedSize_ = other.usedSize_;
                 this->comp_ = other.comp_;
-                other.usedSize_ = sizeof(this->next_) + 1 + sizeof(sharpen::Uint16);
+                other.usedSize_ = 1 + sizeof(this->next_) + sizeof(this->prev_) + sizeof(sharpen::Uint16);
                 other.depth_ = 0;
                 other.blockSize_ = 0;
                 other.comp_ = nullptr;
