@@ -54,6 +54,7 @@ namespace sharpen
         //volatile status
         sharpen::Size blockSize_;
         sharpen::Size usedSize_;
+        sharpen::Uint64 switzzPointer_;
         //comparator
         Comparator comp_;
 
@@ -88,24 +89,7 @@ namespace sharpen
             return *this;
         }
     
-        inline Self &operator=(Self &&other) noexcept
-        {
-            if(this != std::addressof(other))
-            {
-                this->depth_ = other.depth_;
-                this->next_ = std::move(other.next_);
-                this->prev_ = std::move(other.prev_);
-                this->pairs_ = std::move(other.pairs_);
-                this->blockSize_ = other.blockSize_;
-                this->usedSize_ = other.usedSize_;
-                this->comp_ = other.comp_;
-                other.usedSize_ = 1 + sizeof(this->next_) + sizeof(this->prev_) + sizeof(sharpen::Uint16);
-                other.depth_ = 0;
-                other.blockSize_ = 0;
-                other.comp_ = nullptr;
-            }
-            return *this;
-        }
+        Self &operator=(Self &&other) noexcept;
     
         ~BtBlock() noexcept = default;
 
@@ -304,6 +288,16 @@ namespace sharpen
         inline void SetComparator(Comparator comp) noexcept
         {
             this->comp_ = comp;
+        }
+
+        inline sharpen::Uint64 GetSwitzzPointer() const noexcept
+        {
+            return this->switzzPointer_;
+        }
+
+        void SetSwitzzPointer(sharpen::Uint64 pointer) noexcept
+        {
+            this->switzzPointer_ = pointer;
         }
     };
 }

@@ -35,11 +35,8 @@ bool sharpen::AsyncReadWriteLock::TryLockRead()
 bool sharpen::AsyncReadWriteLock::TryLockRead(sharpen::ReadWriteLockState &status)
 {
     {
-        if(!this->lock_.TryLock())
-        {
-            return false;
-        }
-        std::unique_lock<sharpen::SpinLock> lock{this->lock_,std::adopt_lock};
+        //we always get spin lock
+        std::unique_lock<sharpen::SpinLock> lock{this->lock_};
         if (this->state_ != sharpen::ReadWriteLockState::UniquedWriting)
         {
             status = this->state_;
@@ -75,6 +72,8 @@ bool sharpen::AsyncReadWriteLock::TryLockWrite()
 bool sharpen::AsyncReadWriteLock::TryLockWrite(sharpen::ReadWriteLockState &prevStatus)
 {
     {
+        //if we could not get spin lock
+        //we return false
         if (!this->lock_.TryLock())
         {
             return false;
@@ -93,6 +92,7 @@ bool sharpen::AsyncReadWriteLock::TryLockWrite(sharpen::ReadWriteLockState &prev
 void sharpen::AsyncReadWriteLock::WriteUnlock() noexcept
 {
     std::unique_lock<sharpen::SpinLock> lock(this->lock_);
+    assert(this->state_ == sharpen::ReadWriteLockState::UniquedWriting);
     if (!this->writeWaiters_.empty())
     {
         sharpen::AsyncReadWriteLock::MyFuturePtr futurePtr = this->writeWaiters_.back();
@@ -121,6 +121,7 @@ void sharpen::AsyncReadWriteLock::WriteUnlock() noexcept
 void sharpen::AsyncReadWriteLock::ReadUnlock() noexcept
 {
     std::unique_lock<sharpen::SpinLock> lock(this->lock_);
+    assert(this->state_ == sharpen::ReadWriteLockState::SharedReading);
     this->readers_ -= 1;
     if (this->readers_ != 0)
     {
@@ -149,4 +150,23 @@ void sharpen::AsyncReadWriteLock::Unlock() noexcept
     {
         this->ReadUnlock();
     }
+}
+
+sharpen::ReadWriteLockState sharpen::AsyncReadWriteLock::UpgradeFromRead()
+{
+    MyFuture future;
+    {
+        std::unique_lock<sharpen::SpinLock> lock{this->lock_};
+        assert(this->state_ == sharpen::ReadWriteLockState::SharedReading);
+        //if only we are reading
+        //change lock status
+        this->readers_ -= 1;
+        if(this->readers_ == 0)
+        {
+            this->state_ = sharpen::ReadWriteLockState::UniquedWriting;
+            return sharpen::ReadWriteLockState::SharedReading;
+        }
+        this->writeWaiters_.push_back(&future);
+    }
+    return future.Await();
 }

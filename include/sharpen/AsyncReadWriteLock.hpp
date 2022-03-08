@@ -3,6 +3,7 @@
 #define _SHARPEN_ASYNCREADWRITELOCK_HPP
 
 #include <vector>
+#include <mutex>
 
 #include "AwaitableFuture.hpp"
 
@@ -18,6 +19,7 @@ namespace sharpen
     class AsyncReadWriteLock:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
+        using Self = sharpen::AsyncReadWriteLock;
         using MyFuture = sharpen::AwaitableFuture<sharpen::ReadWriteLockState>;
         using MyFuturePtr = MyFuture*;
         using Waiters = std::vector<MyFuturePtr>;
@@ -32,6 +34,15 @@ namespace sharpen
 
         void ReadUnlock() noexcept;
 
+        friend class std::unique_lock<Self>;
+
+        //basic lockable requirement
+        //never use me
+        //you should use LockWrite or LockRead
+        inline void lock()
+        {
+            this->LockWrite();
+        }
     public:
         AsyncReadWriteLock();
 
@@ -49,19 +60,14 @@ namespace sharpen
 
         bool TryLockWrite(sharpen::ReadWriteLockState &prevStatus);
 
+        //upgrade to write lock
+        sharpen::ReadWriteLockState UpgradeFromRead();
+
         void Unlock() noexcept;
 
         inline void unlock() noexcept
         {
             this->Unlock();
-        }
-
-        //basic lockable requirement
-        //never use me
-        //you should use LockWrite or LockRead
-        inline void lock()
-        {
-            this->LockWrite();
         }
 
         ~AsyncReadWriteLock() noexcept = default;

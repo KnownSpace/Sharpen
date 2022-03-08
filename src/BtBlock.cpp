@@ -20,6 +20,7 @@ sharpen::BtBlock::BtBlock(sharpen::Size blockSize,sharpen::Size maxRecordCount)
     ,pairs_()
     ,blockSize_(blockSize)
     ,usedSize_(1 + sizeof(this->next_) + sizeof(this->prev_) + Self::GetCounterSize())
+    ,switzzPointer_(0)
     ,comp_(nullptr)
 {
     std::memset(&this->next_,0,sizeof(this->next_));
@@ -121,6 +122,27 @@ sharpen::Size sharpen::BtBlock::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size o
         buf.Extend(this->usedSize_ - size);
     }
     return this->UnsafeStoreTo(buf.Data() + offset);
+}
+
+sharpen::BtBlock &sharpen::BtBlock::operator=(Self &&other) noexcept
+{
+    if(this != std::addressof(other))
+    {
+        this->depth_ = other.depth_;
+        this->next_ = std::move(other.next_);
+        this->prev_ = std::move(other.prev_);
+        this->pairs_ = std::move(other.pairs_);
+        this->blockSize_ = other.blockSize_;
+        this->usedSize_ = other.usedSize_;
+        this->switzzPointer_ = other.switzzPointer_;
+        this->comp_ = other.comp_;
+        other.usedSize_ = 1 + sizeof(this->next_) + sizeof(this->prev_) + sizeof(sharpen::Uint16);
+        other.depth_ = 0;
+        other.switzzPointer_ = 0;
+        other.blockSize_ = 0;
+        other.comp_ = nullptr;
+    }
+    return *this;
 }
 
 bool sharpen::BtBlock::WarppedComp(Comparator comp,const sharpen::BtKeyValuePair &pair,const sharpen::ByteBuffer &key) noexcept
