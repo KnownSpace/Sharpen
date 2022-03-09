@@ -107,15 +107,7 @@ namespace sharpen
     
         BalancedTable(Self &&other) noexcept = default;
     
-        inline Self &operator=(Self &&other) noexcept
-        {
-            if(this != std::addressof(other))
-            {
-                this->channel_ = std::move(other.channel_);
-                this->freeArea_ = std::move(other.freeArea_);
-            }
-            return *this;
-        }
+        Self &operator=(Self &&other) noexcept;
     
         ~BalancedTable() noexcept = default;
 
