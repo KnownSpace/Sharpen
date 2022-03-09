@@ -342,6 +342,9 @@ sharpen::BtBlock sharpen::BalancedTable::LoadBlock(const sharpen::ByteBuffer &ke
         }
         if(blockRef)
         {
+            //loc block(S)
+            this->LockBlockForRead(*blockRef);
+            std::unique_lock<sharpen::AsyncReadWriteLock> lock{this->GetBlockLock(*blockRef),std::adopt_lock};
             return *blockRef;
         }
         return block;

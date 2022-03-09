@@ -153,9 +153,13 @@ namespace sharpen
         }
 
         //unlocked
-        //the function could not be used in concurrent environment
+        //you should lock root lock(S) first
+        //return a unique object of block
         sharpen::BtBlock LoadBlock(sharpen::Uint64 offset,sharpen::Uint64 size) const;
 
+        //unlocked
+        //you should lock root lock(S) first
+        //return a unique object of block
         sharpen::BtBlock LoadBlock(const sharpen::ByteBuffer &key) const;
 
         //unlocked
