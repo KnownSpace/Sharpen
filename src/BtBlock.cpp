@@ -341,7 +341,9 @@ sharpen::BtBlock sharpen::BtBlock::Split()
         while (ite != end)
         {
             block.pairs_.emplace_back(std::move(*ite));
-            block.usedSize_ += begin->ComputeSize();
+            sharpen::Size kvSize{begin->ComputeSize()};
+            block.usedSize_ += kvSize;
+            this->usedSize_ -= kvSize;
             ++ite;
         }
         this->pairs_.erase(begin,end);

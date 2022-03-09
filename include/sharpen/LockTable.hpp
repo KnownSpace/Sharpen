@@ -55,7 +55,7 @@ namespace sharpen
                 auto ite = this->map_.find(std::forward<_K>(key));
                 if(ite != this->map_.end())
                 {
-                    return *ite;
+                    return *ite->second;
                 }
                 _Lock *p = new _Lock{};
                 if(!p)
@@ -63,6 +63,7 @@ namespace sharpen
                     throw std::bad_alloc();
                 }
                 this->map_.emplace(std::forward<_K>(key),std::unique_ptr<_Lock>{p});
+                return *p;
             }
         }
 

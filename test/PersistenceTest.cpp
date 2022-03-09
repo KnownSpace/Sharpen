@@ -114,7 +114,7 @@ void Entry()
                 }
             }
         }
-        table->Truncate();
+        /*table->Truncate();
         {
             sharpen::MemoryTable<sharpen::BinaryLogger,MapPred> mt{log};
             for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(1e5); i != count;++i)
@@ -154,7 +154,7 @@ void Entry()
                 std::printf("sst scan %zu keys\n",count);
                 assert(count == static_cast<sharpen::Uint32>(1e5));
             }
-        }
+        }*/
         table->Truncate();
         sharpen::FileChannelPtr table2 = sharpen::MakeFileChannel(tableName2, sharpen::FileAccessModel::All, sharpen::FileOpenModel::CreateNew);
         table2->Register(sharpen::EventEngine::GetEngine());

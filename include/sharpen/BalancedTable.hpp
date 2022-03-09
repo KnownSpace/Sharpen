@@ -27,6 +27,9 @@
 #include "Optional.hpp"
 #include "SegmentedCircleCache.hpp"
 #include "BtOption.hpp"
+#include "LockTable.hpp"
+#include "AsyncReadWriteLock.hpp"
+#include "AsyncMutex.hpp"
 
 namespace sharpen
 {
@@ -39,13 +42,17 @@ namespace sharpen
         std::vector<sharpen::FilePointer> freeArea_;
         sharpen::Size maxRecordsOfBlock_;
         sharpen::BtBlock root_;
+        //file size
         sharpen::Uint64 offset_;
-        sharpen::FilePointer rootPointer_;
+        //block cache
         mutable sharpen::SegmentedCircleCache<sharpen::BtBlock> caches_;
+        //concurrency control
+        mutable sharpen::LockTable<sharpen::Uint64,sharpen::AsyncReadWriteLock> lockTable_;
+        mutable std::unique_ptr<sharpen::AsyncMutex> allocLock_;
 
         constexpr static sharpen::Size blockSize_{4*1024};
 
-        static sharpen::Uint64 ComputeBlockSize(const sharpen::BtBlock &block) noexcept;
+        sharpen::Uint64 ComputeBlockSize(const sharpen::BtBlock &block) const noexcept;
 
         sharpen::Int32 CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept;
 
@@ -67,26 +74,29 @@ namespace sharpen
 
         void DeleteFromCache(sharpen::FilePointer pointer);
 
+        sharpen::FilePointer AllocMemory(const sharpen::BtBlock &block);
+
+        void FreeMemory(const sharpen::BtBlock &block);
+
         void WriteRootPointer(sharpen::FilePointer pointer);
 
-        sharpen::FilePointer WriteBlock(sharpen::BtBlock &block,sharpen::FilePointer pointer);
+        void WriteBlock(const sharpen::BtBlock &block);
 
-        sharpen::FilePointer InsertRecord(sharpen::BtBlock &block,sharpen::ByteBuffer key,sharpen::ByteBuffer value,sharpen::FilePointer pointer,sharpen::Optional<sharpen::BtBlock> &splitedBlock);
+        void AllocAndWriteBlock(sharpen::BtBlock &block);
     
         sharpen::BtBlock LoadBlock(sharpen::Uint64 offset,sharpen::Uint64 size,sharpen::ByteBuffer &buf) const;
 
-        std::vector<std::pair<std::shared_ptr<sharpen::BtBlock>,sharpen::FilePointer>> GetPath(const sharpen::ByteBuffer &key,bool doCache) const;
+        std::vector<std::shared_ptr<sharpen::BtBlock>> GetPath(const sharpen::ByteBuffer &key,bool doCache) const;
 
-        inline std::vector<std::pair<std::shared_ptr<sharpen::BtBlock>,sharpen::FilePointer>> GetPath(const sharpen::ByteBuffer &key) const
+        inline std::vector<std::shared_ptr<sharpen::BtBlock>> GetPath(const sharpen::ByteBuffer &key) const
         {
             return this->GetPath(key,true);
         }
 
-        void InsertToRoot(sharpen::ByteBuffer key,sharpen::ByteBuffer value);
-
         void DeleteFromRoot(const sharpen::ByteBuffer &key);
+        void PutToRoot(sharpen::ByteBuffer key,sharpen::ByteBuffer value);
 
-        std::pair<sharpen::BtBlock,sharpen::FilePointer> LoadBlockAndPointer(const sharpen::ByteBuffer &key) const;
+        static sharpen::FilePointer GetSwitzzPointer(const sharpen::BtBlock &block) noexcept;
     public:
     
         explicit BalancedTable(sharpen::FileChannelPtr channel);
@@ -117,6 +127,16 @@ namespace sharpen
             return this->root_;
         }
 
+        void LockBlockForWrite(const sharpen::BtBlock &block) const;
+
+        void LockBlockForRead(const sharpen::BtBlock &block) const;
+
+        void UnlockBlock(const sharpen::BtBlock &block) const noexcept;
+
+        sharpen::AsyncReadWriteLock &GetRootLock() const;
+
+        sharpen::AsyncReadWriteLock &GetBlockLock(const sharpen::BtBlock &block) const;
+
         void Put(sharpen::ByteBuffer key,sharpen::ByteBuffer value);
 
         void Delete(const sharpen::ByteBuffer &key);
@@ -132,25 +152,41 @@ namespace sharpen
             return this->LoadBlock(pointer.offset_,pointer.size_);
         }
 
+        //unlocked
+        //the function could not be used in concurrent environment
         sharpen::BtBlock LoadBlock(sharpen::Uint64 offset,sharpen::Uint64 size) const;
 
         sharpen::BtBlock LoadBlock(const sharpen::ByteBuffer &key) const;
 
+        //unlocked
+        //you should lock root lock(S) first
+        //and then lock block(S)
         std::shared_ptr<const sharpen::BtBlock> FindBlockFromCache(const sharpen::ByteBuffer &key) const;
 
+        //unlocked
+        //you should lock root lock(S) first
+        //and then lock block(S)
         std::shared_ptr<const sharpen::BtBlock> FindBlock(const sharpen::ByteBuffer &key,bool doCache) const;
 
+        //unlocked
+        //you should lock root lock(S) first
+        //and then lock block(S)
         inline std::shared_ptr<const sharpen::BtBlock> FindBlock(const sharpen::ByteBuffer &key) const
         {
             return this->FindBlock(key,true);
         }
 
+        //unlocked
+        //you should lock root lock(S) first
+        //then call TableScan
+        //and lock each of blocks(S)
+        //then you call load and read the blocks
         template<typename _InsertIterator,typename _Check = decltype(*std::declval<_InsertIterator&>()++ = std::declval<sharpen::FilePointer>())>
         inline void TableScan(_InsertIterator inserter,const sharpen::ByteBuffer &beginKey,const sharpen::ByteBuffer &endKey) const
         {
             assert(beginKey <= endKey);
             //get block and pointer
-            auto beginPair{this->LoadBlockAndPointer(beginKey)};
+            auto beginPair{this->LoadBlock(beginKey)};
             if(!beginPair.second.offset_ || !beginPair.second.size_)
             {
                 return;
@@ -160,7 +196,7 @@ namespace sharpen
             {
                 return;
             }
-            auto endPair{this->LoadBlockAndPointer(endKey)};
+            auto endPair{this->LoadBlock(endKey)};
             auto beginPointer{beginPair.second};
             auto endPointer{endPair.second};
             //load next pointer
@@ -187,13 +223,21 @@ namespace sharpen
             }
         }
 
+        //unlocked
+        //you should lock root lock(S) first
+        //then call TableScan
+        //and lock each of blocks(S)
+        //then you call load and read the blocks
         template<typename _InsertIterator,typename _Check = decltype(*std::declval<_InsertIterator&>()++ = std::declval<sharpen::FilePointer>())>
         inline void TableScan(_InsertIterator inserter) const
         {
             sharpen::Size depth{this->GetDepth()};
             if(!depth)
             {
-                *inserter++ = this->rootPointer_;
+                sharpen::FilePointer pointer;
+                pointer.size_ = this->root_.GetBlockSize();
+                pointer.offset_ = this->root_.GetSwitzzPointer();
+                *inserter++ = pointer;
                 return;
             }
             sharpen::BtBlock leaf{this->root_};
