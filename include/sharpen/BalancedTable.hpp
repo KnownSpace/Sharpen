@@ -18,6 +18,8 @@
 +-------------------+
 | BlockN            |
 +-------------------+
+| Free Areas(Opt)   |
++-------------------+
 */
 
 #include <cassert>
@@ -189,23 +191,23 @@ namespace sharpen
         inline void TableScan(_InsertIterator inserter,const sharpen::ByteBuffer &beginKey,const sharpen::ByteBuffer &endKey) const
         {
             assert(beginKey <= endKey);
+            if (this->root_.Empty())
+            {
+                return;
+            }
             //get block and pointer
-            auto beginPair{this->LoadBlock(beginKey)};
-            if(!beginPair.second.offset_ || !beginPair.second.size_)
+            auto beginBlock{this->LoadBlock(beginKey)};
+            assert(!beginBlock.Empty());
+            if (this->CompKey(beginBlock.Begin()->GetKey(),beginKey) == 1)
             {
                 return;
             }
-            assert(!beginPair.first.Empty());
-            if (this->CompKey(beginPair.first.Begin()->GetKey(),beginKey) == 1)
-            {
-                return;
-            }
-            auto endPair{this->LoadBlock(endKey)};
-            auto beginPointer{beginPair.second};
-            auto endPointer{endPair.second};
+            auto endBlock{this->LoadBlock(endKey)};
+            auto beginPointer{this->GetSwitzzPointer(beginBlock)};
+            auto endPointer{this->GetSwitzzPointer(endBlock)};
             //load next pointer
-            sharpen::Uint64 nextPointer{beginPair.first.ComputeNextPointer()};
-            sharpen::FilePointer next{beginPair.first.Next()};
+            sharpen::Uint64 nextPointer{beginBlock.ComputeNextPointer()};
+            sharpen::FilePointer next{beginBlock.Next()};
             while (beginPointer.offset_ != endPointer.offset_)
             {
                 //load pointer

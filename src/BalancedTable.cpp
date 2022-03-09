@@ -313,8 +313,6 @@ sharpen::BtBlock sharpen::BalancedTable::LoadBlock(sharpen::Uint64 offset,sharpe
 
 sharpen::BtBlock sharpen::BalancedTable::LoadBlock(const sharpen::ByteBuffer &key) const
 {
-    this->GetRootLock().LockRead();
-    std::unique_lock<sharpen::AsyncReadWriteLock> lock{this->GetRootLock(),std::adopt_lock};
     sharpen::Size depth{this->GetDepth()};
     if(depth)
     {
