@@ -296,7 +296,7 @@ void sharpen::BalancedTable::AllocAndWriteBlock(sharpen::BtBlock &block)
     }
 }
 
-sharpen::Uint64 sharpen::BalancedTable::ComputeBlockSize(const sharpen::BtBlock &block) const noexcept
+sharpen::Uint64 sharpen::BalancedTable::ComputeBlockSize(const sharpen::BtBlock &block) noexcept
 {
     sharpen::Size used{block.GetUsedSize()};
     sharpen::Size blockSize{used/Self::blockSize_};
@@ -305,7 +305,7 @@ sharpen::Uint64 sharpen::BalancedTable::ComputeBlockSize(const sharpen::BtBlock 
         blockSize += 1;
     }
     //sure index block never be overflow
-    return (std::max)(blockSize * Self::blockSize_,this->maxRecordsOfBlock_ * sizeof(sharpen::FilePointer) + 10 + 2*sizeof(sharpen::FilePointer) + sizeof(sharpen::Uint16));
+    return blockSize * Self::blockSize_;
 }
 
 sharpen::BtBlock sharpen::BalancedTable::LoadBlock(sharpen::Uint64 offset,sharpen::Uint64 size,sharpen::ByteBuffer &buf) const

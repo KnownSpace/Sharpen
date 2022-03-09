@@ -54,7 +54,9 @@ namespace sharpen
 
         constexpr static sharpen::Size blockSize_{4*1024};
 
-        sharpen::Uint64 ComputeBlockSize(const sharpen::BtBlock &block) const noexcept;
+        static sharpen::Uint64 ComputeBlockSize(const sharpen::BtBlock &block) noexcept;
+
+        static sharpen::FilePointer GetSwitzzPointer(const sharpen::BtBlock &block) noexcept;
 
         sharpen::Int32 CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept;
 
@@ -96,9 +98,8 @@ namespace sharpen
         }
 
         void DeleteFromRoot(const sharpen::ByteBuffer &key);
-        void PutToRoot(sharpen::ByteBuffer key,sharpen::ByteBuffer value);
 
-        static sharpen::FilePointer GetSwitzzPointer(const sharpen::BtBlock &block) noexcept;
+        void PutToRoot(sharpen::ByteBuffer key,sharpen::ByteBuffer value);
     public:
     
         explicit BalancedTable(sharpen::FileChannelPtr channel);
