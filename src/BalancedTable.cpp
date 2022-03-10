@@ -413,6 +413,12 @@ sharpen::AsyncReadWriteLock &sharpen::BalancedTable::GetBlockLock(const sharpen:
     return this->lockTable_.GetLock(block.GetSwitzzPointer());
 }
 
+sharpen::AsyncReadWriteLock &sharpen::BalancedTable::GetBlockLock(sharpen::Uint64 switzzPointer) const
+{
+    assert(switzzPointer != 0);
+    return this->lockTable_.GetLock(switzzPointer);
+}
+
 sharpen::FilePointer sharpen::BalancedTable::GetSwitzzPointer(const sharpen::BtBlock &block) noexcept
 {
     sharpen::FilePointer pointer;

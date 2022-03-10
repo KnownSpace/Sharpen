@@ -132,6 +132,8 @@ namespace sharpen
 
         sharpen::AsyncReadWriteLock &GetBlockLock(const sharpen::BtBlock &block) const;
 
+        sharpen::AsyncReadWriteLock &GetBlockLock(sharpen::Uint64 switzzPointer) const;
+
         void Put(sharpen::ByteBuffer key,sharpen::ByteBuffer value);
 
         void Delete(const sharpen::ByteBuffer &key);
@@ -149,11 +151,13 @@ namespace sharpen
 
         //unlocked
         //you should lock root lock(S) first
+        //and then lock block(S)
         //return a unique object of block
         sharpen::BtBlock LoadBlock(sharpen::Uint64 offset,sharpen::Uint64 size) const;
 
         //unlocked
         //you should lock root lock(S) first
+        //and then lock block(S)
         //return a unique object of block
         sharpen::BtBlock LoadBlock(const sharpen::ByteBuffer &key) const;
 
