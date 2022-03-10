@@ -20,6 +20,7 @@ void Entry(const char *dbName)
     std::puts("input quit to exist db");
     std::puts("get <key> - get a value from databse\n"
             "put <key> <value> - put a key and value to database\n"
+            "delete <key> - delete key from database\n"
             "list - list all keys and values from database\n"
             "quit - exit database");
     sharpen::InputPipeChannelPtr input = sharpen::MakeStdinPipe();
@@ -74,6 +75,12 @@ void Entry(const char *dbName)
             std::putchar(':');
             PrintBuffer(val.Get());
             std::putchar('\n');
+        }
+        else if(command == "delete")
+        {
+            sharpen::ByteBuffer key{line.data() + pos + 1,line.size() - pos - 1};
+            table.Delete(key);
+            std::puts("ok");
         }
         else if(command == "put")
         {
