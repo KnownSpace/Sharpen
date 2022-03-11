@@ -22,7 +22,7 @@ namespace sharpen
         using Self = sharpen::INetStreamChannel;
     public:
         
-        INetStreamChannel() = default;
+        INetStreamChannel() noexcept = default;
         
         virtual ~INetStreamChannel() noexcept = default;
         

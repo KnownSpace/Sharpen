@@ -109,10 +109,15 @@ void Entry(const char *dbName)
 
 int main(int argc, char const *argv[])
 {
-    const char *dbName = "./db.bt";
+    const char *dbName{nullptr};
     if(argc > 1)
     {
         dbName = argv[1];
+    }
+    else
+    {
+        std::fputs("usage: <database name> - create or open datebase\n",stderr);
+        return -1;
     }
     sharpen::EventEngine &engine = sharpen::EventEngine::SetupSingleThreadEngine();
     engine.Startup(&Entry,dbName);

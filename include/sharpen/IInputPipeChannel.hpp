@@ -18,7 +18,7 @@ namespace sharpen
         using Self = sharpen::IInputPipeChannel;
 
     public:
-        IInputPipeChannel() = default;
+        IInputPipeChannel() noexcept = default;
 
         IInputPipeChannel(const Self &other) = default;
 

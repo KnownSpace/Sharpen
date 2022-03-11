@@ -30,7 +30,7 @@ namespace sharpen
         Closer closer_;
     public:
         
-        IChannel() = default;
+        IChannel() noexcept = default;
         
         IChannel(const Self &) = default;
         

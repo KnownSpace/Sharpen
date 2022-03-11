@@ -24,7 +24,7 @@ namespace sharpen
         constexpr static sharpen::Size AllocationGranularity = 4*1024;
 #endif
         
-        IFileChannel() = default;
+        IFileChannel() noexcept = default;
         
         virtual ~IFileChannel() = default;
         
