@@ -12,7 +12,7 @@ void Entry(const char *ip,sharpen::UintPort port)
     sharpen::NetStreamChannelPtr channel = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
     sharpen::IpEndPoint endpoint;
     endpoint.SetPort(0);
-    endpoint.SetAddrByString("127.0.0.1");
+    endpoint.SetAddrByString("0.0.0.0");
     channel->Bind(endpoint);
     sharpen::InputPipeChannelPtr input = sharpen::MakeStdinPipe();
     channel->Register(sharpen::EventEngine::GetEngine());
