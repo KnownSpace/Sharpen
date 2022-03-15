@@ -231,6 +231,27 @@ namespace sharpen
             this->channel_->Flush();
         }
 
+        template<typename _Iterator,typename _InsertIterator,typename _Check = decltype(std::declval<Self*&>() = &(*std::declval<_Iterator>())),typename _CheckInsertor = decltype(*std::declval<_InsertIterator&>()++ = std::declval<sharpen::SstRoot&>())>
+        static void MergeFromTables(std::function<sharpen::FileChannelPtr()> maker,_Iterator begin,_Iterator end,sharpen::Size blocksOfTable,Comparator comparator,const sharpen::SstBuildOption &opt,_InsertIterator inserter)
+        {
+            std::vector<sharpen::SstVector> vec;
+            vec.reserve(sharpen::GetRangeSize(begin,end));
+            for (sharpen::Size i = 0;begin != end; ++begin,++i)
+            {
+                vec.emplace_back(&begin->Root(),begin->channel_);
+            }
+            sharpen::SortedStringTableBuilder::MergeTables<sharpen::SstDataBlock>(std::move(maker),opt.GetBlockSize(),blocksOfTable,vec.begin(),vec.end(),opt.GetFilterBitsOfElement(),opt.IsEraseDeleted(),inserter,comparator);
+        }
+
+        template<typename _Iterator,typename _Check = decltype(std::declval<Self*&>() = &(*std::declval<_Iterator>()))>
+        static void MergeFromTables(std::function<sharpen::FileChannelPtr()> maker,_Iterator begin,_Iterator end,sharpen::Size blocksOfTable,Comparator comparator,const sharpen::SstBuildOption &opt)
+        {
+            std::vector<sharpen::SstRoot> roots;
+            roots.reserve(16);
+            Self::MergeFromTables(std::move(maker),begin,end,blocksOfTable,comparator,opt,std::back_inserter(roots));
+            static_cast<void>(roots);
+        }
+
         template<typename _InsertIterator,typename _Check = decltype(*std::declval<_InsertIterator&>()++ = std::declval<sharpen::FilePointer>())>
         inline void TableScan(_InsertIterator inserter,const sharpen::ByteBuffer &beginKey,const sharpen::ByteBuffer &endKey) const
         {
