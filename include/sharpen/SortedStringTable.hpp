@@ -194,7 +194,7 @@ namespace sharpen
         }
 
         template<typename _Iterator,typename _Check = sharpen::EnableIf<sharpen::IsWalKeyValuePairIterator<_Iterator>::Value>>
-        void BuildFromMemory(_Iterator begin,_Iterator end,const sharpen::SstBuildOption &opt)
+        void Build(_Iterator begin,_Iterator end,const sharpen::SstBuildOption &opt)
         {
             sharpen::Uint64 size = this->channel_->GetFileSize();
             if(size)
@@ -207,7 +207,7 @@ namespace sharpen
         }
 
         template<typename _Iterator,typename _Check = decltype(std::declval<Self*&>() = &(*std::declval<_Iterator>()))>
-        void MergeFromTables(_Iterator begin,_Iterator end,const sharpen::SstBuildOption &opt,bool ordered)
+        void Merge(_Iterator begin,_Iterator end,const sharpen::SstBuildOption &opt,bool ordered)
         {
             sharpen::Uint64 size = this->channel_->GetFileSize();
             if(size)
@@ -232,7 +232,7 @@ namespace sharpen
         }
 
         template<typename _Iterator,typename _InsertIterator,typename _Check = decltype(std::declval<Self*&>() = &(*std::declval<_Iterator>())),typename _CheckInsertor = decltype(*std::declval<_InsertIterator&>()++ = std::declval<sharpen::SstRoot&>())>
-        static void MergeFromTables(std::function<sharpen::FileChannelPtr()> maker,_Iterator begin,_Iterator end,sharpen::Size blocksOfTable,Comparator comparator,const sharpen::SstBuildOption &opt,_InsertIterator inserter)
+        static void Merge(std::function<sharpen::FileChannelPtr()> maker,_Iterator begin,_Iterator end,sharpen::Size blocksOfTable,Comparator comparator,const sharpen::SstBuildOption &opt,_InsertIterator inserter)
         {
             std::vector<sharpen::SstVector> vec;
             vec.reserve(sharpen::GetRangeSize(begin,end));
@@ -244,11 +244,11 @@ namespace sharpen
         }
 
         template<typename _Iterator,typename _Check = decltype(std::declval<Self*&>() = &(*std::declval<_Iterator>()))>
-        static void MergeFromTables(std::function<sharpen::FileChannelPtr()> maker,_Iterator begin,_Iterator end,sharpen::Size blocksOfTable,Comparator comparator,const sharpen::SstBuildOption &opt)
+        static void Merge(std::function<sharpen::FileChannelPtr()> maker,_Iterator begin,_Iterator end,sharpen::Size blocksOfTable,Comparator comparator,const sharpen::SstBuildOption &opt)
         {
             std::vector<sharpen::SstRoot> roots;
             roots.reserve(16);
-            Self::MergeFromTables(std::move(maker),begin,end,blocksOfTable,comparator,opt,std::back_inserter(roots));
+            Self::Merge(std::move(maker),begin,end,blocksOfTable,comparator,opt,std::back_inserter(roots));
             static_cast<void>(roots);
         }
 

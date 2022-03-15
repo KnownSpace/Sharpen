@@ -53,7 +53,7 @@ void Entry()
             mt.Put(sharpen::ByteBuffer{"abc", 3}, sharpen::ByteBuffer{"val", 3});
             mt.Put(sharpen::ByteBuffer{"other", 5}, sharpen::ByteBuffer{"val", 3});
             sharpen::SortedStringTable pt{table};
-            pt.BuildFromMemory(mt.Begin(),mt.End(),sharpen::SstBuildOption{true});
+            pt.Build(mt.Begin(),mt.End(),sharpen::SstBuildOption{true});
         }
         {
             sharpen::SortedStringTable pt{table};
@@ -126,7 +126,7 @@ void Entry()
                 mt.Put(std::move(key),std::move(value));
             }
             sharpen::SortedStringTable pt{table,sharpen::SstOption{&CompAsUint32}};
-            pt.BuildFromMemory(mt.Begin(),mt.End(),sharpen::SstBuildOption{true});
+            pt.Build(mt.Begin(),mt.End(),sharpen::SstBuildOption{true});
         }
         {
             sharpen::SortedStringTable pt{table,sharpen::SstOption{&CompAsUint32}};
@@ -169,11 +169,11 @@ void Entry()
             pts.emplace_back(table);
             {
                 sharpen::SortedStringTable pt2{table2};
-                pt2.BuildFromMemory(mt.Begin(),mt.End(),sharpen::SstBuildOption{true});
+                pt2.Build(mt.Begin(),mt.End(),sharpen::SstBuildOption{true});
             }
             pts.emplace_back(table2);
             sharpen::SortedStringTable pt3{table3};
-            pt3.MergeFromTables(pts.begin(),pts.end(),sharpen::SstBuildOption{true},false);
+            pt3.Merge(pts.begin(),pts.end(),sharpen::SstBuildOption{true},false);
         }
         {
             sharpen::SortedStringTable pt{table3};
