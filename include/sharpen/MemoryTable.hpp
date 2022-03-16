@@ -162,6 +162,11 @@ namespace sharpen
         explicit InternalMemoryTable(_Args &&...args)
             :pair_(_Logger{std::forward<_Args>(args)...},MapType{})
         {}
+
+        template<typename ..._Args,typename _Check = decltype(_Logger{std::declval<_Args>()...})>
+        explicit InternalMemoryTable(const _Pred &pred,_Args &&...args)
+            :pair_(_Logger{std::forward<_Args>(args)...},MapType{pred})
+        {}
     
         InternalMemoryTable(Self &&other) noexcept = default;
     
