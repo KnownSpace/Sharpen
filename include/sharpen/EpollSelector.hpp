@@ -15,6 +15,7 @@
 #include "EpollEventStruct.hpp"
 #include "IoUringQueue.hpp"
 #include "IoUringStruct.hpp"
+#include "SpinLock.hpp"
 
 namespace sharpen
 {
@@ -29,6 +30,7 @@ namespace sharpen
         sharpen::EventFd eventfd_;
         Map map_;
         EventBuf eventBuf_;
+        sharpen::SpinLock lock_;
 #ifdef SHARPEN_HAS_IOURING
         std::unique_ptr<sharpen::IoUringQueue> ring_;
         std::vector<io_uring_cqe> cqes_;

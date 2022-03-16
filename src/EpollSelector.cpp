@@ -12,6 +12,7 @@ sharpen::EpollSelector::EpollSelector()
     ,eventfd_(0,O_CLOEXEC | O_NONBLOCK)
     ,map_()
     ,eventBuf_(8)
+    ,lock_()
 #ifdef SHARPEN_HAS_IOURING
     ,ring_(nullptr)
     ,cqes_(8)
@@ -127,12 +128,18 @@ void sharpen::EpollSelector::Resister(WeakChannelPtr channel)
     {
         return;
     }
-    Event &event = (this->map_[ch->GetHandle()] = std::move(Event()));
-    event.ioEvent_.SetChannel(ch);
-    event.epollEvent_.data.ptr = &event;
-    event.epollEvent_.events = EPOLLIN | EPOLLOUT | EPOLLET | EPOLLHUP | EPOLLERR;
-    event.internalEventfd_ = false;
-    this->epoll_.Add(ch->GetHandle(),&(event.epollEvent_));
+    epoll_event *eventStruct{nullptr};
+    {
+        std::unique_lock<sharpen::SpinLock> lock{this->lock_};
+        auto ite = this->map_.emplace(ch->GetHandle(),Event{}).first;
+        Event &event = ite->second;
+        event.ioEvent_.SetChannel(ch);
+        event.epollEvent_.data.ptr = &event;
+        event.epollEvent_.events = EPOLLIN | EPOLLOUT | EPOLLET | EPOLLHUP | EPOLLERR;
+        event.internalEventfd_ = false;
+        eventStruct = &(event.epollEvent_);
+    }
+    this->epoll_.Add(ch->GetHandle(),eventStruct);
 }
 
 #ifdef SHARPEN_HAS_IOURING
