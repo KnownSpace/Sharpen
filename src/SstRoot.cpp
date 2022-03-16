@@ -30,7 +30,7 @@ void sharpen::SstRoot::LoadFrom(sharpen::FileChannelPtr channel)
         {
             throw sharpen::DataCorruptionException("index block corruption");
         }
-        this->indexBlock_.LoadFrom(buf,buf.GetSize());
+        this->indexBlock_.LoadFrom(buf);
     }
     //load meta index block
     size = this->footer_.MetaIndexBlock().size_;
@@ -45,7 +45,7 @@ void sharpen::SstRoot::LoadFrom(sharpen::FileChannelPtr channel)
             this->indexBlock_.Clear();
             throw sharpen::DataCorruptionException("meta index block corruption");
         }
-        this->metaIndexBlock_.LoadFrom(buf,buf.GetSize());
+        this->metaIndexBlock_.LoadFrom(buf);
     }
 }
 

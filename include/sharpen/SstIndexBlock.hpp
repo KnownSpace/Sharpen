@@ -88,11 +88,11 @@ namespace sharpen
 
         void LoadFrom(const char *data,sharpen::Size size);
 
-        void LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size size,sharpen::Size offset);
+        void LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset);
 
-        inline void LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size size)
+        inline void LoadFrom(const sharpen::ByteBuffer &buf)
         {
-            this->LoadFrom(buf,size,0);
+            this->LoadFrom(buf,0);
         }
 
         sharpen::Size ComputeNeedSize() const noexcept;
