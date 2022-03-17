@@ -99,7 +99,7 @@ sharpen::Size sharpen::SstDataBlock::ComputeSize() const noexcept
     return size;
 }
 
-sharpen::Size sharpen::SstDataBlock::UnsafeStoreTo(char *data) const
+sharpen::Size sharpen::SstDataBlock::UnsafeStoreTo(char *data) const noexcept
 {
     sharpen::Uint16 crc{0};
     sharpen::Varuint64 builder{this->groups_.size()};
@@ -141,7 +141,7 @@ sharpen::Size sharpen::SstDataBlock::StoreTo(sharpen::ByteBuffer &buf, sharpen::
     {
         buf.Extend(needSize - size);
     }
-    return this->UnsafeStoreTo(buf.Data());
+    return this->UnsafeStoreTo(buf.Data() + offset);
 }
 
 bool sharpen::SstDataBlock::WarppedComp(Comparator comp,const sharpen::SstKeyValueGroup &group,const sharpen::ByteBuffer &key) noexcept

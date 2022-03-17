@@ -165,7 +165,7 @@ namespace sharpen
 
         sharpen::Size ComputeSize() const noexcept;
 
-        sharpen::Size UnsafeStoreTo(char *data) const;
+        sharpen::Size UnsafeStoreTo(char *data) const noexcept;
 
         sharpen::Size StoreTo(char *data,sharpen::Size size) const;
 

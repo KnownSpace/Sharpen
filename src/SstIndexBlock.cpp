@@ -93,8 +93,7 @@ sharpen::Size sharpen::SstIndexBlock::StoreTo(sharpen::ByteBuffer &buf,sharpen::
     {
         buf.Extend(needSize - size);
     }
-    char *data = buf.Data() + offset;
-    return this->UnsafeStoreTo(data);
+    return this->UnsafeStoreTo(buf.Data() + offset);
 }
 
 bool sharpen::SstIndexBlock::WarppedComp(Comparator comp,const sharpen::SstBlockHandle &block,const sharpen::ByteBuffer &key) noexcept

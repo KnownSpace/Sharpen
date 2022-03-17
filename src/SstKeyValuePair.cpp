@@ -137,5 +137,5 @@ sharpen::Size sharpen::SstKeyValuePair::StoreTo(sharpen::ByteBuffer &buf,sharpen
     {
         buf.Extend(needSize - size);
     } 
-    return this->UnsafeStoreTo(buf.Data());
+    return this->UnsafeStoreTo(buf.Data() + offset);
 }
