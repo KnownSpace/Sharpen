@@ -232,7 +232,7 @@ namespace sharpen
         }
 
         template<typename _Iterator,typename _InsertIterator,typename _Check = decltype(std::declval<Self*&>() = &(*std::declval<_Iterator>())),typename _CheckInsertor = decltype(*std::declval<_InsertIterator&>()++ = std::declval<sharpen::SstRoot&>())>
-        static void Merge(std::function<sharpen::FileChannelPtr()> maker,_Iterator begin,_Iterator end,sharpen::Size blocksOfTable,Comparator comparator,const sharpen::SstBuildOption &opt,_InsertIterator inserter)
+        static void Merge(std::function<sharpen::FileChannelPtr()> maker,_Iterator begin,_Iterator end,sharpen::Size blocksOfTable,const sharpen::SstBuildOption &opt,_InsertIterator inserter)
         {
             std::vector<sharpen::SstVector> vec;
             vec.reserve(sharpen::GetRangeSize(begin,end));
@@ -240,15 +240,15 @@ namespace sharpen
             {
                 vec.emplace_back(&begin->Root(),begin->channel_);
             }
-            sharpen::SortedStringTableBuilder::MergeTables<sharpen::SstDataBlock>(std::move(maker),opt.GetBlockSize(),blocksOfTable,vec.begin(),vec.end(),opt.GetFilterBitsOfElement(),opt.IsEraseDeleted(),inserter,comparator);
+            sharpen::SortedStringTableBuilder::MergeTables<sharpen::SstDataBlock>(std::move(maker),opt.GetBlockSize(),blocksOfTable,vec.begin(),vec.end(),opt.GetFilterBitsOfElement(),opt.IsEraseDeleted(),inserter,this->comp_);
         }
 
         template<typename _Iterator,typename _Check = decltype(std::declval<Self*&>() = &(*std::declval<_Iterator>()))>
-        static void Merge(std::function<sharpen::FileChannelPtr()> maker,_Iterator begin,_Iterator end,sharpen::Size blocksOfTable,Comparator comparator,const sharpen::SstBuildOption &opt)
+        static void Merge(std::function<sharpen::FileChannelPtr()> maker,_Iterator begin,_Iterator end,sharpen::Size blocksOfTable,const sharpen::SstBuildOption &opt)
         {
             std::vector<sharpen::SstRoot> roots;
             roots.reserve(16);
-            Self::Merge(std::move(maker),begin,end,blocksOfTable,comparator,opt,std::back_inserter(roots));
+            Self::Merge(std::move(maker),begin,end,blocksOfTable,opt,std::back_inserter(roots));
             static_cast<void>(roots);
         }
 

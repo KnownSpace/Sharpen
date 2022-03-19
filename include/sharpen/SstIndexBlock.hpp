@@ -38,8 +38,13 @@ namespace sharpen
     private:
         using Self = SstIndexBlock;
         using DataBlockHandles = std::vector<sharpen::SstBlockHandle>;
+    public:
+        
         using Iterator = typename DataBlockHandles::iterator;
         using ConstIterator = typename DataBlockHandles::const_iterator;
+        using ReverseIterator = typename DataBlockHandles::reverse_iterator;
+        using ConstReverseIterator = typename DataBlockHandles::const_reverse_iterator;
+    private:
     
         DataBlockHandles dataBlocks_;
         Comparator comp_;
@@ -117,24 +122,44 @@ namespace sharpen
             std::sort(this->dataBlocks_.begin(),this->dataBlocks_.end());
         }
 
-        inline Iterator Begin()
+        inline Iterator Begin() noexcept
         {
             return this->dataBlocks_.begin();
         }
 
-        inline ConstIterator Begin() const
+        inline ConstIterator Begin() const noexcept
         {
             return this->dataBlocks_.cbegin();
         }
 
-        inline Iterator End()
+        inline Iterator End() noexcept
         {
             return this->dataBlocks_.end();
         }
 
-        inline ConstIterator End() const
+        inline ConstIterator End() const noexcept
         {
             return this->dataBlocks_.cend();
+        }
+
+        inline ReverseIterator ReverseBegin() noexcept
+        {
+            return this->dataBlocks_.rbegin();
+        }
+
+        inline ConstReverseIterator ReverseBegin() const noexcept
+        {
+            return this->dataBlocks_.rbegin();
+        }
+
+        inline ReverseIterator ReverseEnd() noexcept
+        {
+            return this->dataBlocks_.rend();
+        }
+
+        inline ConstReverseIterator ReverseEnd() const noexcept
+        {
+            return this->dataBlocks_.rend();
         }
 
         void Put(sharpen::SstBlockHandle block);
