@@ -10,6 +10,7 @@
 #include "MemoryTableComparator.hpp"
 #include "LevelView.hpp"
 #include "LevelTableOption.hpp"
+#include "LockTable.hpp"
 
 namespace sharpen
 {

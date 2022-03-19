@@ -237,10 +237,10 @@ namespace sharpen
         inline void Action(sharpen::WriteBatch &batch)
         {
             {
-                this->Logger().Log(batch);
                 std::unique_lock<sharpen::SpinLock> lock{this->lock_};
                 this->InternalAction(batch);
             }
+            this->Logger().Log(batch);
         }
 
         inline void Action(sharpen::WriteBatch &&batch)
@@ -251,10 +251,10 @@ namespace sharpen
         inline void Action(const sharpen::WriteBatch &batch)
         {
             {
-                this->Logger().Log(batch);
                 std::unique_lock<sharpen::SpinLock> lock{this->lock_};
                 this->InternalAction(batch);
             }
+            this->Logger().Log(batch);
         }
 
         inline void Put(sharpen::ByteBuffer key,sharpen::ByteBuffer value)
