@@ -215,7 +215,12 @@ namespace sharpen
         //you should lock level lock(S) first
         inline std::shared_ptr<const sharpen::SortedStringTable> GetTable(sharpen::Uint64 id) const
         {
-            this->LoadTableCache(id);
+            return this->LoadTableCache(id);
+        }
+
+        inline sharpen::SortedStringTable GetTableCopy(sharpen::Uint64 id) const
+        {
+            return this->LoadTable(id);
         }
 
         //for range query
