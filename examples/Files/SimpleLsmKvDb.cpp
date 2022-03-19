@@ -4,6 +4,7 @@
 #include <sharpen/LevelTable.hpp>
 #include <sharpen/EventEngine.hpp>
 #include <sharpen/IInputPipeChannel.hpp>
+#include <sharpen/FileOps.hpp>
 
 void PrintBuffer(const sharpen::ByteBuffer &buf)
 {
@@ -15,7 +16,12 @@ void PrintBuffer(const sharpen::ByteBuffer &buf)
 
 void Entry(const char *dbName)
 {
-    sharpen::LevelTable table{sharpen::EventEngine::GetEngine(),dbName,"kdb"};
+    std::string dir{"./"};
+    dir += dbName;
+    sharpen::MakeDirectory(dir.c_str());
+    dir += "/";
+    dir += dbName;
+    sharpen::LevelTable table{sharpen::EventEngine::GetEngine(),dir,"kdb"};
     std::puts("input quit to exist db");
     std::puts("get <key> - get a value from databse\n"
             "put <key> <value> - put a key and value to database\n"

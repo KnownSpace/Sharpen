@@ -39,6 +39,10 @@ namespace sharpen
         return c == '/';
 #endif
     }
+
+    void MakeDirectory(const char *name);
+
+    void DeleteDirectory(const char *name);
 }
 
 #endif

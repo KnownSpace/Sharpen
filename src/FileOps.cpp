@@ -8,6 +8,7 @@
 #include <Windows.h>
 #else
 #include <unistd.h>
+#include <sys/stat.h>
 #endif
 
 #include <sharpen/SystemError.hpp>
@@ -215,4 +216,34 @@ void sharpen::ResolvePath(const char *currentPath, sharpen::Size currentPathSize
         }
     }
     std::memset(resolved, 0, resolvedEnd - resolved);
+}
+
+void sharpen::MakeDirectory(const char *name)
+{
+#ifdef SHARPEN_IS_WIN
+    if(::CreateDirectoryA(name,nullptr) == FALSE && sharpen::GetLastError() != ERROR_ALREADY_EXISTS)
+    {
+        sharpen::ThrowLastError();
+    }
+#else
+    if(::mkdir(name,S_IRUSR|S_IWUSR) == -1 && sharpen::GetLastError() != EEXIST)
+    {
+        sharpen::ThrowLastError();
+    }
+#endif
+}
+
+void sharpen::DeleteDirectory(const char *name)
+{
+#ifdef SHARPEN_IS_WIN
+    if(::RemoveDirectoryA(name) == FALSE && sharpen::GetLastError() != ERROR_FILE_NOT_FOUND)
+    {
+        sharpen::ThrowLastError();
+    }
+#else
+    if(::rmdir(name) == -1 && sharpen::GetLastError() != ENOENT)
+    {
+        sharpen::ThrowLastError();
+    }
+#endif
 }
