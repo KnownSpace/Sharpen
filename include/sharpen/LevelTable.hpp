@@ -200,18 +200,26 @@ namespace sharpen
             return r.Get();
         }
 
+        //for range query
+        //you should lock level lock(S) first
         inline sharpen::AsyncReadWriteLock &GetLevelLock() const noexcept
         {
             return *this->levelLock_;
         }
 
+        //for range query
+        //you should lock level lock(S) first
         sharpen::Uint64 GetMaxLevel() const noexcept;
 
+        //for range query
+        //you should lock level lock(S) first
         inline std::shared_ptr<const sharpen::SortedStringTable> GetTable(sharpen::Uint64 id) const
         {
             this->LoadTableCache(id);
         }
 
+        //for range query
+        //you should lock level lock(S) first
         template<typename _InsertIterator,typename _Check = decltype(*std::declval<_InsertIterator&>()++ = static_cast<const sharpen::LevelView*>(nullptr))>
         void GetAllViewOfComponent(sharpen::Uint64 level,_InsertIterator inserter) const
         {
@@ -222,11 +230,15 @@ namespace sharpen
             }
         }
 
+        //for range query
+        //you should lock level lock(S) first
         inline const MemTable &GetMemoryTable() const noexcept
         {
             return *this->mem_;
         }
 
+        //for range query
+        //you should lock level lock(S) first
         template<typename _InsertIterator,typename _Check = decltype(*std::declval<_InsertIterator&>()++ = static_cast<const MemTable*>(nullptr))>
         inline void GetAllImmutableTables(_InsertIterator inserter)
         {
