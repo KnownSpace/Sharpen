@@ -343,7 +343,7 @@ namespace sharpen
             this->Map().clear();
         }
 
-        inline sharpen::SpinLock &GetLock() const noexcept
+        inline sharpen::AsyncReadWriteLock &GetLock() const noexcept
         {
             return this->lock_;
         }

@@ -75,7 +75,7 @@ namespace sharpen
 
         inline sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf)
         {
-            this->LoadFrom(buf,0);
+            return this->LoadFrom(buf,0);
         }
 
         sharpen::Size UnsafeStoreTo(char *data) const noexcept;
@@ -88,7 +88,7 @@ namespace sharpen
 
         inline sharpen::Size StoreTo(sharpen::ByteBuffer &buf) const
         {
-            this->StoreTo(buf,0);
+            return this->StoreTo(buf,0);
         }
 
         inline sharpen::ByteBuffer &BeginKey() noexcept

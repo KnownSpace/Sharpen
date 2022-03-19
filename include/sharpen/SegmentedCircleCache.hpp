@@ -72,8 +72,8 @@ namespace sharpen
         }
 
         SegmentedCircleCache(Self &&other) noexcept
-            :caches_(other.caches_)
-            ,size_(other.size_)
+            :size_(other.size_)
+            ,caches_(other.caches_)
         {
             other.caches_ = nullptr;
         }
