@@ -4,6 +4,7 @@
 
 #include <unordered_map>
 #include <mutex>
+#include <memory>
 
 #include "SpinLock.hpp"
 #include "TypeDef.hpp"

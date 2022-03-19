@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include <map>
 #include <cassert>
+#include <memory>
+#include <mutex>
 
 #include "ByteBuffer.hpp"
 #include "CompressedPair.hpp"
@@ -363,7 +365,7 @@ namespace sharpen
 
         inline sharpen::SpinLock &GetLock() const noexcept
         {
-            return this->lock_;
+            return *this->lock_;
         }
 
         inline sharpen::Size GetSize() const noexcept
