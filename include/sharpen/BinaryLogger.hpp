@@ -22,6 +22,7 @@
 #include "ByteOrder.hpp"
 #include "WriteBatch.hpp"
 #include "IntOps.hpp"
+#include "AsyncMutex.hpp"
 
 namespace sharpen
 {
@@ -30,6 +31,7 @@ namespace sharpen
     private:
         using Self = sharpen::BinaryLogger;
     
+        std::unique_ptr<sharpen::AsyncMutex> lock_;
         sharpen::FileChannelPtr channel_;
         sharpen::Uint64 offset_;
     public:
