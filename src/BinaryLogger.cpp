@@ -28,13 +28,13 @@ void sharpen::BinaryLogger::Clear()
 
 void sharpen::BinaryLogger::Log(const sharpen::WriteBatch &batch)
 {
-    sharpen::ByteBuffer buf{batch.ComputeSize() + sizeof(sharpen::Uint64)};
-    batch.UnsafeStoreTo(buf.Data() + sizeof(sharpen::Uint64));
-    sharpen::Uint64 size{buf.GetSize()};
-    sharpen::Uint64 offset{0};
+    sharpen::Uint64 size{batch.ComputeSize()};
+    sharpen::ByteBuffer buf{sharpen::IntCast<sharpen::Size>(size + sizeof(size))};
+    std::memcpy(buf.Data(),&size,sizeof(size));
+    batch.UnsafeStoreTo(buf.Data() + sizeof(size));
+    sharpen::Uint64 offset{this->offset_.fetch_add(buf.GetSize())};
     try
     {
-        offset = this->offset_.fetch_add(size,std::memory_order::memory_order_relaxed);
         this->channel_->WriteAsync(buf,offset);
     }
     catch(const std::exception&)

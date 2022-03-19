@@ -279,7 +279,7 @@ namespace sharpen
         {
             for (auto begin = this->root_.IndexBlock().Begin(),end = this->root_.IndexBlock().End(); begin != end; ++begin)
             {
-                *inserter++ - begin->Block();   
+                *inserter++ = begin->Block();   
             }
         }
 

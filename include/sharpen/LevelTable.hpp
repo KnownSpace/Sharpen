@@ -16,11 +16,12 @@ namespace sharpen
 {
     class LevelTable:public sharpen::Noncopyable
     {
+    public:
+        using MemTable = sharpen::MemoryTable<sharpen::BinaryLogger,sharpen::MemoryTableComparator>;
     private:
         using Self = sharpen::LevelTable;
         using ComponentMap = std::map<sharpen::Uint64,sharpen::LevelComponent>;
         using ViewMap = std::map<sharpen::Uint64,sharpen::LevelView>;
-        using MemTable = sharpen::MemoryTable<sharpen::BinaryLogger,sharpen::MemoryTableComparator>;
         using Comparator = sharpen::Int32(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
         using FileGenerator = sharpen::FileChannelPtr(*)(const char*,sharpen::FileAccessModel,sharpen::FileOpenModel);    
 
@@ -228,7 +229,7 @@ namespace sharpen
         template<typename _InsertIterator,typename _Check = decltype(*std::declval<_InsertIterator&>()++ = static_cast<const sharpen::LevelView*>(nullptr))>
         void GetAllViewOfComponent(sharpen::Uint64 level,_InsertIterator inserter) const
         {
-            sharpen::LevelComponent *component{&this->GetComponent(level)};
+            const sharpen::LevelComponent *component{&this->GetComponent(level)};
             for (auto begin = component->Begin(),end = component->End(); begin != end; ++begin)
             {
                 *inserter++ = &this->GetView(*begin);   

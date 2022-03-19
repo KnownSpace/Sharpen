@@ -139,22 +139,6 @@ namespace sharpen
             }
         }
 
-        void InternalAction(sharpen::WriteBatch &batch)
-        {
-            for (auto begin = batch.Begin(),end = batch.End(); begin != end; ++begin)
-            {
-                if (begin->type_ == sharpen::WriteBatch::ActionType::Put)
-                {
-                    this->InternalPut(std::move(begin->key_),std::move(begin->value_));
-                }
-                else
-                {
-                    this->InternalDelete(std::move(begin->key_));
-                }
-            }
-            batch.Clear();
-        }
-
         void InternalAction(const sharpen::WriteBatch &batch)
         {
             for (auto begin = batch.Begin(),end = batch.End(); begin != end; ++begin)
@@ -257,20 +241,6 @@ namespace sharpen
                 sharpen::WriteBatch &batch = *begin;
                 this->InternalAction(batch);
             }
-        }
-
-        inline void Action(sharpen::WriteBatch &batch)
-        {
-            {
-                std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
-                this->InternalAction(batch);
-            }
-            this->Logger().Log(batch);
-        }
-
-        inline void Action(sharpen::WriteBatch &&batch)
-        {
-            this->Action(batch);
         }
 
         inline void Action(const sharpen::WriteBatch &batch)
