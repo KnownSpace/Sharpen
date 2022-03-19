@@ -12,6 +12,7 @@
 #include "Noncopyable.hpp"
 #include "Optional.hpp"
 #include "ExistStatus.hpp"
+#include "SpinLock.hpp"
 
 namespace sharpen
 {   
@@ -87,6 +88,8 @@ namespace sharpen
         using ConstIterator = typename MapType::const_iterator;
     
         sharpen::CompressedPair<_Logger,MapType> pair_;
+        bool directlyErase_;
+        mutable sharpen::SpinLock lock_;
 
         _Logger &Logger() noexcept
         {
@@ -118,9 +121,16 @@ namespace sharpen
             auto ite = this->Map().find(key);
             if(ite != this->Map().end())
             {
-                ite->second.Delete();
+                if(this->directlyErase_)
+                {
+                    this->Map().erase(ite);
+                }
+                else
+                {
+                    ite->second.Delete();
+                }
             }
-            else
+            else if(!this->directlyErase_)
             {
                 this->Map().emplace(std::move(key),StoreItem{});
             }
@@ -158,14 +168,37 @@ namespace sharpen
         }
     public:
     
+        struct DirectEraseTag
+        {};
+        
+        static constexpr DirectEraseTag directEraseTag;
+
         template<typename ..._Args,typename _Check = decltype(_Logger{std::declval<_Args>()...})>
         explicit InternalMemoryTable(_Args &&...args)
             :pair_(_Logger{std::forward<_Args>(args)...},MapType{})
+            ,directlyErase_(false)
+            ,lock_()
+        {}
+
+        template<typename ..._Args,typename _Check = decltype(_Logger{std::declval<_Args>()...})>
+        explicit InternalMemoryTable(DirectEraseTag tag,_Args &&...args)
+            :pair_(_Logger{std::forward<_Args>(args)...},MapType{})
+            ,directlyErase_(true)
+            ,lock_()
         {}
 
         template<typename ..._Args,typename _Check = decltype(_Logger{std::declval<_Args>()...})>
         explicit InternalMemoryTable(const _Pred &pred,_Args &&...args)
             :pair_(_Logger{std::forward<_Args>(args)...},MapType{pred})
+            ,directlyErase_(false)
+            ,lock_()
+        {}
+
+        template<typename ..._Args,typename _Check = decltype(_Logger{std::declval<_Args>()...})>
+        explicit InternalMemoryTable(DirectEraseTag tag,const _Pred &pred,_Args &&...args)
+            :pair_(_Logger{std::forward<_Args>(args)...},MapType{pred})
+            ,directlyErase_(true)
+            ,lock_()
         {}
     
         InternalMemoryTable(Self &&other) noexcept = default;
@@ -194,7 +227,10 @@ namespace sharpen
         inline void Action(sharpen::WriteBatch &batch)
         {
             this->Logger().Log(batch);
-            this->InternalAction(batch);
+            {
+                std::unique_lock<sharpen::SpinLock> lock{this->lock_};
+                this->InternalAction(batch);
+            }
         }
 
         inline void Action(sharpen::WriteBatch &&batch)
@@ -205,7 +241,10 @@ namespace sharpen
         inline void Action(const sharpen::WriteBatch &batch)
         {
             this->Logger().Log(batch);
-            this->InternalAction(batch);
+            {
+                std::unique_lock<sharpen::SpinLock> lock{this->lock_};
+                this->InternalAction(batch);
+            }
         }
 
         inline void Put(sharpen::ByteBuffer key,sharpen::ByteBuffer value)
@@ -229,6 +268,7 @@ namespace sharpen
 
         sharpen::ExistStatus Exist(const sharpen::ByteBuffer &key) const noexcept
         {
+            std::unique_lock<sharpen::SpinLock> lock{this->lock_};
             auto ite = this->Map().find(key);
             if(ite == this->Map().end())
             {
@@ -243,6 +283,7 @@ namespace sharpen
 
         sharpen::ByteBuffer &Get(const sharpen::ByteBuffer &key)
         {
+            std::unique_lock<sharpen::SpinLock> lock{this->lock_};
             auto &item = this->Map().at(key);
             if(item.IsDeleted())
             {
@@ -253,6 +294,7 @@ namespace sharpen
 
         const sharpen::ByteBuffer &Get(const sharpen::ByteBuffer &key) const
         {
+            std::unique_lock<sharpen::SpinLock> lock{this->lock_};
             auto &item = this->Map().at(key);
             if(item.deleteTag_)
             {
@@ -284,6 +326,11 @@ namespace sharpen
         inline void Clear() noexcept
         {
             this->Map().clear();
+        }
+
+        inline sharpen::SpinLock &GetLock() const noexcept
+        {
+            return this->lock_;
         }
     };
 
