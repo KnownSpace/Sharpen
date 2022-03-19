@@ -171,7 +171,7 @@ namespace sharpen
         struct DirectEraseTag
         {};
         
-        static constexpr DirectEraseTag directEraseTag;
+        static constexpr DirectEraseTag directEraseTag{};
 
         template<typename ..._Args,typename _Check = decltype(_Logger{std::declval<_Args>()...})>
         explicit InternalMemoryTable(_Args &&...args)
@@ -185,7 +185,9 @@ namespace sharpen
             :pair_(_Logger{std::forward<_Args>(args)...},MapType{})
             ,directlyErase_(true)
             ,lock_()
-        {}
+        {
+            static_cast<void>(tag);
+        }
 
         template<typename ..._Args,typename _Check = decltype(_Logger{std::declval<_Args>()...})>
         explicit InternalMemoryTable(const _Pred &pred,_Args &&...args)
@@ -199,7 +201,9 @@ namespace sharpen
             :pair_(_Logger{std::forward<_Args>(args)...},MapType{pred})
             ,directlyErase_(true)
             ,lock_()
-        {}
+        {
+            static_cast<void>(tag);
+        }
     
         InternalMemoryTable(Self &&other) noexcept = default;
     
@@ -331,6 +335,16 @@ namespace sharpen
         inline sharpen::SpinLock &GetLock() const noexcept
         {
             return this->lock_;
+        }
+
+        inline sharpen::Size GetSize() const noexcept
+        {
+            return this->Map().size();
+        }
+
+        inline bool Empty() const noexcept
+        {
+            return this->Map().empty();
         }
     };
 

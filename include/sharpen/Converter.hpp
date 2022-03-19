@@ -53,16 +53,21 @@ namespace sharpen
     {
         if (!buf)
         {
-            return;
+            return 0;
         }
         const char *index = "0123456789ABCDEF";
         sharpen::Size i{0};
-        sharpen::Size size{0};
+        sharpen::Size s{0};
         _RawType num{sharpen::GetAbs(val)};
         if (val < 0)
         {
             buf[0] = '-';
             i++;
+        }
+        if(num == 0)
+        {
+            buf[0] = '0';
+            return 1;
         }
         while (num)
         {
@@ -70,8 +75,8 @@ namespace sharpen
             i++;
             num /= radix;
         }
+        s = i;
         i--;
-        size = i;
         if (buf[0] == '-')
         {
             buf += 1;
@@ -83,7 +88,7 @@ namespace sharpen
             buf[t] = buf[i - t];
             buf[i - t] = tmp;
         }
-        return size;
+        return s;
     }
 
     template<typename _T,typename _RawType = typename std::remove_const<typename std::remove_reference<_T>::type>::type,typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value && !std::is_unsigned<_RawType>::value>::type>
