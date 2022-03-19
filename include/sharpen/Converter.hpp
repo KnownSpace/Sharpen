@@ -49,7 +49,7 @@ namespace sharpen
     //unsafe
     //bufSize must be checked by user
     template<typename _T,typename _RawType = typename std::remove_const<typename std::remove_reference<_T>::type>::type,typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value>::type>
-    void Itoa(_T &&val,sharpen::Byte radix,char *buf)
+    sharpen::Size Itoa(_T &&val,sharpen::Byte radix,char *buf)
     {
         if (!buf)
         {
@@ -57,6 +57,7 @@ namespace sharpen
         }
         const char *index = "0123456789ABCDEF";
         sharpen::Size i{0};
+        sharpen::Size size{0};
         _RawType num{sharpen::GetAbs(val)};
         if (val < 0)
         {
@@ -70,6 +71,7 @@ namespace sharpen
             num /= radix;
         }
         i--;
+        size = i;
         if (buf[0] == '-')
         {
             buf += 1;
@@ -81,6 +83,7 @@ namespace sharpen
             buf[t] = buf[i - t];
             buf[i - t] = tmp;
         }
+        return size;
     }
 
     template<typename _T,typename _RawType = typename std::remove_const<typename std::remove_reference<_T>::type>::type,typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value && !std::is_unsigned<_RawType>::value>::type>
