@@ -166,15 +166,6 @@ int main(int argc, char const *argv[])
         return -1;
     }
     sharpen::EventEngine &engine = sharpen::EventEngine::SetupSingleThreadEngine();
-    engine.Startup([](const char *name){
-        try
-        {
-            Entry(name);
-        }
-        catch(const std::exception& e)
-        {
-            std::puts(e.what());   
-        }
-    },dbName);
+    engine.Startup(&Entry,dbName);
     return 0;
 }
