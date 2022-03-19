@@ -653,7 +653,7 @@ sharpen::LevelTable::LevelTable(sharpen::EventEngine &engine,const std::string &
     ,mem_(nullptr)
     ,manifest_(nullptr)
     ,imMems_()
-    ,lock_(nullptr)
+    ,levelLock_(nullptr)
     ,viewLock_(nullptr)
     ,componentLock_(nullptr)
     ,comp_(opt.GetComparator())
@@ -671,7 +671,7 @@ sharpen::LevelTable::LevelTable(sharpen::EventEngine &engine,const std::string &
     std::call_once(Self::keyFlag_,static_cast<FnPtr>(&Self::InitManifestKeys));
     this->usedMemory_.reset(new std::atomic_size_t{0});
     //init locks
-    this->lock_.reset(new sharpen::AsyncReadWriteLock{});
+    this->levelLock_.reset(new sharpen::AsyncReadWriteLock{});
     this->viewLock_.reset(new sharpen::AsyncReadWriteLock{});
     this->componentLock_.reset(new sharpen::AsyncReadWriteLock{});
     //init manifest
@@ -709,7 +709,7 @@ sharpen::LevelTable &sharpen::LevelTable::operator=(sharpen::LevelTable &&other)
         this->mem_ = std::move(other.mem_);
         this->manifest_ = std::move(other.manifest_);
         this->imMems_ = std::move(other.imMems_);
-        this->lock_ = std::move(other.lock_);
+        this->levelLock_ = std::move(other.levelLock_);
         this->viewLock_ = std::move(other.viewLock_);
         this->componentLock_ = std::move(other.componentLock_);
         this->comp_ = other.comp_;
@@ -787,8 +787,8 @@ void sharpen::LevelTable::Delete(sharpen::ByteBuffer key)
 void sharpen::LevelTable::Action(sharpen::WriteBatch batch)
 {
     {
-        this->lock_->LockRead();
-        std::unique_lock<sharpen::AsyncReadWriteLock> lock{*this->lock_,std::adopt_lock};
+        this->levelLock_->LockRead();
+        std::unique_lock<sharpen::AsyncReadWriteLock> lock{*this->levelLock_,std::adopt_lock};
         sharpen::Size increaseSize{0};
         for (auto begin = batch.Begin(),end = batch.End(); begin != end; ++begin)
         {
@@ -802,7 +802,7 @@ void sharpen::LevelTable::Action(sharpen::WriteBatch batch)
         this->usedMemory_->fetch_add(increaseSize,std::memory_order::memory_order_relaxed);
         if(this->usedMemory_->load() > this->maxSizeOfMem_)
         {
-            this->lock_->UpgradeFromRead();
+            this->levelLock_->UpgradeFromRead();
             if(!this->usedMemory_->load(std::memory_order::memory_order_relaxed))
             {
                 return;
@@ -821,8 +821,8 @@ void sharpen::LevelTable::Action(sharpen::WriteBatch batch)
 
 sharpen::Optional<sharpen::ByteBuffer> sharpen::LevelTable::TryGet(const sharpen::ByteBuffer &key) const
 {
-    this->lock_->LockRead();
-    std::unique_lock<sharpen::AsyncReadWriteLock> lock{*this->lock_,std::adopt_lock};
+    this->levelLock_->LockRead();
+    std::unique_lock<sharpen::AsyncReadWriteLock> lock{*this->levelLock_,std::adopt_lock};
     //query memory table
     auto exist{this->mem_->Exist(key)};
     if(exist == sharpen::ExistStatus::Exist)
@@ -875,8 +875,8 @@ sharpen::Optional<sharpen::ByteBuffer> sharpen::LevelTable::TryGet(const sharpen
 
 sharpen::ExistStatus sharpen::LevelTable::Exist(const sharpen::ByteBuffer &key) const
 {
-    this->lock_->LockRead();
-    std::unique_lock<sharpen::AsyncReadWriteLock> lock{*this->lock_,std::adopt_lock};
+    this->levelLock_->LockRead();
+    std::unique_lock<sharpen::AsyncReadWriteLock> lock{*this->levelLock_,std::adopt_lock};
     //query memory table
     auto exist{this->mem_->Exist(key)};
     if(exist == sharpen::ExistStatus::Exist)
