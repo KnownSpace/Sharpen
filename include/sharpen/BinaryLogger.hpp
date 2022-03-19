@@ -31,11 +31,14 @@ namespace sharpen
         using Self = sharpen::BinaryLogger;
     
         sharpen::FileChannelPtr channel_;
-        sharpen::Uint64 offset_;
+        std::atomic_uint64_t offset_;
     public:
         BinaryLogger(sharpen::FileChannelPtr channel);
     
-        BinaryLogger(Self &&other) noexcept = default;
+        BinaryLogger(Self &&other) noexcept
+            :channel_(std::move(other.channel_))
+            ,offset_(other.offset_.load())
+        {}
     
         Self &operator=(Self &&other) noexcept;
     

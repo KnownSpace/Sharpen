@@ -12,7 +12,7 @@
 #include "Noncopyable.hpp"
 #include "Optional.hpp"
 #include "ExistStatus.hpp"
-#include "AsyncReadWriteLock.hpp"
+#include "SpinLock.hpp"
 
 namespace sharpen
 {   
@@ -90,7 +90,7 @@ namespace sharpen
     
         sharpen::CompressedPair<_Logger,MapType> pair_;
         bool directlyErase_;
-        mutable sharpen::AsyncReadWriteLock lock_;
+        mutable sharpen::SpinLock lock_;
 
         _Logger &Logger() noexcept
         {
@@ -237,9 +237,8 @@ namespace sharpen
         inline void Action(sharpen::WriteBatch &batch)
         {
             {
-                this->lock_.LockWrite();
                 this->Logger().Log(batch);
-                std::unique_lock<sharpen::AsyncReadWriteLock> lock{this->lock_,std::adopt_lock};
+                std::unique_lock<sharpen::SpinLock> lock{this->lock_};
                 this->InternalAction(batch);
             }
         }
@@ -252,9 +251,8 @@ namespace sharpen
         inline void Action(const sharpen::WriteBatch &batch)
         {
             {
-                this->lock_.LockWrite();
                 this->Logger().Log(batch);
-                std::unique_lock<sharpen::AsyncReadWriteLock> lock{this->lock_,std::adopt_lock};
+                std::unique_lock<sharpen::SpinLock> lock{this->lock_};
                 this->InternalAction(batch);
             }
         }
@@ -280,8 +278,7 @@ namespace sharpen
 
         sharpen::ExistStatus Exist(const sharpen::ByteBuffer &key) const noexcept
         {
-            this->lock_.LockRead();
-            std::unique_lock<sharpen::AsyncReadWriteLock> lock{this->lock_,std::adopt_lock};
+            std::unique_lock<sharpen::SpinLock> lock{this->lock_};
             auto ite = this->Map().find(key);
             if(ite == this->Map().end())
             {
@@ -296,8 +293,7 @@ namespace sharpen
 
         sharpen::ByteBuffer &Get(const sharpen::ByteBuffer &key)
         {
-            this->lock_.LockRead();
-            std::unique_lock<sharpen::AsyncReadWriteLock> lock{this->lock_,std::adopt_lock};
+            std::unique_lock<sharpen::SpinLock> lock{this->lock_};
             auto &item = this->Map().at(key);
             if(item.IsDeleted())
             {
@@ -308,14 +304,13 @@ namespace sharpen
 
         const sharpen::ByteBuffer &Get(const sharpen::ByteBuffer &key) const
         {
-            this->lock_.LockRead();
-            std::unique_lock<sharpen::AsyncReadWriteLock> lock{this->lock_,std::adopt_lock};
+            std::unique_lock<sharpen::SpinLock> lock{this->lock_};
             auto &item = this->Map().at(key);
-            if(item.deleteTag_)
+            if(item.IsDeleted())
             {
                 throw std::out_of_range("key doesn't exists");
             }
-            return item.value_;
+            return item.Value();
         }
 
         sharpen::ByteBuffer &operator[](const sharpen::ByteBuffer &key)
@@ -343,7 +338,7 @@ namespace sharpen
             this->Map().clear();
         }
 
-        inline sharpen::AsyncReadWriteLock &GetLock() const noexcept
+        inline sharpen::SpinLock &GetLock() const noexcept
         {
             return this->lock_;
         }

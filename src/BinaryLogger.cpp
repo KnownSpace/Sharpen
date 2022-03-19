@@ -16,8 +16,7 @@ sharpen::BinaryLogger &sharpen::BinaryLogger::operator=(Self &&other) noexcept
     if(this != std::addressof(other))
     {
         this->channel_ = std::move(other.channel_);
-        this->offset_ = other.offset_;
-        other.offset_ = 0;
+        this->offset_.store(other.offset_);
     }
     return *this;
 }
@@ -29,19 +28,18 @@ void sharpen::BinaryLogger::Clear()
 
 void sharpen::BinaryLogger::Log(const sharpen::WriteBatch &batch)
 {
-    sharpen::ByteBuffer buf;
-    batch.StoreTo(buf);
+    sharpen::ByteBuffer buf{batch.ComputeSize() + sizeof(sharpen::Uint64)};
+    batch.UnsafeStoreTo(buf.Data() + sizeof(sharpen::Uint64));
     sharpen::Uint64 size{buf.GetSize()};
+    sharpen::Uint64 offset{0};
     try
     {
-        this->channel_->WriteAsync(reinterpret_cast<const char*>(&size),sizeof(size),this->offset_);
-        this->channel_->WriteAsync(buf,this->offset_ + sizeof(size));
-        //this->channel_->Flush();
-        this->offset_ += buf.GetSize() + sizeof(size);
+        offset = this->offset_.fetch_add(size,std::memory_order::memory_order_relaxed);
+        this->channel_->WriteAsync(buf,offset);
     }
     catch(const std::exception&)
     {
-        this->channel_->Truncate(this->offset_);
+        this->channel_->Truncate(offset);
         throw;
     }
 }
