@@ -90,7 +90,7 @@ namespace sharpen
     
         sharpen::CompressedPair<_Logger,MapType> pair_;
         bool directlyErase_;
-        mutable sharpen::SpinLock lock_;
+        mutable std::unique_ptr<sharpen::SpinLock> lock_;
 
         _Logger &Logger() noexcept
         {
@@ -178,15 +178,26 @@ namespace sharpen
         explicit InternalMemoryTable(_Args &&...args)
             :pair_(_Logger{std::forward<_Args>(args)...},MapType{})
             ,directlyErase_(false)
-            ,lock_()
-        {}
+            ,lock_(nullptr)
+        {
+            this->lock_.reset(new sharpen::SpinLock{});
+            if(!this->lock_)
+            {
+                throw std::bad_alloc();
+            }
+        }
 
         template<typename ..._Args,typename _Check = decltype(_Logger{std::declval<_Args>()...})>
         explicit InternalMemoryTable(DirectEraseTag tag,_Args &&...args)
             :pair_(_Logger{std::forward<_Args>(args)...},MapType{})
             ,directlyErase_(true)
-            ,lock_()
+            ,lock_(nullptr)
         {
+            this->lock_.reset(new sharpen::SpinLock{});
+            if(!this->lock_)
+            {
+                throw std::bad_alloc();
+            }
             static_cast<void>(tag);
         }
 
@@ -194,22 +205,33 @@ namespace sharpen
         explicit InternalMemoryTable(const _Pred &pred,_Args &&...args)
             :pair_(_Logger{std::forward<_Args>(args)...},MapType{pred})
             ,directlyErase_(false)
-            ,lock_()
-        {}
+            ,lock_(nullptr)
+        {
+            this->lock_.reset(new sharpen::SpinLock{});
+            if(!this->lock_)
+            {
+                throw std::bad_alloc();
+            }
+        }
 
         template<typename ..._Args,typename _Check = decltype(_Logger{std::declval<_Args>()...})>
         explicit InternalMemoryTable(DirectEraseTag tag,const _Pred &pred,_Args &&...args)
             :pair_(_Logger{std::forward<_Args>(args)...},MapType{pred})
             ,directlyErase_(true)
-            ,lock_()
+            ,lock_(nullptr)
         {
+            this->lock_.reset(new sharpen::SpinLock{});
+            if(!this->lock_)
+            {
+                throw std::bad_alloc();
+            }
             static_cast<void>(tag);
         }
     
         InternalMemoryTable(Self &&other) noexcept
             :pair_(std::move(other.pair_))
             ,directlyErase_(other.directlyErase_)
-            ,lock_()
+            ,lock_(std::move(other.lock_))
         {}
     
         Self &operator=(Self &&other) noexcept
@@ -218,6 +240,7 @@ namespace sharpen
             {
                 this->pair_ = std::move(other.pair_);
                 this->directlyErase_ = other.directlyErase_;
+                this->lock_ = std::move(other.lock_);
             }
             return *this;
         }
@@ -237,7 +260,7 @@ namespace sharpen
         inline void Action(sharpen::WriteBatch &batch)
         {
             {
-                std::unique_lock<sharpen::SpinLock> lock{this->lock_};
+                std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
                 this->InternalAction(batch);
             }
             this->Logger().Log(batch);
@@ -251,7 +274,7 @@ namespace sharpen
         inline void Action(const sharpen::WriteBatch &batch)
         {
             {
-                std::unique_lock<sharpen::SpinLock> lock{this->lock_};
+                std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
                 this->InternalAction(batch);
             }
             this->Logger().Log(batch);
@@ -278,7 +301,7 @@ namespace sharpen
 
         sharpen::ExistStatus Exist(const sharpen::ByteBuffer &key) const noexcept
         {
-            std::unique_lock<sharpen::SpinLock> lock{this->lock_};
+            std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
             auto ite = this->Map().find(key);
             if(ite == this->Map().end())
             {
@@ -293,7 +316,7 @@ namespace sharpen
 
         sharpen::ByteBuffer &Get(const sharpen::ByteBuffer &key)
         {
-            std::unique_lock<sharpen::SpinLock> lock{this->lock_};
+            std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
             auto &item = this->Map().at(key);
             if(item.IsDeleted())
             {
@@ -304,7 +327,7 @@ namespace sharpen
 
         const sharpen::ByteBuffer &Get(const sharpen::ByteBuffer &key) const
         {
-            std::unique_lock<sharpen::SpinLock> lock{this->lock_};
+            std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
             auto &item = this->Map().at(key);
             if(item.IsDeleted())
             {

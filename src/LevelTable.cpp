@@ -670,10 +670,18 @@ sharpen::LevelTable::LevelTable(sharpen::EventEngine &engine,const std::string &
     using FnPtr = void(*)();
     std::call_once(Self::keyFlag_,static_cast<FnPtr>(&Self::InitManifestKeys));
     this->usedMemory_.reset(new std::atomic_size_t{0});
+    if(!this->usedMemory_)
+    {
+        throw std::bad_alloc();
+    }
     //init locks
     this->levelLock_.reset(new sharpen::AsyncReadWriteLock{});
     this->viewLock_.reset(new sharpen::AsyncReadWriteLock{});
     this->componentLock_.reset(new sharpen::AsyncReadWriteLock{});
+    if(!this->levelLock_ || !this->viewLock_ || !this->componentLock_)
+    {
+        throw std::bad_alloc();
+    }
     //init manifest
     this->InitManifest();
     this->InitMemoryTable();

@@ -17,14 +17,23 @@ namespace sharpen
         using Self = sharpen::TimestampLock;
         using Map = std::unordered_map<_Key,sharpen::Uint64>;
 
-        sharpen::SpinLock lock_;
+        std::unique_lock<sharpen::SpinLock> lock_;
         Map map_;
     public:
     
-        TimestampLock() = default;
+        TimestampLock()
+            :lock_(nullptr)
+            ,map_()
+        {
+            this->lock_.reset(new sharpen::SpinLock{});
+            if(!this->lock_)
+            {
+                throw std::bad_alloc();
+            }
+        }
     
         TimestampLock(Self &&other) noexcept
-            :lock_()
+            :lock_(std::move(other.lock_))
             ,map_(std::move(other.map_))
         {}
     
@@ -32,6 +41,7 @@ namespace sharpen
         {
             if(this != std::addressof(other))
             {
+                this->lock_ = std::move(other.lock_);
                 this->map_ = std::move(other.map_);
             }
             return *this;
@@ -43,7 +53,7 @@ namespace sharpen
         {
             sharpen::Uint64 time{0};
             {
-                std::unique_lock<sharpen::SpinLock> lock{this->lock_};
+                std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
                 auto pair = this->map_.emplace(key,time);
                 if(!pair.second)
                 {
@@ -55,7 +65,7 @@ namespace sharpen
 
         bool Valid(const _Key &key,sharpen::Uint64 time)
         {
-            std::unique_lock<sharpen::SpinLock> lock{this->lock_};
+            std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
             return this->map_[key] == time;
         }
     };
