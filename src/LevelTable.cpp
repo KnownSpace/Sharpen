@@ -356,7 +356,7 @@ std::string sharpen::LevelTable::FormatManifestName() const
     return name;
 }
 
-sharpen::SortedStringTable sharpen::LevelTable::MergeTable(const sharpen::LevelComponent &component,sharpen::Uint64 newTableId,bool eraseDeleted,sharpen::Optional<sharpen::SortedStringTable> appendTable)
+sharpen::SortedStringTable sharpen::LevelTable::MergeTables(const sharpen::LevelComponent &component,sharpen::Uint64 newTableId,bool eraseDeleted,sharpen::Optional<sharpen::SortedStringTable> appendTable)
 {
     std::string name{this->FormatTableName(newTableId)};
     //create file
@@ -365,6 +365,7 @@ sharpen::SortedStringTable sharpen::LevelTable::MergeTable(const sharpen::LevelC
     sharpen::SstOption opt{this->comp_,this->filterBitsOfElement_,0,0};
     sharpen::SortedStringTable table{std::move(channel),opt};
     std::vector<sharpen::SortedStringTable> mergeTables;
+    bool ordered{component.GetSize() == 1};
     for (auto begin = component.Begin(),end = component.End(); begin != end; ++begin)
     {
         sharpen::LevelView *view{&this->GetView(*begin)};
@@ -375,11 +376,26 @@ sharpen::SortedStringTable sharpen::LevelTable::MergeTable(const sharpen::LevelC
     }
     if(appendTable.Exist())
     {
+        //get key
+        if(ordered)
+        {
+            sharpen::SstDataBlock firstBlock{table.LoadBlock(table.Root().IndexBlock().Begin()->Block())};
+            sharpen::SstDataBlock lastBlock{table.LoadBlock(table.Root().IndexBlock().ReverseBegin()->Block())};
+            const sharpen::ByteBuffer &firstKey = firstBlock.Begin()->First().GetKey();
+            const sharpen::ByteBuffer &lastKey = lastBlock.ReverseBegin()->Last().GetKey();
+            sharpen::LevelView *view{nullptr};
+            sharpen::Uint64 viewId{*component.ReverseBegin()};
+            view = &this->GetView(viewId);
+            if(!view->IsNotOverlapped(firstKey,lastKey))
+            {
+                ordered = false;
+            }
+        }
         mergeTables.emplace_back(std::move(appendTable.Get()));
     }
     //merge
     sharpen::SstBuildOption buildOpt{eraseDeleted,this->filterBitsOfElement_,this->blockSize_};
-    table.Merge(mergeTables.begin(),mergeTables.end(),buildOpt,false);
+    table.Merge(mergeTables.begin(),mergeTables.end(),buildOpt,ordered);
     return table;
 }
 
@@ -425,7 +441,7 @@ void sharpen::LevelTable::AddToComponent(sharpen::SortedStringTable table,sharpe
             //merge tables
             sharpen::Uint64 newTableId{this->GetCurrentTableId()};
             this->SetCurrentTableId(newTableId + 1);
-            sharpen::SortedStringTable newTable{this->MergeTable(*component,newTableId,componentId == this->GetMaxLevel(),std::move(table))};
+            sharpen::SortedStringTable newTable{this->MergeTables(*component,newTableId,componentId == this->GetMaxLevel(),std::move(table))};
             //add to upper component
             try
             {
@@ -466,7 +482,7 @@ void sharpen::LevelTable::AddToComponent(sharpen::SortedStringTable table,sharpe
                 //merge tables
                 sharpen::Uint64 newTableId{this->GetCurrentTableId()};
                 this->SetCurrentTableId(newTableId + 1);
-                sharpen::SortedStringTable newTable{this->MergeTable(*component,newTableId,componentId == this->GetMaxLevel(),std::move(table))};
+                sharpen::SortedStringTable newTable{this->MergeTables(*component,newTableId,componentId == this->GetMaxLevel(),std::move(table))};
                 //add to upper component
                 try
                 {
@@ -596,6 +612,36 @@ void sharpen::LevelTable::InitMemoryTable()
     this->mem_->Restore();
 }
 
+void sharpen::LevelTable::GcTables()
+{
+    sharpen::Uint64 begin{this->GetPrevTableId()};
+    sharpen::Uint64 end{this->GetCurrentTableId()};
+    if (begin != end)
+    {
+        while (begin != end)
+        {
+            this->DeleteTable(end - 1);
+            --end;
+        }
+        this->SetCurrentTableId(end);
+    }
+}
+
+void sharpen::LevelTable::GcViews()
+{
+    sharpen::Uint64 begin{this->GetPrevViewId()};
+    sharpen::Uint64 end{this->GetCurrentViewId()};
+    if (begin != end)
+    {
+        while (begin != end)
+        {
+            this->manifest_->Delete(this->GetViewKey(end - 1));
+            --end;
+        }
+        this->SetCurrentViewId(end);
+    }
+}
+
 sharpen::LevelTable::LevelTable(sharpen::EventEngine &engine,const std::string &tableName,const std::string &tableExtName,const std::string &walExtName,const sharpen::LevelTableOption &opt)
     :tableName_(tableName)
     ,tableExtName_(tableExtName)
@@ -607,7 +653,7 @@ sharpen::LevelTable::LevelTable(sharpen::EventEngine &engine,const std::string &
     ,mem_(nullptr)
     ,manifest_(nullptr)
     ,imMems_()
-    ,swapLock_(nullptr)
+    ,lock_(nullptr)
     ,viewLock_(nullptr)
     ,componentLock_(nullptr)
     ,comp_(opt.GetComparator())
@@ -625,7 +671,7 @@ sharpen::LevelTable::LevelTable(sharpen::EventEngine &engine,const std::string &
     std::call_once(Self::keyFlag_,static_cast<FnPtr>(&Self::InitManifestKeys));
     this->usedMemory_.reset(new std::atomic_size_t{0});
     //init locks
-    this->swapLock_.reset(new sharpen::AsyncReadWriteLock{});
+    this->lock_.reset(new sharpen::AsyncReadWriteLock{});
     this->viewLock_.reset(new sharpen::AsyncReadWriteLock{});
     this->componentLock_.reset(new sharpen::AsyncReadWriteLock{});
     //init manifest
@@ -644,14 +690,38 @@ sharpen::LevelTable::LevelTable(sharpen::EventEngine &engine,const std::string &
             }   
         }
     }
-    //restore dump immutable tables
+    //do gc
+    this->GcViews();
+    this->GcTables();
 }
 
 sharpen::LevelTable &sharpen::LevelTable::operator=(sharpen::LevelTable &&other) noexcept
 {
     if(this != std::addressof(other))
     {
-
+        this->tableName_ = std::move(other.tableExtName_);
+        this->tableExtName_ = std::move(other.tableExtName_);
+        this->walExtName_ = std::move(other.walExtName_);
+        this->componentMap_ = std::move(other.componentMap_);
+        this->viewMap_ = std::move(other.viewMap_);
+        this->tableCaches_ = std::move(other.tableCaches_);
+        this->fileGenerator_ = other.fileGenerator_;
+        this->mem_ = std::move(other.mem_);
+        this->manifest_ = std::move(other.manifest_);
+        this->imMems_ = std::move(other.imMems_);
+        this->lock_ = std::move(other.lock_);
+        this->viewLock_ = std::move(other.viewLock_);
+        this->componentLock_ = std::move(other.componentLock_);
+        this->comp_ = other.comp_;
+        this->maxViewOfComponent_ = other.maxViewOfComponent_;
+        this->maxTableOfComponent_ = other.maxTableOfComponent_;
+        this->blockCacheSize_ = other.blockCacheSize_;
+        this->filterBitsOfElement_ = other.filterBitsOfElement_;
+        this->maxSizeOfMem_ = other.maxSizeOfMem_;
+        this->maxSizeOfImMems_ = other.maxSizeOfImMems_;
+        this->blockSize_ = other.blockSize_;
+        this->usedMemory_ = std::move(other.usedMemory_);
+        this->engine_ = other.engine_;
     }
     return *this;
 }
@@ -717,8 +787,8 @@ void sharpen::LevelTable::Delete(sharpen::ByteBuffer key)
 void sharpen::LevelTable::Action(sharpen::WriteBatch batch)
 {
     {
-        this->swapLock_->LockRead();
-        std::unique_lock<sharpen::AsyncReadWriteLock> lock{*this->swapLock_,std::adopt_lock};
+        this->lock_->LockRead();
+        std::unique_lock<sharpen::AsyncReadWriteLock> lock{*this->lock_,std::adopt_lock};
         sharpen::Size increaseSize{0};
         for (auto begin = batch.Begin(),end = batch.End(); begin != end; ++begin)
         {
@@ -732,7 +802,7 @@ void sharpen::LevelTable::Action(sharpen::WriteBatch batch)
         this->usedMemory_->fetch_add(increaseSize,std::memory_order::memory_order_relaxed);
         if(this->usedMemory_->load() > this->maxSizeOfMem_)
         {
-            this->swapLock_->UpgradeFromRead();
+            this->lock_->UpgradeFromRead();
             if(!this->usedMemory_->load(std::memory_order::memory_order_relaxed))
             {
                 return;
@@ -751,6 +821,8 @@ void sharpen::LevelTable::Action(sharpen::WriteBatch batch)
 
 sharpen::Optional<sharpen::ByteBuffer> sharpen::LevelTable::TryGet(const sharpen::ByteBuffer &key) const
 {
+    this->lock_->LockRead();
+    std::unique_lock<sharpen::AsyncReadWriteLock> lock{*this->lock_,std::adopt_lock};
     //query memory table
     auto exist{this->mem_->Exist(key)};
     if(exist == sharpen::ExistStatus::Exist)
@@ -789,10 +861,69 @@ sharpen::Optional<sharpen::ByteBuffer> sharpen::LevelTable::TryGet(const sharpen
                 auto val{sst->TryGet(key)};
                 if(val.Exist())
                 {
+                    if(val.Get().Empty())
+                    {
+                        return sharpen::EmptyOpt;
+                    }
                     return val.Get();
                 }
             }
         }
     }
-    return EmptyOpt;
+    return sharpen::EmptyOpt;
 }
+
+sharpen::ExistStatus sharpen::LevelTable::Exist(const sharpen::ByteBuffer &key) const
+{
+    this->lock_->LockRead();
+    std::unique_lock<sharpen::AsyncReadWriteLock> lock{*this->lock_,std::adopt_lock};
+    //query memory table
+    auto exist{this->mem_->Exist(key)};
+    if(exist == sharpen::ExistStatus::Exist)
+    {
+        return sharpen::ExistStatus::Exist;
+    }
+    else if(exist == sharpen::ExistStatus::Deleted)
+    {
+        return sharpen::ExistStatus::Deleted;
+    }
+    //query immutable tables
+    for (auto begin = this->imMems_.rbegin(),end = this->imMems_.rend(); begin != end; ++begin)
+    {
+        exist = (*begin)->Exist(key);
+        if (exist == sharpen::ExistStatus::Exist)
+        {
+            return sharpen::ExistStatus::Exist;
+        }
+        else if(exist == sharpen::ExistStatus::Deleted)
+        {
+            return sharpen::ExistStatus::Deleted;
+        }
+    }
+    //query conponents
+    sharpen::Size maxLevel{this->GetMaxLevel()};
+    for (sharpen::Size i = 0,count = maxLevel + 1; i != count; ++i)
+    {
+        const sharpen::LevelComponent *component{&this->GetComponent(i)};
+        for (auto begin = component->ReverseBegin(),end = component->ReverseEnd(); begin != end; ++begin)
+        {
+            const sharpen::LevelView *view{&this->GetView(*begin)};
+            auto r{view->FindId(key)};
+            if (r.Exist())
+            {
+                auto sst{this->LoadTableCache(r.Get())};
+                auto val{sst->TryGet(key)};
+                if(val.Exist())
+                {
+                    if(val.Get().Empty())
+                    {
+                        return sharpen::ExistStatus::Deleted;
+                    }
+                    return sharpen::ExistStatus::Exist;
+                }
+            }
+        }
+    }
+    return sharpen::ExistStatus::NotExist;
+}
+

@@ -7,6 +7,8 @@
 #include <sharpen/FileOps.hpp>
 #include <sharpen/EventEngine.hpp>
 #include <sharpen/BalancedTable.hpp>
+#include <sharpen/LevelTable.hpp>
+#include <sharpen/StopWatcher.hpp>
 
 static sharpen::Int32 CompAsUint32(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) noexcept
 {
@@ -436,7 +438,6 @@ void Entry()
         sharpen::RemoveFile(tableName);
         sharpen::RemoveFile(tableName2);
         sharpen::RemoveFile(tableName3);
-        std::puts("pass");
     }
     catch (const std::exception &e)
     {

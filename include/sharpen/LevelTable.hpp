@@ -63,7 +63,7 @@ namespace sharpen
         //immutable memory tables
         std::vector<std::unique_ptr<MemTable>> imMems_;
         //locks
-        mutable std::unique_ptr<sharpen::AsyncReadWriteLock> swapLock_;
+        mutable std::unique_ptr<sharpen::AsyncReadWriteLock> lock_;
         mutable std::unique_ptr<sharpen::AsyncReadWriteLock> viewLock_;
         mutable std::unique_ptr<sharpen::AsyncReadWriteLock> componentLock_;
         //comparator
@@ -136,7 +136,7 @@ namespace sharpen
 
         std::string FormatManifestName() const;
 
-        sharpen::SortedStringTable MergeTable(const sharpen::LevelComponent &component,sharpen::Uint64 newTableId,bool eraseDeleted,sharpen::Optional<sharpen::SortedStringTable> appendTable);
+        sharpen::SortedStringTable MergeTables(const sharpen::LevelComponent &component,sharpen::Uint64 newTableId,bool eraseDeleted,sharpen::Optional<sharpen::SortedStringTable> appendTable);
 
         void AddToComponent(sharpen::SortedStringTable table,sharpen::Uint64 tableId,sharpen::Uint64 componentId);
 
@@ -159,6 +159,10 @@ namespace sharpen
         void InitMemoryTable();
 
         void InitManifest();
+
+        void GcTables();
+
+        void GcViews();
     public:
 
         LevelTable(sharpen::EventEngine &engine,const std::string &tableName,const std::string &tableExtName)
@@ -186,6 +190,16 @@ namespace sharpen
         sharpen::ExistStatus Exist(const sharpen::ByteBuffer &key) const;
 
         sharpen::Optional<sharpen::ByteBuffer> TryGet(const sharpen::ByteBuffer &key) const;
+
+        inline sharpen::ByteBuffer Get(const sharpen::ByteBuffer &key) const
+        {
+            auto r{this->TryGet(key)};
+            if(!r.Exist())
+            {
+                throw std::out_of_range("key doesn't exist");
+            }
+            return r.Get();
+        }
     };
 }
 
