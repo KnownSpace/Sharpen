@@ -429,10 +429,11 @@ void sharpen::LevelTable::AddToComponent(sharpen::SortedStringTable table,sharpe
             this->SetCurrentViewId(viewId + 1);
             sharpen::LevelView view{viewId};
             view.Put(firstKey,lastKey,tableId);
+            this->SetPrevTableId(this->GetCurrentTableId());
             this->SaveView(viewId,view);
             component->Put(viewId);
-            this->SaveComponent(componentId,*component);
             this->SetPrevViewId(viewId + 1);
+            this->SaveComponent(componentId,*component);
             return;
         }
         sharpen::Size tableNum{this->GetTableCount(*component)};
@@ -534,6 +535,7 @@ void sharpen::LevelTable::AddToComponent(sharpen::SortedStringTable table,sharpe
             this->SetPrevViewId(viewId + 1);
             return;
         }
+        this->SetPrevTableId(this->GetCurrentTableId());
         this->SaveView(viewId,*view);
         return;
     }
@@ -777,7 +779,6 @@ void sharpen::LevelTable::DummpImmutableTables()
     sharpen::SstBuildOption buildOpt{false,this->filterBitsOfElement_,this->blockSize_};
     table.Build(map.begin(),map.end(),buildOpt);
     this->AddToComponent(std::move(table),tableId,0);
-    this->SetPrevTableId(this->GetCurrentTableId());
     //cleanup tables
     this->imMems_.clear();
     sharpen::Size beginKey{this->GetPrevMemoryTableId()};

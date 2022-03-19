@@ -22,9 +22,9 @@ namespace sharpen
         static constexpr sharpen::Size defaultBlockCacheSize_{4096};
         //1% - FPR
         static constexpr sharpen::Size defaultFilterBitsOfElement_{10};
-        //16MB
+        //8MB
         static constexpr sharpen::Size defaultMaxSizeOfMemoryTable_{1*1024*1024};
-        static constexpr sharpen::Size defaultMaxCountOfImmutableTable_{16};
+        static constexpr sharpen::Size defaultMaxCountOfImmutableTable_{8};
         //4KB
         static constexpr sharpen::Size defaultBlockSize_{4*1024};
         //16MB * 64 = 1GB
