@@ -64,7 +64,7 @@ namespace sharpen
         //immutable memory tables
         std::vector<std::unique_ptr<MemTable>> imMems_;
         //locks
-        mutable std::unique_ptr<sharpen::AsyncReadWriteLock> lock_;
+        mutable std::unique_ptr<sharpen::AsyncReadWriteLock> levelLock_;
         mutable std::unique_ptr<sharpen::AsyncReadWriteLock> viewLock_;
         mutable std::unique_ptr<sharpen::AsyncReadWriteLock> componentLock_;
         //comparator
@@ -90,8 +90,6 @@ namespace sharpen
         sharpen::Uint64 GetCurrentTableId() const noexcept;
 
         sharpen::Uint64 GetCurrentViewId() const noexcept;
-
-        sharpen::Uint64 GetMaxLevel() const noexcept;
 
         sharpen::Uint64 GetCurrentMemoryTableId() const noexcept;
 
@@ -200,6 +198,42 @@ namespace sharpen
                 throw std::out_of_range("key doesn't exist");
             }
             return r.Get();
+        }
+
+        inline sharpen::AsyncReadWriteLock &GetLevelLock() const noexcept
+        {
+            return *this->levelLock_;
+        }
+
+        sharpen::Uint64 GetMaxLevel() const noexcept;
+
+        inline std::shared_ptr<const sharpen::SortedStringTable> GetTable(sharpen::Uint64 id) const
+        {
+            this->LoadTableCache(id);
+        }
+
+        template<typename _InsertIterator,typename _Check = decltype(*std::declval<_InsertIterator&>()++ = static_cast<const sharpen::LevelView*>(nullptr))>
+        void GetAllViewOfComponent(sharpen::Uint64 level,_InsertIterator inserter) const
+        {
+            sharpen::LevelComponent *component{&this->GetComponent(level)};
+            for (auto begin = component->Begin(),end = component->End(); begin != end; ++begin)
+            {
+                *inserter++ = &this->GetView(*begin);   
+            }
+        }
+
+        inline const MemTable &GetMemoryTable() const noexcept
+        {
+            return *this->mem_;
+        }
+
+        template<typename _InsertIterator,typename _Check = decltype(*std::declval<_InsertIterator&>()++ = static_cast<const MemTable*>(nullptr))>
+        inline void GetAllImmutableTables(_InsertIterator inserter)
+        {
+            for (auto begin = this->imMems_.begin(),end = this->imMems_.end(); begin != end; ++begin)
+            {
+                *inserter++ = begin->get();
+            }
         }
     };
 }
