@@ -160,7 +160,7 @@ sharpen::Optional<sharpen::Uint64> sharpen::LevelView::FindId(const sharpen::Byt
     return sharpen::EmptyOpt;
 }
 
-bool sharpen::LevelView::IsNotOverlapped(const sharpen::ByteBuffer &beginKey,const sharpen::ByteBuffer &endKey) const
+bool sharpen::LevelView::IsNotOverlapped(const sharpen::ByteBuffer &beginKey,const sharpen::ByteBuffer &endKey) const noexcept
 {
     auto ite = this->Find(beginKey);
     if(ite != this->End())

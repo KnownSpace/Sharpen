@@ -47,6 +47,10 @@ namespace sharpen
         ConstIterator Find(const sharpen::ByteBuffer &key) const noexcept;
     public:
 
+        LevelView()
+            :LevelView(0)
+        {}
+
         explicit LevelView(sharpen::Uint64 id);
     
         LevelView(const Self &other) = default;

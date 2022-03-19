@@ -203,7 +203,6 @@ namespace sharpen
                 root.MetaIndexBlock().Reserve(blockCount);
             }
             root.IndexBlock().Reserve(blockCount);
-            sharpen::Size index{0};
             if(filterBits)
             {
                 Self::WriteFilters(channel,filters,root,offset,buf);

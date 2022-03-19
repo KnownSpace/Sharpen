@@ -12,7 +12,7 @@
 #include "Noncopyable.hpp"
 #include "Optional.hpp"
 #include "ExistStatus.hpp"
-#include "SpinLock.hpp"
+#include "AsyncReadWriteLock.hpp"
 
 namespace sharpen
 {   
@@ -81,15 +81,16 @@ namespace sharpen
     template<typename _Logger,typename _Pred>
     class InternalMemoryTable<_Logger,_Pred,sharpen::EnableIf<sharpen::IsMemoryTableLogger<_Logger>::Value>>:public sharpen::Noncopyable
     {
-    private:
-        using Self = sharpen::InternalMemoryTable<_Logger,_Pred,sharpen::EnableIf<sharpen::IsMemoryTableLogger<_Logger>::Value>>;
+    public:
         using StoreItem = sharpen::MemoryTableItem;
         using MapType = std::map<sharpen::ByteBuffer,StoreItem,_Pred>;
+    private:
+        using Self = sharpen::InternalMemoryTable<_Logger,_Pred,sharpen::EnableIf<sharpen::IsMemoryTableLogger<_Logger>::Value>>;
         using ConstIterator = typename MapType::const_iterator;
     
         sharpen::CompressedPair<_Logger,MapType> pair_;
         bool directlyErase_;
-        mutable sharpen::SpinLock lock_;
+        mutable sharpen::AsyncReadWriteLock lock_;
 
         _Logger &Logger() noexcept
         {
@@ -205,13 +206,18 @@ namespace sharpen
             static_cast<void>(tag);
         }
     
-        InternalMemoryTable(Self &&other) noexcept = default;
+        InternalMemoryTable(Self &&other) noexcept
+            :pair_(std::move(other.pair_))
+            ,directlyErase_(other.directlyErase_)
+            ,lock_()
+        {}
     
         Self &operator=(Self &&other) noexcept
         {
             if(this != std::addressof(other))
             {
                 this->pair_ = std::move(other.pair_);
+                this->directlyErase_ = other.directlyErase_;
             }
             return *this;
         }
@@ -230,9 +236,10 @@ namespace sharpen
 
         inline void Action(sharpen::WriteBatch &batch)
         {
-            this->Logger().Log(batch);
             {
-                std::unique_lock<sharpen::SpinLock> lock{this->lock_};
+                this->lock_.LockWrite();
+                this->Logger().Log(batch);
+                std::unique_lock<sharpen::AsyncReadWriteLock> lock{this->lock_,std::adopt_lock};
                 this->InternalAction(batch);
             }
         }
@@ -244,9 +251,10 @@ namespace sharpen
 
         inline void Action(const sharpen::WriteBatch &batch)
         {
-            this->Logger().Log(batch);
             {
-                std::unique_lock<sharpen::SpinLock> lock{this->lock_};
+                this->lock_.LockWrite();
+                this->Logger().Log(batch);
+                std::unique_lock<sharpen::AsyncReadWriteLock> lock{this->lock_,std::adopt_lock};
                 this->InternalAction(batch);
             }
         }
@@ -272,7 +280,8 @@ namespace sharpen
 
         sharpen::ExistStatus Exist(const sharpen::ByteBuffer &key) const noexcept
         {
-            std::unique_lock<sharpen::SpinLock> lock{this->lock_};
+            this->lock_.LockRead();
+            std::unique_lock<sharpen::AsyncReadWriteLock> lock{this->lock_,std::adopt_lock};
             auto ite = this->Map().find(key);
             if(ite == this->Map().end())
             {
@@ -287,7 +296,8 @@ namespace sharpen
 
         sharpen::ByteBuffer &Get(const sharpen::ByteBuffer &key)
         {
-            std::unique_lock<sharpen::SpinLock> lock{this->lock_};
+            this->lock_.LockRead();
+            std::unique_lock<sharpen::AsyncReadWriteLock> lock{this->lock_,std::adopt_lock};
             auto &item = this->Map().at(key);
             if(item.IsDeleted())
             {
@@ -298,7 +308,8 @@ namespace sharpen
 
         const sharpen::ByteBuffer &Get(const sharpen::ByteBuffer &key) const
         {
-            std::unique_lock<sharpen::SpinLock> lock{this->lock_};
+            this->lock_.LockRead();
+            std::unique_lock<sharpen::AsyncReadWriteLock> lock{this->lock_,std::adopt_lock};
             auto &item = this->Map().at(key);
             if(item.deleteTag_)
             {

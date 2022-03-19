@@ -5,15 +5,9 @@
 #include <sharpen/IntOps.hpp>
 
 sharpen::BinaryLogger::BinaryLogger(sharpen::FileChannelPtr channel)
-    :lock_(nullptr)
-    ,channel_(channel)
+    :channel_(channel)
     ,offset_(0)
 {
-    this->lock_.reset(new sharpen::AsyncMutex{});
-    if(!this->lock_)
-    {
-        throw std::bad_alloc();
-    }
     this->offset_ = this->channel_->GetFileSize();
 }
 
@@ -38,12 +32,11 @@ void sharpen::BinaryLogger::Log(const sharpen::WriteBatch &batch)
     sharpen::ByteBuffer buf;
     batch.StoreTo(buf);
     sharpen::Uint64 size{buf.GetSize()};
-    std::unique_lock<sharpen::AsyncMutex> lock{*this->lock_};
     try
     {
         this->channel_->WriteAsync(reinterpret_cast<const char*>(&size),sizeof(size),this->offset_);
         this->channel_->WriteAsync(buf,this->offset_ + sizeof(size));
-        this->channel_->Flush();
+        //this->channel_->Flush();
         this->offset_ += buf.GetSize() + sizeof(size);
     }
     catch(const std::exception&)
