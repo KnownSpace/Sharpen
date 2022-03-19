@@ -379,8 +379,8 @@ sharpen::SortedStringTable sharpen::LevelTable::MergeTables(const sharpen::Level
         //get key
         if(ordered)
         {
-            sharpen::SstDataBlock firstBlock{table.LoadBlock(table.Root().IndexBlock().Begin()->Block())};
-            sharpen::SstDataBlock lastBlock{table.LoadBlock(table.Root().IndexBlock().ReverseBegin()->Block())};
+            sharpen::SstDataBlock firstBlock{appendTable.Get().LoadBlock(appendTable.Get().Root().IndexBlock().Begin()->Block())};
+            sharpen::SstDataBlock lastBlock{appendTable.Get().LoadBlock(appendTable.Get().Root().IndexBlock().ReverseBegin()->Block())};
             const sharpen::ByteBuffer &firstKey = firstBlock.Begin()->First().GetKey();
             const sharpen::ByteBuffer &lastKey = lastBlock.ReverseBegin()->Last().GetKey();
             sharpen::LevelView *view{nullptr};
@@ -396,18 +396,21 @@ sharpen::SortedStringTable sharpen::LevelTable::MergeTables(const sharpen::Level
     //merge
     sharpen::SstBuildOption buildOpt{eraseDeleted,this->filterBitsOfElement_,this->blockSize_};
     table.Merge(mergeTables.begin(),mergeTables.end(),buildOpt,ordered);
+    for (auto begin = mergeTables.begin(),end = mergeTables.end(); begin != end; ++begin)
+    {
+        begin->Close();
+    }
     return table;
 }
 
 void sharpen::LevelTable::AddToComponent(sharpen::SortedStringTable table,sharpen::Uint64 tableId,sharpen::Uint64 componentId)
 {
-    sharpen::LevelComponent *component{nullptr};
+    //load component
+    sharpen::LevelComponent *component{&this->GetComponent(componentId)};
+    //load level
+    sharpen::Uint64 level{this->GetMaxLevel()};
     if(!table.Root().IndexBlock().Empty())
     {
-        //load component
-        component = &this->GetComponent(componentId);
-        //load level
-        sharpen::Uint64 level{this->GetMaxLevel()};
         //update level if we need
         if(level < componentId)
         {
@@ -441,7 +444,7 @@ void sharpen::LevelTable::AddToComponent(sharpen::SortedStringTable table,sharpe
             //merge tables
             sharpen::Uint64 newTableId{this->GetCurrentTableId()};
             this->SetCurrentTableId(newTableId + 1);
-            sharpen::SortedStringTable newTable{this->MergeTables(*component,newTableId,componentId == this->GetMaxLevel(),std::move(table))};
+            sharpen::SortedStringTable newTable{this->MergeTables(*component,newTableId,componentId == this->GetMaxLevel() && component->GetSize() == 1,std::move(table))};
             //add to upper component
             try
             {
@@ -466,6 +469,12 @@ void sharpen::LevelTable::AddToComponent(sharpen::SortedStringTable table,sharpe
                 //delete view
                 this->manifest_->Delete(this->GetViewKey(*begin));
             }
+            this->DeleteTable(tableId);
+            //reset max level
+            if(componentId && this->GetMaxLevel() == componentId)
+            {
+                this->SetMaxLevel(componentId - 1);
+            }
             return;
         }
         sharpen::LevelView *view{nullptr};
@@ -482,7 +491,7 @@ void sharpen::LevelTable::AddToComponent(sharpen::SortedStringTable table,sharpe
                 //merge tables
                 sharpen::Uint64 newTableId{this->GetCurrentTableId()};
                 this->SetCurrentTableId(newTableId + 1);
-                sharpen::SortedStringTable newTable{this->MergeTables(*component,newTableId,componentId == this->GetMaxLevel(),std::move(table))};
+                sharpen::SortedStringTable newTable{this->MergeTables(*component,newTableId,componentId == this->GetMaxLevel() && component->GetSize() == 1,std::move(table))};
                 //add to upper component
                 try
                 {
@@ -507,6 +516,12 @@ void sharpen::LevelTable::AddToComponent(sharpen::SortedStringTable table,sharpe
                     //delete view
                     this->manifest_->Delete(this->GetViewKey(*begin));
                 }
+                this->DeleteTable(tableId);
+                //reset max level
+                if(componentId && this->GetMaxLevel() == componentId)
+                {
+                    this->SetMaxLevel(componentId - 1);
+                }
                 return;
             }
             viewId = this->GetCurrentViewId();
@@ -520,6 +535,11 @@ void sharpen::LevelTable::AddToComponent(sharpen::SortedStringTable table,sharpe
             return;
         }
         this->SaveView(viewId,*view);
+        return;
+    }
+    if(level == componentId && component->Empty())
+    {
+        this->SetMaxLevel(level - 1);
     }
 }
 
@@ -538,6 +558,7 @@ void sharpen::LevelTable::DeleteTableFromCache(sharpen::Uint64 id)
 
 void sharpen::LevelTable::DeleteTable(sharpen::Uint64 id)
 {
+    this->DeleteTableFromCache(id);
     std::string name{this->FormatTableName(id)};
     if(sharpen::ExistFile(name.data()))
     {
@@ -738,7 +759,7 @@ void sharpen::LevelTable::DummpImmutableTables()
 {
     using Map = typename MemTable::MapType;
     Map map{sharpen::MemoryTableComparator{this->comp_}};
-    for (auto begin = this->imMems_.begin(),end = this->imMems_.end(); begin != end; ++begin)
+    for (auto begin = this->imMems_.rbegin(),end = this->imMems_.rend(); begin != end; ++begin)
     {
         MemTable &imm = **begin;
         for (auto kb = imm.Begin(),ke = imm.End(); kb != ke; ++kb)
@@ -753,7 +774,7 @@ void sharpen::LevelTable::DummpImmutableTables()
     sharpen::FileChannelPtr channel{this->OpenChannel(name.data(),sharpen::FileAccessModel::All,sharpen::FileOpenModel::CreateNew)};
     sharpen::SstOption opt{this->comp_,this->filterBitsOfElement_,0,0};
     sharpen::SortedStringTable table{channel,opt};
-    sharpen::SstBuildOption buildOpt{this->GetMaxLevel() == 0,this->filterBitsOfElement_,this->blockSize_};
+    sharpen::SstBuildOption buildOpt{false,this->filterBitsOfElement_,this->blockSize_};
     table.Build(map.begin(),map.end(),buildOpt);
     this->AddToComponent(std::move(table),tableId,0);
     this->SetPrevTableId(this->GetCurrentTableId());

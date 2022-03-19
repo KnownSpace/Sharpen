@@ -389,14 +389,26 @@ bool sharpen::SstDataBlock::IsOverlapped(const Self &other) const noexcept
 
 void sharpen::SstDataBlock::EraseDeleted() noexcept
 {
-    for (auto begin = this->Begin(),end = this->End(); begin != end; ++begin)
+    for (auto begin = this->Begin(); begin != this->End();)
     {
-        for (auto keyBegin = begin->Begin(); keyBegin != begin->End(); ++keyBegin)
+        for (auto keyBegin = begin->Begin(); keyBegin != begin->End();)
         {
             if(keyBegin->Value().Empty())
             {
                 keyBegin = begin->Erase(keyBegin);
+            }
+            else
+            {
+                ++keyBegin;
             }   
+        }
+        if (begin->Empty())
+        {
+            begin = this->groups_.erase(begin);   
+        }
+        else
+        {
+            ++begin;
         }
     }
 }

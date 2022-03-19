@@ -124,6 +124,20 @@ namespace sharpen
         {
             return channel;
         }
+
+        inline static sharpen::Int32 DefaultComparator(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right)
+        {
+            return left.CompareWith(right);
+        }
+
+        inline static Comparator GetComparator(Comparator comp) noexcept
+        {
+            if(comp)
+            {
+                return comp;
+            }
+            return &DefaultComparator;
+        }
     public:
         template<typename _Block,typename _Check = sharpen::EnableIf<sharpen::IsSstDataBlock<_Block>::Value>>
         static sharpen::BloomFilter<sharpen::ByteBuffer> BuildFilter(const _Block &block,sharpen::Size bits)
@@ -171,7 +185,10 @@ namespace sharpen
             while (begin != end)
             {
                 blockSize += begin->first.GetSize();
-                blockSize += begin->second.Value().GetSize();
+                if(!begin->second.IsDeleted())
+                {
+                    blockSize += begin->second.Value().GetSize();
+                }
                 Self::Helper<_Iterator>::PutWalKv(block,begin);
                 if(blockSize >= blockBytes)
                 {
@@ -241,7 +258,6 @@ namespace sharpen
                 for (auto blockBegin = table.IndexBlock().Begin(),blockEnd = table.IndexBlock().End(); blockBegin != blockEnd; ++blockBegin)
                 {
                     _Block block{Self::LoadDataBlock<_Block>(begin->Channel(),blockBegin->Block().offset_,blockBegin->Block().size_,comp)};
-                    block.SetComparator(comp);
                     if(eraseDeleted)
                     {
                         block.EraseDeleted();
@@ -352,7 +368,7 @@ namespace sharpen
                     //select key and value
                     for (sharpen::Size i = 0,count = keys.size(); i != count; ++i)
                     {
-                        if(!keys[i].Empty() && (!selectedKey || comp(*selectedKey,keys[i]) != -1 /*keys[i] <= *selectedKey*/))
+                        if(!keys[i].Empty() && (!selectedKey || GetComparator(comp)(*selectedKey,keys[i]) != -1 /*keys[i] <= *selectedKey*/))
                         {
                             assert(!keys[i].Empty());
                             if(keys[i] == *selectedKey)
@@ -477,7 +493,7 @@ namespace sharpen
                     //select key and value
                     for (sharpen::Size i = 0; i != len; ++i)
                     {
-                        if(!keys[i].Empty() && (!selectedKey || comp(*selectedKey,keys[i]) != -1 /*keys[i] <= *selectedKey*/))
+                        if(!keys[i].Empty() && (!selectedKey || GetComparator(comp)(*selectedKey,keys[i]) != -1 /*keys[i] <= *selectedKey*/))
                         {
                             assert(!keys[i].Empty());
                             if(selectedKey && keys[i] == *selectedKey)

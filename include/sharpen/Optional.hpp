@@ -62,32 +62,35 @@ namespace sharpen
         {}
 
         InternalOptional(const Self &other)
-            :hasValue_(other.hasValue_)
+            :hasValue_(false)
             ,dummy_()
         {
-            if (this->hasValue_)
+            if (other.hasValue_)
             {
                 this->value_ = other.value_;
+                this->hasValue_ = other.hasValue_;
             }
         }
 
         InternalOptional(Self &&other) noexcept
-            :hasValue_(other.hasValue_)
+            :hasValue_(false)
             ,dummy_()
         {
-            if (this->hasValue_)
+            if (other.hasValue_)
             {
                 this->value_ = other.value_;
+                this->hasValue_ = true;
                 other.hasValue_ = false;
             }
         }
 
         template<typename ..._Args,typename _Check = decltype(_T{std::declval<_Args>()...})>
         InternalOptional(_Args &&...args) SHARPEN_NOEXCEPT_IF(_T {std::declval<_Args>()...})
-            :hasValue_(true)
+            :hasValue_(false)
             ,dummy_()
         {
             ::new (&this->value_) _T{std::forward<_Args>(args)...};
+            this->hasValue_ = true;
         }
 
         InternalOptional(sharpen::EmptyOptional)
@@ -216,12 +219,13 @@ namespace sharpen
         {}
 
         InternalOptional(const Self &other)
-            :hasValue_(other.hasValue_)
+            :hasValue_(false)
             ,dummy_()
         {
-            if (this->hasValue_)
+            if (other.hasValue_)
             {
                 ::new(&this->value_) _T(other.value_);
+                this->hasValue_ = true;
             }
         }
 
@@ -238,10 +242,11 @@ namespace sharpen
 
         template<typename ..._Args,typename _Check = decltype(_T{std::declval<_Args>()...})>
         InternalOptional(_Args &&...args) SHARPEN_NOEXCEPT_IF(_T {std::declval<_Args>()...})
-            :hasValue_(true)
+            :hasValue_(false)
             ,dummy_()
         {
             ::new (&this->value_) _T{std::forward<_Args>(args)...};
+            this->hasValue_ = true;
         }
 
         InternalOptional(sharpen::EmptyOptional)

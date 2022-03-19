@@ -287,6 +287,11 @@ namespace sharpen
         {
             return this->channel_->GetFileSize();
         }
+
+        inline void Close() const
+        {
+            this->channel_->Close();
+        }
     };
 }
 

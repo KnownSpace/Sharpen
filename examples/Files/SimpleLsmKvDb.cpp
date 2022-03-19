@@ -27,6 +27,7 @@ void Entry(const char *dbName)
             "put <key> <value> - put a key and value to database\n"
             "delete <key> - delete key from database\n"
             "list - list all keys and values from database\n"
+            "test - test lsm tree\n"
             "quit - exit database");
     sharpen::InputPipeChannelPtr input = sharpen::MakeStdinPipe();
     input->Register(sharpen::EventEngine::GetEngine());
@@ -100,6 +101,47 @@ void Entry(const char *dbName)
                 }
             }
            continue;
+        }
+        if(line == "test")
+        {
+            std::puts("test put");
+            for (sharpen::Size i = 0,count = static_cast<sharpen::Size>(1e6); i < count; ++i)
+            {
+                sharpen::ByteBuffer key{sizeof(i)};
+                key.As<sharpen::Size>() = i;
+                sharpen::ByteBuffer value{sizeof(i)};
+                value.As<sharpen::Size>() = i;
+                table.Put(std::move(key),std::move(value));
+            }
+            for (sharpen::Size i = 0,count = static_cast<sharpen::Size>(1e6); i < count; ++i)
+            {
+                sharpen::ByteBuffer key{sizeof(i)};
+                key.As<sharpen::Size>() = i;
+                sharpen::ByteBuffer value{sizeof(i)};
+                value.As<sharpen::Size>() = i;
+                if(table.Get(key) != value)
+                {
+                    std::fputs("bad\n",stderr);
+                }
+            }
+            std::puts("test delete");
+            for (sharpen::Size i = 0,count = static_cast<sharpen::Size>(1e6); i < count; ++i)
+            {
+                sharpen::ByteBuffer key{sizeof(i)};
+                key.As<sharpen::Size>() = i;
+                table.Delete(key);
+            }
+            for (sharpen::Size i = 0,count = static_cast<sharpen::Size>(1e6); i < count; ++i)
+            {
+                sharpen::ByteBuffer key{sizeof(i)};
+                key.As<sharpen::Size>() = i;
+                if(table.Exist(key) == sharpen::ExistStatus::Exist)
+                {
+                    std::fputs("bad\n",stderr);
+                }
+            }
+            std::puts("ok");
+            continue;
         }
         auto pos = line.find(' ');
         if(pos == line.npos)
