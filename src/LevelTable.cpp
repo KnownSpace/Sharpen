@@ -957,3 +957,48 @@ sharpen::ExistStatus sharpen::LevelTable::Exist(const sharpen::ByteBuffer &key) 
     return sharpen::ExistStatus::NotExist;
 }
 
+sharpen::Uint64 sharpen::LevelTable::GetTableSize() const
+{
+    this->levelLock_->LockRead();
+    std::unique_lock<sharpen::AsyncReadWriteLock> lock{*this->levelLock_,std::adopt_lock};
+    //memory table
+    sharpen::Uint64 size{this->usedMemory_->load()};
+    //immutable tables
+    for (auto begin = this->imMems_.rbegin(),end = this->imMems_.rend(); begin != end; ++begin)
+    {
+        for (auto kb = (*begin)->Begin(),ke = (*begin)->End(); kb != ke; ++kb)
+        {
+            size += kb->first.GetSize();
+            if(!kb->second.IsDeleted())
+            {
+                size += kb->second.Value().GetSize();
+            }   
+        }
+    }
+    //components
+    sharpen::Size maxLevel{this->GetMaxLevel()};
+    for (sharpen::Size i = 0,count = maxLevel + 1; i != count; ++i)
+    {
+        const sharpen::LevelComponent *component{&this->GetComponent(i)};
+        for (auto begin = component->ReverseBegin(),end = component->ReverseEnd(); begin != end; ++begin)
+        {
+            const sharpen::LevelView *view{&this->GetView(*begin)};
+            for (auto vb = view->Begin(),ve = view->End(); vb != ve; ++vb)
+            {
+                auto tptr{this->LoadTableFromCache(vb->GetId())};
+                if(tptr)
+                {
+                    size += tptr->GetTableSize();
+                    continue;
+                }
+                std::string name{this->FormatTableName(vb->GetId())};
+                if(sharpen::ExistFile(name.data()))
+                {
+                    sharpen::FileChannelPtr channel{this->OpenChannel(name.data(),sharpen::FileAccessModel::Read,sharpen::FileOpenModel::Open)};
+                    size += channel->GetFileSize();
+                }   
+            }
+        }
+    }
+    return size;
+}

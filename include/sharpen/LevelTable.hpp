@@ -253,6 +253,8 @@ namespace sharpen
                 *inserter++ = begin->get();
             }
         }
+
+        sharpen::Uint64 GetTableSize() const;
     };
 }
 

@@ -292,6 +292,11 @@ namespace sharpen
         {
             this->channel_->Close();
         }
+
+        inline sharpen::Uint64 GetTableSize() const
+        {
+            return this->channel_->GetFileSize();
+        }
     };
 }
 

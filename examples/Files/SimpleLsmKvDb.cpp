@@ -28,6 +28,7 @@ void Entry(const char *dbName)
             "delete <key> - delete key from database\n"
             "list - list all keys and values from database\n"
             "test - test lsm tree\n"
+            "size - get table size\n"
             "quit - exit database");
     sharpen::InputPipeChannelPtr input = sharpen::MakeStdinPipe();
     input->Register(sharpen::EventEngine::GetEngine());
@@ -39,6 +40,12 @@ void Entry(const char *dbName)
         if (line == "quit")
         {
             return;   
+        }
+        if(line == "size")
+        {
+            sharpen::Uint64 size{table.GetTableSize()};
+            std::printf("table size:%llu MB\n",size/1024/1024);
+            continue;
         }
         if(line == "list")
         {

@@ -274,7 +274,7 @@ namespace sharpen
             this->channel_->Flush();
         }
 
-        inline sharpen::Uint64 GetSize() const noexcept
+        inline sharpen::Uint64 GetTableSize() const noexcept
         {
             return this->offset_;
         }
