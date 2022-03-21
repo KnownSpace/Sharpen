@@ -19,7 +19,7 @@ namespace sharpen
     class WinFileChannel:public sharpen::IFileChannel,public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
-        using MyFuture = sharpen::AwaitableFuture<sharpen::Size>;
+        using MyFuture = sharpen::Future<sharpen::Size>;
         using MyFuturePtr = MyFuture*;
         using Mybase = sharpen::IFileChannel;
         
