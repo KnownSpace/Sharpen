@@ -170,3 +170,21 @@ sharpen::ReadWriteLockState sharpen::AsyncReadWriteLock::UpgradeFromRead()
     }
     return future.Await();
 }
+
+sharpen::ReadWriteLockState sharpen::AsyncReadWriteLock::DowngradeFromWrite()
+{
+    sharpen::AsyncReadWriteLock::Waiters waiters;
+    {
+        std::unique_lock<sharpen::SpinLock> lock{this->lock_};
+        assert(this->state_ == sharpen::ReadWriteLockState::UniquedWriting);
+        this->readers_ = 1;
+        std::swap(waiters,this->readWaiters_);
+        this->readers_ += static_cast<sharpen::Uint32>(waiters.size());
+        this->state_ = sharpen::ReadWriteLockState::SharedReading;
+    }
+    for (auto begin = waiters.begin(),end = waiters.end(); begin != end; ++begin)
+    {
+        (*begin)->Complete(sharpen::ReadWriteLockState::UniquedWriting);
+    }
+    return sharpen::ReadWriteLockState::UniquedWriting;
+}

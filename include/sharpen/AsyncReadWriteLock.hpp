@@ -63,6 +63,9 @@ namespace sharpen
         //upgrade to write lock
         sharpen::ReadWriteLockState UpgradeFromRead();
 
+        //downgrade to read lock
+        sharpen::ReadWriteLockState DowngradeFromWrite();
+
         void Unlock() noexcept;
 
         inline void unlock() noexcept
