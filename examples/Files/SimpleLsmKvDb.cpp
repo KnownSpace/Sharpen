@@ -125,6 +125,21 @@ void Entry(const char *dbName)
             }
             sw.Stop();
             std::printf("put %d\n",sw.Compute());
+            std::puts("test query");
+            sw.Begin();
+            for (sharpen::Size i = 0,count = static_cast<sharpen::Size>(1e7); i < count; ++i)
+            {
+                sharpen::ByteBuffer key{sizeof(i)};
+                key.As<sharpen::Size>() = i;
+                sharpen::ByteBuffer value{sizeof(i)};
+                value.As<sharpen::Size>() = i;
+                if(table.Get(key) != value)
+                {
+                    std::fputs("bad\n",stderr);
+                }
+            }
+            sw.Stop();
+            std::printf("query %d\n",sw.Compute());
             std::puts("test delete");
             sw.Begin();
             for (sharpen::Size i = 0,count = static_cast<sharpen::Size>(1e7); i < count; ++i)
@@ -135,6 +150,19 @@ void Entry(const char *dbName)
             }
             sw.Stop();
             std::printf("del %d\n",sw.Compute());
+            std::puts("test exist");
+            sw.Begin();
+            for (sharpen::Size i = 0,count = static_cast<sharpen::Size>(1e7); i < count; ++i)
+            {
+                sharpen::ByteBuffer key{sizeof(i)};
+                key.As<sharpen::Size>() = i;
+                if(table.Exist(key) == sharpen::ExistStatus::Exist)
+                {
+                    std::fputs("bad\n",stderr);
+                }
+            }
+            sw.Stop();
+            std::printf("exist %d\n",sw.Compute());
             std::puts("ok");
             continue;
         }
