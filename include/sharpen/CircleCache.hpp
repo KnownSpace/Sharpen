@@ -23,7 +23,7 @@ namespace sharpen
     private:
         struct CacheItem
         {
-            std::string key_;
+            std::vector<char> key_;
             std::shared_ptr<_T> cacheObj_;
             sharpen::Size chances_;
         };
