@@ -69,7 +69,7 @@ namespace sharpen
 
         void NotifyAwaiter()
         {
-            sharpen::FiberPtr fiber;
+            sharpen::FiberPtr fiber{nullptr};
             {
                 std::unique_lock<sharpen::SpinLock> lock(this->GetCompleteLock());
                 fiber = std::move(this->awaiter_);

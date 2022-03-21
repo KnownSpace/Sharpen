@@ -22,10 +22,15 @@ namespace sharpen
         using MyFuture = sharpen::Future<sharpen::Size>;
         using MyFuturePtr = MyFuture*;
         using Mybase = sharpen::IFileChannel;
+        using Self = sharpen::WinFileChannel;
         
         static void InitOverlapped(OVERLAPPED &ol,sharpen::Uint64 offset);
 
         void InitOverlappedStruct(sharpen::IocpOverlappedStruct &event,sharpen::Uint64 offset);
+
+        void RequestWrite(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> *future);
+
+        void RequestRead(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> *future);
 
     public:
 

@@ -37,23 +37,19 @@ void sharpen::WinFileChannel::InitOverlappedStruct(IocpOverlappedStruct &olStruc
     olStruct.channel_ = this->shared_from_this();
 }
 
-void sharpen::WinFileChannel::WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)
+void sharpen::WinFileChannel::RequestWrite(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> *future)
 {
-    if (!this->IsRegistered())
-    {
-        throw std::logic_error("should register to a loop first");
-    }
     IocpOverlappedStruct *olStruct = new (std::nothrow) IocpOverlappedStruct();
     if (!olStruct)
     {
-        future.Fail(std::make_exception_ptr(std::bad_alloc()));
+        future->Fail(std::make_exception_ptr(std::bad_alloc()));
         return;
     }
     //init iocp olStruct
     this->InitOverlappedStruct(*olStruct,offset);
     olStruct->event_.SetData(olStruct);
     //record future
-    olStruct->data_ = &future;
+    olStruct->data_ = future;
     //request
     BOOL r = ::WriteFile(this->handle_,buf,static_cast<DWORD>(bufSize),nullptr,&olStruct->ol_);
     if (r != TRUE)
@@ -62,9 +58,18 @@ void sharpen::WinFileChannel::WriteAsync(const sharpen::Char *buf,sharpen::Size 
         if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
         {
             delete olStruct;
-            future.Fail(sharpen::MakeLastErrorPtr());
+            future->Fail(sharpen::MakeLastErrorPtr());
         }
     }
+}
+
+void sharpen::WinFileChannel::WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)
+{
+    if (!this->IsRegistered())
+    {
+        throw std::logic_error("should register to a loop first");
+    }
+    this->loop_->RunInLoop(std::bind(&Self::RequestWrite,this,buf,bufSize,offset,&future));
 }
         
 void sharpen::WinFileChannel::WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)
@@ -76,23 +81,19 @@ void sharpen::WinFileChannel::WriteAsync(const sharpen::ByteBuffer &buf,sharpen:
     this->WriteAsync(buf.Data() + bufferOffset,buf.GetSize() - bufferOffset,offset,future);
 }
 
-void sharpen::WinFileChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)
+void sharpen::WinFileChannel::RequestRead(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> *future)
 {
-    if (!this->IsRegistered())
-    {
-        throw std::logic_error("should register to a loop first");
-    }
     sharpen::IocpOverlappedStruct *olStruct = new (std::nothrow) sharpen::IocpOverlappedStruct();
     if (!olStruct)
     {
-        future.Fail(std::make_exception_ptr(std::bad_alloc()));
+        future->Fail(std::make_exception_ptr(std::bad_alloc()));
         return;
     }
     //init iocp olStruct
     this->InitOverlappedStruct(*olStruct,offset);
     olStruct->event_.SetData(olStruct);
     //record future
-    olStruct->data_ = &future;
+    olStruct->data_ = future;
     BOOL r = ::ReadFile(this->handle_,buf,static_cast<DWORD>(bufSize),nullptr,&olStruct->ol_);
     if (r != TRUE)
     {
@@ -100,10 +101,19 @@ void sharpen::WinFileChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSize
         if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
         {
             delete olStruct;
-            future.Fail(sharpen::MakeLastErrorPtr());
+            future->Fail(sharpen::MakeLastErrorPtr());
             return;
         }
     }
+}
+
+void sharpen::WinFileChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)
+{
+    if (!this->IsRegistered())
+    {
+        throw std::logic_error("should register to a loop first");
+    }
+    this->loop_->RunInLoop(std::bind(&Self::RequestRead,this,buf,bufSize,offset,&future));
 }
         
 void sharpen::WinFileChannel::ReadAsync(sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)
