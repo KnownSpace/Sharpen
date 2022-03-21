@@ -169,7 +169,7 @@ std::shared_ptr<const sharpen::SstDataBlock> sharpen::SortedStringTable::FindBlo
 
 sharpen::ByteBuffer sharpen::SortedStringTable::Get(const sharpen::ByteBuffer &key) const
 {
-    auto block = this->FindBlock(key);
+    std::shared_ptr<const sharpen::SstDataBlock> block = this->FindBlock(key);
     if(!block)
     {
         throw std::out_of_range("key doesn't exists(block not found)");
@@ -179,7 +179,7 @@ sharpen::ByteBuffer sharpen::SortedStringTable::Get(const sharpen::ByteBuffer &k
 
 sharpen::Optional<sharpen::ByteBuffer> sharpen::SortedStringTable::TryGet(const sharpen::ByteBuffer &key) const
 {
-    auto block = this->FindBlock(key);
+    std::shared_ptr<const sharpen::SstDataBlock> block = this->FindBlock(key);
     if(!block || block->Exist(key) == sharpen::ExistStatus::NotExist)
     {
         return sharpen::EmptyOpt;

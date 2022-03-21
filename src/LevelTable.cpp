@@ -529,6 +529,7 @@ void sharpen::LevelTable::AddToComponent(sharpen::SortedStringTable table,sharpe
             this->SetCurrentViewId(viewId + 1);
             sharpen::LevelView newView{viewId};
             newView.Put(firstKey,lastKey,tableId);
+            this->SetPrevTableId(this->GetCurrentTableId());
             this->SaveView(viewId,newView);
             component->Put(viewId);
             this->SaveComponent(componentId,*component);
@@ -539,6 +540,7 @@ void sharpen::LevelTable::AddToComponent(sharpen::SortedStringTable table,sharpe
         this->SaveView(viewId,*view);
         return;
     }
+    this->SetPrevTableId(this->GetCurrentTableId());
     if(level == componentId && component->Empty())
     {
         this->SetMaxLevel(level - 1);
@@ -778,7 +780,16 @@ void sharpen::LevelTable::DummpImmutableTables()
     sharpen::SortedStringTable table{channel,opt};
     sharpen::SstBuildOption buildOpt{false,this->filterBitsOfElement_,this->blockSize_};
     table.Build(map.begin(),map.end(),buildOpt);
-    this->AddToComponent(std::move(table),tableId,0);
+    try
+    {
+        this->AddToComponent(std::move(table),tableId,0);
+    }
+    catch(const std::exception&)
+    {
+        this->SetCurrentTableId(tableId);
+        throw;
+    }
+    //this->SetPrevTableId(this->GetCurrentTableId());
     //cleanup tables
     this->imMems_.clear();
     sharpen::Size beginKey{this->GetPrevMemoryTableId()};
@@ -884,18 +895,18 @@ sharpen::Optional<sharpen::ByteBuffer> sharpen::LevelTable::TryGet(const sharpen
         for (auto begin = component->ReverseBegin(),end = component->ReverseEnd(); begin != end; ++begin)
         {
             const sharpen::LevelView *view{&this->GetView(*begin)};
-            auto r{view->FindId(key)};
+            sharpen::Optional<sharpen::Uint64> r{view->FindId(key)};
             if (r.Exist())
             {
-                auto sst{this->LoadTableCache(r.Get())};
-                auto val{sst->TryGet(key)};
+                std::shared_ptr<sharpen::SortedStringTable> sst{this->LoadTableCache(r.Get())};
+                sharpen::Optional<sharpen::ByteBuffer> val{sst->TryGet(key)};
                 if(val.Exist())
                 {
                     if(val.Get().Empty())
                     {
                         return sharpen::EmptyOpt;
                     }
-                    return val.Get();
+                    return val;
                 }
             }
         }
