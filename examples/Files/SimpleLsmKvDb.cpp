@@ -5,6 +5,7 @@
 #include <sharpen/EventEngine.hpp>
 #include <sharpen/IInputPipeChannel.hpp>
 #include <sharpen/FileOps.hpp>
+#include <sharpen/StopWatcher.hpp>
 
 void PrintBuffer(const sharpen::ByteBuffer &buf)
 {
@@ -111,8 +112,10 @@ void Entry(const char *dbName)
         }
         if(line == "test")
         {
+            sharpen::StopWatcher sw;
             std::puts("test put");
-            for (sharpen::Size i = 0,count = static_cast<sharpen::Size>(1e6); i < count; ++i)
+            sw.Begin();
+            for (sharpen::Size i = 0,count = static_cast<sharpen::Size>(1e7); i < count; ++i)
             {
                 sharpen::ByteBuffer key{sizeof(i)};
                 key.As<sharpen::Size>() = i;
@@ -120,33 +123,18 @@ void Entry(const char *dbName)
                 value.As<sharpen::Size>() = i;
                 table.Put(std::move(key),std::move(value));
             }
-            for (sharpen::Size i = 0,count = static_cast<sharpen::Size>(1e6); i < count; ++i)
-            {
-                sharpen::ByteBuffer key{sizeof(i)};
-                key.As<sharpen::Size>() = i;
-                sharpen::ByteBuffer value{sizeof(i)};
-                value.As<sharpen::Size>() = i;
-                if(table.Get(key) != value)
-                {
-                    std::fputs("bad\n",stderr);
-                }
-            }
+            sw.Stop();
+            std::printf("put %d\n",sw.Compute());
             std::puts("test delete");
-            for (sharpen::Size i = 0,count = static_cast<sharpen::Size>(1e6); i < count; ++i)
+            sw.Begin();
+            for (sharpen::Size i = 0,count = static_cast<sharpen::Size>(1e7); i < count; ++i)
             {
                 sharpen::ByteBuffer key{sizeof(i)};
                 key.As<sharpen::Size>() = i;
                 table.Delete(key);
             }
-            for (sharpen::Size i = 0,count = static_cast<sharpen::Size>(1e6); i < count; ++i)
-            {
-                sharpen::ByteBuffer key{sizeof(i)};
-                key.As<sharpen::Size>() = i;
-                if(table.Exist(key) == sharpen::ExistStatus::Exist)
-                {
-                    std::fputs("bad\n",stderr);
-                }
-            }
+            sw.Stop();
+            std::printf("del %d\n",sw.Compute());
             std::puts("ok");
             continue;
         }
