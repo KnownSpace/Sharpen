@@ -69,7 +69,7 @@ void sharpen::WinFileChannel::WriteAsync(const sharpen::Char *buf,sharpen::Size 
     {
         throw std::logic_error("should register to a loop first");
     }
-    this->loop_->RunInLoop(std::bind(&Self::RequestWrite,this,buf,bufSize,offset,&future));
+    this->loop_->RunInLoopSoon(std::bind(&Self::RequestWrite,this,buf,bufSize,offset,&future));
 }
         
 void sharpen::WinFileChannel::WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)

@@ -7,6 +7,8 @@
 #include <sharpen/FileOps.hpp>
 #include <sharpen/StopWatcher.hpp>
 
+#define TEST_COUNT 1e6
+
 void PrintBuffer(const sharpen::ByteBuffer &buf)
 {
     for (auto begin = buf.Begin(),end = buf.End(); begin != end; ++begin)
@@ -115,7 +117,7 @@ void Entry(const char *dbName)
             sharpen::StopWatcher sw;
             std::puts("test put");
             sw.Begin();
-            for (sharpen::Size i = 0,count = static_cast<sharpen::Size>(1e7); i < count; ++i)
+            for (sharpen::Size i = 0,count = static_cast<sharpen::Size>(TEST_COUNT); i < count; ++i)
             {
                 sharpen::ByteBuffer key{sizeof(i)};
                 key.As<sharpen::Size>() = i;
@@ -127,7 +129,7 @@ void Entry(const char *dbName)
             std::printf("put %d\n",sw.Compute());
             std::puts("test query");
             sw.Begin();
-            for (sharpen::Size i = 0,count = static_cast<sharpen::Size>(1e7); i < count; ++i)
+            for (sharpen::Size i = 0,count = static_cast<sharpen::Size>(TEST_COUNT); i < count; ++i)
             {
                 sharpen::ByteBuffer key{sizeof(i)};
                 key.As<sharpen::Size>() = i;
@@ -142,7 +144,7 @@ void Entry(const char *dbName)
             std::printf("query %d\n",sw.Compute());
             std::puts("test delete");
             sw.Begin();
-            for (sharpen::Size i = 0,count = static_cast<sharpen::Size>(1e7); i < count; ++i)
+            for (sharpen::Size i = 0,count = static_cast<sharpen::Size>(TEST_COUNT); i < count; ++i)
             {
                 sharpen::ByteBuffer key{sizeof(i)};
                 key.As<sharpen::Size>() = i;
@@ -152,7 +154,7 @@ void Entry(const char *dbName)
             std::printf("del %d\n",sw.Compute());
             std::puts("test exist");
             sw.Begin();
-            for (sharpen::Size i = 0,count = static_cast<sharpen::Size>(1e7); i < count; ++i)
+            for (sharpen::Size i = 0,count = static_cast<sharpen::Size>(TEST_COUNT); i < count; ++i)
             {
                 sharpen::ByteBuffer key{sizeof(i)};
                 key.As<sharpen::Size>() = i;

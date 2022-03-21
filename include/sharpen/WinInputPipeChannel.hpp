@@ -19,10 +19,13 @@ namespace sharpen
     {
     private:
         using Mybase = sharpen::IInputPipeChannel;
+        using Self = sharpen::WinInputPipeChannel;
 
         static void InitOverlapped(OVERLAPPED &ol);
 
         void InitOverlappedStruct(sharpen::IocpOverlappedStruct &event);
+
+        void RequestRead(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future);
     public:
         explicit WinInputPipeChannel(sharpen::FileHandle handle);
         

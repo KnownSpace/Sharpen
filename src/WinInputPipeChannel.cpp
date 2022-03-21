@@ -36,23 +36,19 @@ void sharpen::WinInputPipeChannel::InitOverlappedStruct(sharpen::IocpOverlappedS
     olStruct.channel_ = this->shared_from_this();
 }
 
-void sharpen::WinInputPipeChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future)
+void sharpen::WinInputPipeChannel::RequestRead(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future)
 {
-    if (!this->IsRegistered())
-    {
-        throw std::logic_error("should register to a loop first");
-    }
     IocpOverlappedStruct *olStruct = new (std::nothrow) sharpen::IocpOverlappedStruct();
     if (!olStruct)
     {
-        future.Fail(std::make_exception_ptr(std::bad_alloc()));
+        future->Fail(std::make_exception_ptr(std::bad_alloc()));
         return;
     }
     //init iocp olStruct
     this->InitOverlappedStruct(*olStruct);
     olStruct->event_.SetData(olStruct);
     //record future
-    olStruct->data_ = &future;
+    olStruct->data_ = future;
     BOOL r = ::ReadFile(this->handle_,buf,static_cast<DWORD>(bufSize),nullptr,&(olStruct->ol_));
     if (r != TRUE)
     {
@@ -60,10 +56,19 @@ void sharpen::WinInputPipeChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bu
         if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
         {
             delete olStruct;
-            future.Fail(sharpen::MakeLastErrorPtr());
+            future->Fail(sharpen::MakeLastErrorPtr());
             return;
         }
     }
+}
+
+void sharpen::WinInputPipeChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future)
+{
+    if (!this->IsRegistered())
+    {
+        throw std::logic_error("should register to a loop first");
+    }
+    this->loop_->RunInLoop(std::bind(&Self::RequestRead,this,buf,bufSize,&future));
 }
 
 void sharpen::WinInputPipeChannel::ReadAsync(sharpen::ByteBuffer &buf,sharpen::Size bufOffset,sharpen::Future<sharpen::Size> &future)

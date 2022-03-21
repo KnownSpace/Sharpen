@@ -144,7 +144,7 @@ void sharpen::PosixFileChannel::WriteAsync(const sharpen::Char *buf,sharpen::Siz
     {
         throw std::logic_error("should register to a loop first");
     }
-    this->loop_->RunInLoop(std::bind(&Self::DoWrite,this,buf,bufSize,offset,&future));
+    this->loop_->RunInLoopSoon(std::bind(&Self::DoWrite,this,buf,bufSize,offset,&future));
 }
         
 void sharpen::PosixFileChannel::WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)

@@ -15,11 +15,13 @@ namespace sharpen
     {
     private:
         using Mybase = sharpen::IOutputPipeChannel;
+        using Self = sharpen::WinOutputPipeChannel;
 
         static void InitOverlapped(OVERLAPPED &ol);
 
         void InitOverlappedStruct(sharpen::IocpOverlappedStruct &olStruct);
     
+        void RequestWrite(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future);
     public:
         explicit WinOutputPipeChannel(sharpen::FileHandle handle);
 
