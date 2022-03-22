@@ -40,7 +40,7 @@ namespace sharpen
         //current term
         //logs[]
         //voted for
-        _PersistentStorage pm_;
+        _PersistentStorage storage_;
 
         //volatile status
         //current role and commiter
@@ -64,12 +64,12 @@ namespace sharpen
 
         _PersistentStorage &PersistenceStorage() noexcept
         {
-            return this->pm_;
+            return this->storage_;
         }
 
         const _PersistentStorage &PersistenceStorage() const noexcept
         {
-            return this->pm_;
+            return this->storage_;
         }
 
         void SetCurrentTerm(sharpen::Uint64 term)
@@ -100,7 +100,7 @@ namespace sharpen
 
         InternalRaftWrapper(_Id id,_PersistentStorage pm,_Application commiter)
             :selfId_(std::move(id))
-            ,pm_(std::move(pm))
+            ,storage_(std::move(pm))
             ,rolePair_(std::move(commiter),sharpen::RaftRole::Follower)
             ,commitIndex_(0)
             ,lastApplied_(0)
