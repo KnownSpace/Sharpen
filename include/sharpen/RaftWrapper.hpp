@@ -317,7 +317,7 @@ namespace sharpen
 
         //return true if we continue
         //this impl is optional
-        template<typename _UCommiter = _Application,typename _Check = decltype(std::declval<_UCommiter>().InstallSnapshot(std::declval<_PersistentStorage>(),0,0,0,0,nullptr,false))>
+        template<typename _UCommiter = _Application,typename _Check = decltype(std::declval<_UCommiter&>().InstallSnapshot(std::declval<_PersistentStorage&>(),0,0,0,0,nullptr,false)),typename _Assert = sharpen::EnableIf<std::is_same<_Application,_UCommiter>::value>>
         bool InstallSnapshot(const _Id &leaderId,sharpen::Uint64 leaderTerm,sharpen::Uint64 lastIncludedIndex,sharpen::Uint64 lastIncludedTerm,sharpen::Uint64 offset,const char *data,bool done)
         {
             //check term
