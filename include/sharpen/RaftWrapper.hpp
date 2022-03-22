@@ -1,6 +1,6 @@
 #pragma once
-#ifndef _SHARPEN_RAFTSTATEMACHINE_HPP
-#define _SHARPEN_RAFTSTATEMACHINE_HPP
+#ifndef _SHARPEN_RAFTWRAPPER_HPP
+#define _SHARPEN_RAFTWRAPPER_HPP
 
 #include <unordered_map>
 #include <vector>
@@ -12,7 +12,6 @@
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "Future.hpp"
-#include "Quorum.hpp"
 #include "CompressedPair.hpp"
 #include "Optional.hpp"
 #include "RaftConcepts.hpp"
@@ -21,15 +20,15 @@ namespace sharpen
 {
 
     template<typename _Id,typename  _Log,typename _Application,typename _PersistentStorage,typename _Member>
-    using RaftStateMachineRequires = sharpen::BoolType<sharpen::IsRaftLog<_Log>::Value
+    using RaftWrapperRequires = sharpen::BoolType<sharpen::IsRaftLog<_Log>::Value
                                                         && sharpen::IsRaftMember<_Id,_Member>::Value
                                                         && sharpen::IsRaftPersistenceStorage<_PersistentStorage,_Log,_Id>::Value>;
 
     template<typename _Id,typename  _Log,typename _Application,typename _PersistentStorage,typename _Member,typename _Check = void>
-    class InternalRaftStateMachine;
+    class InternalRaftWrapper;
 
     template<typename _Id,typename  _Log,typename _Application,typename _PersistentStorage,typename _Member>
-    class InternalRaftStateMachine<_Id,_Log,_Application,_PersistentStorage,_Member,sharpen::EnableIf<sharpen::RaftStateMachineRequires<_Id,_Log,_Application,_PersistentStorage,_Member>::Value>>:public sharpen::Noncopyable,public sharpen::Nonmovable
+    class InternalRaftWrapper<_Id,_Log,_Application,_PersistentStorage,_Member,sharpen::EnableIf<sharpen::RaftWrapperRequires<_Id,_Log,_Application,_PersistentStorage,_Member>::Value>>:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
         using MemberMap = std::unordered_map<_Id,_Member>;
@@ -95,11 +94,11 @@ namespace sharpen
             this->SetCurrentTerm(term);
         }
     public:
-        InternalRaftStateMachine(_Id id,_PersistentStorage pm)
-            :InternalRaftStateMachine(std::move(id),std::move(pm),_Application{})
+        InternalRaftWrapper(_Id id,_PersistentStorage pm)
+            :InternalRaftWrapper(std::move(id),std::move(pm),_Application{})
         {}
 
-        InternalRaftStateMachine(_Id id,_PersistentStorage pm,_Application commiter)
+        InternalRaftWrapper(_Id id,_PersistentStorage pm,_Application commiter)
             :selfId_(std::move(id))
             ,pm_(std::move(pm))
             ,rolePair_(std::move(commiter),sharpen::RaftRole::Follower)
@@ -233,7 +232,7 @@ namespace sharpen
                             //remove logs [index,end)
                             for (size_t ib = ite->GetIndex(),ie = this->PersistenceStorage().LastLogIndex(); ib <= ie; ++ib)
                             {
-                                this->PersistenceStorage().EraseLog(ie);
+                                this->PersistenceStorage().RemoveLog(ie);
                             }
                             //skip check
                             token = false;
@@ -406,11 +405,11 @@ namespace sharpen
             }
         }
 
-        ~InternalRaftStateMachine() noexcept = default;
+        ~InternalRaftWrapper() noexcept = default;
     };
 
     template<typename _Id,typename  _Log,typename _Application,typename _PersistentStorage,typename _Member>
-    using RaftStateMachine = sharpen::InternalRaftStateMachine<_Id,_Log,_Application,_PersistentStorage,_Member>;
+    using RaftWrapper = sharpen::InternalRaftWrapper<_Id,_Log,_Application,_PersistentStorage,_Member>;
 }
 
 #endif

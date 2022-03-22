@@ -1,7 +1,7 @@
 #include <cstdio>
 #include <algorithm>
 #include <random>
-#include <sharpen/RaftStateMachine.hpp>
+#include <sharpen/RaftWrapper.hpp>
 #include <sharpen/RaftMember.hpp>
 #include <sharpen/RaftId.hpp>
 #include <sharpen/MicroRpcClient.hpp>
@@ -14,6 +14,7 @@
 #include <sharpen/RandomTimerAdaptor.hpp>
 #include <sharpen/Converter.hpp>
 #include <sharpen/Console.hpp>
+#include <sharpen/Quorum.hpp>
 
 //id
 using TestId = sharpen::Uint64;
@@ -112,7 +113,7 @@ public:
         return this->votedFor_.Exist();
     }
 
-    void EraseLog(sharpen::Uint64 index)
+    void RemoveLog(sharpen::Uint64 index)
     {
         sharpen::Print("remove logs index ",index,"\n");
         auto ite = this->logs_.begin(),end = this->logs_.end();
@@ -202,7 +203,7 @@ public:
 };
 
 //raft state machine
-using TestStateMachine = sharpen::RaftStateMachine<TestId,TestLog,TestCommiter,TestPm,TestMember>;
+using TestStateMachine = sharpen::RaftWrapper<TestId,TestLog,TestCommiter,TestPm,TestMember>;
 
 //election proposer
 class TestElectionProposer
