@@ -103,6 +103,32 @@ void CancelTest()
     assert(flag == 10);
 }
 
+void TimeoutTest()
+{
+    sharpen::NetStreamChannelPtr server = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
+    sharpen::NetStreamChannelPtr client = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
+    sharpen::IpEndPoint ep{0,0};
+    ep.SetAddrByString("127.0.0.1");
+    client->Bind(ep);
+    ep.SetPort(8080);
+    server->Bind(ep);
+    server->Register(sharpen::EventEngine::GetEngine());
+    client->Register(sharpen::EventEngine::GetEngine());
+    server->Listen(65535);
+    sharpen::AwaitableFuture<void> future;
+    client->ConnectAsync(ep,future);
+    sharpen::NetStreamChannelPtr chd = server->AcceptAsync();
+    future.Await();
+    chd->Register(sharpen::EventEngine::GetEngine());
+    char buf[6] = {};
+    sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::EventEngine::GetEngine());
+    auto r = chd->ReadWithTimeout(timer,std::chrono::seconds(1),buf,sizeof(buf));
+    if(!r.Exist())
+    {
+        std::puts("timeout");
+    }
+}
+
 void NetworkTest()
 {
     sharpen::StartupNetSupport();
@@ -112,6 +138,7 @@ void NetworkTest()
         std::printf("network test begin\n");
         ServerTest();
         CancelTest();
+        TimeoutTest();
         std::printf("network test pass\n");
         sharpen::CleanupNetSupport();
     });

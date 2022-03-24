@@ -8,6 +8,8 @@
 #include "IAsyncWritable.hpp"
 #include "IFileChannel.hpp"
 #include "IEndPoint.hpp"
+#include "ITimer.hpp"
+#include "Optional.hpp"
 
 namespace sharpen
 {
@@ -20,6 +22,14 @@ namespace sharpen
     {
     private:
         using Self = sharpen::INetStreamChannel;
+
+        inline static void CancelCallback(sharpen::Future<bool> &future,sharpen::INetStreamChannel *channel)
+        {
+            if(future.Get())
+            {
+                channel->Cancel();
+            }
+        }
     public:
         
         INetStreamChannel() noexcept = default;
@@ -69,6 +79,68 @@ namespace sharpen
         void PollWriteAsync();
 
         virtual void Cancel() noexcept = 0;
+
+        template<typename _Rep,typename _Period>
+        inline sharpen::Optional<sharpen::Size> ReadWithTimeout(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &duration,char *buf,sharpen::Size size)
+        {
+            sharpen::AwaitableFuture<bool> timeout;
+            sharpen::AwaitableFuture<sharpen::Size> future;
+            using CancelFn = void(*)(sharpen::Future<bool>&,sharpen::INetStreamChannel*);
+            timeout.SetCallback(std::bind(static_cast<CancelFn>(&Self::CancelCallback),std::placeholders::_1,this));
+            this->ReadAsync(buf,size,future);
+            timer->WaitAsync(timeout,duration);
+            future.WaitAsync();
+            //timeout
+            if(future.IsError() && timeout.IsCompleted())
+            {
+                return sharpen::EmptyOpt;
+            }
+            //cancel timer
+            if(timeout.IsPending())
+            {
+                timer->Cancel();
+                timeout.WaitAsync();
+            }
+            return future.Get();
+        }
+
+        template<typename _Rep,typename _Period>
+        inline sharpen::Optional<sharpen::Size> ReadWithTimeout(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &duration,sharpen::ByteBuffer &buf,sharpen::Size offset)
+        {
+            assert(buf.GetSize() >= offset);
+            return this->ReadWithTimeout(std::move(timer),duration,buf.Data() + offset,buf.GetSize() - offset);
+        }
+
+        template<typename _Rep,typename _Period>
+        inline sharpen::Optional<sharpen::Size> ReadWithTimeout(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &duration,sharpen::ByteBuffer &buf)
+        {
+            return this->ReadWithTimeout(std::move(timer),duration,buf,0);
+        }
+
+        template<typename _Rep,typename _Period>
+        inline bool ConnectWithTimeout(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &duration,const sharpen::IEndPoint &ep)
+        {
+            sharpen::AwaitableFuture<bool> timeout;
+            sharpen::AwaitableFuture<void> future;
+            using CancelFn = void(*)(sharpen::Future<bool>&,sharpen::INetStreamChannel*);
+            timeout.SetCallback(std::bind(static_cast<CancelFn>(&Self::CancelCallback),std::placeholders::_1,this));
+            this->ConnectAsync(ep,future);
+            timer->WaitAsync(timeout,duration);
+            future.WaitAsync();
+            //timeout
+            if(future.IsError() && timeout.IsCompleted())
+            {
+                return false;
+            }
+            //cancel timer
+            if(timeout.IsPending())
+            {
+                timer->Cancel();
+                timeout.WaitAsync();
+            }
+            future.Get();
+            return true;
+        }
     };
 
     sharpen::NetStreamChannelPtr MakeTcpStreamChannel(sharpen::AddressFamily af);
