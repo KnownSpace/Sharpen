@@ -43,3 +43,9 @@ void sharpen::AsyncBarrier::Notice() noexcept
     }
     futurePtr->Complete();
 }
+
+void sharpen::AsyncBarrier::AddCount(sharpen::Uint64 count)
+{
+    std::unique_lock<sharpen::SpinLock> lock(this->lock_);
+    this->counter_ += count;
+}

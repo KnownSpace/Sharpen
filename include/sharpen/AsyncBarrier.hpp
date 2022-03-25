@@ -29,6 +29,8 @@ namespace sharpen
         
         void Reset();
 
+        void AddCount(sharpen::Uint64 count);
+
         ~AsyncBarrier() noexcept = default;
     };
     
