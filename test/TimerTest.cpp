@@ -1,7 +1,14 @@
 #include <cstdio>
 #include <sharpen/TimeWheel.hpp>
 #include <sharpen/StopWatcher.hpp>
+#include <sharpen/TimerLoop.hpp>
 #include <cassert>
+
+sharpen::TimerLoop::LoopStatus LoopFunc()
+{
+    std::puts("hello world");
+    return sharpen::TimerLoop::LoopStatus::Continue;
+}
 
 void TimeWheelTest()
 {
@@ -34,7 +41,14 @@ void TimeWheelTest()
         future.Await();
         sw.Stop();
         assert(sw.Compute() < 3*CLOCKS_PER_SEC);
-        std::printf("cancel using %zu tu,1 second = %zu tu\n",static_cast<sharpen::Size>(sw.Compute()),static_cast<size_t>(CLOCKS_PER_SEC));
+        std::printf("cancel using %zu tu,1 second = %zu tu\n",static_cast<sharpen::Size>(sw.Compute()),static_cast<size_t>(sw.TimeUnitPerSecond()));
+        sharpen::TimerLoop loop{sharpen::EventEngine::GetEngine(),sharpen::MakeTimer(sharpen::EventEngine::GetEngine()),std::chrono::seconds(1),&LoopFunc};
+        timer->Await(std::chrono::seconds(10));
+        loop.Terminate();
+        loop.Restart();
+        std::puts("restart timer");
+        timer->Await(std::chrono::seconds(10));
+        loop.Terminate();
         std::printf("timer test pass\n");
     });
 }

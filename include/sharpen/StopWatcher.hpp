@@ -20,19 +20,24 @@ namespace sharpen
 
         ~StopWatcher() noexcept = default;
 
-        void Begin() noexcept
+        inline void Begin() noexcept
         {
             this->begin_ = std::clock();
         }
 
-        void Stop() noexcept
+        inline void Stop() noexcept
         {
             this->end_ = std::clock();
         }
 
-        std::clock_t Compute() noexcept
+        inline std::clock_t Compute() noexcept
         {
             return this->end_ - this->begin_;
+        }
+
+        static inline constexpr std::clock_t TimeUnitPerSecond() noexcept
+        {
+            return CLOCKS_PER_SEC;
         }
     };
 }
