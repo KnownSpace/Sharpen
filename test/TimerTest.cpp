@@ -51,20 +51,22 @@ void TimeWheelTest()
         std::printf("cancel using %zu tu,1 second = %zu tu\n",static_cast<sharpen::Size>(sw.Compute()),static_cast<size_t>(sw.TimeUnitPerSecond()));
         {
             sharpen::TimerLoop loop{sharpen::EventEngine::GetEngine(),sharpen::MakeTimer(sharpen::EventEngine::GetEngine()),std::chrono::seconds(1),&LoopFunc};
+            loop.Start();
             timer->Await(std::chrono::seconds(10));
             loop.Terminate();
-            loop.Restart();
+            loop.Start();
             std::puts("restart timer");
             timer->Await(std::chrono::seconds(10));
             loop.Terminate();
         }
         {
             sharpen::TimerLoop loop{sharpen::EventEngine::GetEngine(),sharpen::MakeTimer(sharpen::EventEngine::GetEngine()),std::chrono::seconds(1),&StopLoopFunc};
-            timer->Await(std::chrono::seconds(2));
+            loop.Start();
+            timer->Await(std::chrono::seconds(1));
             loop.Terminate();
-            loop.Restart();
+            loop.Start();
             std::puts("restart timer");
-            timer->Await(std::chrono::seconds(2));
+            timer->Await(std::chrono::seconds(1));
             loop.Terminate();
         }
         std::printf("timer test pass\n");

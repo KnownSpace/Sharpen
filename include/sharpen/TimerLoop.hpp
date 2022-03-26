@@ -87,11 +87,9 @@ namespace sharpen
 
         void Cancel();
 
-        void Stop();
-
         void Terminate();
 
-        void Restart();
+        void Start();
     };
 }
 

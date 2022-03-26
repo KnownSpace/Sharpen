@@ -11,7 +11,6 @@ sharpen::TimerLoop::TimerLoop(sharpen::EventEngine &engine,sharpen::TimerPtr tim
     assert(this->timer_);
     assert(this->waitTimeGenerator_);
     assert(this->handler_);
-    this->Restart();
 }
 
 void sharpen::TimerLoop::Entry()
@@ -61,7 +60,7 @@ void sharpen::TimerLoop::Terminate()
     }
 }
 
-void sharpen::TimerLoop::Restart()
+void sharpen::TimerLoop::Start()
 {
     sharpen::AwaitableFuturePtr<void> future{sharpen::MakeAwaitableFuture<void>()};
     bool token{this->token_.exchange(true)};
