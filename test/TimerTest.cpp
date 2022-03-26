@@ -6,8 +6,15 @@
 
 sharpen::TimerLoop::LoopStatus LoopFunc()
 {
-    std::puts("hello world");
+    static std::size_t i{0};
+    std::printf("loop count %zu\n",++i);
     return sharpen::TimerLoop::LoopStatus::Continue;
+}
+
+sharpen::TimerLoop::LoopStatus StopLoopFunc()
+{
+    std::puts("stop");
+    return sharpen::TimerLoop::LoopStatus::Terminate;
 }
 
 void TimeWheelTest()
@@ -42,13 +49,24 @@ void TimeWheelTest()
         sw.Stop();
         assert(sw.Compute() < 3*CLOCKS_PER_SEC);
         std::printf("cancel using %zu tu,1 second = %zu tu\n",static_cast<sharpen::Size>(sw.Compute()),static_cast<size_t>(sw.TimeUnitPerSecond()));
-        sharpen::TimerLoop loop{sharpen::EventEngine::GetEngine(),sharpen::MakeTimer(sharpen::EventEngine::GetEngine()),std::chrono::seconds(1),&LoopFunc};
-        timer->Await(std::chrono::seconds(10));
-        loop.Terminate();
-        loop.Restart();
-        std::puts("restart timer");
-        timer->Await(std::chrono::seconds(10));
-        loop.Terminate();
+        {
+            sharpen::TimerLoop loop{sharpen::EventEngine::GetEngine(),sharpen::MakeTimer(sharpen::EventEngine::GetEngine()),std::chrono::seconds(1),&LoopFunc};
+            timer->Await(std::chrono::seconds(10));
+            loop.Terminate();
+            loop.Restart();
+            std::puts("restart timer");
+            timer->Await(std::chrono::seconds(10));
+            loop.Terminate();
+        }
+        {
+            sharpen::TimerLoop loop{sharpen::EventEngine::GetEngine(),sharpen::MakeTimer(sharpen::EventEngine::GetEngine()),std::chrono::seconds(1),&StopLoopFunc};
+            timer->Await(std::chrono::seconds(2));
+            loop.Terminate();
+            loop.Restart();
+            std::puts("restart timer");
+            timer->Await(std::chrono::seconds(2));
+            loop.Terminate();
+        }
         std::printf("timer test pass\n");
     });
 }

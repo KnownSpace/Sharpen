@@ -17,7 +17,7 @@ namespace sharpen
         };
     private:
         using Self = sharpen::TimerLoop;
-        using WaitTime = typename std::chrono::milliseconds;
+        using WaitTime = std::chrono::milliseconds;
         using Handler = std::function<LoopStatus()>;
     
         sharpen::TimerPtr timer_;
