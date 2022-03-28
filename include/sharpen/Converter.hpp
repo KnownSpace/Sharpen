@@ -104,11 +104,11 @@ namespace sharpen
             {
                 n = true;
             }
-            else if(*str >= 'A' && *str <= 'F')
+            else if(radix == 16 && *str >= 'A' && *str <= 'F')
             {
                 data += *str - 'A' + 10;
             }
-            else if(*str >= 'a' && *str <= 'f')
+            else if(radix == 16 && *str >= 'a' && *str <= 'f')
             {
                 data += *str - 'a' + 10;
             }
@@ -139,13 +139,13 @@ namespace sharpen
             data *= static_cast<_T>(radix);
             if(*str == '-')
             {
-                assert("error string");
+                throw std::invalid_argument("string is not a unsigned number");
             }
-            else if(*str >= 'A' && *str <= 'F')
+            else if(radix == 16 && *str >= 'A' && *str <= 'F')
             {
                 data += *str - 'A' + 10;
             }
-            else if(*str >= 'a' && *str <= 'f')
+            else if(radix == 16 && *str >= 'a' && *str <= 'f')
             {
                 data += *str - 'a' + 10;
             }
