@@ -23,7 +23,7 @@ namespace sharpen
         sharpen::TimerPtr timer_;
         Handler handler_;
         std::function<WaitTime()> waitTimeGenerator_;
-        sharpen::AwaitableFuturePtr<void> future_;
+        sharpen::AwaitableFuture<void> future_;
         std::atomic_bool token_;
         sharpen::EventEngine *engine_;
 

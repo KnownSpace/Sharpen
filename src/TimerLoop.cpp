@@ -4,7 +4,7 @@ sharpen::TimerLoop::TimerLoop(sharpen::EventEngine &engine,sharpen::TimerPtr tim
     :timer_(std::move(timer))
     ,handler_(std::move(handler))
     ,waitTimeGenerator_(std::move(waittimeGenerator))
-    ,future_(nullptr)
+    ,future_()
     ,token_(false)
     ,engine_(&engine)
 {
@@ -28,7 +28,7 @@ void sharpen::TimerLoop::Entry()
                 //should be noexcept
                 if(this->handler_() == Self::LoopStatus::Terminate)
                 {
-                    this->future_->Complete();
+                    this->future_.Complete();
                     this->token_ = false;
                     return;
                 }
@@ -40,7 +40,7 @@ void sharpen::TimerLoop::Entry()
             }
         }
     }
-    this->future_->Complete();
+    this->future_.Complete();
 }
 
 void sharpen::TimerLoop::Cancel()
@@ -54,19 +54,19 @@ void sharpen::TimerLoop::Cancel()
 void sharpen::TimerLoop::Terminate()
 {
     bool token{this->token_.exchange(false)};
-    if(token && this->future_ && this->future_->IsPending())
+    if(token && this->future_.IsPending())
     {
-        this->future_->WaitAsync();
+        this->future_.WaitAsync();
+        this->future_.Reset();
     }
 }
 
 void sharpen::TimerLoop::Start()
 {
-    sharpen::AwaitableFuturePtr<void> future{sharpen::MakeAwaitableFuture<void>()};
     bool token{this->token_.exchange(true)};
     if(!token)
     {
-        this->future_ = std::move(future);
+        this->future_.Reset();
         try
         {
             this->engine_->Launch(std::bind(&Self::Entry,this));
@@ -74,7 +74,6 @@ void sharpen::TimerLoop::Start()
         catch(const std::exception&)
         {
             this->token_ = false;
-            this->future_.reset();
             throw;
         }
     }
