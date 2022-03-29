@@ -112,9 +112,11 @@ void sharpen::Ipv6EndPoint::SetAddrByString(const char *addrStr)
 
 sharpen::Int64 sharpen::Ipv6EndPoint::CompareWith(const Self &other) const noexcept
 {
-    sharpen::Int64 r{0};
-    r = std::memcmp(&this->addr_.sin6_addr,&other.addr_.sin6_addr,sizeof(this->addr_.sin6_addr));
-    r <<= 32;
-    r |= static_cast<sharpen::Int16>(this->GetPort() - other.GetPort());
-    return r;
+    char thiz[sizeof(in6_addr) + sizeof(sharpen::Uint16)] = {};
+    char otherval[sizeof(in6_addr) + sizeof(sharpen::Uint16)] = {};
+    this->GetAddr(*reinterpret_cast<in6_addr*>(thiz));
+    *reinterpret_cast<sharpen::Uint16*>(thiz + sizeof(in6_addr)) = this->GetPort();
+    other.GetAddr(*reinterpret_cast<in6_addr*>(otherval));
+    *reinterpret_cast<sharpen::Uint16*>(otherval + sizeof(in6_addr)) = other.GetPort();
+    return sharpen::BufferCompare(thiz,sizeof(thiz),otherval,sizeof(otherval));
 }

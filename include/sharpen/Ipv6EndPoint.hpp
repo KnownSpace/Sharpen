@@ -20,6 +20,7 @@
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "SystemError.hpp"
+#include "BufferOps.hpp"
 
 namespace sharpen
 {
@@ -110,15 +111,10 @@ namespace std
     {
         std::size_t operator()(const sharpen::Ipv6EndPoint &endpoint) const noexcept
         {
-            in6_addr addr;
-            endpoint.GetAddr(addr);
-            sharpen::Size hash = endpoint.GetPort();
-            sharpen::Size *p = reinterpret_cast<sharpen::Size*>(&addr);
-            for (sharpen::Size i = 0; i < sizeof(addr)/sizeof(sharpen::Size); i++)
-            {
-                   hash ^= p[i];
-            }
-            return hash;
+            char buffer[sizeof(in6_addr) + sizeof(sharpen::Uint16)] = {};
+            endpoint.GetAddr(*reinterpret_cast<in6_addr*>(buffer));
+            *reinterpret_cast<sharpen::Uint16*>(buffer + sizeof(in6_addr)) = endpoint.GetPort();
+            return sharpen::BufferHash(buffer,sizeof(buffer));
         }
     };
 }

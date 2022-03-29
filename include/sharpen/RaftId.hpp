@@ -15,6 +15,8 @@ namespace sharpen
 
         _Endpoint endpoint_;
     public:
+        RaftId() = default;
+
         explicit RaftId(const _Endpoint &endpoint)
             :endpoint_(endpoint)
         {}

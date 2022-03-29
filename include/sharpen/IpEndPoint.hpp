@@ -100,9 +100,26 @@ namespace std
     template<>
     struct hash<sharpen::IpEndPoint>
     {
+    private:
+        template<typename _U>
+        static std::size_t MapToSize(_U &&ep,int) noexcept
+        {
+            std::uint64_t value{ep.GetPort()};
+            std::uint32_t *p{reinterpret_cast<std::uint32_t*>(&value)};
+            p += 1;
+            *p = ep.GetAddr();
+            return value
+        }
+
+        template<typename _U>
+        static std::size_t MapToSize(_U &&ep,...) noexcept
+        {
+            return ep.GetAddr() ^ ep.GetPort();   
+        }
+    public:
         std::size_t operator()(const sharpen::IpEndPoint &endpoint) const noexcept
         {
-            return endpoint.GetAddr() ^ endpoint.GetPort();
+            return this->MapToSize(endpoint,0);
         }
     };
 }
