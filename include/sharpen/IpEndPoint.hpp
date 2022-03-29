@@ -108,7 +108,7 @@ namespace std
             std::uint32_t *p{reinterpret_cast<std::uint32_t*>(&value)};
             p += 1;
             *p = ep.GetAddr();
-            return value
+            return value;
         }
 
         template<typename _U>
