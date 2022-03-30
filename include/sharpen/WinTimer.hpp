@@ -19,7 +19,7 @@ namespace sharpen
           using Mybase = sharpen::ITimer;
           
           Myhandle handle_;
-          sharpen::Future<bool> *future_;
+          std::atomic<sharpen::Future<bool>*> future_;
 
           static void WINAPI CompleteFuture(void *arg, DWORD, DWORD);
      public:

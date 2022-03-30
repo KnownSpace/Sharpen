@@ -24,7 +24,7 @@ namespace sharpen
         using Mybase = sharpen::IChannel;
         using MyTimerBase = sharpen::ITimer;
 
-        sharpen::Future<bool> *future_;
+        std::atomic<sharpen::Future<bool>*> future_;
     public:
         LinuxTimer();
 

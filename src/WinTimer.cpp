@@ -29,9 +29,8 @@ sharpen::WinTimer::~WinTimer() noexcept
 void WINAPI sharpen::WinTimer::CompleteFuture(void *arg,DWORD,DWORD)
 {
     assert(arg);
-    sharpen::Future<bool> *future = nullptr;
     sharpen::WinTimer *thiz = reinterpret_cast<sharpen::WinTimer*>(arg);
-    std::swap(future,thiz->future_);
+    sharpen::Future<bool> *future{thiz->future_.exchange(nullptr)};
     if(future)
     {
         future->Complete(true);
@@ -64,8 +63,7 @@ void sharpen::WinTimer::Cancel()
         return;
     }
     ::CancelWaitableTimer(this->handle_);
-    sharpen::Future<bool> *future = nullptr;
-    std::swap(future,this->future_);
+    sharpen::Future<bool> *future{this->future_.exchange(nullptr)};
     if(future)
     {
         future->Complete(false);

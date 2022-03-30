@@ -45,8 +45,7 @@ void sharpen::LinuxTimer::OnEvent(sharpen::IoEvent *event)
     {
         return;
     }
-    sharpen::Future<bool> *future(nullptr);
-    std::swap(future,this->future_);
+    sharpen::Future<bool> *future{this->future_.exchange(nullptr)};
     if(future)
     {
         future->Complete(true);
@@ -64,8 +63,7 @@ void sharpen::LinuxTimer::Cancel()
     std::memset(&(time.it_interval),0,sizeof(time.it_interval));
     std::memset(&(time.it_value),0,sizeof(time.it_value));
     ::timerfd_settime(this->handle_,0,&time,nullptr);
-    sharpen::Future<bool> *future(nullptr);
-    std::swap(future,this->future_);
+    sharpen::Future<bool> *future{this->future_.exchange(nullptr)};
     if(future)
     {
         future->Complete(false);
