@@ -22,7 +22,8 @@ namespace sharpen
     template<typename _Id,typename  _Log,typename _Application,typename _PersistentStorage,typename _Member>
     using RaftWrapperRequires = sharpen::BoolType<sharpen::IsRaftLog<_Log>::Value
                                                         && sharpen::IsRaftMember<_Id,_Member>::Value
-                                                        && sharpen::IsRaftPersistenceStorage<_PersistentStorage,_Log,_Id>::Value>;
+                                                        && sharpen::IsRaftPersistenceStorage<_PersistentStorage,_Log,_Id>::Value
+                                                        && sharpen::IsRaftApplication<_Log,_Id,_Member,_PersistentStorage,_Application>::Value>;
 
     template<typename _Id,typename  _Log,typename _Application,typename _PersistentStorage,typename _Member,typename _Check = void>
     class InternalRaftWrapper;
@@ -106,7 +107,9 @@ namespace sharpen
             ,lastApplied_(0)
             ,members_()
             ,votes_(0)
-        {}
+        {
+            this->lastApplied_ = this->PersistenceStorage().GetLastAppiledIndex();
+        }
 
         sharpen::Uint64 LastIndex() const noexcept
         {
@@ -398,8 +401,9 @@ namespace sharpen
             {
                 if(this->lastApplied_ != 0)
                 {
-                    const _Log &log = this->PersistenceStorage().GetLog(this->lastApplied_);
-                    this->Application().Commit(log);
+                    _Log log{this->PersistenceStorage().GetLog(this->lastApplied_)};
+                    this->Application().Commit(log,this->Members(),this->PersistenceStorage());
+                    this->PersistenceStorage().SetLastAppiledIndex(this->lastApplied_ + 1);
                 }
                 ++this->lastApplied_;
             }

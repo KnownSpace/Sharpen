@@ -34,7 +34,9 @@ namespace sharpen
                                                                 ,std::declval<bool&>() = std::declval<const _PersistentStorage&>().EmptyLogs()
                                                                 ,std::declval<_PersistentStorage>().ResetVotedFor()
                                                                 ,std::declval<bool&>() = std::declval<const _PersistentStorage&>().CheckLog(std::declval<sharpen::Uint64>()/*log index*/,std::declval<sharpen::Uint64>()/*expected log term*/)
-                                                                ,std::declval<sharpen::Uint64&>() = std::declval<const _PersistentStorage&>().LastLogIndex());
+                                                                ,std::declval<sharpen::Uint64&>() = std::declval<const _PersistentStorage&>().LastLogIndex()
+                                                                ,std::declval<sharpen::Uint64&>() = std::declval<const _PersistentStorage&>().GetLastAppiledIndex()
+                                                                ,std::declval<_PersistentStorage&>().SetLastAppiledIndex(static_cast<sharpen::Uint64>(0)));
 
     template<typename _PersistentStorage,typename _Log,typename _Id>
     using IsRaftPersistenceStorage = sharpen::IsMatches<sharpen::InternalIsRaftPersistenceStorage,_PersistentStorage,_Log,_Id>;
@@ -49,11 +51,11 @@ namespace sharpen
     template<typename _Id,typename _Member>
     using IsRaftMember = sharpen::IsMatches<sharpen::InternalIsRaftMember,_Id,_Member>;
 
-    template<typename _Log,typename _Application>
-    using InternalIsRaftApplication = auto(*)() -> decltype(std::declval<_Application>().Commit(std::declval<_Log>()));
+    template<typename _Log,typename _Id,typename _Member,typename _PersistentStorage,typename _Application>
+    using InternalIsRaftApplication = auto(*)() -> decltype(std::declval<_Application>().Commit(std::declval<_Log>() /*log*/,std::declval<std::unordered_map<_Id,_Member>&>() /*members*/,std::declval<_PersistentStorage&>() /*storage*/));
 
-    template<typename _Log,typename _Application>
-    using IsRaftApplication = sharpen::IsMatches<sharpen::InternalIsRaftApplication,_Log,_Application>;
+    template<typename _Log,typename _Id,typename _Member,typename _PersistentStorage,typename _Application>
+    using IsRaftApplication = sharpen::IsMatches<sharpen::InternalIsRaftApplication,_Log_Id,_Member,_PersistentStorage,_Application>;
 }
 
 #endif
