@@ -7,7 +7,6 @@ class Message:public sharpen::BinarySerializable<Message>
 {
 private:
     using Self = Message;
-    using Base = sharpen::BinarySerializable<Message>;
 
     std::vector<std::string> strs_;
 public:
@@ -48,60 +47,64 @@ public:
 
     sharpen::Size ComputeSize() const noexcept
     {
-        sharpen::Varuint64 len{this->strs_.size()};
-        sharpen::Size size{0};
-        size += Base::ComputeSize(len);
-        for (auto begin = this->strs_.begin(),end = this->strs_.end(); begin != end; ++begin)
-        {
-            len.Set(begin->size());
-            size += Base::ComputeSize(len);
-            size += begin->size();
-        }
-        return size;
+        // sharpen::Varuint64 len{this->strs_.size()};
+        // sharpen::Size size{0};
+        // size += Helper::ComputeSize(len);
+        // for (auto begin = this->strs_.begin(),end = this->strs_.end(); begin != end; ++begin)
+        // {
+        //     len.Set(begin->size());
+        //     size += Helper::ComputeSize(len);
+        //     size += begin->size();
+        // }
+        // return size;
+        return Helper::ComputeSize(this->strs_);
     }
 
     sharpen::Size LoadFrom(const char *data,sharpen::Size size)
     {
-        if(!size)
-        {
-            throw std::invalid_argument{"invalid buffer"};
-        }
-        sharpen::Varuint64 len{0};
-        sharpen::Size offset{0};
-        offset += Base::LoadFrom(len,data,size);
-        for (sharpen::Size i = 0,count = len.Get(); i != count; ++i)
-        {
-            if (size <= offset)
-            {
-                throw sharpen::DataCorruptionException("message corruption");
-            }   
-            offset += Base::LoadFrom(len,data + offset,size - offset);
-            std::string str{};
-            str.resize(len.Get(),0);
-            if (size < offset)
-            {
-                throw sharpen::DataCorruptionException("message corruption");
-            }
-            std::memcpy(const_cast<char*>(str.data()),data + offset,str.size());
-            offset += str.size();
-            this->strs_.emplace_back(std::move(str));   
-        }
-        return offset;
+        // if(!size)
+        // {
+        //     throw std::invalid_argument{"invalid buffer"};
+        // }
+        // sharpen::Varuint64 len{0};
+        // sharpen::Size offset{0};
+        // offset += Helper::LoadFrom(len,data,size);
+        // for (sharpen::Size i = 0,count = len.Get(); i != count; ++i)
+        // {
+        //     if (size <= offset)
+        //     {
+        //         throw sharpen::DataCorruptionException("message corruption");
+        //     }   
+        //     offset += Helper::LoadFrom(len,data + offset,size - offset);
+        //     std::string str{};
+        //     str.resize(len.Get(),0);
+        //     if (size < offset)
+        //     {
+        //         throw sharpen::DataCorruptionException("message corruption");
+        //     }
+        //     std::memcpy(const_cast<char*>(str.data()),data + offset,str.size());
+        //     offset += str.size();
+        //     this->strs_.emplace_back(std::move(str));   
+        // }
+        // return offset;
+        return Helper::LoadFrom(this->strs_,data,size);
     }
 
     sharpen::Size UnsafeStoreTo(char *data) const noexcept
     {
-        sharpen::Size offset{0};
-        sharpen::Varuint64 len{this->strs_.size()};
-        offset += Base::UnsafeStoreTo(len,data + offset);
-        for (auto begin = this->strs_.begin(),end = this->strs_.end(); begin != end; ++begin)
-        {
-            len.Set(begin->size());
-            offset += Base::UnsafeStoreTo(len,data + offset);
-            std::memcpy(data + offset,begin->data(),begin->size());
-            offset += begin->size();
-        }
-        return offset;
+        // sharpen::Size offset{0};
+        // sharpen::Varuint64 len{this->strs_.size()};
+        // offset += Helper::UnsafeStoreTo(len,data + offset);
+        // for (auto begin = this->strs_.begin(),end = this->strs_.end(); begin != end; ++begin)
+        // {
+        //     len.Set(begin->size());
+        
+        //     offset += Helper::UnsafeStoreTo(len,data + offset);
+        //     std::memcpy(data + offset,begin->data(),begin->size());
+        //     offset += begin->size();
+        // }
+        // return offset;
+        return Helper::UnsafeStoreTo(this->strs_,data);
     }
 };
 
