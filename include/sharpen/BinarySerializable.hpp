@@ -9,6 +9,7 @@
 #include "Varint.hpp"
 #include "IteratorOps.hpp"
 #include "IntOps.hpp"
+#include "DataCorruptionException.hpp"
 
 namespace sharpen
 {
