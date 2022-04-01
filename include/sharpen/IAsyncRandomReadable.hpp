@@ -33,6 +33,20 @@ namespace sharpen
         sharpen::Size ReadAsync(sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Uint64 offset);
 
         sharpen::Size ReadAsync(sharpen::ByteBuffer &buf,sharpen::Uint64 offset);
+
+        template<typename _T,typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>
+        inline void ReadObjectAsync(_T &obj,sharpen::Uint64 offset)
+        {
+            this->ReadAsync(reinterpret_cast<char*>(&obj),sizeof(obj),offset);
+        }
+
+        template<typename _T,typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>
+        inline void ReadObjectAsync(sharpen::Uint64 offset)
+        {
+            char buf[sizeof(_T)];
+            this->ReadAsync(buf,sizeof(buf),offset);
+            return *reinterpret_cast<_T*>(buf);
+        }
     };
 }
 

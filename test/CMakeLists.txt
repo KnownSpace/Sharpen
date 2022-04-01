@@ -53,6 +53,7 @@ if(UNIX)
 endif()
 #iterator test
 add_executable(iteratortest "${PROJECT_SOURCE_DIR}/test/IteratorTest.cpp")
+add_executable(serializabletest "${PROJECT_SOURCE_DIR}/test/SerializableTest.cpp")
 
 #link
 target_link_libraries(awaittest sharpen)
@@ -81,6 +82,7 @@ if(UNIX)
     target_link_libraries(iouringtest sharpen)
 endif()
 target_link_libraries(iteratortest sharpen)
+target_link_libraries(serializabletest sharpen)
 #test
 enable_testing()
 #tests
@@ -115,3 +117,4 @@ if(UNIX)
     add_test(NAME iouring_test COMMAND "./iouringtest${extname}")
 endif()
 add_test(NAME iterator_test COMMAND "./iteratortest${extname}")
+add_test(NAME serializable_test COMMAND "./serializabletest{extname}")

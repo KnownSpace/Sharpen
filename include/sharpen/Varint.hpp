@@ -126,15 +126,15 @@ namespace sharpen
             this->cache_.Reset();
             sharpen::Size size = (std::min)(data.GetSize(),sizeof(this->data_));
             std::memcpy(this->data_,data.Data(),size);
-            this->data_[size] &= mask_;
+            this->data_[size - 1] &= mask_;
         }
 
         void Set(const char *data,sharpen::Size size)
         {
             this->cache_.Reset();
-            size = (std::min)(size,sizeof(this->data_) - 1);
+            size = (std::min)(size,sizeof(this->data_));
             std::memcpy(this->data_,data,size);
-            this->data_[size] &= mask_;
+            this->data_[size - 1] &= mask_;
         }
 
         inline operator _T() const noexcept
@@ -192,6 +192,64 @@ namespace sharpen
         static constexpr sharpen::Size GetMaxSize() noexcept
         {
             return sizeof(_T)*8/7 + ((sizeof(_T)*8 % 7)?1:0);
+        }
+
+        inline sharpen::Size LoadFrom(const char *data,sharpen::Size size)
+        {
+            this->Set(data,size);
+            return this->ComputeSize();
+        }
+
+        inline sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset)
+        {
+            assert(buf.GetSize() >= offset);
+            return this->LoadFrom(buf.Data() + offset,buf.GetSize() - offset);
+        }
+
+        inline sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf)
+        {
+            return this->LoadFrom(buf,0);
+        }
+
+        inline sharpen::Size UnsafeStoreTo(char *data) const noexcept
+        {
+            sharpen::Size size{1};
+            const char *ite = this->data_;
+            while (*ite & signBit_)
+            {
+                *data++ = *ite;
+                ++ite;
+                ++size;
+            }
+            *data++ = *ite;
+            return size;
+        }
+
+        inline sharpen::Size StoreTo(char *data,sharpen::Size size) const
+        {
+            sharpen::Size needSize{this->ComputeSize()};
+            if(size < needSize)
+            {
+                throw std::invalid_argument("buffer too small");
+            }
+            return this->UnsafeStoreTo(data);
+        }
+
+        inline sharpen::Size StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
+        {
+            assert(buf.GetSize() >= offset);
+            sharpen::Size size{buf.GetSize() - offset};
+            sharpen::Size needSize{this->ComputeSize()};
+            if(size < needSize)
+            {
+                buf.Extend(needSize - size);
+            }
+            return this->UnsafeStoreTo(buf.Data() + offset);
+        }
+
+        inline sharpen::Size StoreTo(sharpen::ByteBuffer &buf) const
+        {
+            return this->StoreTo(buf,0);
         }
     };
 

@@ -32,6 +32,7 @@ void ServerTest()
     {
         assert(data[i] == buf[i]);
     }
+    client->WriteObjectAsync(0);
     std::printf("server test pass\n");
 }
 
@@ -59,6 +60,8 @@ void ClientTest()
     }
     size = client->WriteAsync(data,sizeof(data) - 1);
     assert(size == sizeof(data) - 1);
+    int val{client->ReadObjectAsync<int>()};
+    std::printf("read obj %d\n",val);
     std::printf("client test pass\n");
 }
 

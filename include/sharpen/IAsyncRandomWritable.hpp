@@ -33,6 +33,12 @@ namespace sharpen
         sharpen::Size WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Uint64 offset);
 
         sharpen::Size WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Uint64 offset);
+
+        template<typename _T,typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>
+        inline void WriteObjectAsync(const _T &obj,sharpen::Uint64 offset)
+        {
+            this->WriteAsync(reinterpret_cast<const char*>(&obj),sizeof(obj),offset);
+        }
     };
 }
 
