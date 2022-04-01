@@ -178,7 +178,6 @@ namespace sharpen
         template<typename _T,typename _Check = decltype(Self::InternalLoadFrom(std::declval<_T&>(),nullptr,0,0,0))>
         static sharpen::Size LoadFrom(_T &obj,const sharpen::ByteBuffer &buf)
         {
-            assert(buf.GetSize() >= offset);
             return Self::LoadFrom(obj,buf,0);
         }
 
@@ -252,7 +251,6 @@ namespace sharpen
         template<typename _Iterator,typename _Check = decltype(Self::LoadFrom(*std::declval<_Iterator>()++,nullptr,0,0))>
         static sharpen::Size LoadRangeFrom(_Iterator begin,_Iterator end,const sharpen::ByteBuffer &buf)
         {
-            assert(buf.GetSize() >= offset);
             return Self::LoadRangeFrom(begin,end,buf,0);
         }
 
