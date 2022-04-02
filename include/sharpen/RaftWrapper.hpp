@@ -97,6 +97,8 @@ namespace sharpen
             this->SetCurrentTerm(term);
         }
     public:
+        static constexpr sharpen::Uint64 sentinelLogIndex_{0};
+
         InternalRaftWrapper(_Id id,_PersistentStorage pm)
             :InternalRaftWrapper(std::move(id),std::move(pm),_Application{})
         {}
@@ -401,7 +403,7 @@ namespace sharpen
         {
             while (this->lastApplied_ < this->commitIndex_)
             {
-                if(this->lastApplied_ != 0)
+                if(this->lastApplied_ != sentinelLogIndex_)
                 {
                     if(this->PersistenceStorage().ContainLog(this->lastApplied_))
                     {
