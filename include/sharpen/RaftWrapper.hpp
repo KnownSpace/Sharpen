@@ -401,8 +401,12 @@ namespace sharpen
             {
                 if(this->lastApplied_ != 0)
                 {
-                    _Log log{this->PersistenceStorage().GetLog(this->lastApplied_)};
-                    this->Application().Commit(log,this->Members(),this->PersistenceStorage());
+                    if(this->PersistenceStorage().ContainLog(this->lastApplied_))
+                    {
+                        _Log log{this->PersistenceStorage().GetLog(this->lastApplied_)};
+                        this->Application().Commit(log,this->Members(),this->PersistenceStorage());
+                    }
+                    //if you do nothing,that is ok
                     this->PersistenceStorage().SetLastAppiledIndex(this->lastApplied_ + 1);
                 }
                 ++this->lastApplied_;
