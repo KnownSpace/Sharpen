@@ -19,22 +19,23 @@
 namespace sharpen
 {
 
-    template<typename _Id,typename  _Log,typename _Application,typename _PersistentStorage,typename _Member>
+    template<typename _Id,typename _Member,typename  _Log,typename _Application,typename _PersistentStorage>
     using RaftWrapperRequires = sharpen::BoolType<sharpen::IsRaftLog<_Log>::Value
                                                         && sharpen::IsRaftMember<_Id,_Member>::Value
                                                         && sharpen::IsRaftPersistenceStorage<_PersistentStorage,_Log,_Id>::Value
                                                         && sharpen::IsRaftApplication<_Log,_Id,_Member,_PersistentStorage,_Application>::Value>;
 
-    template<typename _Id,typename  _Log,typename _Application,typename _PersistentStorage,typename _Member,typename _Check = void>
+    template<typename _Id,typename _Member,typename  _Log,typename _Application,typename _PersistentStorage,typename _Check = void>
     class InternalRaftWrapper;
 
     //0 is a sentinel value
     //it should not be used as log index
-    template<typename _Id,typename  _Log,typename _Application,typename _PersistentStorage,typename _Member>
-    class InternalRaftWrapper<_Id,_Log,_Application,_PersistentStorage,_Member,sharpen::EnableIf<sharpen::RaftWrapperRequires<_Id,_Log,_Application,_PersistentStorage,_Member>::Value>>:public sharpen::Noncopyable,public sharpen::Nonmovable
+    template<typename _Id,typename _Member,typename  _Log,typename _Application,typename _PersistentStorage>
+    class InternalRaftWrapper<_Id,_Member,_Log,_Application,_PersistentStorage,sharpen::EnableIf<sharpen::RaftWrapperRequires<_Id,_Member,_Log,_Application,_PersistentStorage>::Value>>:public sharpen::Noncopyable
     {
     private:
         using MemberMap = std::unordered_map<_Id,_Member>;
+        using Self = sharpen::InternalRaftWrapper<_Id,_Member,_Log,_Application,_PersistentStorage,sharpen::EnableIf<sharpen::RaftWrapperRequires<_Id,_Member,_Log,_Application,_PersistentStorage>::Value>>;
 
         _Id selfId_;
         sharpen::Optional<_Id> leaderId_;
@@ -114,6 +115,33 @@ namespace sharpen
         {
             this->lastApplied_ = this->PersistenceStorage().GetLastAppiledIndex();
         }
+
+        InternalRaftWrapper(Self &&other) noexcept
+            :selfId_(std::move(other.selfId_))
+            ,storage_(std::move(other.storage_))
+            ,rolePair_(std::move(other.rolePair_))
+            ,commitIndex_(other.commitIndex_)
+            ,lastApplied_(other.lastApplied_)
+            ,members_(std::move(other.members_))
+            ,votes_(other.votes_.load())
+        {}
+
+        inline Self &operator=(Self &&other) noexcept
+        {
+            if(this != std::addressof(other))
+            {
+                this->selfId_ = std::move(other.selfId_);
+                this->storage_ = std::move(other.storage_);
+                this->rolePair_ = std::move(other.rolePair_);
+                this->commitIndex_ = other.commitIndex_;
+                this->lastApplied_ = other.lastApplied_;
+                this->members_ = std::move(other.members_);
+                this->votes_ = other.votes_.load();
+            }
+            return *this;
+        }
+
+        ~InternalRaftWrapper() noexcept = default;
 
         sharpen::Uint64 LastIndex() const noexcept
         {
@@ -416,8 +444,6 @@ namespace sharpen
                 ++this->lastApplied_;
             }
         }
-
-        ~InternalRaftWrapper() noexcept = default;
     };
 
     template<typename _Id,typename  _Log,typename _Application,typename _PersistentStorage,typename _Member>
