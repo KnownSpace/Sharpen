@@ -121,7 +121,7 @@ namespace sharpen
             using ValueType = typename std::remove_reference<decltype(container.front())>::type;
             sharpen::Size offset{0};
             sharpen::Varuint64 builder{data,size};
-            sharpen::Size count{builder.Get()};
+            sharpen::Size count{sharpen::IntCast<sharpen::Size>(builder.Get())};
             Self::PrepareContainer(container,count);
             offset += builder.ComputeSize();
             while (count)
