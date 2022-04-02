@@ -65,10 +65,9 @@ set(fcontext_src "${PROJECT_SOURCE_DIR}/lib/boost.context/asm/make_${CPU_ARCH}_$
 aux_source_directory("${PROJECT_SOURCE_DIR}/lib/llhttp/src" llhttp_src)
 
 #build src
-file(GLOB_RECURSE headers "${PROJECT_SOURCE_DIR}/include/sharpen" "*.h" "*.hpp")
 aux_source_directory("${PROJECT_SOURCE_DIR}/src" src)
 add_library(llhttp ${llhttp_src})
-add_library(sharpen ${src} ${fcontext_src} ${headers})
+add_library(sharpen ${src} ${fcontext_src})
 add_library(sharpen::sharpen ALIAS sharpen)
 
 if(MSVC)
