@@ -1,9 +1,11 @@
 #include <sharpen/IpEndPoint.hpp>
 
 #include <utility>
+#include <cassert>
 
 #include <sharpen/SystemMacro.hpp>
 #include <sharpen/IntOps.hpp>
+#include <sharpen/ByteBuffer.hpp>
 
 #ifdef SHARPEN_IS_WIN
 #include <WS2tcpip.h>
@@ -125,4 +127,62 @@ sharpen::Int64 sharpen::IpEndPoint::CompareWith(const Self &other) const noexcep
         return -1;
     }
     return 0;
+}
+
+sharpen::Size sharpen::IpEndPoint::LoadFrom(const char *data,sharpen::Size size)
+{
+    if(size < sizeof(sharpen::Uint32) + sizeof(sharpen::Uint16))
+    {
+        throw std::invalid_argument("invalid ip endpoint buffer");
+    }
+    sharpen::Uint32 ip{0};
+    sharpen::Size offset{0};
+    std::memcpy(&ip,data,sizeof(ip));
+    this->SetAddr(ip);
+    offset += sizeof(ip);
+    sharpen::Uint16 port;
+    std::memcpy(&port,data + offset,sizeof(port));
+    this->SetPort(port);
+    offset += sizeof(port);
+    return offset;
+}
+
+sharpen::Size sharpen::IpEndPoint::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset)
+{
+    assert(buf.GetSize() >= offset);
+    return this->LoadFrom(buf.Data() + offset,buf.GetSize() - offset);
+}
+
+sharpen::Size sharpen::IpEndPoint::UnsafeStoreTo(char *data) const noexcept
+{
+    sharpen::Size offset{0};
+    sharpen::Uint32 ip{this->GetAddr()};
+    sharpen::Uint16 port{this->GetPort()};
+    std::memcpy(data,&ip,sizeof(ip));
+    offset += sizeof(ip);
+    std::memcpy(data + offset,&port,sizeof(port));
+    offset += sizeof(port);
+    return offset;
+}
+
+sharpen::Size sharpen::IpEndPoint::StoreTo(char *data,sharpen::Size size) const
+{
+    sharpen::Size needSize{this->ComputeSize()};
+    if(size < needSize)
+    {
+        throw std::invalid_argument("buffer too small");
+    }
+    return this->UnsafeStoreTo(data);
+}
+
+sharpen::Size sharpen::IpEndPoint::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
+{
+    assert(buf.GetSize() >= offset);
+    sharpen::Size needSize{this->ComputeSize()};
+    sharpen::Size size{buf.GetSize() - offset};
+    if(size < needSize)
+    {
+        buf.Extend(needSize - size);
+    }
+    return this->UnsafeStoreTo(buf.Data() + offset);
 }

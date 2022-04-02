@@ -2,10 +2,13 @@
 
 #include <cstring>
 #include <utility>
+#include <cassert>
 
 #ifdef SHARPEN_IS_NIX
 #include <arpa/inet.h>
 #endif
+
+#include <sharpen/ByteBuffer.hpp>
 
 sharpen::Ipv6EndPoint::Ipv6EndPoint() noexcept
     :addr_()
@@ -119,4 +122,69 @@ sharpen::Int64 sharpen::Ipv6EndPoint::CompareWith(const Self &other) const noexc
     other.GetAddr(*reinterpret_cast<in6_addr*>(otherval));
     *reinterpret_cast<sharpen::Uint16*>(otherval + sizeof(in6_addr)) = other.GetPort();
     return sharpen::BufferCompare(thiz,sizeof(thiz),otherval,sizeof(otherval));
+}
+
+sharpen::Size sharpen::Ipv6EndPoint::LoadFrom(const char *data,sharpen::Size size)
+{
+    if(size < sizeof(in6_addr) + sizeof(sharpen::Uint16))
+    {
+        throw std::invalid_argument("invalid ip endpoint buffer");
+    }
+    sharpen::Size offset{0};
+#ifdef SHARPEN_IS_WIN
+    std::memcpy(this->addr_.sin6_addr.u.Byte,data,sizeof(this->addr_.sin6_addr.u.Byte));
+    offset += sizeof(this->addr_.sin6_addr.u.Byte);
+#else
+    std::memcpy(this->addr_.sin6_addr.s6_addr,data,sizeof(this->addr_.sin6_addr.s6_addr));
+    offset += sizeof(this->addr_.sin6_addr.s6_addr);
+#endif
+    sharpen::Uint16 port;
+    std::memcpy(&port,data + offset,sizeof(port));
+    this->SetPort(port);
+    offset += sizeof(port);
+    return offset;
+}
+
+sharpen::Size sharpen::Ipv6EndPoint::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset)
+{
+    assert(buf.GetSize() >= offset);
+    return this->LoadFrom(buf.Data() + offset,buf.GetSize() - offset);
+}
+
+sharpen::Size sharpen::Ipv6EndPoint::UnsafeStoreTo(char *data) const noexcept
+{
+    sharpen::Size offset{0};
+    sharpen::Uint16 port{this->GetPort()};
+#ifdef SHARPEN_IS_WIN
+    std::memcpy(data,this->addr_.sin6_addr.u.Byte,sizeof(this->addr_.sin6_addr.u.Byte));
+    offset += sizeof(this->addr_.sin6_addr.u.Byte);
+#else
+    std::memcpy(data,this->addr_.sin6_addr.s6_addr,sizeof(this->addr_.sin6_addr.s6_addr));
+    offset += sizeof(this->addr_.sin6_addr.s6_addr);
+#endif
+    std::memcpy(data + offset,&port,sizeof(port));
+    offset += sizeof(port);
+    return offset;
+}
+
+sharpen::Size sharpen::Ipv6EndPoint::StoreTo(char *data,sharpen::Size size) const
+{
+    sharpen::Size needSize{this->ComputeSize()};
+    if(size < needSize)
+    {
+        throw std::invalid_argument("buffer too small");
+    }
+    return this->UnsafeStoreTo(data);
+}
+
+sharpen::Size sharpen::Ipv6EndPoint::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
+{
+    assert(buf.GetSize() >= offset);
+    sharpen::Size needSize{this->ComputeSize()};
+    sharpen::Size size{buf.GetSize() - offset};
+    if(size < needSize)
+    {
+        buf.Extend(needSize - size);
+    }
+    return this->UnsafeStoreTo(buf.Data() + offset);
 }

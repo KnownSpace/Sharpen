@@ -20,6 +20,8 @@
 
 namespace sharpen
 {
+    class ByteBuffer;
+
     class IpEndPoint:public sharpen::IEndPoint
     {
     private:
@@ -91,6 +93,31 @@ namespace sharpen
         virtual sharpen::Uint32 GetAddrLen() const override
         {
             return sizeof(this->addr_);
+        }
+
+        constexpr static sharpen::Size ComputeSize() noexcept
+        {
+            return sizeof(sharpen::Uint32) + sizeof(sharpen::Uint16);
+        }
+
+        sharpen::Size LoadFrom(const char *data,sharpen::Size size);
+
+        sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset);
+
+        inline sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf)
+        {
+            return this->LoadFrom(buf,0);
+        }
+
+        sharpen::Size UnsafeStoreTo(char *data) const noexcept;
+
+        sharpen::Size StoreTo(char *data,sharpen::Size size) const;
+
+        sharpen::Size StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
+
+        inline sharpen::Size StoreTo(sharpen::ByteBuffer &buf) const
+        {
+            return this->StoreTo(buf,0);
         }
     };
 }
