@@ -28,6 +28,8 @@ namespace sharpen
     template<typename _Id,typename  _Log,typename _Application,typename _PersistentStorage,typename _Member,typename _Check = void>
     class InternalRaftWrapper;
 
+    //0 is a sentinel value
+    //it should not be used as log index
     template<typename _Id,typename  _Log,typename _Application,typename _PersistentStorage,typename _Member>
     class InternalRaftWrapper<_Id,_Log,_Application,_PersistentStorage,_Member,sharpen::EnableIf<sharpen::RaftWrapperRequires<_Id,_Log,_Application,_PersistentStorage,_Member>::Value>>:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
