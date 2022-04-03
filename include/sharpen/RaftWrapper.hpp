@@ -47,12 +47,14 @@ namespace sharpen
         _PersistentStorage storage_;
 
         //volatile status
-        //current role and commiter
-        sharpen::CompressedPair<_Application,sharpen::RaftRole> rolePair_;
+        //current role
+        sharpen::RaftRole role_;
         //commit index
         sharpen::Uint64 commitIndex_;
         //applied index
         sharpen::Uint64 lastApplied_;
+        //application
+        std::shared_ptr<_Application> application_;
 
         //leader voltile status
         //next index and match index
@@ -100,16 +102,13 @@ namespace sharpen
     public:
         static constexpr sharpen::Uint64 sentinelLogIndex_{0};
 
-        InternalRaftWrapper(_Id id,_PersistentStorage pm)
-            :InternalRaftWrapper(std::move(id),std::move(pm),_Application{})
-        {}
-
-        InternalRaftWrapper(_Id id,_PersistentStorage pm,_Application commiter)
+        InternalRaftWrapper(_Id id,_PersistentStorage pm,std::shared_ptr<_Application> application)
             :selfId_(std::move(id))
             ,storage_(std::move(pm))
-            ,rolePair_(std::move(commiter),sharpen::RaftRole::Follower)
+            ,role_(sharpen::RaftRole::Follower)
             ,commitIndex_(0)
             ,lastApplied_(0)
+            ,application_(std::move(application))
             ,members_()
             ,votes_(0)
         {
@@ -119,9 +118,10 @@ namespace sharpen
         InternalRaftWrapper(Self &&other) noexcept
             :selfId_(std::move(other.selfId_))
             ,storage_(std::move(other.storage_))
-            ,rolePair_(std::move(other.rolePair_))
+            ,role_(other.role_)
             ,commitIndex_(other.commitIndex_)
             ,lastApplied_(other.lastApplied_)
+            ,application_(std::move(other.application_))
             ,members_(std::move(other.members_))
             ,votes_(other.votes_.load())
         {}
@@ -132,9 +132,10 @@ namespace sharpen
             {
                 this->selfId_ = std::move(other.selfId_);
                 this->storage_ = std::move(other.storage_);
-                this->rolePair_ = std::move(other.rolePair_);
+                this->role_ = other.role_;
                 this->commitIndex_ = other.commitIndex_;
                 this->lastApplied_ = other.lastApplied_;
+                this->application_ = std::move(other.application_);
                 this->members_ = std::move(other.members_);
                 this->votes_ = other.votes_.load();
             }
@@ -173,17 +174,17 @@ namespace sharpen
 
         sharpen::RaftRole GetRole() const noexcept
         {
-            return this->rolePair_.Second();
+            return this->role_;
         }
 
         _Application &Application() noexcept
         {
-            return this->rolePair_.First();
+            return *this->application_;
         }
 
-        const _Application &Commiter() const noexcept
+        const _Application &Application() const noexcept
         {
-            return this->rolePair_.First();
+            return *this->application_;
         }
 
         sharpen::Size MemberMajority() const noexcept
