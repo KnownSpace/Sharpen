@@ -407,7 +407,8 @@ namespace sharpen
         //for leader
         //you should append log
         //then add commit index
-        //and apply logs
+        //and append entires to followers
+        //apply logs finally
         void AppendLog(_Log log)
         {
             this->PersistenceStorage().AppendLog(std::move(log));
