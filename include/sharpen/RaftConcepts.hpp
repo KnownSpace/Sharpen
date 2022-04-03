@@ -42,11 +42,7 @@ namespace sharpen
     using IsRaftPersistenceStorage = sharpen::IsMatches<sharpen::InternalIsRaftPersistenceStorage,_PersistentStorage,_Log,_Id>;
 
     template<typename _Id,typename _Member>
-    using InternalIsRaftMember = auto(*)()->decltype(std::declval<_Id&>() = std::declval<const _Member&>().Id()
-                                                    ,std::declval<sharpen::Uint64&>() = std::declval<const _Member&>().GetNextIndex()
-                                                    ,std::declval<sharpen::Uint64&>() = std::declval<const _Member&>().GetMatchIndex()
-                                                    ,std::declval<_Member>().SetNextIndex(0)
-                                                    ,std::declval<_Member>().SetMatchIndex(0));
+    using InternalIsRaftMember = auto(*)()->decltype(std::declval<const _Id&>() = std::declval<const _Member&>().Id());
     
     template<typename _Id,typename _Member>
     using IsRaftMember = sharpen::IsMatches<sharpen::InternalIsRaftMember,_Id,_Member>;

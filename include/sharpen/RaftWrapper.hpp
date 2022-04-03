@@ -113,6 +113,7 @@ namespace sharpen
             ,votes_(0)
         {
             this->lastApplied_ = this->PersistenceStorage().GetLastAppiledIndex();
+            this->commitIndex_ = this->lastApplied_;
         }
 
         InternalRaftWrapper(Self &&other) noexcept
@@ -403,6 +404,10 @@ namespace sharpen
             this->leaderId_ = sharpen::EmptyOpt;
         }
 
+        //for leader
+        //you should append log
+        //then add commit index
+        //and apply logs
         void AppendLog(_Log log)
         {
             this->PersistenceStorage().AppendLog(std::move(log));
