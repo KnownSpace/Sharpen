@@ -61,7 +61,7 @@ namespace sharpen
         MemberMap members_;
 
         //candidate voltile status
-        std::atomic_uint64_t votes_;
+        sharpen::Uint64 votes_;
 
         void SetRole(sharpen::RaftRole role) noexcept
         {
@@ -130,7 +130,7 @@ namespace sharpen
             ,lastApplied_(other.lastApplied_)
             ,application_(std::move(other.application_))
             ,members_(std::move(other.members_))
-            ,votes_(other.votes_.load())
+            ,votes_(other.votes_)
         {}
 
         inline Self &operator=(Self &&other) noexcept
@@ -144,7 +144,7 @@ namespace sharpen
                 this->lastApplied_ = other.lastApplied_;
                 this->application_ = std::move(other.application_);
                 this->members_ = std::move(other.members_);
-                this->votes_ = other.votes_.load();
+                this->votes_ = other.votes_;
             }
             return *this;
         }
@@ -207,8 +207,9 @@ namespace sharpen
             }
         }
 
+        //append entires
         template<typename _LogIterator,typename _Check = sharpen::EnableIf<sharpen::IsRaftLogIterator<_LogIterator>::Value>>
-        bool AppendEntries(_LogIterator begin,_LogIterator end,const _Id &leaderId,sharpen::Uint64 leaderTerm,sharpen::Uint64 preLogIndex,sharpen::Uint64 preLogTerm,sharpen::Uint64 leaderCommit)
+        bool AppendEntries(_LogIterator begin,_LogIterator end,const _Id &leaderId,sharpen::Uint64 leaderTerm,sharpen::Uint64 prevLogIndex,sharpen::Uint64 prevLogTerm,sharpen::Uint64 leaderCommit)
         {
             //if is old leader
             if(leaderTerm < this->CurrentTerm())
@@ -240,12 +241,12 @@ namespace sharpen
             }
             //reset voted for
             this->PersistenceStorage().ResetVotedFor();
-            //check logs
-            if(!this->PersistenceStorage().EmptyLogs() && preLogIndex > this->lastApplied_)
+            //check prev log
+            if(!this->PersistenceStorage().EmptyLogs() && prevLogIndex != Self::sentinelLogIndex_ && prevLogIndex > this->lastApplied_)
             {
-                if( this->PersistenceStorage().ContainLog(preLogIndex))
+                if(this->PersistenceStorage().ContainLog(prevLogIndex))
                 {
-                    if(!this->PersistenceStorage().CheckLog(preLogIndex,preLogTerm))
+                    if(!this->PersistenceStorage().CheckLog(prevLogIndex,prevLogTerm))
                     {
                         return false;
                     }
@@ -255,16 +256,12 @@ namespace sharpen
                     return false;
                 }
             }
-            else if(preLogIndex != 0 && preLogIndex > this->lastApplied_)
-            {
-                return false;
-            }
             bool token{true};
             //erase logs if term diff with leader
             for (auto ite = begin; ite != end; ++ite)
             {
-                //skip logs that already commited
-                if(ite->GetIndex() > this->commitIndex_)
+                //skip logs that already applied
+                if(ite->GetIndex() > this->lastApplied_)
                 {
                     if(token && !this->PersistenceStorage().EmptyLogs() && this->PersistenceStorage().ContainLog(ite->GetIndex()))
                     {
@@ -273,21 +270,22 @@ namespace sharpen
                         if(!this->PersistenceStorage().CheckLog(ite->GetIndex(),ite->GetTerm()))
                         {
                             //remove logs [index,end)
-                            for (size_t ib = ite->GetIndex(),ie = this->PersistenceStorage().LastLogIndex(); ib <= ie; ++ib)
+                            for (sharpen::Size ib = ite->GetIndex(),ie = this->PersistenceStorage().LastLogIndex(); ib <= ie; ++ib)
                             {
-                                this->PersistenceStorage().RemoveLog(ie);
+                                this->PersistenceStorage().RemoveLog(ib);
                             }
                             //skip check
+                            //we already remove dirty logs
                             token = false;
                         }
                     }
                     this->PersistenceStorage().AppendLog(*ite);
                 }
             }
-            //commit logs
-            sharpen::Uint64 oldCommit = this->CommitIndex();
+            //set commit index
             if(this->commitIndex_ < leaderCommit)
             {
+                //leader commit index may bigger than last index
                 this->commitIndex_ = (std::min)(leaderCommit,this->LastIndex());
             }
             //apply logs
@@ -296,6 +294,7 @@ namespace sharpen
             return true;
         }
 
+        //we should wait a random time before you call it
         void RaiseElection()
         {
             //reset leader
@@ -305,7 +304,7 @@ namespace sharpen
             //increase term
             //and set role to candidate
             this->SetRole(sharpen::RaftRole::Candidate);
-            this->PersistenceStorage().AddCurrentTerm();
+            this->PersistenceStorage().IncreaseCurrentTerm();
             //vote to self
             this->PersistenceStorage().SetVotedFor(this->selfId_);
         }
@@ -363,7 +362,7 @@ namespace sharpen
 
         //return true if we continue
         //this impl is optional
-        template<typename _UCommiter = _Application,typename _Check = decltype(std::declval<_UCommiter&>().InstallSnapshot(std::declval<_PersistentStorage&>(),0,0,0,0,nullptr,false)),typename _Assert = sharpen::EnableIf<std::is_same<_Application,_UCommiter>::value>>
+        template<typename _UCommiter = _Application,typename _Check = decltype(std::declval<_UCommiter&>().InstallSnapshot(std::declval<_PersistentStorage&>(),std::declval<MemberMap&>(),0,0,0,0,nullptr,false)),typename _Assert = sharpen::EnableIf<std::is_same<_Application,_UCommiter>::value>>
         bool InstallSnapshot(const _Id &leaderId,sharpen::Uint64 leaderTerm,sharpen::Uint64 lastIncludedIndex,sharpen::Uint64 lastIncludedTerm,sharpen::Uint64 offset,const char *data,bool done)
         {
             //check term
@@ -394,7 +393,7 @@ namespace sharpen
                 this->leaderId_.Construct(leaderId);
             }
             this->leaderId_.Construct(leaderId);
-            this->Application().InstallSnapshot(this->PersistenceStorage(),leaderTerm,lastIncludedIndex,lastIncludedTerm,offset,data,done);
+            this->Application().InstallSnapshot(this->PersistenceStorage(),this->Members(),leaderTerm,lastIncludedIndex,lastIncludedTerm,offset,data,done);
             return !done;
         }
 
