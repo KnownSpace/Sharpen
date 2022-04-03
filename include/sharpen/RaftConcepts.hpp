@@ -48,7 +48,7 @@ namespace sharpen
     using IsRaftMember = sharpen::IsMatches<sharpen::InternalIsRaftMember,_Id,_Member>;
 
     template<typename _Log,typename _Id,typename _Member,typename _PersistentStorage,typename _Application>
-    using InternalIsRaftApplication = auto(*)() -> decltype(std::declval<_Application>().Commit(std::declval<_Log>() /*log*/,std::declval<std::unordered_map<_Id,_Member>&>() /*members*/,std::declval<_PersistentStorage&>() /*storage*/));
+    using InternalIsRaftApplication = auto(*)() -> decltype(std::declval<_Application>().Apply(std::declval<_Log>() /*log*/,std::declval<std::unordered_map<_Id,_Member>&>() /*members*/,std::declval<_PersistentStorage&>() /*storage*/));
 
     template<typename _Log,typename _Id,typename _Member,typename _PersistentStorage,typename _Application>
     using IsRaftApplication = sharpen::IsMatches<sharpen::InternalIsRaftApplication,_Log_Id,_Member,_PersistentStorage,_Application>;

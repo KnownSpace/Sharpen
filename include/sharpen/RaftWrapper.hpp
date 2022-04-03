@@ -451,7 +451,7 @@ namespace sharpen
                     if(this->PersistenceStorage().ContainLog(this->lastApplied_))
                     {
                         _Log log{this->PersistenceStorage().GetLog(this->lastApplied_)};
-                        this->Application().Commit(log,this->Members(),this->PersistenceStorage());
+                        this->Application().Apply(log,this->Members(),this->PersistenceStorage());
                     }
                     //if we lost that log
                     else if(policy == LostPolicy::Stop)
