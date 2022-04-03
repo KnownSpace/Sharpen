@@ -102,6 +102,12 @@ namespace sharpen
     public:
         static constexpr sharpen::Uint64 sentinelLogIndex_{0};
 
+        enum class LostPolicy
+        {
+            Stop,
+            Ignore
+        };
+
         InternalRaftWrapper(_Id id,_PersistentStorage pm,std::shared_ptr<_Application> application)
             :selfId_(std::move(id))
             ,storage_(std::move(pm))
@@ -284,7 +290,9 @@ namespace sharpen
             {
                 this->commitIndex_ = (std::min)(leaderCommit,this->LastIndex());
             }
-            this->ApplyLogs();
+            //apply logs
+            //stop if we lost the logs
+            this->ApplyLogs(LostPolicy::Stop);
             return true;
         }
 
@@ -307,13 +315,14 @@ namespace sharpen
             this->votes_ += vote;
         }
 
+        //should append entires to followers when become leader
+        //and then appy logs
         bool StopElection()
         {
             if (this->GetRole() == sharpen::RaftRole::Candidate && this->votes_ >= this->MemberMajority())
             {
                 this->SetRole(sharpen::RaftRole::Leader);
                 this->leaderId_.Construct(this->selfId_);
-                this->ApplyLogs();
                 return true;
             }
             return false;
@@ -434,7 +443,7 @@ namespace sharpen
             return this->lastApplied_;
         }
 
-        void ApplyLogs()
+        void ApplyLogs(LostPolicy policy)
         {
             while (this->lastApplied_ < this->commitIndex_)
             {
@@ -444,6 +453,11 @@ namespace sharpen
                     {
                         _Log log{this->PersistenceStorage().GetLog(this->lastApplied_)};
                         this->Application().Commit(log,this->Members(),this->PersistenceStorage());
+                    }
+                    //if we lost that log
+                    else if(policy == LostPolicy::Stop)
+                    {
+                        break;
                     }
                     //if you do nothing,that is ok
                     this->PersistenceStorage().SetLastAppiledIndex(this->lastApplied_ + 1);
