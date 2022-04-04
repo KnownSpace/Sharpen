@@ -61,6 +61,8 @@ namespace sharpen
         {
             return this->loop_ != nullptr;
         }
+
+        bool IsClosed() const noexcept;
     };
 
     using ChannelPtr = std::shared_ptr<sharpen::IChannel>;

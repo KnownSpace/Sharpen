@@ -27,31 +27,41 @@ void sharpen::IChannel::Register(sharpen::EventEngine &engine)
 void sharpen::IChannel::Close() noexcept
 {
 #ifdef SHARPEN_IS_WIN
-    if (this->handle_ != INVALID_HANDLE_VALUE)
+    sharpen::FileHandle handle{INVALID_HANDLE_VALUE};
+    std::swap(this->handle_,handle);
+    if (handle != INVALID_HANDLE_VALUE)
     {
         if (this->closer_)
         {
-            this->closer_(this->handle_);
+            this->closer_(handle);
         }
         else
         {
-            ::CloseHandle(this->handle_);
+            ::CloseHandle(handle);
         }
-        
-        this->handle_ = INVALID_HANDLE_VALUE;
     }
 #else
-    if (this->handle_ != -1)
+    sharpen::FileHandle handle{-1};
+    std::swap(this->handle_,handle);
+    if (handle != -1)
     {
         if (this->closer_)
         {
-            this->closer_(this->handle_);
+            this->closer_(handle);
         }
         else
         {
-            ::close(this->handle_);
+            ::close(handle);
         }
-        this->handle_ = -1;
     }
+#endif
+}
+
+bool sharpen::IChannel::IsClosed() const noexcept
+{
+#ifdef SHARPEN_IS_WIN
+    return this->handle_ == INVALID_HANDLE_VALUE;
+#else
+    return this->handle_ == -1;
 #endif
 }

@@ -56,6 +56,7 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorBlocking = WSAEWOULDBLOCK;
     constexpr sharpen::ErrorCode ErrorNotSocket = WSAENOTSOCK;
     constexpr sharpen::ErrorCode ErrorNotConnected = WSAENOTCONN;
+    constexpr sharpen::ErrorCode ErrorInvalidFileHandle = ERROR_INVALID_HANDLE;
 #else
     constexpr sharpen::ErrorCode ErrorCancel = ECANCELED;
     constexpr sharpen::ErrorCode ErrorConnectionAborted = ECONNABORTED;
@@ -66,6 +67,7 @@ namespace sharpen
 #endif
     constexpr sharpen::ErrorCode ErrorNotSocket = ENOTSOCK;
     constexpr sharpen::ErrorCode ErrorNotConnected = ENOTCONN;
+    constexpr sharpen::ErrorCode ErrorInvalidFileHandle = EBADF;
 #endif
 }
 
