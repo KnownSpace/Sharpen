@@ -466,8 +466,8 @@ namespace sharpen
         }
     };
 
-    template<typename _Id,typename  _Log,typename _Application,typename _PersistentStorage,typename _Member>
-    using RaftWrapper = sharpen::InternalRaftWrapper<_Id,_Log,_Application,_PersistentStorage,_Member>;
+    template<typename _Id,typename _Member,typename  _Log,typename _Application,typename _PersistentStorage>
+    using RaftWrapper = sharpen::InternalRaftWrapper<_Id,_Member,_Log,_Application,_PersistentStorage>;
 }
 
 #endif
