@@ -359,6 +359,11 @@ namespace sharpen
         {
             return Serializator::StoreTo(*static_cast<const _Object*>(this),buf);
         }
+
+        const sharpen::BinarySerializable<_Object> &Serialize() const noexcept
+        {
+            return *this;
+        }
     };   
 }
 
