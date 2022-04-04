@@ -54,6 +54,8 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorCancel = ERROR_OPERATION_ABORTED;
     constexpr sharpen::ErrorCode ErrorConnectionAborted = ERROR_CONNECTION_ABORTED;
     constexpr sharpen::ErrorCode ErrorBlocking = WSAEWOULDBLOCK;
+    constexpr sharpen::ErrorCode ErrorNotSocket = WSAENOTSOCK;
+    constexpr sharpen::ErrorCode ErrorNotConnected = WSAENOTCONN;
 #else
     constexpr sharpen::ErrorCode ErrorCancel = ECANCELED;
     constexpr sharpen::ErrorCode ErrorConnectionAborted = ECONNABORTED;
@@ -62,6 +64,8 @@ namespace sharpen
 #else
     constexpr sharpen::ErrorCode ErrorBlocking = EWOULDBLOCK;
 #endif
+    constexpr sharpen::ErrorCode ErrorNotSocket = ENOTSOCK;
+    constexpr sharpen::ErrorCode ErrorNotConnected = ENOTCONN;
 #endif
 }
 
