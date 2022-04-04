@@ -462,6 +462,11 @@ namespace sharpen
                 ++this->lastApplied_;
             }
         }
+
+        static constexpr bool IsValidIndex(sharpen::Uint64 index) noexcept
+        {
+            return index == sentinelLogIndex_;
+        }
     };
 
     template<typename _Id,typename  _Log,typename _Application,typename _PersistentStorage,typename _Member>
