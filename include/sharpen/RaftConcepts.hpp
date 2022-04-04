@@ -92,7 +92,7 @@ namespace sharpen
     using InternalIsRaftApplication = auto(*)() -> decltype(sharpen::InternalRaftApplicationHelper<_Log,_Id,_Member,_PersistentStorage>::Apply(std::declval<_Application&>()/*app*/,std::declval<_Log>(),std::declval<std::unordered_map<_Id,_Member>&>() /*members*/,std::declval<_PersistentStorage&>() /*storage*/));
 
     template<typename _Log,typename _Id,typename _Member,typename _PersistentStorage,typename _Application>
-    using IsRaftApplication = sharpen::IsMatches<sharpen::InternalIsRaftApplication,_Log_Id,_Member,_PersistentStorage,_Application>;
+    using IsRaftApplication = sharpen::IsMatches<sharpen::InternalIsRaftApplication,_Log,_Id,_Member,_PersistentStorage,_Application>;
 }
 
 #endif
