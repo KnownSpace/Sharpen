@@ -364,6 +364,11 @@ namespace sharpen
         {
             return *this;
         }
+
+        sharpen::BinarySerializable<_Object> &Unserialize() noexcept
+        {
+            return *this;
+        }
     };   
 }
 
