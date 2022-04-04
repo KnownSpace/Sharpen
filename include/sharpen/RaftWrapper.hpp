@@ -314,8 +314,8 @@ namespace sharpen
             this->votes_ += vote;
         }
 
-        //should append entires to followers when become leader
-        //and then appy logs
+        //should copy all logs to followers when become leader
+        //and then apply logs
         bool StopElection()
         {
             if (this->GetRole() == sharpen::RaftRole::Candidate && this->votes_ >= this->MemberMajority())
