@@ -54,6 +54,32 @@ namespace sharpen
             }
             return *reinterpret_cast<_T*>(buf);
         }
+
+        inline sharpen::Size ReadFixedAsync(char *buf,std::size_t size)
+        {
+            sharpen::Size offset{0};
+            while (offset != size)
+            {
+                sharpen::Size sz{this->ReadAsync(buf + offset,size - offset)};
+                if(!sz)
+                {
+                    break;
+                }   
+                offset += sz;
+            }
+            return offset;
+        }
+
+        inline sharpen::Size ReadFixedAsync(sharpen::ByteBuffer &buf,sharpen::Size bufOffset)
+        {
+            assert(buf.GetSize() >= bufOffset);
+            return this->ReadFixedAsync(buf.Data() + bufOffset,buf.GetSize() - bufOffset);
+        }
+
+        inline sharpen::Size ReadFixedAsync(sharpen::ByteBuffer &buf)
+        {
+            return this->ReadFixedAsync(buf,0);
+        }
     };
 }
 
