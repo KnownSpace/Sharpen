@@ -6,6 +6,7 @@
 #include <vector>
 #include <iterator>
 #include <memory>
+#include <cassert>
 
 #include "RaftRole.hpp"
 #include "TypeDef.hpp"
@@ -98,6 +99,12 @@ namespace sharpen
         {
             this->ConvertFollower();
             this->SetCurrentTerm(term);
+        }
+
+        static void VoteCallback(sharpen::Uint64 *vote) noexcept
+        {
+            assert(vote != nullptr);
+            *vote += 1;
         }
     public:
         static constexpr sharpen::Uint64 sentinelLogIndex_{0};
@@ -309,6 +316,12 @@ namespace sharpen
         void ReactVote(sharpen::Uint64 vote)
         {
             this->votes_ += vote;
+        }
+
+        std::function<void()> BuildVoteCallback()
+        {
+            using FnPtr = void(*)(sharpen::Uint64*);
+            return std::bind(static_cast<FnPtr>(&Self::VoteCallback),&this->votes_);
         }
 
         //should copy all logs to followers when become leader
