@@ -151,7 +151,7 @@ namespace sharpen
 
         ~InternalRaftWrapper() noexcept = default;
 
-        sharpen::Uint64 LastIndex() const noexcept
+        sharpen::Uint64 GetLastIndex() const noexcept
         {
             if(this->PersistenceStorage().EmptyLogs())
             {
@@ -160,7 +160,7 @@ namespace sharpen
             return this->PersistenceStorage().LastLog().GetIndex();
         }
 
-        sharpen::Uint64 LastTerm() const noexcept
+        sharpen::Uint64 GetLastTerm() const noexcept
         {
             if(this->PersistenceStorage().EmptyLogs())
             {
@@ -286,7 +286,7 @@ namespace sharpen
             if(this->commitIndex_ < leaderCommit)
             {
                 //leader commit index may bigger than last index
-                this->commitIndex_ = (std::min)(leaderCommit,this->LastIndex());
+                this->commitIndex_ = (std::min)(leaderCommit,this->GetLastIndex());
             }
             //apply logs
             //stop if we lost the logs
@@ -341,7 +341,7 @@ namespace sharpen
                 this->PersistenceStorage().ResetVotedFor();
                 this->ResetLeader();
             }
-            if((!this->PersistenceStorage().IsVotedFor() || this->PersistenceStorage().GetVotedFor() == candidateId) && lastLogIndex >= this->LastIndex() && lastLogTerm >= this->LastTerm())
+            if((!this->PersistenceStorage().IsVotedFor() || this->PersistenceStorage().GetVotedFor() == candidateId) && lastLogIndex >= this->GetLastIndex() && lastLogTerm >= this->GetLastTerm())
             {
                 this->ConvertFollower();
                 this->PersistenceStorage().SetVotedFor(candidateId);
@@ -422,14 +422,12 @@ namespace sharpen
             this->PersistenceStorage().AppendLog(std::move(log));
         }
 
-        void AddCommitIndex(sharpen::Uint64 value) noexcept
+        void SetCommitIndex(sharpen::Uint64 index) noexcept
         {
-            this->commitIndex_ += value;
-        }
-
-        void AddLastApplied(sharpen::Uint64 value) noexcept
-        {
-            this->lastApplied_ += value;
+            if(this->commitIndex_ < index)
+            {
+                this->commitIndex_ = index;
+            }
         }
 
         sharpen::Uint64 CommitIndex() const noexcept
