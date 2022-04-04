@@ -270,10 +270,7 @@ namespace sharpen
                         if(!this->PersistenceStorage().CheckLog(ite->GetIndex(),ite->GetTerm()))
                         {
                             //remove logs [index,end)
-                            for (sharpen::Size ib = ite->GetIndex(),ie = this->PersistenceStorage().LastLogIndex(); ib <= ie; ++ib)
-                            {
-                                this->PersistenceStorage().RemoveLog(ib);
-                            }
+                            this->PersistenceStorage().RemoveLogAfter(ite->GetIndex());
                             //skip check
                             //we already remove dirty logs
                             token = false;
