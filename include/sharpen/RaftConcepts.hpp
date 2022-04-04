@@ -29,12 +29,12 @@ namespace sharpen
                                                                 ,std::declval<_PersistentStorage>().RemoveLogsAfter(std::declval<sharpen::Uint64>()/*begin log index*/)
                                                                 ,std::declval<bool&>() = std::declval<const _PersistentStorage&>().ContainLog(std::declval<sharpen::Uint64>()/*log index*/)
                                                                 ,std::declval<_Log&>() = std::declval<const _PersistentStorage&>().GetLog(std::declval<sharpen::Uint64>()/*log index*/)
-                                                                ,std::declval<_Log&>() = std::declval<const _PersistentStorage&>().LastLog()
+                                                                ,std::declval<_Log&>() = std::declval<const _PersistentStorage&>().GetLastLog()
                                                                 ,std::declval<sharpen::Uint64&>() = std::declval<const _PersistentStorage&>().GetLogsCount()
                                                                 ,std::declval<bool&>() = std::declval<const _PersistentStorage&>().EmptyLogs()
                                                                 ,std::declval<_PersistentStorage>().ResetVotedFor()
                                                                 ,std::declval<bool&>() = std::declval<const _PersistentStorage&>().CheckLog(std::declval<sharpen::Uint64>()/*log index*/,std::declval<sharpen::Uint64>()/*expected log term*/)
-                                                                ,std::declval<sharpen::Uint64&>() = std::declval<const _PersistentStorage&>().LastLogIndex()
+                                                                ,std::declval<sharpen::Uint64&>() = std::declval<const _PersistentStorage&>().GetLastLogIndex()
                                                                 ,std::declval<sharpen::Uint64&>() = std::declval<const _PersistentStorage&>().GetLastAppiledIndex()
                                                                 ,std::declval<_PersistentStorage&>().SetLastAppiledIndex(static_cast<sharpen::Uint64>(0)));
 

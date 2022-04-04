@@ -157,7 +157,7 @@ namespace sharpen
             {
                 return 0;
             }
-            return this->PersistenceStorage().LastLog().GetIndex();
+            return this->PersistenceStorage().GetLastLog().GetIndex();
         }
 
         sharpen::Uint64 GetLastTerm() const noexcept
@@ -166,7 +166,7 @@ namespace sharpen
             {
                 return 0;
             }
-            return this->PersistenceStorage().LastLog().GetTerm();
+            return this->PersistenceStorage().GetLastLog().GetTerm();
         }
 
         MemberMap &Members() noexcept
