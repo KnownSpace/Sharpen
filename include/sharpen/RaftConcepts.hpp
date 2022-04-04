@@ -62,18 +62,22 @@ namespace sharpen
         template<typename _Application>
         static auto InternalApply(_Application &app,_Log log,std::unordered_map<_Id,_Member> &members,_PersistentStorage &storage,int,int,...) -> decltype(app.Apply(std::move(log),storage))
         {
+            static_cast<void>(members);
             return app.Apply(std::move(log),storage);
         }
 
         template<typename _Application>
         static auto InternalApply(_Application &app,_Log log,std::unordered_map<_Id,_Member> &members,_PersistentStorage &storage,int,...) -> decltype(app.Apply(std::move(log),members))
         {
+            static_cast<void>(storage);
             return app.Apply(std::move(log),members);
         }
 
         template<typename _Application>
         static auto InternalApply(_Application &app,_Log log,std::unordered_map<_Id,_Member> &members,_PersistentStorage &storage,...) -> decltype(app.Apply(std::move(log)))
         {
+            static_cast<void>(members);
+            static_cast<void>(storage);
             return app.Apply(std::move(log));
         }
     public:
