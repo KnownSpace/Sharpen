@@ -66,6 +66,16 @@ namespace sharpen
 
         void SetKeepAlive(bool val);
 
+        inline void DisableKeepAlive()
+        {
+            this->SetKeepAlive(false);
+        }
+
+        inline void EnableKeepAlive()
+        {
+            this->SetKeepAlive(true);
+        }
+
         void SetReuseAddress(bool val);
 
         int GetErrorCode() const noexcept;
