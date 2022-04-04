@@ -30,7 +30,7 @@ namespace sharpen
                                                                 ,std::declval<bool&>() = std::declval<const _PersistentStorage&>().ContainLog(std::declval<sharpen::Uint64>()/*log index*/)
                                                                 ,std::declval<_Log&>() = std::declval<const _PersistentStorage&>().GetLog(std::declval<sharpen::Uint64>()/*log index*/)
                                                                 ,std::declval<_Log&>() = std::declval<const _PersistentStorage&>().LastLog()
-                                                                ,std::declval<sharpen::Uint64&>() = std::declval<const _PersistentStorage&>().LogsCount()
+                                                                ,std::declval<sharpen::Uint64&>() = std::declval<const _PersistentStorage&>().GetLogsCount()
                                                                 ,std::declval<bool&>() = std::declval<const _PersistentStorage&>().EmptyLogs()
                                                                 ,std::declval<_PersistentStorage>().ResetVotedFor()
                                                                 ,std::declval<bool&>() = std::declval<const _PersistentStorage&>().CheckLog(std::declval<sharpen::Uint64>()/*log index*/,std::declval<sharpen::Uint64>()/*expected log term*/)
