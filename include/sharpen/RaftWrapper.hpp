@@ -449,7 +449,7 @@ namespace sharpen
                     if(this->PersistenceStorage().ContainLog(this->lastApplied_))
                     {
                         _Log log{this->PersistenceStorage().GetLog(this->lastApplied_)};
-                        this->Application().Apply(log,this->Members(),this->PersistenceStorage());
+                        sharpen::InternalRaftApplicationHelper<_Log,_Id,_Member,_PersistentStorage>::Apply(this->application_,std::move(log),this->Members(),this->PersistenceStorage());
                     }
                     //if we lost log and policy is stop
                     else if(policy == LostPolicy::Stop)

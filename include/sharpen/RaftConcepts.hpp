@@ -47,8 +47,45 @@ namespace sharpen
     template<typename _Id,typename _Member>
     using IsRaftMember = sharpen::IsMatches<sharpen::InternalIsRaftMember,_Id,_Member>;
 
+    template<typename _Log,typename _Id,typename _Member,typename _PersistentStorage>
+    struct InternalRaftApplicationHelper
+    {
+    private:
+        using Self = InternalRaftApplicationHelper<_Log,_Id,_Member,_PersistentStorage>;
+
+        template<typename _Application>
+        static auto InternalApply(_Application &app,_Log log,std::unordered_map<_Id,_Member> &members,_PersistentStorage &storage,int,int,int) -> decltype(app.Apply(std::move(log),members,storage))
+        {
+            return app.Apply(std::move(log),members,storage);
+        }
+
+        template<typename _Application>
+        static auto InternalApply(_Application &app,_Log log,std::unordered_map<_Id,_Member> &members,_PersistentStorage &storage,int,int,...) -> decltype(app.Apply(std::move(log),storage))
+        {
+            return app.Apply(std::move(log),storage);
+        }
+
+        template<typename _Application>
+        static auto InternalApply(_Application &app,_Log log,std::unordered_map<_Id,_Member> &members,_PersistentStorage &storage,int,...) -> decltype(app.Apply(std::move(log),members))
+        {
+            return app.Apply(std::move(log),members);
+        }
+
+        template<typename _Application>
+        static auto InternalApply(_Application &app,_Log log,std::unordered_map<_Id,_Member> &members,_PersistentStorage &storage,...) -> decltype(app.Apply(std::move(log)))
+        {
+            return app.Apply(std::move(log));
+        }
+    public:
+        template<typename _Application>
+        static auto Apply(_Application &app,_Log log,std::unordered_map<_Id,_Member> &members,_PersistentStorage &storage) -> decltype(Self::InternalApply(app,std::move(log),members,storage,0,0,0))
+        {
+            return Self::InternalApply(app,std::move(log),members,storage,0,0,0);
+        }
+    };
+
     template<typename _Log,typename _Id,typename _Member,typename _PersistentStorage,typename _Application>
-    using InternalIsRaftApplication = auto(*)() -> decltype(std::declval<_Application>().Apply(std::declval<_Log>() /*log*/,std::declval<std::unordered_map<_Id,_Member>&>() /*members*/,std::declval<_PersistentStorage&>() /*storage*/));
+    using InternalIsRaftApplication = auto(*)() -> decltype(sharpen::InternalRaftApplicationHelper<_Log,_Id,_Member,_PersistentStorage>::Apply(std::declval<_Application&>()/*app*/,std::declval<_Log>(),std::declval<std::unordered_map<_Id,_Member>&>() /*members*/,std::declval<_PersistentStorage&>() /*storage*/));
 
     template<typename _Log,typename _Id,typename _Member,typename _PersistentStorage,typename _Application>
     using IsRaftApplication = sharpen::IsMatches<sharpen::InternalIsRaftApplication,_Log_Id,_Member,_PersistentStorage,_Application>;
