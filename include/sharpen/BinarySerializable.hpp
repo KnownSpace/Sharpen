@@ -108,6 +108,36 @@ namespace sharpen
             return Self::InternalGetEnd(container,0);
         }
 
+        template<typename _Container,typename _T>
+        static auto InternalPutToContainer(_Container &container,_T &&obj,int,int,int) -> decltype(container.Emplace(std::forward<_T>(obj)))
+        {
+            return container.Emplace(std::forward<_T>(obj));
+        }
+
+        template<typename _Container,typename _T>
+        static auto InternalPutToContainer(_Container &container,_T &&obj,int,int,...) -> decltype(container.PushBack(std::forward<_T>(obj)))
+        {
+            return container.PushBack(std::forward<_T>(obj));
+        }
+
+        template<typename _Container,typename _T>
+        static auto InternalPutToContainer(_Container &container,_T &&obj,int,...) -> decltype(container.emplace_back(std::forward<_T>(obj)))
+        {
+            return container.emplace_back(std::forward<_T>(obj));
+        }
+
+        template<typename _Container,typename _T>
+        static auto InternalPutToContainer(_Container &container,_T &&obj,...) -> decltype(container.push_back(std::forward<_T>(obj)))
+        {
+            return container.push_back(std::forward<_T>(obj));
+        }
+
+        template<typename _Container,typename _T>
+        static auto PutToContainer(_Container &container,_T &&obj) -> decltype(Self::InternalPutToContainer(container,std::forward<_T>(obj),0,0,0))
+        {
+            return Self::InternalPutToContainer(container,std::forward<_T>(obj),0,0,0);
+        }
+
         template<typename _Container,typename _Check = decltype(Self::InternalComputeSize(*Self::GetBegin(std::declval<const _Container&>()),0,0))>
         static sharpen::Size InternalComputeSize(const _Container &container,int,int) noexcept
         {
@@ -136,7 +166,7 @@ namespace sharpen
                 }
                 ValueType obj;
                 offset += Self::LoadFrom(obj,data + offset,size - offset);
-                container.push_back(std::move(obj));
+                Self::PutToContainer(container,std::move(obj));
                 --count;
             }
             return offset;
