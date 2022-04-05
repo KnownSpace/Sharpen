@@ -57,6 +57,17 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorNotSocket = WSAENOTSOCK;
     constexpr sharpen::ErrorCode ErrorNotConnected = WSAENOTCONN;
     constexpr sharpen::ErrorCode ErrorInvalidFileHandle = ERROR_INVALID_HANDLE;
+    constexpr sharpen::ErrorCode ErrorAccessDenied = ERROR_ACCESS_DENIED;
+    constexpr sharpen::ErrorCode ErrorAlready = WSAEALREADY;
+    constexpr sharpen::ErrorCode ErrorConnectRefused = WSAECONNREFUSED;
+    constexpr sharpen::ErrorCode ErrorIsConnected = WSAEISCONN;
+    constexpr sharpen::ErrorCode ErrorIo = ERROR_IO_DEVICE;
+    constexpr sharpen::ErrorCode ErrorToManyFiles = ERROR_TOO_MANY_OPEN_FILES;
+    constexpr sharpen::ErrorCode ErrorConnectReset = WSAECONNRESET;
+    constexpr sharpen::ErrorCode ErrorNameTooLong = ERROR_FILENAME_EXCED_RANGE;
+    constexpr sharpen::ErrorCode ErrorNotEnoughMemory = ERROR_NOT_ENOUGH_MEMORY;
+    constexpr sharpen::ErrorCode ErrorFunctionNotImplemented = ERROR_NOT_SUPPORTED;
+    constexpr sharpen::ErrorCode ErrorBrokenPipe = ERROR_BROKEN_PIPE;
 #else
     constexpr sharpen::ErrorCode ErrorCancel = ECANCELED;
     constexpr sharpen::ErrorCode ErrorConnectionAborted = ECONNABORTED;
@@ -68,6 +79,17 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorNotSocket = ENOTSOCK;
     constexpr sharpen::ErrorCode ErrorNotConnected = ENOTCONN;
     constexpr sharpen::ErrorCode ErrorInvalidFileHandle = EBADF;
+    constexpr sharpen::ErrorCode ErrorAccessDenied = EACCES;
+    constexpr sharpen::ErrorCode ErrorAlready = EALREADY;
+    constexpr sharpen::ErrorCode ErrorConnectRefused = ECONNREFUSED;
+    constexpr sharpen::ErrorCode ErrorIsConnected = EISCONN;
+    constexpr sharpen::ErrorCode ErrorIo = EIO;
+    constexpr sharpen::ErrorCode ErrorToManyFiles = EMFILE;
+    constexpr sharpen::ErrorCode ErrorConnectReset = ECONNRESET;
+    constexpr sharpen::ErrorCode ErrorNameTooLong = ENAMETOOLONG;
+    constexpr sharpen::ErrorCode ErrorNotEnoughMemory = ENOMEM;
+    constexpr sharpen::ErrorCode ErrorFunctionNotImplemented = ENOSYS;
+    constexpr sharpen::ErrorCode ErrorBrokenPipe = EPIPE;
 #endif
 }
 
