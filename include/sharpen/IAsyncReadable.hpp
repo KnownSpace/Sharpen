@@ -32,23 +32,6 @@ namespace sharpen
 
         sharpen::Size ReadAsync(sharpen::ByteBuffer &buf);
 
-        template<typename _T,typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>
-        inline sharpen::Size ReadObjectAsync(_T &obj)
-        {
-            sharpen::Size index{0};
-            char *p = reinterpret_cast<char*>(&obj);
-            while (index != sizeof(_T))
-            {
-                sharpen::Size sz{ this->ReadAsync(p + index,sizeof(obj) - index)};
-                if(!sz)
-                {
-                    break;
-                }
-                index += sz;
-            }
-            return index;
-        }
-
         inline sharpen::Size ReadFixedAsync(char *buf,std::size_t size)
         {
             sharpen::Size offset{0};
@@ -73,6 +56,12 @@ namespace sharpen
         inline sharpen::Size ReadFixedAsync(sharpen::ByteBuffer &buf)
         {
             return this->ReadFixedAsync(buf,0);
+        }
+
+        template<typename _T,typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>
+        inline sharpen::Size ReadObjectAsync(_T &obj)
+        {
+            return this->ReadFixedAsync(reinterpret_cast<char*>(&obj),sizeof(obj));
         }
     };
 }
