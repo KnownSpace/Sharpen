@@ -118,6 +118,10 @@ namespace sharpen
         template<typename _Container,typename _Check = decltype(Self::InternalLoadFrom(*Self::GetBegin(std::declval<_Container&>())++,nullptr,0,0,0))>
         static sharpen::Size InternalLoadFrom(_Container &container,const char *data,sharpen::Size size,int,int)
         {
+            if(!size)
+            {
+                throw std::invalid_argument("buffer cannot be empty");
+            }
             using ValueType = typename std::remove_reference<decltype(container.front())>::type;
             sharpen::Size offset{0};
             sharpen::Varuint64 builder{data,size};
