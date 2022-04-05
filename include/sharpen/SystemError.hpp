@@ -56,7 +56,7 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorBlocking = WSAEWOULDBLOCK;
     constexpr sharpen::ErrorCode ErrorNotSocket = WSAENOTSOCK;
     constexpr sharpen::ErrorCode ErrorNotConnected = WSAENOTCONN;
-    constexpr sharpen::ErrorCode ErrorInvalidFileHandle = ERROR_INVALID_HANDLE;
+    constexpr sharpen::ErrorCode ErrorInvalidHandle = ERROR_INVALID_HANDLE;
     constexpr sharpen::ErrorCode ErrorAccessDenied = ERROR_ACCESS_DENIED;
     constexpr sharpen::ErrorCode ErrorAlreadyInProgress = WSAEALREADY;
     constexpr sharpen::ErrorCode ErrorConnectRefused = WSAECONNREFUSED;
@@ -68,6 +68,8 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorNotEnoughMemory = ERROR_NOT_ENOUGH_MEMORY;
     constexpr sharpen::ErrorCode ErrorFunctionNotImplemented = ERROR_NOT_SUPPORTED;
     constexpr sharpen::ErrorCode ErrorBrokenPipe = ERROR_BROKEN_PIPE;
+    constexpr sharpen::ErrorCode ErrorBadSocketHandle = WSAEBADF;
+    constexpr sharpen::ErrorCode ErrorBadFileHandle = ERROR_INVALID_HANDLE;
 #else
     constexpr sharpen::ErrorCode ErrorCancel = ECANCELED;
     constexpr sharpen::ErrorCode ErrorConnectionAborted = ECONNABORTED;
@@ -78,7 +80,7 @@ namespace sharpen
 #endif
     constexpr sharpen::ErrorCode ErrorNotSocket = ENOTSOCK;
     constexpr sharpen::ErrorCode ErrorNotConnected = ENOTCONN;
-    constexpr sharpen::ErrorCode ErrorInvalidFileHandle = EBADF;
+    constexpr sharpen::ErrorCode ErrorInvalidHandle = EBADF;
     constexpr sharpen::ErrorCode ErrorAccessDenied = EACCES;
     constexpr sharpen::ErrorCode ErrorAlreadyInProgress = EALREADY;
     constexpr sharpen::ErrorCode ErrorConnectRefused = ECONNREFUSED;
@@ -90,6 +92,8 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorNotEnoughMemory = ENOMEM;
     constexpr sharpen::ErrorCode ErrorFunctionNotImplemented = ENOSYS;
     constexpr sharpen::ErrorCode ErrorBrokenPipe = EPIPE;
+    constexpr sharpen::ErrorCode ErrorBadSocketHandle = EBADF;
+    constexpr sharpen::ErrorCode ErrorBadFileHandle = EBADF;
 #endif
 }
 
