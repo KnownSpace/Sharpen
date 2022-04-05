@@ -58,7 +58,7 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorNotConnected = WSAENOTCONN;
     constexpr sharpen::ErrorCode ErrorInvalidFileHandle = ERROR_INVALID_HANDLE;
     constexpr sharpen::ErrorCode ErrorAccessDenied = ERROR_ACCESS_DENIED;
-    constexpr sharpen::ErrorCode ErrorAlready = WSAEALREADY;
+    constexpr sharpen::ErrorCode ErrorAlreadyInProgress = WSAEALREADY;
     constexpr sharpen::ErrorCode ErrorConnectRefused = WSAECONNREFUSED;
     constexpr sharpen::ErrorCode ErrorIsConnected = WSAEISCONN;
     constexpr sharpen::ErrorCode ErrorIo = ERROR_IO_DEVICE;
@@ -80,7 +80,7 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorNotConnected = ENOTCONN;
     constexpr sharpen::ErrorCode ErrorInvalidFileHandle = EBADF;
     constexpr sharpen::ErrorCode ErrorAccessDenied = EACCES;
-    constexpr sharpen::ErrorCode ErrorAlready = EALREADY;
+    constexpr sharpen::ErrorCode ErrorAlreadyInProgress = EALREADY;
     constexpr sharpen::ErrorCode ErrorConnectRefused = ECONNREFUSED;
     constexpr sharpen::ErrorCode ErrorIsConnected = EISCONN;
     constexpr sharpen::ErrorCode ErrorIo = EIO;
