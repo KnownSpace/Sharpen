@@ -60,8 +60,16 @@ void ClientTest()
     }
     size = client->WriteAsync(data,sizeof(data) - 1);
     assert(size == sizeof(data) - 1);
-    int val{client->ReadObjectAsync<int>()};
-    std::printf("read obj %d\n",val);
+    int val;
+    sharpen::Size sz{client->ReadObjectAsync(val)};
+    if(sz != sizeof(val))
+    {
+        std::puts("client closed");
+    }
+    else
+    {
+        std::printf("read obj %d\n",val);
+    }
     std::printf("client test pass\n");
 }
 
