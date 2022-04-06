@@ -66,7 +66,7 @@ namespace sharpen
 
         void SetRole(sharpen::RaftRole role) noexcept
         {
-            this->rolePair_.Second() = role;
+            this->role_ = role;
         }
 
         _PersistentStorage &PersistenceStorage() noexcept
@@ -464,7 +464,7 @@ namespace sharpen
                     if(this->PersistenceStorage().ContainLog(this->lastApplied_))
                     {
                         _Log log{this->PersistenceStorage().GetLog(this->lastApplied_)};
-                        sharpen::InternalRaftApplicationHelper<_Log,_Id,_Member,_PersistentStorage>::Apply(this->application_,std::move(log),this->Members(),this->PersistenceStorage());
+                        sharpen::InternalRaftApplicationHelper<_Log,_Id,_Member,_PersistentStorage>::Apply(this->Application(),std::move(log),this->Members(),this->PersistenceStorage());
                     }
                     //if we lost log and policy is stop
                     else if(policy == LostPolicy::Stop)

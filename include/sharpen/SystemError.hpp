@@ -50,6 +50,11 @@ namespace sharpen
        return sharpen::MakeSystemErrorPtr(sharpen::GetLastError());
     }
 
+    inline sharpen::ErrorCode GetErrorCode(const std::system_error &exception) noexcept
+    {
+        return static_cast<sharpen::ErrorCode>(exception.code().value());
+    }
+
 #ifdef SHARPEN_IS_WIN
     constexpr sharpen::ErrorCode ErrorCancel = ERROR_OPERATION_ABORTED;
     constexpr sharpen::ErrorCode ErrorConnectionAborted = ERROR_CONNECTION_ABORTED;
