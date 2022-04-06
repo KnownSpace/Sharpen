@@ -346,12 +346,6 @@ namespace sharpen
         using Remove = Erase<Find<_U>::Index>;
 
     };
-    
-    template<typename _T>
-    _T &DeclLvalue();
-
-    template<typename _T>
-    _T &&DeclRvalue();
 
     template<typename _Fn,typename ..._Args>
     using InternalIsCompletedBindable = auto(*)()->decltype(std::bind(std::declval<_Fn>(),std::declval<_Args>()...)());
