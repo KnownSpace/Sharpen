@@ -151,7 +151,7 @@ namespace sharpen
 
             void operator()(sharpen::Future<bool> &future)
             {
-                if(future.Get() && !this->waiter_->flag_.test_and_set())
+                if(future.Get())
                 {
                     _Iterator begin = waiter_->iterator_;
                     _Iterator end = sharpen::IteratorForward(begin,this->waiter_->futures_.size());
@@ -306,7 +306,7 @@ namespace sharpen
             MapIteratorTimeoutCallback<_MapIterator> timeoutCb;
             timeoutCb.waiter_ = waiterPtr;
             waiterPtr->timeoutFuture_.SetCallback(std::move(timeoutCb));
-            timer->WaitAsync(waiterPtr->timeoutFuture_,timeout);
+            waiterPtr->timer_->WaitAsync(waiterPtr->timeoutFuture_,timeout);
             while (begin != end)
             {
                 TimeLimitedCompletedCallback<_MapIterator> cb;
@@ -356,13 +356,13 @@ namespace sharpen
         }
 
         template<typename _Iterator,typename _Proposal,typename _Rep,typename _Period>
-        static auto TimeLimitedProposeAsync(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,sharpen::Size majority,_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> &finish) ->decltype(Self::InternalTimeLimitedProposeAsync(timer,timeout,begin,end,std::forward<_Proposal>(proposal),continuation,&finish,0,0))
+        static auto TimeLimitedProposeAsync(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,_Iterator begin,_Iterator end,sharpen::Size majority,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> &finish) ->decltype(Self::InternalTimeLimitedProposeAsync(timer,timeout,begin,end,std::forward<_Proposal>(proposal),continuation,&finish,0,0))
         {
             return Self::InternalTimeLimitedProposeAsync(std::move(timer),timeout,begin,end,std::forward<_Proposal>(proposal),continuation,&finish,majority,0);
         }
 
         template<typename _Iterator,typename _Proposal,typename _Rep,typename _Period>
-        static auto TimeLimitedProposeAsync(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,sharpen::Size majority,_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation) ->decltype(Self::InternalTimeLimitedProposeAsync(timer,timeout,begin,end,std::forward<_Proposal>(proposal),continuation,nullptr,0,0))
+        static auto TimeLimitedProposeAsync(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,_Iterator begin,_Iterator end,sharpen::Size majority,_Proposal &&proposal,sharpen::Future<bool> &continuation) ->decltype(Self::InternalTimeLimitedProposeAsync(timer,timeout,begin,end,std::forward<_Proposal>(proposal),continuation,nullptr,0,0))
         {
             return Self::InternalTimeLimitedProposeAsync(std::move(timer),timeout,begin,end,std::forward<_Proposal>(proposal),continuation,nullptr,majority,0);
         }

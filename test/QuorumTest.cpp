@@ -297,6 +297,69 @@ void MajorityTest()
     }
 }
 
+void CancelableMapQuorumTest()
+{
+    std::printf("time limited quorum\n");
+    sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::EventEngine::GetEngine());
+    std::map<std::size_t,CancelableProposer> proposers;
+    for (size_t i = 0; i < 10; i++)
+    {
+        proposers.emplace(i,CancelableProposer{});
+    }
+    sharpen::AwaitableFuture<bool> continuation;
+    sharpen::AwaitableFuture<void> finish;
+    sharpen::Quorum::TimeLimitedProposeAsync(timer,std::chrono::seconds(1),proposers.begin(),proposers.end(),1,continuation,finish);
+    bool status = continuation.Await();
+    std::printf("continue\n");
+    std::printf("status is %d\n",status);
+    finish.Await();
+    std::printf("finish\n");
+}
+
+void CancelableMajorityTest()
+{
+    std::printf("time limited quorum\n");
+    sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::EventEngine::GetEngine());
+    std::map<std::size_t,CancelableProposer> proposers;
+    for (size_t i = 0; i < 10; i++)
+    {
+        proposers.emplace(i,CancelableProposer{});
+    }
+    sharpen::AwaitableFuture<bool> continuation;
+    sharpen::AwaitableFuture<void> finish;
+    sharpen::Quorum::TimeLimitedProposeAsync(timer,std::chrono::seconds(1),proposers.begin(),proposers.end(),3,1,continuation,finish);
+    bool status = continuation.Await();
+    std::printf("continue\n");
+    std::printf("status is %d\n",status);
+    finish.Await();
+    std::printf("finish\n");
+}
+
+void MajorityFailTest()
+{
+    std::printf("majority quorum test\n");
+    sharpen::Quorum quorum;
+    std::map<std::size_t,StatefulProposer> proposers;
+    for (size_t i = 0; i < 10; i++)
+    {
+        proposers.emplace(i,i % 2);
+    }
+    sharpen::AwaitableFuture<bool> continuation;
+    sharpen::AwaitableFuture<void> finish;
+    quorum.ProposeAsync(proposers.begin(),proposers.end(),6,1,continuation,finish);
+    bool status = continuation.Await();
+    assert(status == false);
+    std::printf("continue\n");
+    std::printf("status is %d\n",status);
+    finish.Await();
+    std::printf("finish\n");
+    std::printf("proposer status\n");
+    for (size_t i = 0; i < 10; i++)
+    {
+        std::printf("%zu        %d\n",i,proposers[i].Success());
+    }
+}
+
 void QuorumTest()
 {
     StatelessQuorumTest();
@@ -306,6 +369,8 @@ void QuorumTest()
     CancelableQuorumTest();
     MapQuorumTest();
     MajorityTest();
+    CancelableMapQuorumTest();
+    MajorityFailTest();
 }
 
 int main(int argc, char const *argv[])
