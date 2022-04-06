@@ -279,6 +279,7 @@ namespace sharpen
         Self &operator=(sharpen::EmptyOptional) noexcept
         {
             this->Reset();
+            return *this;
         }
 
         void Swap(Self &other) noexcept
