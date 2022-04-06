@@ -74,11 +74,6 @@ namespace sharpen
             return this->storage_;
         }
 
-        const _PersistentStorage &PersistenceStorage() const noexcept
-        {
-            return this->storage_;
-        }
-
         void SetCurrentTerm(sharpen::Uint64 term)
         {
             this->PersistenceStorage().SetCurrentTerm(term);
@@ -208,10 +203,15 @@ namespace sharpen
 
         void ReactNewTerm(sharpen::Uint64 term)
         {
-            if(term > this->CurrentTerm())
+            if(term > this->GetCurrentTerm())
             {
                 this->BiggerTerm(term);
             }
+        }
+
+        const _PersistentStorage &PersistenceStorage() const noexcept
+        {
+            return this->storage_;
         }
 
         //append entires
@@ -219,12 +219,12 @@ namespace sharpen
         bool AppendEntries(_LogIterator begin,_LogIterator end,const _Id &leaderId,sharpen::Uint64 leaderTerm,sharpen::Uint64 prevLogIndex,sharpen::Uint64 prevLogTerm,sharpen::Uint64 leaderCommit)
         {
             //if is old leader
-            if(leaderTerm < this->CurrentTerm())
+            if(leaderTerm < this->GetCurrentTerm())
             {
                 return false;
             }
             //update term
-            if(this->CurrentTerm() < leaderTerm)
+            if(this->GetCurrentTerm() < leaderTerm)
             {
                 this->BiggerTerm(leaderTerm);
                 this->leaderId_.Construct(leaderId);
@@ -236,7 +236,7 @@ namespace sharpen
             //access denied
             else if(this->KnowLeader())
             {
-                if(this->LeaderId() != leaderId)
+                if(this->GetLeaderId() != leaderId)
                 {
                     return false;
                 }
@@ -340,12 +340,12 @@ namespace sharpen
         bool RequestVote(sharpen::Uint64 candidateTerm,const _Id &candidateId,sharpen::Uint64 lastLogIndex,sharpen::Uint64 lastLogTerm)
         {
             //check term
-            if(this->CurrentTerm() > candidateTerm)
+            if(this->GetCurrentTerm() > candidateTerm)
             {
                 return false;
             }
             //update term
-            if(this->CurrentTerm() < candidateTerm)
+            if(this->GetCurrentTerm() < candidateTerm)
             {
                 this->BiggerTerm(candidateTerm);
                 this->PersistenceStorage().ResetVotedFor();
@@ -360,12 +360,12 @@ namespace sharpen
             return false;
         }
 
-        sharpen::Uint64 CurrentTerm() const noexcept
+        sharpen::Uint64 GetCurrentTerm() const noexcept
         {
             return this->PersistenceStorage().GetCurrentTerm();
         }
 
-        const _Id &SelfId() const noexcept
+        const _Id &GetSelfId() const noexcept
         {
             return this->selfId_;
         }
@@ -376,11 +376,11 @@ namespace sharpen
         bool InstallSnapshot(const _Id &leaderId,sharpen::Uint64 leaderTerm,sharpen::Uint64 lastIncludedIndex,sharpen::Uint64 lastIncludedTerm,sharpen::Uint64 offset,const char *data,bool done)
         {
             //check term
-            if (this->CurrentTerm() > leaderTerm)
+            if (this->GetCurrentTerm() > leaderTerm)
             {
                 return false;
             }
-            if(this->CurrentTerm() < leaderTerm)
+            if(this->GetCurrentTerm() < leaderTerm)
             {
                 this->BiggerTerm(leaderTerm);
                 this->leaderId_.Construct(leaderId);
@@ -392,7 +392,7 @@ namespace sharpen
             //access denied
             else if(this->KnowLeader())
             {
-                if(this->LeaderId() != leaderId)
+                if(this->GetLeaderId() != leaderId)
                 {
                     return false;
                 }
@@ -412,7 +412,7 @@ namespace sharpen
             return this->leaderId_.Exist();
         }
 
-        const _Id &LeaderId() const noexcept
+        const _Id &GetLeaderId() const noexcept
         {
             return this->leaderId_.Get();
         }
@@ -440,12 +440,12 @@ namespace sharpen
             }
         }
 
-        sharpen::Uint64 CommitIndex() const noexcept
+        sharpen::Uint64 GetCommitIndex() const noexcept
         {
             return this->commitIndex_;
         }
 
-        sharpen::Uint64 LastApplied() const noexcept
+        sharpen::Uint64 GetLastApplied() const noexcept
         {
             return this->lastApplied_;
         }
