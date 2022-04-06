@@ -18,7 +18,7 @@ namespace sharpen
     using IsQuorumProposerIterator = sharpen::IsQuorumProposer<decltype(*std::declval<_ProposerIterator>()),_Proposal>;
 
     template<typename _ProposerMapIterator,typename _Proposal>
-    using IsQuorumProposerMapIterator = sharpen::IsQuorumProposer<decltype(*std::declval<_ProposerMapIterator>()->second),_Proposal>;
+    using IsQuorumProposerMapIterator = sharpen::IsQuorumProposer<decltype(std::declval<_ProposerMapIterator>()->second),_Proposal>;
 
     template<typename _Proposer>
     using InternalCancelableQuorumProposer = auto(*)() ->decltype(std::declval<_Proposer>().Cancel());
@@ -30,7 +30,7 @@ namespace sharpen
     using IsCancelableQuorumProposerIterator = sharpen::IsCancelableQuorumProposer<decltype(*std::declval<_ProposerIterator>()),_Proposal>;
 
     template<typename _ProposerMapIterator,typename _Proposal>
-    using IsCancelableQuorumProposerMapIterator = sharpen::IsCancelableQuorumProposer<decltype(*std::declval<_ProposerMapIterator>()->second),_Proposal>;
+    using IsCancelableQuorumProposerMapIterator = sharpen::IsCancelableQuorumProposer<decltype(std::declval<_ProposerMapIterator>()->second),_Proposal>;
 }
 
 #endif
