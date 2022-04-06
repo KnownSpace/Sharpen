@@ -320,51 +320,51 @@ namespace sharpen
 
     public:
         template<typename _Iterator,typename _Proposal>
-        static auto ProposeAsync(_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> &finish) ->decltype(Self::InternalProposeAsync(begin,end,proposal,continuation,&finish,0))
+        static auto ProposeAsync(_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> &finish) ->decltype(Self::InternalProposeAsync(begin,end,std::forward<_Proposal>(proposal),continuation,&finish,0,0))
         {
-            return Self::InternalProposeAsync(begin,end,proposal,continuation,&finish,(sharpen::GetRangeSize(begin,end) + 1)/2,0);
+            return Self::InternalProposeAsync(begin,end,std::forward<_Proposal>(proposal),continuation,&finish,(sharpen::GetRangeSize(begin,end) + 1)/2,0);
         }
 
         template<typename _Iterator,typename _Proposal>
-        static auto ProposeAsync(_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation) ->decltype(Self::InternalProposeAsync(begin,end,proposal,continuation,nullptr,0))
+        static auto ProposeAsync(_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation) ->decltype(Self::InternalProposeAsync(begin,end,std::forward<_Proposal>(proposal),continuation,nullptr,0,0))
         {
-            return Self::InternalProposeAsync(begin,end,proposal,continuation,nullptr,(sharpen::GetRangeSize(begin,end) + 1)/2,0);
+            return Self::InternalProposeAsync(begin,end,std::forward<_Proposal>(proposal),continuation,nullptr,(sharpen::GetRangeSize(begin,end) + 1)/2,0);
         }
 
         template<typename _Iterator,typename _Proposal>
-        static auto ProposeAsync(_Iterator begin,_Iterator end,sharpen::Size majority,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> &finish) ->decltype(Self::InternalProposeAsync(begin,end,proposal,continuation,&finish,0))
+        static auto ProposeAsync(_Iterator begin,_Iterator end,sharpen::Size majority,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> &finish) ->decltype(Self::InternalProposeAsync(begin,end,std::forward<_Proposal>(proposal),continuation,&finish,0,0))
         {
-            return Self::InternalProposeAsync(begin,end,proposal,continuation,&finish,majority,0);
+            return Self::InternalProposeAsync(begin,end,std::forward<_Proposal>(proposal),continuation,&finish,majority,0);
         }
 
         template<typename _Iterator,typename _Proposal>
-        static auto ProposeAsync(_Iterator begin,_Iterator end,sharpen::Size majority,_Proposal &&proposal,sharpen::Future<bool> &continuation) ->decltype(Self::InternalProposeAsync(begin,end,proposal,continuation,nullptr,0))
+        static auto ProposeAsync(_Iterator begin,_Iterator end,sharpen::Size majority,_Proposal &&proposal,sharpen::Future<bool> &continuation) ->decltype(Self::InternalProposeAsync(begin,end,std::forward<_Proposal>(proposal),continuation,nullptr,0,0))
         {
-            return Self::InternalProposeAsync(begin,end,proposal,continuation,nullptr,majority,0);
+            return Self::InternalProposeAsync(begin,end,std::forward<_Proposal>(proposal),continuation,nullptr,majority,0);
         }
 
         template<typename _Iterator,typename _Proposal,typename _Rep,typename _Period>
-        static auto TimeLimitedProposeAsync(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> &finish) ->decltype(Self::InternalTimeLimitedProposeAsync(timer,timeout,begin,end,proposal,continuation,&finish,0))
+        static auto TimeLimitedProposeAsync(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> &finish) ->decltype(Self::InternalTimeLimitedProposeAsync(timer,timeout,begin,end,proposal,continuation,&finish,0,0))
         {
-            return Self::InternalTimeLimitedProposeAsync(std::move(timer),timeout,begin,end,proposal,continuation,&finish,(sharpen::GetRangeSize(begin,end) + 1)/2,0);
+            return Self::InternalTimeLimitedProposeAsync(std::move(timer),timeout,begin,end,std::forward<_Proposal>(proposal),continuation,&finish,(sharpen::GetRangeSize(begin,end) + 1)/2,0);
         }
 
         template<typename _Iterator,typename _Proposal,typename _Rep,typename _Period>
-        static auto TimeLimitedProposeAsync(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation) ->decltype(Self::InternalTimeLimitedProposeAsync(timer,timeout,begin,end,proposal,continuation,nullptr,0))
+        static auto TimeLimitedProposeAsync(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation) ->decltype(Self::InternalTimeLimitedProposeAsync(timer,timeout,begin,end,std::forward<_Proposal>(proposal),continuation,nullptr,0,0))
         {
-            return Self::InternalTimeLimitedProposeAsync(std::move(timer),timeout,begin,end,proposal,continuation,nullptr,(sharpen::GetRangeSize(begin,end) + 1)/2,0);
+            return Self::InternalTimeLimitedProposeAsync(std::move(timer),timeout,begin,end,std::forward<_Proposal>(proposal),continuation,nullptr,(sharpen::GetRangeSize(begin,end) + 1)/2,0);
         }
 
         template<typename _Iterator,typename _Proposal,typename _Rep,typename _Period>
-        static auto TimeLimitedProposeAsync(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,sharpen::Size majority,_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> &finish) ->decltype(Self::InternalTimeLimitedProposeAsync(timer,timeout,begin,end,proposal,continuation,&finish,0))
+        static auto TimeLimitedProposeAsync(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,sharpen::Size majority,_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> &finish) ->decltype(Self::InternalTimeLimitedProposeAsync(timer,timeout,begin,end,std::forward<_Proposal>(proposal),continuation,&finish,0,0))
         {
-            return Self::InternalTimeLimitedProposeAsync(std::move(timer),timeout,begin,end,proposal,continuation,&finish,majority,0);
+            return Self::InternalTimeLimitedProposeAsync(std::move(timer),timeout,begin,end,std::forward<_Proposal>(proposal),continuation,&finish,majority,0);
         }
 
         template<typename _Iterator,typename _Proposal,typename _Rep,typename _Period>
-        static auto TimeLimitedProposeAsync(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,sharpen::Size majority,_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation) ->decltype(Self::InternalTimeLimitedProposeAsync(timer,timeout,begin,end,proposal,continuation,nullptr,0))
+        static auto TimeLimitedProposeAsync(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,sharpen::Size majority,_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation) ->decltype(Self::InternalTimeLimitedProposeAsync(timer,timeout,begin,end,std::forward<_Proposal>(proposal),continuation,nullptr,0,0))
         {
-            return Self::InternalTimeLimitedProposeAsync(std::move(timer),timeout,begin,end,proposal,continuation,nullptr,majority,0);
+            return Self::InternalTimeLimitedProposeAsync(std::move(timer),timeout,begin,end,std::forward<_Proposal>(proposal),continuation,nullptr,majority,0);
         }
     };
 }
