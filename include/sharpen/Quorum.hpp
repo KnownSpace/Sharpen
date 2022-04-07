@@ -207,7 +207,6 @@ namespace sharpen
         template<typename _Iterator,typename _Proposal,typename _Check = sharpen::EnableIf<sharpen::IsQuorumProposerIterator<_Iterator,_Proposal>::Value>>
         static void InternalProposeAsync(_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> *finish,sharpen::Size majority,...)
         {
-            assert(majority != 0);
             using FnPtr = void(*)(sharpen::Future<bool>&,std::shared_ptr<Waiter>);
             //init waiter
             std::shared_ptr<Waiter> waiterPtr = std::make_shared<Waiter>();
@@ -218,6 +217,7 @@ namespace sharpen
                 finish->Complete();
                 return;
             }
+            assert(majority != 0);
             InitWaiter(waiterPtr,size,&continuation,finish,majority);
             sharpen::Size index{0};
             //launch operations
@@ -233,7 +233,6 @@ namespace sharpen
         template<typename _Iterator,typename _Proposal,typename _Check = sharpen::EnableIf<sharpen::IsQuorumProposerMapIterator<_Iterator,_Proposal>::Value>>
         static void InternalProposeAsync(_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> *finish,sharpen::Size majority,int)
         {
-            assert(majority != 0);
             using FnPtr = void(*)(sharpen::Future<bool>&,std::shared_ptr<Waiter>);
             //init waiter
             std::shared_ptr<Waiter> waiterPtr = std::make_shared<Waiter>();
@@ -244,6 +243,7 @@ namespace sharpen
                 finish->Complete();
                 return;
             }
+            assert(majority != 0);
             InitWaiter(waiterPtr,size,&continuation,finish,majority);
             sharpen::Size index{0};
             //launch operations
@@ -259,7 +259,6 @@ namespace sharpen
         template<typename _Iterator,typename _Proposal,typename _Rep,typename _Period,typename _Check = sharpen::EnableIf<sharpen::IsCancelableQuorumProposerIterator<_Iterator,_Proposal>::Value>>
         static void InternalTimeLimitedProposeAsync(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> *finish,sharpen::Size majority,...)
         {
-            assert(majority != 0);
             using WaiterType = TimeLimitedWaiter<_Iterator>;
             //init waiter
             std::shared_ptr<WaiterType> waiterPtr = std::make_shared<WaiterType>();
@@ -270,6 +269,7 @@ namespace sharpen
                 finish->Complete();
                 return;
             }
+            assert(majority != 0);
             InitTimeLimitedWaiter(waiterPtr,std::move(timer),begin,size,&continuation,finish,majority);
             sharpen::Size index{0};
             //launch operations
@@ -291,7 +291,6 @@ namespace sharpen
         template<typename _MapIterator,typename _Proposal,typename _Rep,typename _Period,typename _Check = sharpen::EnableIf<sharpen::IsCancelableQuorumProposerMapIterator<_MapIterator,_Proposal>::Value>>
         static void InternalTimeLimitedProposeAsync(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,_MapIterator begin,_MapIterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> *finish,sharpen::Size majority,int)
         {
-            assert(majority != 0);
             using WaiterType = TimeLimitedWaiter<_MapIterator>;
             //init waiter
             std::shared_ptr<WaiterType> waiterPtr = std::make_shared<WaiterType>();
@@ -302,6 +301,7 @@ namespace sharpen
                 finish->Complete();
                 return;
             }
+            assert(majority != 0);
             InitTimeLimitedWaiter(waiterPtr,std::move(timer),begin,size,&continuation,finish,majority);
             sharpen::Size index{0};
             //launch operations
