@@ -202,6 +202,8 @@ namespace sharpen
             waiterPtr->timer_ = std::move(timer);
         }
 
+        static constexpr bool emptyQuorumResult_{true};
+
         template<typename _Iterator,typename _Proposal,typename _Check = sharpen::EnableIf<sharpen::IsQuorumProposerIterator<_Iterator,_Proposal>::Value>>
         static void InternalProposeAsync(_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> *finish,sharpen::Size majority,...)
         {
@@ -210,9 +212,9 @@ namespace sharpen
             //init waiter
             std::shared_ptr<Waiter> waiterPtr = std::make_shared<Waiter>();
             sharpen::Size size = sharpen::GetRangeSize(begin,end);
-            if(size == 0)
+            if(!size)
             {
-                continuation.Complete(false);
+                continuation.Complete(Self::emptyQuorumResult_);
                 finish->Complete();
                 return;
             }
@@ -236,9 +238,9 @@ namespace sharpen
             //init waiter
             std::shared_ptr<Waiter> waiterPtr = std::make_shared<Waiter>();
             sharpen::Size size = sharpen::GetRangeSize(begin,end);
-            if(size == 0)
+            if(!size)
             {
-                continuation.Complete(false);
+                continuation.Complete(Self::emptyQuorumResult_);
                 finish->Complete();
                 return;
             }
@@ -262,9 +264,9 @@ namespace sharpen
             //init waiter
             std::shared_ptr<WaiterType> waiterPtr = std::make_shared<WaiterType>();
             sharpen::Size size = sharpen::GetRangeSize(begin,end);
-            if(size == 0)
+            if(!size)
             {
-                continuation.Complete(false);
+                continuation.Complete(Self::emptyQuorumResult_);
                 finish->Complete();
                 return;
             }
@@ -294,9 +296,9 @@ namespace sharpen
             //init waiter
             std::shared_ptr<WaiterType> waiterPtr = std::make_shared<WaiterType>();
             sharpen::Size size = sharpen::GetRangeSize(begin,end);
-            if(size == 0)
+            if(!size)
             {
-                continuation.Complete(false);
+                continuation.Complete(Self::emptyQuorumResult_);
                 finish->Complete();
                 return;
             }
