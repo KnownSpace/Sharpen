@@ -270,28 +270,32 @@ namespace sharpen
             }
             bool noskip{true};
             //erase logs if term diff with leader
-            //skip logs that already applied
-            if(ite->GetIndex() > this->lastApplied_)
+            for (auto ite = begin; ite != end; ++ite)
             {
-                bool containLog{noskip && this->PersistenceStorage().ContainLog(ite->GetIndex())};
-                if(containLog)
+                //skip logs that already applied
+                if(ite->GetIndex() > this->lastApplied_)
                 {
-                    //check log
-                    //if log term != leader
-                    if(!this->PersistenceStorage().CheckLog(ite->GetIndex(),ite->GetTerm()))
+                    bool containLog{noskip && this->PersistenceStorage().ContainLog(ite->GetIndex())};
+                    if(containLog)
                     {
-                        //remove logs [index,end)
-                        this->PersistenceStorage().RemoveLogsAfter(ite->GetIndex());
-                        //skip check
-                        //we already remove dirty logs
-                        noskip = false;
+                        //check log
+                        //if log term != leader
+                        if(!this->PersistenceStorage().CheckLog(ite->GetIndex(),ite->GetTerm()))
+                        {
+                            //remove logs [index,end)
+                            this->PersistenceStorage().RemoveLogsAfter(ite->GetIndex());
+                            //skip check
+                            //we already remove dirty logs
+                            noskip = false;
+                        }
+                    }
+                    if(!containLog)
+                    {
+                        this->PersistenceStorage().AppendLog(*ite);
                     }
                 }
-                if(!containLog)
-                {
-                    this->PersistenceStorage().AppendLog(*ite);
-                }
             }
+            
             //set commit index
             if(this->commitIndex_ < leaderCommit)
             {
