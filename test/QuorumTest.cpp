@@ -360,6 +360,21 @@ void MajorityFailTest()
     }
 }
 
+void EmptyQuorumTest()
+{
+    std::printf("empty quorum\n");
+    sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::EventEngine::GetEngine());
+    std::vector<CancelableProposer> proposers;
+    sharpen::AwaitableFuture<bool> continuation;
+    sharpen::AwaitableFuture<void> finish;
+    sharpen::Quorum::TimeLimitedProposeAsync(timer,std::chrono::seconds(1),proposers.begin(),proposers.end(),1,continuation,finish);
+    bool status = continuation.Await();
+    std::printf("continue\n");
+    std::printf("status is %d\n",status);
+    finish.Await();
+    std::printf("finish\n");
+}
+
 void QuorumTest()
 {
     StatelessQuorumTest();
@@ -371,6 +386,7 @@ void QuorumTest()
     MajorityTest();
     CancelableMapQuorumTest();
     MajorityFailTest();
+    EmptyQuorumTest();
 }
 
 int main(int argc, char const *argv[])
