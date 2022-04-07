@@ -92,6 +92,42 @@ namespace sharpen
         }
         return begin;
     }
+
+    template<typename _Container>
+    inline auto InternalBegin(_Container &&container,int) -> decltype(container.Begin())
+    {
+        return container.Begin();
+    }
+
+    template<typename _Container>
+    inline auto InternalBegin(_Container &&container,...) -> decltype(container.Begin())
+    {
+        return std::begin(container);
+    }
+
+    template<typename _Container>
+    inline auto Begin(_Container &&container) -> decltype(sharpen::InternalBegin(container,0))
+    {
+        return sharpen::InternalBegin(container,0);
+    }
+
+    template<typename _Container>
+    inline auto InternalEnd(_Container &&container,int) -> decltype(container.End())
+    {
+        return container.End();
+    }
+
+    template<typename _Container>
+    inline auto InternalEnd(_Container &&container,...) -> decltype(container.End())
+    {
+        return std::end(container);
+    }
+
+    template<typename _Container>
+    inline auto End(_Container &&container) -> decltype(sharpen::InternalEnd(container,0))
+    {
+        return sharpen::InternalEnd(container,0);
+    }
 }
 
 #endif
