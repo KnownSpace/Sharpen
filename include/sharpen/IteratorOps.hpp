@@ -100,7 +100,7 @@ namespace sharpen
     }
 
     template<typename _Container>
-    inline auto InternalBegin(_Container &&container,...) -> decltype(container.Begin())
+    inline auto InternalBegin(_Container &&container,...) -> decltype(std::begin(container))
     {
         return std::begin(container);
     }
@@ -118,7 +118,7 @@ namespace sharpen
     }
 
     template<typename _Container>
-    inline auto InternalEnd(_Container &&container,...) -> decltype(container.End())
+    inline auto InternalEnd(_Container &&container,...) -> decltype(std::end(container))
     {
         return std::end(container);
     }
