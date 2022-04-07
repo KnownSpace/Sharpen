@@ -214,7 +214,7 @@ namespace sharpen
             sharpen::Size size = sharpen::GetRangeSize(begin,end);
             if(!size)
             {
-                continuation.Complete(Self::emptyQuorumResult_);
+                continuation.CompleteForBind(Self::emptyQuorumResult_);
                 finish->Complete();
                 return;
             }
@@ -240,7 +240,7 @@ namespace sharpen
             sharpen::Size size = sharpen::GetRangeSize(begin,end);
             if(!size)
             {
-                continuation.Complete(Self::emptyQuorumResult_);
+                continuation.CompleteForBind(Self::emptyQuorumResult_);
                 finish->Complete();
                 return;
             }
@@ -266,7 +266,7 @@ namespace sharpen
             sharpen::Size size = sharpen::GetRangeSize(begin,end);
             if(!size)
             {
-                continuation.Complete(Self::emptyQuorumResult_);
+                continuation.CompleteForBind(Self::emptyQuorumResult_);
                 finish->Complete();
                 return;
             }
@@ -298,7 +298,7 @@ namespace sharpen
             sharpen::Size size = sharpen::GetRangeSize(begin,end);
             if(!size)
             {
-                continuation.Complete(Self::emptyQuorumResult_);
+                continuation.CompleteForBind(Self::emptyQuorumResult_);
                 finish->Complete();
                 return;
             }
