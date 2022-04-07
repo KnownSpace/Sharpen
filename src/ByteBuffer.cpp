@@ -1,6 +1,10 @@
 #include <sharpen/ByteBuffer.hpp>
 
 #include <cstring>
+#include <cassert>
+
+#include <sharpen/Varint.hpp>
+#include <sharpen/DataCorruptionException.hpp>
 
 void sharpen::ByteBuffer::swap(sharpen::ByteBuffer &other) noexcept
 {
@@ -281,4 +285,74 @@ sharpen::Char sharpen::ByteBuffer::GetOrDefault(sharpen::Size index,sharpen::Cha
         return defaultVal;
     }
     return this->Get(index);
+}
+
+sharpen::Size sharpen::ByteBuffer::ComputeSize() const noexcept
+{
+    sharpen::Size offset{0};
+    sharpen::Varuint64 builder{this->GetSize()};
+    offset += builder.ComputeSize();
+    offset += this->GetSize();
+    return offset;
+}
+
+sharpen::Size sharpen::ByteBuffer::LoadFrom(const char *data,sharpen::Size size)
+{
+    sharpen::Size offset{0};
+    sharpen::Varuint64 builder{data,size};
+    sharpen::Size sz{builder.ComputeSize()};
+    offset += sz;
+    sz = builder.Get();
+    if(sz)
+    {
+        if (size < offset + sz)
+        {
+            this->Clear();
+            throw sharpen::DataCorruptionException("byte buffer corruption");
+        }
+        this->ExtendTo(sz);
+        std::memcpy(this->Data(),data + offset,sz);
+        offset += sz;
+    }
+    return offset;
+}
+
+sharpen::Size sharpen::ByteBuffer::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset)
+{
+    assert(buf.GetSize() >= offset);
+    return this->LoadFrom(buf.Data() + offset,buf.GetSize() - offset);
+}
+
+sharpen::Size sharpen::ByteBuffer::UnsafeStoreTo(char *data) const noexcept
+{
+    sharpen::Size offset{0};
+    sharpen::Varuint64 builder{this->GetSize()};
+    sharpen::Size size{builder.ComputeSize()};
+    std::memcpy(data,builder.Data(),size);
+    offset += size;
+    std::memcpy(data + offset,this->Data(),this->GetSize());
+    offset += this->GetSize();
+    return offset;
+}
+
+sharpen::Size sharpen::ByteBuffer::StoreTo(char *data,sharpen::Size size) const
+{
+    sharpen::Size needSize{this->ComputeSize()};
+    if(needSize > size)
+    {
+        throw std::invalid_argument("buffer too small");
+    }
+    return this->UnsafeStoreTo(data);
+}
+
+sharpen::Size sharpen::ByteBuffer::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
+{
+    assert(buf.GetSize() >= offset);
+    sharpen::Size size{buf.GetSize() - offset};
+    sharpen::Size needSize{this->ComputeSize()};
+    if(needSize > size)
+    {
+        buf.ExtendTo(needSize - size);
+    }
+    return this->UnsafeStoreTo(buf.Data() + offset);
 }

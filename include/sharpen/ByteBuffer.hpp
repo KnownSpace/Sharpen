@@ -304,6 +304,28 @@ namespace sharpen
             assert(this->GetSize() == sizeof(_T));
             return *reinterpret_cast<const _T*>(this->Data());
         }
+
+        sharpen::Size ComputeSize() const noexcept;
+
+        sharpen::Size LoadFrom(const char *data,sharpen::Size size);
+
+        sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset);
+
+        inline sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf)
+        {
+            return this->LoadFrom(buf,0);
+        }
+
+        sharpen::Size UnsafeStoreTo(char *data) const noexcept;
+
+        sharpen::Size StoreTo(char *data,sharpen::Size size) const;
+
+        sharpen::Size StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
+
+        inline sharpen::Size StoreTo(sharpen::ByteBuffer &buf) const
+        {
+            return this->StoreTo(buf,0);
+        }
     };
 } 
 

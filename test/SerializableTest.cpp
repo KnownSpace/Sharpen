@@ -90,5 +90,13 @@ int main(int argc, char const *argv[])
         assert(msg.Strings()[0] == "hello");
         assert(msg.Strings()[1] == "world");
     }
+    {
+        sharpen::ByteBuffer tmp1{"123",3};
+        sharpen::ByteBuffer tmpBuf;
+        tmp1.StoreTo(tmpBuf);
+        sharpen::ByteBuffer tmp2;
+        tmp2.LoadFrom(tmpBuf);
+        assert(tmp1 == tmp2);
+    }
     return 0;
 }
