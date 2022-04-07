@@ -464,22 +464,28 @@ namespace sharpen
         {
             while (this->lastApplied_ < this->commitIndex_)
             {
-                if(this->lastApplied_ != sentinelLogIndex_)
+                ++this->lastApplied_;
+                if(this->PersistenceStorage().ContainLog(this->lastApplied_))
                 {
-                    if(this->PersistenceStorage().ContainLog(this->lastApplied_))
+                    _Log log{this->PersistenceStorage().GetLog(this->lastApplied_)};
+                    try
                     {
-                        _Log log{this->PersistenceStorage().GetLog(this->lastApplied_)};
                         sharpen::InternalRaftApplicationHelper<_Log,_Id,_Member,_PersistentStorage>::Apply(this->Application(),std::move(log),this->Members(),this->PersistenceStorage());
                     }
-                    //if we lost log and policy is stop
-                    else if(policy == LostPolicy::Stop)
+                    catch(const std::exception&)
                     {
-                        break;
+                        this->lastApplied_ -= 1;
+                        throw;
                     }
-                    //if you do nothing,that is ok
-                    this->PersistenceStorage().SetLastAppiledIndex(this->lastApplied_ + 1);
                 }
-                ++this->lastApplied_;
+                //if we lost log and policy is stop
+                else if(policy == LostPolicy::Stop)
+                {
+                    this->lastApplied_ -= 1;
+                    break;
+                }
+                //optional operation
+                this->PersistenceStorage().SetLastAppiledIndex(this->lastApplied_);
             }
         }
 
