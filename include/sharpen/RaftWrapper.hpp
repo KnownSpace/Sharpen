@@ -254,7 +254,7 @@ namespace sharpen
             //reset voted for
             this->PersistenceStorage().ResetVotedFor();
             //check prev log
-            if(!this->PersistenceStorage().EmptyLogs() && prevLogIndex != Self::sentinelLogIndex_ && prevLogIndex > this->lastApplied_)
+            if(prevLogIndex != Self::sentinelLogIndex_ && prevLogIndex > this->lastApplied_)
             {
                 if(this->PersistenceStorage().ContainLog(prevLogIndex))
                 {
