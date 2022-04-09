@@ -131,32 +131,6 @@ namespace sharpen
             return *this;
         }
 
-        void Swap(Self &other) noexcept
-        {
-            if (this == &other)
-            {
-                return;
-            }
-            if (this->hasValue_ && other.hasValue_)
-            {
-                std::swap(this->value_,this->value_);
-                return;
-            }
-            if (this->hasValue_ && !other.hasValue_)
-            {
-                other.value_ = this->value_;
-                std::swap(this->hasValue_,other.hasValue_);
-                return;
-            }
-            this->value_ = other.value_;
-            std::swap(this->hasValue_,other.hasValue_);
-        }
-
-        inline void swap(Self &other) noexcept
-        {
-            this->Swap(other);
-        }
-
         _T &Get()
         {
             if (this->hasValue_)
@@ -256,8 +230,8 @@ namespace sharpen
 
         Self &operator=(const Self &other)
         {
-            Self tmp(other);
-            std::swap(*this,other);
+            Self tmp{other};
+            std::swap(*this,tmp);
             return *this;
         }
 
@@ -280,35 +254,6 @@ namespace sharpen
         {
             this->Reset();
             return *this;
-        }
-
-        void Swap(Self &other) noexcept
-        {
-            if (this == &other)
-            {
-                return;
-            }
-            if (this->hasValue_ && other.hasValue_)
-            {
-                std::swap(this->value_,other. value_);
-                return;
-            }
-            if (this->hasValue_ && !other.hasValue_)
-            {
-                std::swap(this->hasValue_,other.hasValue_);
-                ::new (&other.value_) _T(std::move(this->value_));
-                this->Reset();
-                return;
-            }
-            std::swap(this->hasValue_,other.hasValue_);
-            ::new (&this->value_) _T(std::move(other.value_));
-            other.Reset();
-            return;
-        }
-
-        inline void swap(Self &other) noexcept
-        {
-            this->Swap(other);
         }
 
         _T &Get()
