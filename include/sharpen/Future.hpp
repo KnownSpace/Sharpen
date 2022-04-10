@@ -80,7 +80,7 @@ namespace sharpen
             return *this;
         }
 
-        template<typename ..._Args,typename = decltype(_Value(std::declval<_Args>()...))>
+        template<typename ..._Args,typename = decltype(_Value{std::declval<_Args>()...})>
         void Complete(_Args &&...args)
         {
             {

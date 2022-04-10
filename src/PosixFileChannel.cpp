@@ -41,7 +41,7 @@ void sharpen::PosixFileChannel::NormalWrite(const sharpen::Char *buf,sharpen::Si
         future->Fail(sharpen::MakeLastErrorPtr());
         return;
     }
-    future->Complete(r);
+    future->Complete(static_cast<sharpen::Size>(r));
 }
 
 #ifdef SHARPEN_HAS_IOURING
@@ -106,7 +106,7 @@ void sharpen::PosixFileChannel::NormalRead(sharpen::Char *buf,sharpen::Size bufS
         future->Fail(sharpen::MakeLastErrorPtr());
         return;
     }
-    future->Complete(r);
+    future->Complete(static_cast<sharpen::Size>(r));
 }
 
 void sharpen::PosixFileChannel::DoRead(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> *future)
