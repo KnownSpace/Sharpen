@@ -15,11 +15,7 @@
 #endif
 #endif
 
-sharpen::SpinLock::SpinLock()
-    :flag_()
-{}
-
-void sharpen::SpinLock::lock()
+void sharpen::SpinLock::lock() noexcept
 {
     sharpen::Size i{0};
     while (this->flag_.test_and_set(std::memory_order::memory_order_acquire))

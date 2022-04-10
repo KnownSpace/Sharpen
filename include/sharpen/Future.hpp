@@ -10,6 +10,7 @@
 
 #include "SpinLock.hpp"
 #include "TypeDef.hpp"
+#include "Optional.hpp"
 
 namespace sharpen
 {
@@ -29,7 +30,7 @@ namespace sharpen
         using Callback = std::function<void(Self&)>;
 
         std::unique_ptr<sharpen::SpinLock> lock_;
-        std::unique_ptr<_Value> value_;
+        sharpen::Optional<_Value> value_;
         std::unique_ptr<std::condition_variable_any> cond_;
         Callback callback_;
         FutureState state_;
@@ -47,7 +48,7 @@ namespace sharpen
     public:
         Future()
             :lock_(new sharpen::SpinLock())
-            ,value_(nullptr)
+            ,value_(sharpen::EmptyOpt)
             ,cond_(new std::condition_variable_any())
             ,callback_()
             ,state_(sharpen::FutureState::Pending)
@@ -60,51 +61,23 @@ namespace sharpen
             }
         }
 
-        Future(Self &&other) noexcept
-            :lock_(std::move(other.lock_))
-            ,value_(std::move(other.value_))
-            ,cond_(std::move(other.cond_))
-            ,callback_(std::move(other.callback_))
-            ,state_(other.state_)
-            ,error_(std::move(other.error_))
-            ,waiters_(other.waiters_)
-        {}
+        Future(Self &&other) noexcept = default;
 
         virtual ~Future() = default;
 
         Self &operator=(Self &&other) noexcept
         {
-            if(this == std::addressof(other))
+            if(this != std::addressof(other))
             {
-                return *this;
+                this->lock_ = std::move(other.lock_);
+                this->value_ = std::move(other.value_);
+                this->cond_ = std::move(other.cond_);
+                this->callback_ = std::move(other.callback_);
+                this->state_ = std::move(other.state_);
+                this->error_ = std::move(other.error_);
+                this->waiters_ = other.waiters_;
             }
-            this->lock_ = std::move(other.lock_);
-            this->value_ = std::move(other.value_);
-            this->cond_ = std::move(other.cond_);
-            this->callback_ = std::move(other.callback_);
-            this->state_ = std::move(other.state_);
-            this->error_ = std::move(other.error_);
-            this->waiters_ = other.waiters_;
             return *this;
-        }
-
-        void swap(Self &other) noexcept
-        {
-            if (&other != this)
-            {
-                this->lock_.swap(other.lock_);
-                this->value_.swap(other.value_);
-                this->cond_.swap(other.cond_);
-                this->callback_.swap(other.callback_);
-                std::swap(this->state_,other.state_);
-                std::swap(this->error_,other.error_);
-                std::swap(this->waiters_,other.waiters_);
-            }
-        }
-
-        inline void Swap(Self &&other) noexcept
-        {
-            this->swap(std::move(other));
         }
 
         template<typename ..._Args,typename = decltype(_Value(std::declval<_Args>()...))>
@@ -117,7 +90,7 @@ namespace sharpen
                     return;
                 }
                 this->state_ = sharpen::FutureState::Completed;
-                this->value_.reset(new _Value(args...));
+                this->value_.Construct(std::forward<_Args>(args)...);
             }
             this->ExecuteCallback();
         }
@@ -152,7 +125,7 @@ namespace sharpen
             this->Wait();
             if (this->state_ == sharpen::FutureState::Completed)
             {
-                return *this->value_;
+                return this->value_.Get();
             }
             //rethrow exception
             std::rethrow_exception(this->error_);
@@ -163,7 +136,7 @@ namespace sharpen
             this->Wait();
             if (this->state_ == sharpen::FutureState::Completed)
             {
-                return *this->value_;
+                return this->value_.Get();
             }
             //rethrow exception
             std::rethrow_exception(this->error_);
@@ -226,7 +199,7 @@ namespace sharpen
 
         virtual void ResetWithoutLock()
         {
-            this->value_.reset(nullptr);
+            this->value_.Reset();
             this->state_ = sharpen::FutureState::Pending;
         }
 

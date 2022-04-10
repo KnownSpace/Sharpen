@@ -17,12 +17,12 @@ namespace sharpen
 
         Flag flag_;
     public:
-        SpinLock();
+        SpinLock() noexcept = default;
 
         //use by stl
-        void lock();
+        void lock() noexcept;
 
-        inline void Lock()
+        inline void Lock() noexcept
         {
             this->lock();
         }
