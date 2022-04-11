@@ -124,16 +124,7 @@ namespace sharpen
             this->commitIndex_ = this->lastApplied_;
         }
 
-        InternalRaftWrapper(Self &&other) noexcept
-            :selfId_(std::move(other.selfId_))
-            ,storage_(std::move(other.storage_))
-            ,role_(other.role_)
-            ,commitIndex_(other.commitIndex_)
-            ,lastApplied_(other.lastApplied_)
-            ,application_(std::move(other.application_))
-            ,members_(std::move(other.members_))
-            ,votes_(other.votes_)
-        {}
+        InternalRaftWrapper(Self &&other) noexcept = default;
 
         inline Self &operator=(Self &&other) noexcept
         {

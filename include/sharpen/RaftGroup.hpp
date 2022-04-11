@@ -15,10 +15,10 @@ namespace sharpen
     class InternalRaftGroup;
 
     template<typename _Id,typename _Member,typename  _Log,typename _Application,typename _PersistentStorage>
-    class InternalRaftGroup<_Id,_Member,_Log,_Application,_PersistentStorage,sharpen::EnableIf<sharpen::RaftWrapperRequires<_Id,_Member,_Log,_Application,_PersistentStorage>::Value>>
+    class InternalRaftGroup<_Id,_Member,_Log,_Application,_PersistentStorage,sharpen::EnableIf<sharpen::RaftWrapperRequires<_Id,_Member,_Log,_Application,_PersistentStorage>::Value>>:public sharpen::Noncopyable
     {
     private:
-        using Self = sharpen::InternalRaftGroup<_Id,_Member,_Log,_Application,_PersistentStorage,,sharpen::EnableIf<sharpen::RaftWrapperRequires<_Id,_Member,_Log,_Application,_PersistentStorage>::Value>>;
+        using Self = sharpen::InternalRaftGroup<_Id,_Member,_Log,_Application,_PersistentStorage,sharpen::EnableIf<sharpen::RaftWrapperRequires<_Id,_Member,_Log,_Application,_PersistentStorage>::Value>>;
         using RaftType = sharpen::RaftWrapper<_Id,_Member,_Log,_Application,_PersistentStorage>;
         using RaftLock = sharpen::AsyncMutex;
         using VoteLock = sharpen::SpinLock;
@@ -63,9 +63,23 @@ namespace sharpen
             }
         }
     
-        InternalRaftGroup(Self &&other) noexcept;
+        InternalRaftGroup(Self &&other) noexcept = default;
     
-        Self &operator=(Self &&other) noexcept;
+        inline Self &operator=(Self &&other) noexcept
+        {
+            if(this != std::addressof(other))
+            {
+                this->engine_ = other.engine_;
+                this->random_ = std::move(other.random_);
+                this->distribution_ = std::move(other.distribution_);
+                this->raft_ = std::move(other.raft_);
+                this->raftLock_ = std::move(other.raftLock_);
+                this->voteLock_ = std::move(other.voteLock_);
+                this->leaderLoop_ = std::move(other.leaderLoop_);
+                this->followerLoop_ = std::move(other.followerLoop_);
+            }
+            return *this;
+        }
     
         ~InternalRaftGroup() noexcept
         {
