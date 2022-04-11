@@ -7,7 +7,6 @@
 #include <functional>
 #include <cassert>
 
-#include "Noncopyable.hpp"
 #include "TypeDef.hpp"
 #include "BufferOps.hpp"
 #include "TypeTraits.hpp"

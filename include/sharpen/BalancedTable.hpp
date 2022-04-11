@@ -106,7 +106,7 @@ namespace sharpen
 
         BalancedTable(sharpen::FileChannelPtr channel,const sharpen::BtOption &opt);
     
-        BalancedTable(Self &&other) noexcept = default;
+        BalancedTable(Self &&other) noexcept;
     
         Self &operator=(Self &&other) noexcept;
     

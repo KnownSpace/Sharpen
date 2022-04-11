@@ -33,7 +33,10 @@ namespace sharpen
             }
         }
 
-        LockTable(Self &&other) noexcept = default;
+        LockTable(Self &&other) noexcept
+            :lock_(std::move(other.lock_))
+            ,map_(std::move(other.map_))
+        {}
     
         Self &operator=(Self &&other) noexcept
         {

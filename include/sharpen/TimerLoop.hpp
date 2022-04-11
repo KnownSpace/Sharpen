@@ -76,7 +76,7 @@ namespace sharpen
 
         TimerLoop(sharpen::EventEngine &engine,sharpen::TimerPtr timer,Handler handler,std::function<WaitTime()> waittimeGenerator);
     
-        TimerLoop(Self &&other) noexcept = default;
+        TimerLoop(Self &&other) noexcept;
     
         Self &operator=(Self &&other) noexcept;
     

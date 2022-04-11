@@ -15,10 +15,10 @@ namespace sharpen
     class TimestampLock:public sharpen::Noncopyable
     {
     private:
-        using Self = sharpen::TimestampLock;
+        using Self = sharpen::TimestampLock<_Key>;
         using Map = std::unordered_map<_Key,sharpen::Uint64>;
 
-        std::unique_lock<sharpen::SpinLock> lock_;
+        std::unique_ptr<sharpen::SpinLock> lock_;
         Map map_;
     public:
     

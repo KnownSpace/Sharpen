@@ -48,11 +48,7 @@ namespace sharpen
             ,awaiter_(nullptr)
         {}
 
-        AwaitableFuture(Self &&other) noexcept
-            :MyBase(std::move(other))
-            ,pendingFiber_(std::move(other.pendingFiber_))
-            ,awaiter_(std::move(other.awaiter_))
-        {}
+        AwaitableFuture(Self &&other) noexcept = default;
 
         Self &operator=(Self &&other) noexcept
         {

@@ -13,6 +13,15 @@ sharpen::TimerLoop::TimerLoop(sharpen::EventEngine &engine,sharpen::TimerPtr tim
     assert(this->handler_);
 }
 
+sharpen::TimerLoop::TimerLoop(Self &&other) noexcept
+    :timer_(std::move(other.timer_))
+    ,handler_(std::move(other.handler_))
+    ,waitTimeGenerator_(std::move(other.waitTimeGenerator_))
+    ,future_(std::move(other.future_))
+    ,token_(other.token_.load())
+    ,engine_(other.engine_)
+{}
+
 void sharpen::TimerLoop::Entry()
 {
     sharpen::AwaitableFuture<bool> future;

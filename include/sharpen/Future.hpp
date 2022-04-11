@@ -254,49 +254,23 @@ namespace sharpen
             }
         }
 
-        Future(Self &&other) noexcept
-            :lock_(std::move(other.lock_))
-            ,cond_(std::move(other.cond_))
-            ,callback_(std::move(other.callback_))
-            ,state_(other.state_)
-            ,error_(std::move(other.error_))
-            ,waiters_(other.waiters_)
-        {}
+        Future(Self &&other) noexcept = default;
 
         virtual ~Future() = default;
 
 
         Self &operator=(Self &&other) noexcept
         {
-            if(this == std::addressof(other))
+            if(this != std::addressof(other))
             {
-                return *this;
+                this->lock_ = std::move(other.lock_);
+                this->cond_ = std::move(other.cond_);
+                this->callback_ = std::move(other.callback_);
+                this->state_ = std::move(other.state_);
+                this->error_ = std::move(other.error_);
+                this->waiters_ = other.waiters_;
             }
-            this->lock_ = std::move(other.lock_);
-            this->cond_ = std::move(other.cond_);
-            this->callback_ = std::move(other.callback_);
-            this->state_ = std::move(other.state_);
-            this->error_ = std::move(other.error_);
-            this->waiters_ = other.waiters_;
             return *this;
-        }
-
-        void swap(Self &other) noexcept
-        {
-            if (&other != this)
-            {
-                this->lock_.swap(other.lock_);
-                this->cond_.swap(other.cond_);
-                this->callback_.swap(other.callback_);
-                std::swap(this->state_,other.state_);
-                std::swap(this->error_,other.error_);
-                std::swap(this->waiters_,other.waiters_);
-            }
-        }
-
-        inline void Swap(Self &other) noexcept
-        {
-            this->swap(other);
         }
 
         void Complete()

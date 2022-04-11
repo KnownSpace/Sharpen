@@ -187,6 +187,20 @@ sharpen::BalancedTable::BalancedTable(sharpen::FileChannelPtr channel)
     :BalancedTable(std::move(channel),sharpen::BtOption{})
 {}
 
+sharpen::BalancedTable::BalancedTable(Self &&other) noexcept
+    :channel_(std::move(other.channel_))
+    ,freeArea_(std::move(other.freeArea_))
+    ,maxRecordsOfBlock_(other.maxRecordsOfBlock_)
+    ,root_(std::move(other.root_))
+    ,offset_(other.offset_)
+    ,caches_(std::move(other.caches_))
+    ,lockTable_(std::move(other.lockTable_))
+    ,allocLock_(std::move(other.allocLock_))
+{
+    other.maxRecordsOfBlock_ = 0;
+    other.offset_ = 0;
+}
+
 sharpen::BalancedTable &sharpen::BalancedTable::operator=(Self &&other) noexcept
 {
     if(this != std::addressof(other))

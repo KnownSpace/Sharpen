@@ -754,7 +754,6 @@ sharpen::LevelTable::LevelTable(Self &&other) noexcept
     ,engine_(other.engine_)
 {}
 
-
 sharpen::LevelTable &sharpen::LevelTable::operator=(sharpen::LevelTable &&other) noexcept
 {
     if(this != std::addressof(other))
