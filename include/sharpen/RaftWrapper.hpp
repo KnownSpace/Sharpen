@@ -131,8 +131,8 @@ namespace sharpen
             ,commitIndex_(other.commitIndex_)
             ,lastApplied_(other.lastApplied_)
             ,application_(std::move(other.application_))
-            ,members_()
-            ,votes_(0)
+            ,members_(std::move(other.members_))
+            ,votes_(other.votes_)
         {}
 
         inline Self &operator=(Self &&other) noexcept
