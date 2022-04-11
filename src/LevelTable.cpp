@@ -728,6 +728,33 @@ sharpen::LevelTable::LevelTable(sharpen::EventEngine &engine,const std::string &
     this->GcTables();
 }
 
+sharpen::LevelTable::LevelTable(Self &&other) noexcept
+    :tableName_(std::move(other.tableName_))
+    ,tableExtName_(std::move(other.tableExtName_))
+    ,walExtName_(std::move(other.walExtName_))
+    ,componentMap_(std::move(other.componentMap_))
+    ,viewMap_(std::move(other.viewMap_))
+    ,tableCaches_(std::move(other.tableCaches_))
+    ,fileGenerator_(other.fileGenerator_)
+    ,mem_(std::move(other.mem_))
+    ,manifest_(std::move(other.manifest_))
+    ,imMems_(std::move(other.imMems_))
+    ,levelLock_(std::move(levelLock_))
+    ,viewLock_(std::move(other.viewLock_))
+    ,componentLock_(std::move(other.componentLock_))
+    ,comp_(other.comp_)
+    ,maxViewOfComponent_(other.maxViewOfComponent_)
+    ,maxTableOfComponent_(other.maxTableOfComponent_)
+    ,blockCacheSize_(other.blockCacheSize_)
+    ,filterBitsOfElement_(other.filterBitsOfElement_)
+    ,maxSizeOfMem_(other.maxSizeOfMem_)
+    ,maxSizeOfImMems_(other.maxSizeOfImMems_)
+    ,blockSize_(other.blockSize_)
+    ,usedMemory_(std::move(other.usedMemory_))
+    ,engine_(other.engine_)
+{}
+
+
 sharpen::LevelTable &sharpen::LevelTable::operator=(sharpen::LevelTable &&other) noexcept
 {
     if(this != std::addressof(other))

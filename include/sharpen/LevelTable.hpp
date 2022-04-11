@@ -175,7 +175,7 @@ namespace sharpen
 
         LevelTable(sharpen::EventEngine &engine,const std::string &tableName,const std::string &tableExtName,const std::string &walExtName,const sharpen::LevelTableOption &opt);
     
-        LevelTable(Self &&other) noexcept = default;
+        LevelTable(Self &&other) noexcept;
     
         Self &operator=(Self &&other) noexcept;
     
