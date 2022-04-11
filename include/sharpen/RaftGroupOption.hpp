@@ -17,26 +17,26 @@ namespace sharpen
         using Self = sharpen::RaftGroupOption;
         using TimerMaker = sharpen::TimerPtr(*)(sharpen::EventEngine&);
     
-        static constexpr std::uint32_t defaultAppendWaitMs_{1*1000};
+        static constexpr sharpen::Uint32 defaultAppendEntriesCycle_{1*1000};
 
-        static constexpr std::uint32_t defaultElectionMinWaitMs_{3*1000};
+        static constexpr sharpen::Uint32 defaultMinElectionCycle_{3*1000};
 
-        static constexpr std::uint32_t defaultElectionMaxWaitMs_{5*1000};
+        static constexpr sharpen::Uint32 defaultMaxElectionCycle_{5*1000};
 
-        std::uint32_t appendWaitMs_;
-        std::uint32_t electionMinWaitMs_;
-        std::uint32_t electionMaxWaitMs_;
-        std::uint32_t randomSeed_;
+        std::chrono::milliseconds appendEntriesCycle_;
+        std::chrono::milliseconds minElectionCycle_;
+        std::chrono::milliseconds maxElectionCycle_;
+        sharpen::Uint32 randomSeed_;
         TimerMaker timerMaker_;
     public:
         RaftGroupOption()
             :RaftGroupOption(std::random_device{}())
         {}
 
-        explicit RaftGroupOption(std::uint32_t seed) noexcept
-            :appendWaitMs_(Self::defaultAppendWaitMs_)
-            ,electionMinWaitMs_(Self::defaultElectionMinWaitMs_)
-            ,electionMaxWaitMs_(Self::defaultElectionMaxWaitMs_)
+        explicit RaftGroupOption(sharpen::Uint32 seed) noexcept
+            :appendEntriesCycle_(Self::defaultAppendEntriesCycle_)
+            ,minElectionCycle_(Self::defaultMinElectionCycle_)
+            ,maxElectionCycle_(Self::defaultMaxElectionCycle_)
             ,randomSeed_(seed)
             ,timerMaker_(nullptr)
         {}
@@ -64,51 +64,48 @@ namespace sharpen
             return *this;
         }
 
-        inline std::uint32_t GetAppendWaitTime() const noexcept
+        inline std::chrono::milliseconds GetAppendEntriesCycle() const noexcept
         {
-            return this->appendWaitMs_;
+            return this->appendEntriesCycle_;
         }
 
         template<typename _Rep,typename _Period>
-        inline void SetAppendWaitTime(const std::chrono::duration<_Rep,_Period> &time) noexcept
+        inline void SetAppendEntriesCycle(const std::chrono::duration<_Rep,_Period> &time) noexcept
         {
-            std::uint32_t val{time/std::chrono::milliseconds{1}};
-            assert(val != 0);
-            this->appendWaitMs_ = val;
+            assert(time/std::chrono::milliseconds(1) != 0);
+            this->appendEntriesCycle_ = time;
         }
 
-        inline std::uint32_t GetMinElectionWaitTime() const noexcept
+        inline std::chrono::milliseconds GetMinElectionCycle() const noexcept
         {
-            return this->electionMinWaitMs_;
-        }
-
-        template<typename _Rep,typename _Period>
-        inline void SetMinElectionWaitTime(const std::chrono::duration<_Rep,_Period> &time) noexcept
-        {
-            std::uint32_t val{time/std::chrono::milliseconds{1}};
-            assert(val != 0);
-            this->electionMinWaitMs_ = val;
-        }
-
-        inline std::uint32_t GetMaxElectionWaitTime() const noexcept
-        {
-            return this->electionMaxWaitMs_;
+            return this->minElectionCycle_;
         }
 
         template<typename _Rep,typename _Period>
-        inline void SetMaxElectionWaitTime(const std::chrono::duration<_Rep,_Period> &time) noexcept
+        inline void SetMinElectionCycle(const std::chrono::duration<_Rep,_Period> &time) noexcept
         {
-            std::uint32_t val{time/std::chrono::milliseconds{1}};
-            assert(val != 0);
-            this->electionMaxWaitMs_ = val;
+            assert(time/std::chrono::milliseconds(1) != 0);
+            this->minElectionCycle_ = time;
         }
 
-        inline std::uint32_t GetRandomSeed() const noexcept
+        inline std::chrono::milliseconds GetMaxElectionCycle() const noexcept
+        {
+            return this->maxElectionCycle_;
+        }
+
+        template<typename _Rep,typename _Period>
+        inline void SetMaxElectionCycle(const std::chrono::duration<_Rep,_Period> &time) noexcept
+        {
+            assert(time/std::chrono::milliseconds(1) != 0);
+            this->maxElectionCycle_ = time;
+        }
+
+        inline sharpen::Uint32 GetRandomSeed() const noexcept
         {
             return this->randomSeed_;
         }
 
-        inline void SetRandomSeed(std::uint32_t seed) noexcept
+        inline void SetRandomSeed(sharpen::Uint32 seed) noexcept
         {
             this->randomSeed_ = seed;
         }

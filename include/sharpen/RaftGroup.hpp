@@ -51,21 +51,32 @@ namespace sharpen
         InternalRaftGroup(sharpen::EventEngine &engine,_Id id,_PersistentStorage storage,std::shared_ptr<_Application> app,const sharpen::RaftGroupOption &option)
             :engine_(&engine)
             ,random_(option.GetRandomSeed())
-            ,distribution_(option.GetMinElectionWaitTime(),option.GetMaxElectionWaitTime())
+            ,distribution_(static_cast<sharpen::Uint32>(option.GetMinElectionCycle().count()),static_cast<sharpen::Uint32>(option.GetMaxElectionCycle().count()))
             ,raft_(std::move(id),std::move(storage),std::move(app))
             ,raftLock_(new RaftLock{})
             ,voteLock_(new VoteLock{})
             ,proposeTimer_(option.GetTimerMaker()(*this->engine_))
-            ,leaderLoop_(*this->engine_,option.GetTimerMaker()(*this->engine_),std::chrono::milliseconds{option.GetAppendWaitTime()},std::bind(&Self::LeaderLoop,this))
+            ,leaderLoop_(*this->engine_,option.GetTimerMaker()(*this->engine_),option.GetAppendEntriesCycle(),std::bind(&Self::LeaderLoop,this))
             ,followerLoop_(*this->engine_,option.GetTimerMaker()(*this->engine_),std::bind(&Self::FollowerLoop,this),std::bind(&Self::GenerateElectionWaitTime,this))
         {
+            assert(option.GetMaxElectionCycle().count() > option.GetMinElectionCycle().count());
             if(!this->raftLock_ || !this->voteLock_)
             {
                 throw std::bad_alloc();
             }
         }
     
-        InternalRaftGroup(Self &&other) noexcept = default;
+        InternalRaftGroup(Self &&other) noexcept
+            :engine_(other.engine_)
+            ,random_(std::move(other.random_))
+            ,distribution_(std::move(other.distribution_))
+            ,raft_(std::move(other.raft_))
+            ,raftLock_(std::move(other.raftLock_))
+            ,voteLock_(std::move(other.voteLock_))
+            ,proposeTimer_(std::move(other.proposeTimer_))
+            ,leaderLoop_(std::move(other.leaderLoop_))
+            ,followerLoop_(std::move(other.followerLoop_))
+        {}
     
         inline Self &operator=(Self &&other) noexcept
         {
@@ -94,7 +105,7 @@ namespace sharpen
             return *this;
         }
 
-        inline void Tick()
+        inline void DelayCycle()
         {
             if(this->raft_.GetRole() == sharpen::RaftRole::Follower)
             {
