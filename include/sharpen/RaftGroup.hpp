@@ -30,9 +30,9 @@ namespace sharpen
         }
     protected:
 
-        virtual sharpen::TimerLoop FollowerLoop() noexcept = 0;
+        virtual sharpen::TimerLoop::LoopStatus FollowerLoop() noexcept = 0;
 
-        virtual sharpen::TimerLoop LeaderLoop() noexcept = 0;
+        virtual sharpen::TimerLoop::LoopStatus LeaderLoop() noexcept = 0;
     public:
 
         sharpen::EventEngine *engine_;
