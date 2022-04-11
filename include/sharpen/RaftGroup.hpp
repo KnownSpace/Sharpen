@@ -43,6 +43,7 @@ namespace sharpen
         RaftType raft_;
         std::unique_ptr<RaftLock> raftLock_;
         std::unique_ptr<VoteLock> voteLock_;
+        sharpen::TimerPtr proposeTimer_;
         sharpen::TimerLoop leaderLoop_;
         sharpen::TimerLoop followerLoop_;
     public:
@@ -54,6 +55,7 @@ namespace sharpen
             ,raft_(std::move(id),std::move(storage),std::move(app))
             ,raftLock_(new RaftLock{})
             ,voteLock_(new VoteLock{})
+            ,proposeTimer_(option.GetTimerMaker()(*this->engine_))
             ,leaderLoop_(*this->engine_,option.GetTimerMaker()(*this->engine_),std::chrono::milliseconds{option.GetAppendWaitTime()},std::bind(&Self::LeaderLoop,this))
             ,followerLoop_(*this->engine_,option.GetTimerMaker()(*this->engine_),std::bind(&Self::FollowerLoop,this),std::bind(&Self::GenerateElectionWaitTime,this))
         {
@@ -75,6 +77,7 @@ namespace sharpen
                 this->raft_ = std::move(other.raft_);
                 this->raftLock_ = std::move(other.raftLock_);
                 this->voteLock_ = std::move(other.voteLock_);
+                this->proposeTimer_ = std::move(other.proposeTimer_);
                 this->leaderLoop_ = std::move(other.leaderLoop_);
                 this->followerLoop_ = std::move(other.followerLoop_);
             }
