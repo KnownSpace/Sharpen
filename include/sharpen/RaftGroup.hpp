@@ -84,7 +84,7 @@ namespace sharpen
             return *this;
         }
     
-        ~InternalRaftGroup() noexcept
+        virtual ~InternalRaftGroup() noexcept
         {
             this->Stop();
         }
