@@ -15,10 +15,10 @@ namespace sharpen
     class InternalRaftGroup;
 
     template<typename _Id,typename _Member,typename  _Log,typename _Application,typename _PersistentStorage>
-    class InternalRaftGroup<_Id,_Member,_Log,_Application,_PersistentStorage,sharpen::RaftWrapperRequires<_Id,_Member,_Log,_Application,_PersistentStorage>>
+    class InternalRaftGroup<_Id,_Member,_Log,_Application,_PersistentStorage,sharpen::EnableIf<sharpen::RaftWrapperRequires<_Id,_Member,_Log,_Application,_PersistentStorage>::Value>>
     {
     private:
-        using Self = sharpen::InternalRaftGroup<_Id,_Member,_Log,_Application,_PersistentStorage,sharpen::RaftWrapperRequires<_Id,_Member,_Log,_Application,_PersistentStorage>>;
+        using Self = sharpen::InternalRaftGroup<_Id,_Member,_Log,_Application,_PersistentStorage,,sharpen::EnableIf<sharpen::RaftWrapperRequires<_Id,_Member,_Log,_Application,_PersistentStorage>::Value>>;
         using RaftType = sharpen::RaftWrapper<_Id,_Member,_Log,_Application,_PersistentStorage>;
         using RaftLock = sharpen::AsyncMutex;
         using VoteLock = sharpen::SpinLock;
