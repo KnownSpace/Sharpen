@@ -645,10 +645,11 @@ void sharpen::LevelTable::GcTables()
     {
         std::vector<sharpen::Uint64> tableIds;
         std::vector<sharpen::Uint64> viewIds;
+        sharpen::Size levelSize{this->GetMaxLevel() + 1};
         tableIds.reserve(end - begin);
-        viewIds.reserve(this->GetMaxLevel());
+        viewIds.reserve(levelSize);
         //for each every level
-        for (sharpen::Size level = 0; level != this->GetMaxLevel(); ++level)
+        for (sharpen::Size level = 0; level != levelSize; ++level)
         {
             viewIds.clear();
             //get component
