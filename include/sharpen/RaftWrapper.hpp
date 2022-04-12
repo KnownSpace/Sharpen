@@ -219,6 +219,11 @@ namespace sharpen
             return this->storage_;
         }
 
+        const Self &Const() const noexcept
+        {
+            return *this;
+        }
+
         //append entires
         template<typename _LogIterator,typename _Check = sharpen::EnableIf<sharpen::IsRaftLogIterator<_LogIterator>::Value>>
         bool AppendEntries(_LogIterator begin,_LogIterator end,const _Id &leaderId,sharpen::Uint64 leaderTerm,sharpen::Uint64 prevLogIndex,sharpen::Uint64 prevLogTerm,sharpen::Uint64 leaderCommit)
