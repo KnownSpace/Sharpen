@@ -643,6 +643,75 @@ void sharpen::LevelTable::GcTables()
     sharpen::Uint64 end{this->GetCurrentTableId()};
     if (begin != end)
     {
+        std::vector<sharpen::Uint64> tableIds;
+        std::vector<sharpen::Uint64> viewIds;
+        tableIds.reserve(end - begin);
+        viewIds.reserve(this->GetMaxLevel());
+        //for each every level
+        for (sharpen::Size level = 0; level != this->GetMaxLevel(); ++level)
+        {
+            viewIds.clear();
+            //get component
+            sharpen::LevelComponent *component{&this->GetComponent(level)};
+            //for each every view
+            for (auto viewBegin = component->Begin(),viewEnd = component->End(); viewBegin != viewEnd; ++viewBegin)
+            {
+                tableIds.clear();
+                sharpen::LevelView *view{&this->GetView(*viewBegin)};
+                //for each every tables
+                //but not motify container
+                for (auto tableBegin = view->Begin(),tableEnd = view->End(); tableBegin != tableEnd; ++tableBegin)
+                {
+                    sharpen::Uint64 id{tableBegin->GetId()};
+                    if(id > begin && id <= end)
+                    {
+                        tableIds.emplace_back(id);
+                    }
+                }
+                if(tableIds.size() == view->GetSize())
+                {
+                    //if we need to delete the view
+                    viewIds.emplace_back(*viewBegin);
+                    continue;
+                }
+                //delete tables from view
+                for (auto ite = tableIds.begin(),idEnd = tableIds.end();ite != idEnd; ++ite)
+                {
+                    view->Delete(*ite);   
+                }
+                //save view
+                if(!tableIds.empty())
+                {
+                    this->SaveView(*viewBegin,*view);
+                }
+            }
+            //delete views from component
+            for (auto ite = viewIds.begin(),idEnd = viewIds.end();ite != idEnd; ++ite)
+            {
+                component->Delete(*ite);
+            }
+            //save component
+            if(!viewIds.empty())
+            {
+                this->SaveComponent(level,*component);
+            }
+        }
+        //set max level
+        sharpen::Size maxLevel{this->GetMaxLevel()};
+        while (maxLevel != 0)
+        {
+            sharpen::LevelComponent *component{&this->GetComponent(maxLevel)};
+            if(!component->Empty())
+            {
+                break;
+            }
+            --maxLevel;
+        }
+        if(maxLevel != this->GetMaxLevel())
+        {
+            this->SetMaxLevel(maxLevel);
+        }
+        //delete tables   
         while (begin != end)
         {
             this->DeleteTable(end - 1);
