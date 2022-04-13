@@ -13,6 +13,7 @@
 #include "LevelView.hpp"
 #include "LevelTableOption.hpp"
 #include "LockTable.hpp"
+#include "LevelTableScanner.hpp"
 
 namespace sharpen
 {
@@ -270,7 +271,8 @@ namespace sharpen
             sharpen::Uint64 selectedView{0};
             sharpen::Uint64 maxLevel{this->GetMaxLevel()};
             std::set<sharpen::Uint64> emptyComponents;
-            while (emptyComponents.size() == maxLevel + 1)
+            sharpen::Size levelBoundary{maxLevel + 1};
+            while (emptyComponents.size() != levelBoundary)
             {
                 for (sharpen::Size i = maxLevel;; --i)
                 {
@@ -296,7 +298,7 @@ namespace sharpen
                                 if(skip != view->GetSize())
                                 {
                                     auto tableIte = sharpen::IteratorForward(view->Begin(),skip);
-                                    if(!selectedItem.Exist() || tableIte->BeginKey() >= selectedItem.Get().BeginKey())
+                                    if(!selectedItem.Exist() || this->CompareKeys(tableIte->BeginKey(),selectedItem.Get().BeginKey()) != -1)
                                     {
                                         selectedItem.Construct(*tableIte);
                                         selectedView = *begin;
@@ -319,6 +321,7 @@ namespace sharpen
                 if(selectedItem.Exist())
                 {
                     *inserter++ = std::move(selectedItem.Get());
+                    selectedItem.Reset();
                     viewStatus[selectedView] += 1;
                     selectedView = 0;
                 }
@@ -371,7 +374,8 @@ namespace sharpen
                     }   
                 }
             }
-            while (emptyComponents.size() == maxLevel + 1)
+            sharpen::Size levelBoundary{maxLevel+1};
+            while (emptyComponents.size() != levelBoundary)
             {
                 for (sharpen::Size i = maxLevel;; --i)
                 {
@@ -391,7 +395,7 @@ namespace sharpen
                                 if(skip != ite->second.second)
                                 {
                                     auto tableIte = sharpen::IteratorForward(view->Begin(),skip);
-                                    if(!selectedItem.Exist() || tableIte->BeginKey() >= selectedItem.Get().BeginKey())
+                                    if(!selectedItem.Exist() || this->CompareKeys(tableIte->BeginKey(),selectedItem.Get().BeginKey()) != -1)
                                     {
                                         selectedItem.Construct(*tableIte);
                                         selectedView = *begin;
@@ -414,6 +418,7 @@ namespace sharpen
                 if(selectedItem.Exist())
                 {
                     *inserter++ = std::move(selectedItem.Get());
+                    selectedItem.Reset();
                     viewStatus[selectedView].first += 1;
                     selectedView = 0;
                 }
@@ -421,6 +426,26 @@ namespace sharpen
         }
 
         void Destory();
+
+        inline sharpen::LevelTableScanner Scan(bool useCache) const
+        {
+            sharpen::LevelTableScanner scanner{*this};
+            if(!useCache)
+            {
+                scanner.DisableCache();
+            }
+            return scanner;
+        }
+
+        inline sharpen::LevelTableScanner Scan(bool useCache,const sharpen::ByteBuffer &beginKey,const sharpen::ByteBuffer &endKey) const
+        {
+            sharpen::LevelTableScanner scanner{*this,beginKey,endKey};
+            if(!useCache)
+            {
+                scanner.DisableCache();
+            }
+            return scanner;
+        }
     };
 }
 

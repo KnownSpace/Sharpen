@@ -188,7 +188,7 @@ namespace sharpen
 
         bool Empty() const;
 
-        const sharpen::SstRoot &Root() noexcept
+        const sharpen::SstRoot &Root() const noexcept
         {
             return this->root_;
         }

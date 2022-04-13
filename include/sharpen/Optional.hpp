@@ -243,9 +243,12 @@ namespace sharpen
                 {
                     this->Reset();
                 }
-                this->hasValue_ = true;
-                ::new(&this->value_) _T(std::move(other.value_));
-                other.Reset();
+                if(other.hasValue_)
+                {
+                    ::new(&this->value_) _T(std::move(other.value_));
+                    this->hasValue_ = true;
+                    other.Reset();
+                }
             }
             return *this;
         }

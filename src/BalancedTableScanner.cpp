@@ -199,19 +199,19 @@ bool sharpen::BalancedTableScanner::Next()
     return false;
 }
 
-void sharpen::BalancedTableScanner::Seek(const sharpen::ByteBuffer &key)
+bool sharpen::BalancedTableScanner::Seek(const sharpen::ByteBuffer &key)
 {
     if (this->IsRangeQuery())
     {
         sharpen::Int32 r{this->table_->CompareKeys(key,this->GetRangeBegin())};
         if(r == -1)
         {
-            throw std::out_of_range("key out of range");
+            return false;
         }
         r = this->table_->CompareKeys(key,this->GetRangeEnd());
         if(r == 1)
         {
-            throw std::out_of_range("key out of range");
+            return false;
         }
     }
     sharpen::Size curr{0};
@@ -243,4 +243,5 @@ void sharpen::BalancedTableScanner::Seek(const sharpen::ByteBuffer &key)
         this->currentKey_ = key;
         this->currentPointer_ = curr;
     }
+    return curr != this->pointers_.size();
 }

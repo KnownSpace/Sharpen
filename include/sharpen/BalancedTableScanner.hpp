@@ -107,7 +107,7 @@ namespace sharpen
 
         bool HasNext() const;
 
-        void Seek(const sharpen::ByteBuffer &key);
+        bool Seek(const sharpen::ByteBuffer &key);
 
         inline bool IsEmpty() const noexcept
         {

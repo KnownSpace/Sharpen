@@ -86,9 +86,9 @@ namespace sharpen
     public:
         using StoreItem = sharpen::MemoryTableItem;
         using MapType = std::map<sharpen::ByteBuffer,StoreItem,_Pred>;
+        using ConstIterator = typename MapType::const_iterator;
     private:
         using Self = sharpen::InternalMemoryTable<_Logger,_Pred,sharpen::EnableIf<sharpen::IsMemoryTableLogger<_Logger>::Value>>;
-        using ConstIterator = typename MapType::const_iterator;
     
         sharpen::CompressedPair<_Logger,MapType> pair_;
         bool directlyErase_;
@@ -326,6 +326,11 @@ namespace sharpen
         inline ConstIterator End() const noexcept
         {
             return this->Map().end();
+        }
+
+        inline ConstIterator BinaryFind(const sharpen::ByteBuffer &key) const noexcept
+        {
+            return this->Map().lower_bound(key);
         }
 
         inline void Clear() noexcept

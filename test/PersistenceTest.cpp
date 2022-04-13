@@ -43,7 +43,7 @@ void Entry()
     try
     {
         std::puts("persistence test begin");
-        sharpen::FileChannelPtr log = sharpen::MakeFileChannel(logName, sharpen::FileAccessModel::All, sharpen::FileOpenModel::CreateNew);
+        /*sharpen::FileChannelPtr log = sharpen::MakeFileChannel(logName, sharpen::FileAccessModel::All, sharpen::FileOpenModel::CreateNew);
         log->Register(sharpen::EventEngine::GetEngine());
         sharpen::FileChannelPtr table = sharpen::MakeFileChannel(tableName, sharpen::FileAccessModel::All, sharpen::FileOpenModel::CreateNew);
         table->Register(sharpen::EventEngine::GetEngine());
@@ -463,10 +463,10 @@ void Entry()
         sharpen::RemoveFile(logName);
         sharpen::RemoveFile(tableName);
         sharpen::RemoveFile(tableName2);
-        sharpen::RemoveFile(tableName3);
+        sharpen::RemoveFile(tableName3);*/
         {
-            sharpen::LevelTable table{sharpen::EventEngine::GetEngine(),"./table","kdb"};
-            for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(1e5); i != count;++i)
+            sharpen::LevelTable table{sharpen::EventEngine::GetEngine(),"./table","kdb",sharpen::LevelTableOption{&CompAsUint32}};
+            for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(2*1e6); i != count;++i)
             {
                 sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};
                 key.As<sharpen::Uint32>() = i;
@@ -474,14 +474,28 @@ void Entry()
                 value.As<sharpen::Uint32>() = i;
                 table.Put(std::move(key),std::move(value));
             }
-            for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(1e5); i != count;++i)
+            // for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(1e6); i != count;++i)
+            // {
+            //     sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};
+            //     key.As<sharpen::Uint32>() = i;
+            //     sharpen::ByteBuffer value{sizeof(sharpen::Uint32)};
+            //     value.As<sharpen::Uint32>() = i;
+            //     std::printf("lt check %u/%u\n",i,count - 1);
+            //     assert(table.Get(key) == value);
+            // }
+            sharpen::ByteBuffer begin{sizeof(sharpen::Uint32)},end{sizeof(sharpen::Uint32)};
+            begin.As<sharpen::Uint32>() = 0;
+            end.As<sharpen::Uint32>() = 10;
+            auto scanner{table.Scan(true,begin,end)};
+            if(!scanner.IsEmpty())
             {
-                sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};
-                key.As<sharpen::Uint32>() = i;
-                sharpen::ByteBuffer value{sizeof(sharpen::Uint32)};
-                value.As<sharpen::Uint32>() = i;
-                std::printf("lt check %u/%u\n",i,count - 1);
-                assert(table.Get(key) == value);
+                bool stop{false};
+                while (!stop)
+                {
+                    sharpen::ByteBuffer val{scanner.GetCurrentValue()};
+                    std::printf("lt scanner value is %u\n",val.As<sharpen::Uint32>());
+                    stop = !scanner.Next();
+                }
             }
             table.Destory();
         }

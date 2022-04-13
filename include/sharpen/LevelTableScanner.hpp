@@ -11,6 +11,7 @@
 #include "LevelView.hpp"
 #include "LevelTableOption.hpp"
 #include "LockTable.hpp"
+#include "Optional.hpp"
 
 namespace sharpen
 {
@@ -20,15 +21,26 @@ namespace sharpen
     {
     private:
         using Self = sharpen::LevelTableScanner;
-    
-        sharpen::LevelTable *table_;
+        using MemTable = sharpen::MemoryTable<sharpen::BinaryLogger,sharpen::MemoryTableComparator>;
+        using ConstIterator = typename MemTable::ConstIterator;
+
+        sharpen::Optional<sharpen::ByteBuffer> SelectKeyFromMemTable(const MemTable &table,const sharpen::ByteBuffer *before,const sharpen::ByteBuffer *after) const;
+
+        sharpen::Optional<sharpen::ByteBuffer> SelectKeyFromTable(const sharpen::SortedStringTable &table,const sharpen::ByteBuffer *before,const sharpen::ByteBuffer *after) const;
+
+        sharpen::Optional<sharpen::ByteBuffer> SelectKey(const sharpen::ByteBuffer *before,const sharpen::ByteBuffer *after) const;
+
+        sharpen::Optional<sharpen::ByteBuffer> SelectNextKey() const;
+
+        const sharpen::LevelTable *table_;
         std::unique_lock<sharpen::AsyncReadWriteLock> levelLock_;
-        std::unique_lock<sharpen::AsyncReadWriteLock> memLock_;
+        std::vector<const MemTable*> immTables_;
         std::vector<sharpen::LevelViewItem> tables_;
         sharpen::Optional<std::pair<sharpen::ByteBuffer,sharpen::ByteBuffer>> range_;
         sharpen::ByteBuffer currentKey_;
         sharpen::Size currentTable_;
         bool useCache_;
+        bool isEmpty_;
     public:
     
         explicit LevelTableScanner(const sharpen::LevelTable &table);
@@ -43,12 +55,13 @@ namespace sharpen
             {
                 this->table_ = other.table_;
                 this->levelLock_ = std::move(other.levelLock_);
-                this->memLock_ = std::move(other.memLock_);
+                this->immTables_ = std::move(other.immTables_);
                 this->tables_ = std::move(other.tables_);
                 this->range_ = std::move(other.range_);
                 this->currentKey_ = std::move(other.currentKey_);
                 this->currentTable_ = other.currentTable_;
                 this->useCache_ = other.useCache_;
+                this->isEmpty_ = other.isEmpty_;
             }
             return *this;
         }
@@ -111,7 +124,7 @@ namespace sharpen
 
         bool HasNext() const;
 
-        void Seek(const sharpen::ByteBuffer &key);
+        bool Seek(const sharpen::ByteBuffer &key);
 
         bool IsEmpty() const noexcept;
     };
