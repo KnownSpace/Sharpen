@@ -12,6 +12,15 @@ sharpen::ByteBuffer sharpen::LevelTable::prevViewIdKey_;
 sharpen::ByteBuffer sharpen::LevelTable::prevMemTableIdKey_;
 std::once_flag sharpen::LevelTable::keyFlag_;
 
+sharpen::Int32 sharpen::LevelTable::CompareKeys(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept
+{
+    if(this->comp_)
+    {
+        return this->comp_(left,right);
+    }
+    return left.CompareWith(right);
+}
+
 sharpen::ByteBuffer sharpen::LevelTable::GetViewKey(sharpen::Uint64 id)
 {
     sharpen::ByteBuffer buf{1 + sizeof(id)};

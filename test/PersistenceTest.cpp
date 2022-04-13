@@ -308,6 +308,22 @@ void Entry()
                         std::putchar('\n');
                     }
                 }
+                auto scanner{pt.Scan(true)};
+                if(!scanner.IsEmpty())
+                {
+                    bool stop{false};
+                    while (!stop)
+                    {
+                        sharpen::ByteBuffer val{scanner.GetCurrentValue()};
+                        std::fputs("bt scanner value is ", stdout);
+                        for (sharpen::Size i = 0; i != val.GetSize(); ++i)
+                        {
+                            std::putchar(val[i]);
+                        }
+                        stop = !scanner.Next();
+                        std::putchar('\n');
+                    }
+                }   
                 assert(pt.IsFault() == false);
             }
         }
@@ -424,6 +440,17 @@ void Entry()
                         }
                     }
                     std::printf("bt scan %zu keys\n",count);
+                    auto scanner{pt.Scan(true)};
+                    if(!scanner.IsEmpty())
+                    {
+                        bool stop{false};
+                        while (!stop)
+                        {
+                            sharpen::ByteBuffer val{scanner.GetCurrentValue()};
+                            std::printf("bt scanner value is %u\n",val.As<sharpen::Uint32>());
+                            stop = !scanner.Next();
+                        }
+                    }
                 }
             }
             table->Truncate();

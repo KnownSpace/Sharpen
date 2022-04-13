@@ -32,6 +32,7 @@
 #include "LockTable.hpp"
 #include "AsyncReadWriteLock.hpp"
 #include "AsyncMutex.hpp"
+#include "BalancedTableScanner.hpp"
 
 namespace sharpen
 {
@@ -164,6 +165,23 @@ namespace sharpen
         //unlocked
         //you should lock root lock(S) first
         //and then lock block(S)
+        //return a block cache
+        std::shared_ptr<const sharpen::BtBlock> LoadBlockCache(sharpen::FilePointer pointer) const
+        {
+            return this->LoadCache(pointer);
+        }
+
+        std::shared_ptr<const sharpen::BtBlock> LoadBlockCache(sharpen::Uint64 offset,sharpen::Uint64 size) const
+        {
+            sharpen::FilePointer pointer;
+            pointer.offset_ = offset;
+            pointer.size_ = size;
+            return this->LoadCache(pointer);
+        }
+
+        //unlocked
+        //you should lock root lock(S) first
+        //and then lock block(S)
         std::shared_ptr<const sharpen::BtBlock> FindBlockFromCache(const sharpen::ByteBuffer &key) const;
 
         //unlocked
@@ -277,6 +295,31 @@ namespace sharpen
         inline sharpen::Uint64 GetTableSize() const noexcept
         {
             return this->offset_;
+        }
+
+        inline sharpen::Int32 CompareKeys(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept
+        {
+            return this->CompKey(left,right);
+        }
+
+        inline sharpen::BalancedTableScanner Scan(bool useCache) const
+        {
+            sharpen::BalancedTableScanner scanner{*this};
+            if(!useCache)
+            {
+                scanner.DisableCache();
+            }
+            return scanner;
+        }
+
+        inline sharpen::BalancedTableScanner Scan(const sharpen::ByteBuffer &beginKey,const sharpen::ByteBuffer &endKey,bool useCache) const
+        {
+            sharpen::BalancedTableScanner scanner{*this,beginKey,endKey};
+            if(!useCache)
+            {
+                scanner.DisableCache();
+            }
+            return scanner;
         }
     };
 }

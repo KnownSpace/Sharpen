@@ -2,6 +2,8 @@
 #ifndef _SHARPEN_LEVELTABLE_HPP
 #define _SHARPEN_LEVELTABLE_HPP
 
+#include <set>
+
 #include "MemoryTable.hpp"
 #include "BinaryLogger.hpp"
 #include "SortedStringTable.hpp"
@@ -181,6 +183,8 @@ namespace sharpen
     
         ~LevelTable() noexcept = default;
 
+        sharpen::Int32 CompareKeys(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept;
+
         void Put(sharpen::ByteBuffer key,sharpen::ByteBuffer value);
 
         void Delete(sharpen::ByteBuffer key);
@@ -255,6 +259,166 @@ namespace sharpen
         }
 
         sharpen::Uint64 GetTableSize() const;
+
+        //for range query
+        //you should lock level lock(S) first
+        template<typename _InsertIterator,typename _Checker = decltype(*std::declval<_InsertIterator&>()++ = std::declval<sharpen::LevelViewItem&>())>
+        inline void TableScan(_InsertIterator inserter) const
+        {
+            std::map<sharpen::Uint64,sharpen::Size> viewStatus;
+            sharpen::Optional<sharpen::LevelViewItem> selectedItem;
+            sharpen::Uint64 selectedView{0};
+            sharpen::Uint64 maxLevel{this->GetMaxLevel()};
+            std::set<sharpen::Uint64> emptyComponents;
+            while (emptyComponents.size() == maxLevel + 1)
+            {
+                for (sharpen::Size i = maxLevel;; --i)
+                {
+                    const sharpen::LevelComponent *component{&this->GetComponent(i)};
+                    sharpen::Size emptyViews{0};
+                    if(!component->Empty())
+                    {
+                        for (auto begin = component->Begin(),end = component->End(); begin != end; ++begin)
+                        {
+                            const sharpen::LevelView *view{&this->GetView(*begin)};
+                            if(!view->Empty())
+                            {
+                                sharpen::Size skip{0};
+                                auto ite = viewStatus.find(*begin);
+                                if(ite != viewStatus.end())
+                                {
+                                    skip = ite->second;
+                                }
+                                else
+                                {
+                                    viewStatus.emplace(*begin,skip);
+                                }
+                                if(skip != view->GetSize())
+                                {
+                                    auto tableIte = sharpen::IteratorForward(view->Begin(),skip);
+                                    if(!selectedItem.Exist() || tableIte->BeginKey() >= selectedItem.Get().BeginKey())
+                                    {
+                                        selectedItem.Construct(*tableIte);
+                                        selectedView = *begin;
+                                    }
+                                    continue;
+                                }
+                            }
+                            emptyViews += 1;
+                        }
+                    }
+                    if(emptyViews == component->GetSize())
+                    {
+                        emptyComponents.emplace(i);
+                    }
+                    if(!i)
+                    {
+                        break;
+                    }
+                }
+                if(selectedItem.Exist())
+                {
+                    *inserter++ = std::move(selectedItem.Get());
+                    viewStatus[selectedView] += 1;
+                    selectedView = 0;
+                }
+            }
+        }
+
+        //for range query
+        //you should lock level lock(S) first
+        template<typename _InsertIterator,typename _Checker = decltype(*std::declval<_InsertIterator&>()++ = std::declval<sharpen::LevelViewItem&>())>
+        inline void TableScan(_InsertIterator inserter,const sharpen::ByteBuffer &beginKey,const sharpen::ByteBuffer &endKey) const
+        {
+            std::map<sharpen::Uint64,std::pair<sharpen::Size,sharpen::Size>> viewStatus;
+            sharpen::Optional<sharpen::LevelViewItem> selectedItem;
+            sharpen::Uint64 selectedView{0};
+            sharpen::Uint64 maxLevel{this->GetMaxLevel()};
+            std::set<sharpen::Uint64> emptyComponents;
+            //set query range
+            for (sharpen::Size i = 0,count = maxLevel + 1; i != count; ++i)
+            {
+                const sharpen::LevelComponent *component{&this->GetComponent(i)};
+                if(!component->Empty())
+                { 
+                    for (auto begin = component->Begin(),end = component->End(); begin != end; ++begin)
+                    {
+                        const sharpen::LevelView *view{&this->GetView(*begin)};
+                        if(!view->Empty())
+                        {
+                            auto tableBegin = view->Begin(),tableEnd = view->End();
+                            sharpen::Size beginRange{0};
+                            sharpen::Size endRange{0};
+                            for (;tableBegin != tableEnd; ++tableBegin,++beginRange)
+                            {
+                                sharpen::Int32 r{this->CompareKeys(beginKey,tableBegin->EndKey())};
+                                if(r != -1)
+                                {
+                                    break;
+                                }
+                            }
+                            endRange = beginRange + 1;
+                            for (;tableBegin != tableEnd; ++tableBegin,++endRange)
+                            {
+                                sharpen::Int32 r{this->CompareKeys(endKey,tableBegin->EndKey())};
+                                if(r != -1)
+                                {
+                                    break;
+                                }
+                            }
+                            viewStatus.emplace(*begin,std::pair<sharpen::Size,sharpen::Size>{beginRange,endRange});
+                        }
+                    }   
+                }
+            }
+            while (emptyComponents.size() == maxLevel + 1)
+            {
+                for (sharpen::Size i = maxLevel;; --i)
+                {
+                    const sharpen::LevelComponent *component{&this->GetComponent(i)};
+                    sharpen::Size emptyViews{0};
+                    if(!component->Empty())
+                    {
+                        for (auto begin = component->Begin(),end = component->End(); begin != end; ++begin)
+                        {
+                            const sharpen::LevelView *view{&this->GetView(*begin)};
+                            if(!view->Empty())
+                            {
+                                sharpen::Size skip{0};
+                                auto ite = viewStatus.find(*begin);
+                                assert(ite != viewStatus.end());
+                                skip = ite->second.first;
+                                if(skip != ite->second.second)
+                                {
+                                    auto tableIte = sharpen::IteratorForward(view->Begin(),skip);
+                                    if(!selectedItem.Exist() || tableIte->BeginKey() >= selectedItem.Get().BeginKey())
+                                    {
+                                        selectedItem.Construct(*tableIte);
+                                        selectedView = *begin;
+                                    }
+                                    continue;
+                                }
+                            }
+                            emptyViews += 1;
+                        }
+                    }
+                    if(emptyViews == component->GetSize())
+                    {
+                        emptyComponents.emplace(i);
+                    }
+                    if(!i)
+                    {
+                        break;
+                    }
+                }
+                if(selectedItem.Exist())
+                {
+                    *inserter++ = std::move(selectedItem.Get());
+                    viewStatus[selectedView] += 1;
+                    selectedView = 0;
+                }
+            }
+        }
     };
 }
 
