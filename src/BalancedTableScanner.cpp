@@ -23,16 +23,8 @@ sharpen::BalancedTableScanner::BalancedTableScanner(const sharpen::BalancedTable
         auto first = this->pointers_.front();
         this->table_->GetBlockLock(first.offset_).LockRead();
         std::unique_lock<sharpen::AsyncReadWriteLock> blockLock{this->table_->GetBlockLock(first.offset_),std::adopt_lock};
-        if(this->useCache_)
-        {
-            auto block{this->table_->LoadBlockCache(first)};
-            this->currentKey_ = block->Begin()->GetKey();
-        }
-        else
-        {
-            auto block{this->table_->LoadBlock(first)};
-            this->currentKey_ = std::move(*block.Begin()).MoveKey();
-        }
+        auto block{this->table_->LoadBlockCache(first)};
+        this->currentKey_ = block->Begin()->GetKey();
     }
     this->rootLock_ = std::move(lock);
 }
@@ -52,8 +44,19 @@ sharpen::BalancedTableScanner::BalancedTableScanner(const sharpen::BalancedTable
     this->table_->TableScan(std::back_inserter(this->pointers_));
     if(!this->pointers_.empty())
     {
-        this->currentKey_ = beginKey;
         this->range_.Construct(beginKey,endKey);
+        auto first = this->pointers_.front();
+        this->table_->GetBlockLock(first.offset_).LockRead();
+        std::unique_lock<sharpen::AsyncReadWriteLock> blockLock{this->table_->GetBlockLock(first.offset_),std::adopt_lock};
+        auto block{this->table_->LoadBlockCache(first)};
+        if(block->Exist(beginKey) == sharpen::ExistStatus::Exist)
+        {
+            this->currentKey_ = beginKey;
+        }
+        else
+        {
+            this->currentKey_ = block->Begin()->GetKey();
+        }
     }
     this->rootLock_ = std::move(lock);
 }
