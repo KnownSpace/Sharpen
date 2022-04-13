@@ -69,11 +69,6 @@ namespace sharpen
             this->role_ = role;
         }
 
-        _PersistentStorage &PersistenceStorage() noexcept
-        {
-            return this->storage_;
-        }
-
         void SetCurrentTerm(sharpen::Uint64 term)
         {
             this->PersistenceStorage().SetCurrentTerm(term);
@@ -94,12 +89,6 @@ namespace sharpen
         {
             this->ConvertFollower();
             this->SetCurrentTerm(term);
-        }
-
-        static void VoteCallback(sharpen::Uint64 *vote) noexcept
-        {
-            assert(vote != nullptr);
-            *vote += 1;
         }
     public:
         static constexpr sharpen::Uint64 sentinelLogIndex_{0};
@@ -214,7 +203,10 @@ namespace sharpen
             return this->storage_;
         }
 
-        const _PersistentStorage &GetPersistenceStorage() const noexcept
+        //used for snapshot
+        //you should not remove logs than index bigger than last appiled
+        //and never motify the contents of logs
+        _PersistentStorage &PersistenceStorage() noexcept
         {
             return this->storage_;
         }
@@ -331,12 +323,6 @@ namespace sharpen
         void ReactVote(sharpen::Uint64 vote)
         {
             this->votes_ += vote;
-        }
-
-        std::function<void()> BuildVoteCallback()
-        {
-            using FnPtr = void(*)(sharpen::Uint64*);
-            return std::bind(static_cast<FnPtr>(&Self::VoteCallback),&this->votes_);
         }
 
         //should copy all logs to followers when become leader
