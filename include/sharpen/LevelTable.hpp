@@ -414,11 +414,13 @@ namespace sharpen
                 if(selectedItem.Exist())
                 {
                     *inserter++ = std::move(selectedItem.Get());
-                    viewStatus[selectedView] += 1;
+                    viewStatus[selectedView].first += 1;
                     selectedView = 0;
                 }
             }
         }
+
+        void Destory();
     };
 }
 

@@ -30,18 +30,6 @@ namespace sharpen
             return hash % this->size_;
         }
 
-        void Release() noexcept
-        {
-            if(this->caches_)
-            {
-                for (sharpen::Size i = 0; i != this->size_; ++i)
-                {
-                    this->caches_[i].~CircleCache<_T>();   
-                }
-                this->size_ = 0;
-                this->caches_ = nullptr;
-            }
-        }
     public:
         explicit SegmentedCircleCache(sharpen::Size cacheSize)
             :size_(0)
@@ -143,6 +131,19 @@ namespace sharpen
             assert(!key.empty());
             assert(this->caches_);
             return this->caches_[this->HashKey(key)].Delete(key);
+        }
+
+        void Release() noexcept
+        {
+            if(this->caches_)
+            {
+                for (sharpen::Size i = 0; i != this->size_; ++i)
+                {
+                    this->caches_[i].~CircleCache<_T>();   
+                }
+                this->size_ = 0;
+                this->caches_ = nullptr;
+            }
         }
     };
 }

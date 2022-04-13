@@ -164,6 +164,12 @@ namespace sharpen
         {
             return this->Delete(key.begin(),key.end());
         }
+
+        void Clear() noexcept
+        {
+            std::unique_lock<Lock> lock(this->lock_);
+            this->buf_.clear();
+        }
     };
 }
 

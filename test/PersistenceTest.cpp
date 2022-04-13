@@ -7,6 +7,7 @@
 #include <sharpen/FileOps.hpp>
 #include <sharpen/EventEngine.hpp>
 #include <sharpen/BalancedTable.hpp>
+#include <sharpen/LevelTable.hpp>
 
 static sharpen::Int32 CompAsUint32(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) noexcept
 {
@@ -463,6 +464,27 @@ void Entry()
         sharpen::RemoveFile(tableName);
         sharpen::RemoveFile(tableName2);
         sharpen::RemoveFile(tableName3);
+        {
+            sharpen::LevelTable table{sharpen::EventEngine::GetEngine(),"./table","kdb"};
+            for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(1e5); i != count;++i)
+            {
+                sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};
+                key.As<sharpen::Uint32>() = i;
+                sharpen::ByteBuffer value{sizeof(sharpen::Uint32)};
+                value.As<sharpen::Uint32>() = i;
+                table.Put(std::move(key),std::move(value));
+            }
+            for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(1e5); i != count;++i)
+            {
+                sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};
+                key.As<sharpen::Uint32>() = i;
+                sharpen::ByteBuffer value{sizeof(sharpen::Uint32)};
+                value.As<sharpen::Uint32>() = i;
+                std::printf("lt check %u/%u\n",i,count - 1);
+                assert(table.Get(key) == value);
+            }
+            table.Destory();
+        }
     }
     catch (const std::exception &e)
     {

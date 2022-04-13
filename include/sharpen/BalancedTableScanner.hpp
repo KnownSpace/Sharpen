@@ -11,7 +11,7 @@ namespace sharpen
 {
     class BalancedTable;
 
-    class BalancedTableScanner
+    class BalancedTableScanner:public sharpen::Noncopyable
     {
     private:
         using Self = sharpen::BalancedTableScanner;

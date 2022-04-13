@@ -1118,3 +1118,47 @@ sharpen::Uint64 sharpen::LevelTable::GetTableSize() const
     }
     return size;
 }
+
+void sharpen::LevelTable::Destory()
+{
+    this->mem_.reset();
+    this->imMems_.clear();
+    this->tableCaches_.Release();
+    for (sharpen::Size i = this->GetPrevMemoryTableId(),end = this->GetCurrentMemoryTableId() + 1; i != end; ++i)
+    {
+        std::string name{this->FormatMemoryTableName(i)};
+        try
+        {
+            sharpen::RemoveFile(name.c_str());
+        }
+        catch(const std::exception &ignore)
+        {
+            static_cast<void>(ignore);
+        }
+    }
+    for (sharpen::Size i = 0,end = this->GetCurrentTableId() + 1; i != end; ++i)
+    {
+        std::string name{this->FormatTableName(i)};
+        if(sharpen::ExistFile(name.c_str()))
+        {
+            try
+            {
+                sharpen::RemoveFile(name.c_str());
+            }
+            catch(const std::exception &ignore)
+            {
+                static_cast<void>(ignore);
+            }
+        }
+    }
+    this->manifest_.release();
+    std::string name{this->FormatManifestName()};
+    try
+    {
+        sharpen::RemoveFile(name.c_str());
+    }
+    catch(const std::exception &ignore)
+    {
+        static_cast<void>(ignore);
+    }
+}

@@ -48,7 +48,7 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
         std::logic_error("unknow open model");
     }
     //create file
-    sharpen::FileHandle handle = ::CreateFileA(filename,accessModel,FILE_SHARE_READ|FILE_SHARE_WRITE,nullptr,openModel,FILE_FLAG_OVERLAPPED,INVALID_HANDLE_VALUE);
+    sharpen::FileHandle handle = ::CreateFileA(filename,accessModel,FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE,nullptr,openModel,FILE_FLAG_OVERLAPPED,INVALID_HANDLE_VALUE);
     if (handle == INVALID_HANDLE_VALUE)
     {
         sharpen::ThrowLastError();
