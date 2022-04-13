@@ -14,7 +14,7 @@
 #include "Noncopyable.hpp"
 #include "Optional.hpp"
 #include "ExistStatus.hpp"
-#include "SpinLock.hpp"
+#include "AsyncReadWriteLock.hpp"
 
 namespace sharpen
 {   
@@ -89,10 +89,11 @@ namespace sharpen
         using ConstIterator = typename MapType::const_iterator;
     private:
         using Self = sharpen::InternalMemoryTable<_Logger,_Pred,sharpen::EnableIf<sharpen::IsMemoryTableLogger<_Logger>::Value>>;
-    
+        using Lock = sharpen::AsyncReadWriteLock;
+
         sharpen::CompressedPair<_Logger,MapType> pair_;
         bool directlyErase_;
-        mutable std::unique_ptr<sharpen::SpinLock> lock_;
+        mutable std::unique_ptr<Lock> lock_;
 
         _Logger &Logger() noexcept
         {
@@ -166,7 +167,7 @@ namespace sharpen
             ,directlyErase_(false)
             ,lock_(nullptr)
         {
-            this->lock_.reset(new sharpen::SpinLock{});
+            this->lock_.reset(new Lock{});
             if(!this->lock_)
             {
                 throw std::bad_alloc();
@@ -179,7 +180,7 @@ namespace sharpen
             ,directlyErase_(true)
             ,lock_(nullptr)
         {
-            this->lock_.reset(new sharpen::SpinLock{});
+            this->lock_.reset(new Lock{});
             if(!this->lock_)
             {
                 throw std::bad_alloc();
@@ -193,7 +194,7 @@ namespace sharpen
             ,directlyErase_(false)
             ,lock_(nullptr)
         {
-            this->lock_.reset(new sharpen::SpinLock{});
+            this->lock_.reset(new Lock{});
             if(!this->lock_)
             {
                 throw std::bad_alloc();
@@ -206,7 +207,7 @@ namespace sharpen
             ,directlyErase_(true)
             ,lock_(nullptr)
         {
-            this->lock_.reset(new sharpen::SpinLock{});
+            this->lock_.reset(new Lock{});
             if(!this->lock_)
             {
                 throw std::bad_alloc();
@@ -247,7 +248,8 @@ namespace sharpen
         {
             this->Logger().Log(batch);
             {
-                std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
+                this->lock_->LockWrite();
+                std::unique_lock<Lock> lock{*this->lock_,std::adopt_lock};
                 this->InternalAction(batch);
             }
         }
@@ -273,7 +275,8 @@ namespace sharpen
 
         sharpen::ExistStatus Exist(const sharpen::ByteBuffer &key) const noexcept
         {
-            std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
+            this->lock_->LockRead();
+            std::unique_lock<Lock> lock{*this->lock_,std::adopt_lock};
             auto ite = this->Map().find(key);
             if(ite == this->Map().end())
             {
@@ -288,7 +291,8 @@ namespace sharpen
 
         sharpen::ByteBuffer &Get(const sharpen::ByteBuffer &key)
         {
-            std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
+            this->lock_->LockRead();
+            std::unique_lock<Lock> lock{*this->lock_,std::adopt_lock};
             auto &item = this->Map().at(key);
             if(item.IsDeleted())
             {
@@ -299,7 +303,8 @@ namespace sharpen
 
         const sharpen::ByteBuffer &Get(const sharpen::ByteBuffer &key) const
         {
-            std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
+            this->lock_->LockRead();
+            std::unique_lock<Lock> lock{*this->lock_,std::adopt_lock};
             auto &item = this->Map().at(key);
             if(item.IsDeleted())
             {
@@ -338,7 +343,7 @@ namespace sharpen
             this->Map().clear();
         }
 
-        inline sharpen::SpinLock &GetLock() const noexcept
+        inline Lock &GetLock() const noexcept
         {
             return *this->lock_;
         }

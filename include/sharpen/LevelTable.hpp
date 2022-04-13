@@ -4,15 +4,7 @@
 
 #include <set>
 
-#include "MemoryTable.hpp"
-#include "BinaryLogger.hpp"
-#include "SortedStringTable.hpp"
-#include "AsyncReadWriteLock.hpp"
-#include "LevelComponent.hpp"
-#include "MemoryTableComparator.hpp"
-#include "LevelView.hpp"
 #include "LevelTableOption.hpp"
-#include "LockTable.hpp"
 #include "LevelTableScanner.hpp"
 
 namespace sharpen
@@ -437,7 +429,7 @@ namespace sharpen
             return scanner;
         }
 
-        inline sharpen::LevelTableScanner Scan(bool useCache,const sharpen::ByteBuffer &beginKey,const sharpen::ByteBuffer &endKey) const
+        inline sharpen::LevelTableScanner Scan(const sharpen::ByteBuffer &beginKey,const sharpen::ByteBuffer &endKey,bool useCache) const
         {
             sharpen::LevelTableScanner scanner{*this,beginKey,endKey};
             if(!useCache)

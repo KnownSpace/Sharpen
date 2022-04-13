@@ -41,7 +41,7 @@ sharpen::BalancedTableScanner::BalancedTableScanner(const sharpen::BalancedTable
     auto &rootLock{this->table_->GetRootLock()};
     rootLock.LockRead();
     std::unique_lock<sharpen::AsyncReadWriteLock> lock{rootLock,std::adopt_lock};
-    this->table_->TableScan(std::back_inserter(this->pointers_));
+    this->table_->TableScan(std::back_inserter(this->pointers_),beginKey,endKey);
     if(!this->pointers_.empty())
     {
         this->range_.Construct(beginKey,endKey);

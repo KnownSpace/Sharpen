@@ -4,6 +4,8 @@
 
 sharpen::Optional<sharpen::ByteBuffer> sharpen::LevelTableScanner::SelectKeyFromMemTable(const MemTable &table,const sharpen::ByteBuffer *before,const sharpen::ByteBuffer *after) const
 {
+    table.GetLock().LockRead();
+    std::unique_lock<sharpen::AsyncReadWriteLock> lock{table.GetLock(),std::adopt_lock};
     if(!table.Empty())
     {
         auto begin = table.Begin(),end = table.End();
@@ -94,6 +96,7 @@ sharpen::Optional<sharpen::ByteBuffer> sharpen::LevelTableScanner::SelectKeyFrom
     return sharpen::EmptyOpt;
 }
 
+//(after,before]
 sharpen::Optional<sharpen::ByteBuffer> sharpen::LevelTableScanner::SelectKey(const sharpen::ByteBuffer *before,const sharpen::ByteBuffer *after) const
 {
     const auto &memTable{this->table_->GetMemoryTable()};
@@ -184,22 +187,15 @@ sharpen::LevelTableScanner::LevelTableScanner(const sharpen::LevelTable &table,c
     this->table_->GetLevelLock().LockRead();
     std::unique_lock<sharpen::AsyncReadWriteLock> lock{this->table_->GetLevelLock(),std::adopt_lock};
     this->table_->TableScan(std::back_inserter(this->tables_));
-    if(this->table_->Exist(beginKey) == sharpen::ExistStatus::Exist)
+    auto key{this->SelectKey(&this->GetRangeEnd(),&this->GetRangeBegin())};
+    if(key.Exist())
     {
-        this->currentKey_ = beginKey;
+        this->currentKey_ = std::move(key.Get());
+        this->levelLock_ = std::move(lock);
     }
     else
     {
-        auto key{this->SelectKey(&this->GetRangeBegin(),&this->GetRangeEnd())};
-        if(key.Exist())
-        {
-            this->currentKey_ = std::move(key.Get());
-            this->levelLock_ = std::move(lock);
-        }
-        else
-        {
-            this->isEmpty_ = true;
-        }
+        this->isEmpty_ = true;
     }
 }
 
@@ -253,21 +249,20 @@ bool sharpen::LevelTableScanner::Seek(const sharpen::ByteBuffer &key)
         this->currentKey_ = key;
         return true;
     }
+    sharpen::Optional<sharpen::ByteBuffer> opt;
     if(this->IsRangeQuery())
     {
-        auto tmp{this->SelectKey(&this->GetRangeEnd(),&key)};
-        if(tmp.Exist())
-        {
-            this->currentKey_ = std::move(tmp.Get());
-        }
-        return tmp.Exist();
+        opt = this->SelectKey(&this->GetRangeEnd(),&key);
     }
-    auto tmp{this->SelectKey(nullptr,&key)};
-    if(tmp.Exist())
+    else
     {
-        this->currentKey_ = std::move(tmp.Get());
+        opt = this->SelectKey(nullptr,&key);
     }
-    return tmp.Exist();
+    if(opt.Exist())
+    {
+        this->currentKey_ = std::move(opt.Get());
+    }
+    return opt.Exist();
 }
 
 sharpen::ByteBuffer sharpen::LevelTableScanner::GetCurrentValue() const

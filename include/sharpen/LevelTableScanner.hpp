@@ -5,12 +5,9 @@
 #include "MemoryTable.hpp"
 #include "BinaryLogger.hpp"
 #include "SortedStringTable.hpp"
-#include "AsyncReadWriteLock.hpp"
 #include "LevelComponent.hpp"
 #include "MemoryTableComparator.hpp"
 #include "LevelView.hpp"
-#include "LevelTableOption.hpp"
-#include "LockTable.hpp"
 #include "Optional.hpp"
 
 namespace sharpen
