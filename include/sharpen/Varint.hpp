@@ -23,21 +23,25 @@ namespace sharpen
         mutable sharpen::Optional<_T> cache_;
         char data_[Self::bytes_];
     public:
-        explicit Varint(_T intValue)
+        Varint() noexcept
+            :Varint(0)
+        {}
+
+        explicit Varint(_T intValue) noexcept
             :cache_(sharpen::EmptyOpt)
             ,data_()
         {
             this->Set(intValue);
         }
 
-        explicit Varint(sharpen::ByteBuffer data)
+        explicit Varint(sharpen::ByteBuffer data) noexcept
             :cache_(sharpen::EmptyOpt)
             ,data_()
         {
             this->Set(data);
         }
 
-        Varint(const char *data,sharpen::Size size)
+        Varint(const char *data,sharpen::Size size) noexcept
             :cache_(sharpen::EmptyOpt)
             ,data_()
         {
@@ -103,7 +107,7 @@ namespace sharpen
             return this->cache_.Get();
         }
 
-        void Set(_T value)
+        void Set(_T value) noexcept
         {
             if(this->cache_.Exist() && this->cache_.Get() == value)
             {
@@ -121,15 +125,12 @@ namespace sharpen
             *ite = static_cast<unsigned char>(val);
         }
 
-        void Set(const sharpen::ByteBuffer &data)
+        void Set(const sharpen::ByteBuffer &data) noexcept
         {
-            this->cache_.Reset();
-            sharpen::Size size = (std::min)(data.GetSize(),sizeof(this->data_));
-            std::memcpy(this->data_,data.Data(),size);
-            this->data_[size - 1] &= mask_;
+            this->Set(data.Data(),data.GetSize());
         }
 
-        void Set(const char *data,sharpen::Size size)
+        void Set(const char *data,sharpen::Size size) noexcept
         {
             this->cache_.Reset();
             size = (std::min)(size,sizeof(this->data_));
@@ -142,32 +143,32 @@ namespace sharpen
             return this->Get();
         }
 
-        inline bool operator==(const Self &other)
+        inline bool operator==(const Self &other) const noexcept
         {
             return this->Get() == other.Get();
         }
 
-        inline bool operator!=(const Self &other)
+        inline bool operator!=(const Self &other) const noexcept
         {
             return this->Get() != other.Get();
         }
 
-        inline bool operator>=(const Self &other)
+        inline bool operator>=(const Self &other) const noexcept
         {
             return this->Get() >= other.Get();
         }
 
-        inline bool operator<=(const Self &other)
+        inline bool operator<=(const Self &other) const noexcept
         {
             return this->Get() <= other.Get();
         }
 
-        inline bool operator>(const Self &other)
+        inline bool operator>(const Self &other) const noexcept
         {
             return this->Get() > other.Get();
         }
 
-        inline bool operator<(const Self &other)
+        inline bool operator<(const Self &other) const noexcept
         {
             return this->Get() < other.Get();
         }
