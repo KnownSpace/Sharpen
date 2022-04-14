@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <map>
 #include <sharpen/BinarySerializable.hpp>
 #include <sharpen/Varint.hpp>
 #include <sharpen/DataCorruptionException.hpp>
@@ -7,8 +8,9 @@ class Message:public sharpen::BinarySerializable<Message>
 {
 private:
     using Self = Message;
+    using ContainerType = std::map<std::string,std::string>;
 
-    std::vector<std::string> strs_;
+    ContainerType container_;
 public:
 
     Message() = default;
@@ -28,36 +30,37 @@ public:
     {
         if(this != std::addressof(other))
         {
-            this->strs_ = std::move(other.strs_);
+            this->container_ = std::move(other.container_);
         }
         return *this;
     }
 
     ~Message() noexcept = default;
 
-    std::vector<std::string> &Strings() noexcept
+    ContainerType &Container() noexcept
     {
-        return this->strs_;
+        return this->container_;
     }
 
-    const std::vector<std::string> &Strings() const noexcept
+    const ContainerType &Container() const noexcept
     {
-        return this->strs_;
+        return this->container_;
     }
 
     sharpen::Size ComputeSize() const noexcept
     {
-        return Helper::ComputeSize(this->strs_);
+        return Helper::ComputeSize(this->container_);
     }
 
     sharpen::Size LoadFrom(const char *data,sharpen::Size size)
     {
-        return Helper::LoadFrom(this->strs_,data,size);
+        return Helper::LoadFrom(this->container_,data,size);
     }
 
     sharpen::Size UnsafeStoreTo(char *data) const noexcept
     {
-        return Helper::UnsafeStoreTo(this->strs_,data);
+        Helper::ComputeSize(this->container_);
+        return Helper::UnsafeStoreTo(this->container_,data);
     }
 };
 
@@ -76,27 +79,19 @@ int main(int argc, char const *argv[])
     sharpen::ByteBuffer buf;
     {
         Message msg;
-        msg.Strings().emplace_back("hello");
-        msg.Strings().emplace_back("world");
+        msg.Container().emplace("hello","world");
+        msg.Container().emplace("1234","5678");
         Store(msg,buf);
     }
     {
         Message msg;
         Load(msg,buf);
-        for (auto begin = msg.Strings().begin(),end = msg.Strings().end(); begin != end; ++begin)
+        for (auto begin = msg.Container().begin(),end = msg.Container().end(); begin != end; ++begin)
         {
-            std::puts(begin->c_str());
+            std::printf("%s:%s\n",begin->first.c_str(),begin->second.c_str());
         }
-        assert(msg.Strings()[0] == "hello");
-        assert(msg.Strings()[1] == "world");
-    }
-    {
-        sharpen::ByteBuffer tmp1{"123",3};
-        sharpen::ByteBuffer tmpBuf;
-        tmp1.StoreTo(tmpBuf);
-        sharpen::ByteBuffer tmp2;
-        tmp2.LoadFrom(tmpBuf);
-        assert(tmp1 == tmp2);
+        assert(msg.Container()["hello"] == "world");
+        assert(msg.Container()["1234"] == "5678");
     }
     return 0;
 }
