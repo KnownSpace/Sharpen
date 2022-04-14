@@ -8,7 +8,7 @@ class Message:public sharpen::BinarySerializable<Message>
 {
 private:
     using Self = Message;
-    using ContainerType = std::map<std::string,std::string>;
+    using ContainerType = std::map<std::string,sharpen::Optional<std::string>>;
 
     ContainerType container_;
 public:
@@ -80,7 +80,7 @@ int main(int argc, char const *argv[])
     {
         Message msg;
         msg.Container().emplace("hello","world");
-        msg.Container().emplace("1234","5678");
+        msg.Container().emplace("1234",sharpen::EmptyOpt);
         Store(msg,buf);
     }
     {
@@ -88,10 +88,13 @@ int main(int argc, char const *argv[])
         Load(msg,buf);
         for (auto begin = msg.Container().begin(),end = msg.Container().end(); begin != end; ++begin)
         {
-            std::printf("%s:%s\n",begin->first.c_str(),begin->second.c_str());
+            if(begin->second.Exist())
+            {
+                std::printf("%s:%s\n",begin->first.c_str(),begin->second.Get().c_str());
+            }
         }
-        assert(msg.Container()["hello"] == "world");
-        assert(msg.Container()["1234"] == "5678");
+        assert(msg.Container()["hello"].Get() == "world");
+        assert(!msg.Container()["1234"].Exist());
     }
     return 0;
 }

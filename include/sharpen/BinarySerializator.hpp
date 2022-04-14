@@ -93,7 +93,11 @@ namespace sharpen
                     throw sharpen::DataCorruptionException("optional data corruption");
                 }
                 obj.Construct();
-                offset += Self::LoadFrom(obj,data + offset,size - offset);
+                offset += Self::LoadFrom(obj.Get(),data + offset,size - offset);
+            }
+            else
+            {
+                obj.Reset();
             }
             return offset;
         }
@@ -177,10 +181,10 @@ namespace sharpen
             sharpen::Size offset{0};
             bool exist{obj.Exist()};
             std::memcpy(data,&exist,sizeof(exist));
-            offset += exist;
+            offset += sizeof(exist);
             if(exist)
             {
-                offset += Self::UnsafeStoreTo(obj,data);
+                offset += Self::UnsafeStoreTo(obj.Get(),data + offset);
             }
             return offset;
         }
