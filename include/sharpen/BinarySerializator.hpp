@@ -14,6 +14,7 @@
 
 namespace sharpen
 {
+    //type should be default constructible
     struct BinarySerializator
     {
     private:
@@ -92,6 +93,7 @@ namespace sharpen
                 {
                     throw sharpen::DataCorruptionException("optional data corruption");
                 }
+                //type should be default constructible
                 obj.Construct();
                 offset += Self::LoadFrom(obj.Get(),data + offset,size - offset);
             }
@@ -154,6 +156,7 @@ namespace sharpen
                 {
                     throw sharpen::DataCorruptionException("container data corruption");
                 }
+                //type should be default constructible
                 NoconstValType obj;
                 offset += Self::LoadFrom(obj,data + offset,size - offset);
                 Self::PutToContainer(container,std::move(obj));
