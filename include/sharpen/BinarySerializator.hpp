@@ -26,6 +26,12 @@ namespace sharpen
             return sizeof(obj);
         }
 
+        template<typename _T,typename _Check = decltype(std::declval<sharpen::Size&>() = std::declval<const _T&>().ComputeSize())>
+        static sharpen::Size InternalComputeSize(const _T &obj,int,int,int,int,...) noexcept
+        {
+            return obj.ComputeSize();
+        }
+
         template<typename _T,typename _Check = decltype(std::declval<sharpen::Size&>() = Self::InternalComputeSize(std::declval<const _T&>(),0,0,0,0))>
         static sharpen::Size InternalComputeSize(const sharpen::Optional<_T> &obj,int,...) noexcept
         {
@@ -53,12 +59,6 @@ namespace sharpen
             return builder.ComputeSize() + Self::ComputeRangeSize(container.begin(),container.end());
         }
 
-        template<typename _T,typename _Check = decltype(std::declval<sharpen::Size&>() = std::declval<const _T&>().ComputeSize())>
-        static sharpen::Size InternalComputeSize(const _T &obj,int,int,int,int,...) noexcept
-        {
-            return obj.ComputeSize();
-        }
-
         template<typename _T,typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>
         static sharpen::Size InternalLoadFrom(_T &obj,const char *data,sharpen::Size size,...)
         {
@@ -68,6 +68,12 @@ namespace sharpen
             }
             std::memcpy(&obj,data,sizeof(obj));
             return sizeof(obj);
+        }
+
+        template<typename _T,typename _Check = decltype(std::declval<sharpen::Size&>() = std::declval<_T&>().LoadFrom(nullptr,0))>
+        static sharpen::Size InternalLoadFrom(_T &obj,const char *data,sharpen::Size size,int,int,int,int,...)
+        {
+            return obj.LoadFrom(data,size);
         }
 
         template<typename _T,typename _Check = decltype(std::declval<sharpen::Size&>() = Self::InternalLoadFrom(std::declval<_T&>(),nullptr,static_cast<sharpen::Size>(0),0,0,0,0))>
@@ -159,17 +165,17 @@ namespace sharpen
             return offset;
         }
 
-        template<typename _T,typename _Check = decltype(std::declval<sharpen::Size&>() = std::declval<_T&>().LoadFrom(nullptr,0))>
-        static sharpen::Size InternalLoadFrom(_T &obj,const char *data,sharpen::Size size,int,int,int,int,...)
-        {
-            return obj.LoadFrom(data,size);
-        }
-
         template<typename _T,typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>
         static sharpen::Size InternalUnsafeStoreTo(const _T &obj,char *data,...) noexcept
         {
             std::memcpy(data,&obj,sizeof(obj));
             return sizeof(obj);
+        }
+
+        template<typename _T,typename _Check = decltype(std::declval<sharpen::Size&>() = std::declval<const _T&>().UnsafeStoreTo(nullptr))>
+        static sharpen::Size InternalUnsafeStoreTo(const _T &obj,char *data,int,int,int,int,...) noexcept
+        {
+            return obj.UnsafeStoreTo(data);
         }
 
         template<typename _T,typename _Check = decltype(std::declval<sharpen::Size&>() = Self::InternalUnsafeStoreTo(std::declval<const _T&>(),nullptr,0,0,0,0))>
@@ -209,12 +215,6 @@ namespace sharpen
                 offset += Self::UnsafeStoreTo(*begin,data + offset);
             }
             return offset;
-        }
-
-        template<typename _T,typename _Check = decltype(std::declval<sharpen::Size&>() = std::declval<const _T&>().UnsafeStoreTo(nullptr))>
-        static sharpen::Size InternalUnsafeStoreTo(const _T &obj,char *data,int,int,int,int,...) noexcept
-        {
-            return obj.UnsafeStoreTo(data);
         }
 
         //container apis

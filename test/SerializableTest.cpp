@@ -59,7 +59,6 @@ public:
 
     sharpen::Size UnsafeStoreTo(char *data) const noexcept
     {
-        Helper::ComputeSize(this->container_);
         return Helper::UnsafeStoreTo(this->container_,data);
     }
 };
@@ -99,10 +98,10 @@ int main(int argc, char const *argv[])
     buf.Clear();
     {
         std::vector<Message> msgs;
-        for (sharpen::Size i = 0; i != 10; ++i)
+        for (sharpen::Size i = 0; i != 3; ++i)
         {
             Message msg;
-            msg.Container().emplace("hello","world");
+            msg.Container().emplace("vector msg","test");
             msgs.emplace_back(msg);   
         }
         sharpen::BinarySerializator::StoreTo(msgs,buf);
@@ -113,6 +112,32 @@ int main(int argc, char const *argv[])
         for (sharpen::Size i = 0,count = msgs.size(); i != count; ++i)
         {
             for (auto begin = msgs[i].Container().begin(),end = msgs[i].Container().end(); begin != end; ++begin)
+            {
+                if(begin->second.Exist())
+                {
+                    std::printf("%s:%s\n",begin->first.c_str(),begin->second.Get().c_str());
+                }
+            }
+        }
+    }
+    buf.Clear();
+    {
+        sharpen::Optional<std::vector<Message>> msgs;
+        msgs.Construct();
+        for (sharpen::Size i = 0; i != 3; ++i)
+        {
+            Message msg;
+            msg.Container().emplace("opt msgs","test");
+            msgs.Get().emplace_back(msg);   
+        }
+        sharpen::BinarySerializator::StoreTo(msgs,buf);
+    }
+    {
+        sharpen::Optional<std::vector<Message>> msgs;
+        sharpen::BinarySerializator::LoadFrom(msgs,buf);
+        for (sharpen::Size i = 0,count = msgs.Get().size(); i != count; ++i)
+        {
+            for (auto begin = msgs.Get()[i].Container().begin(),end = msgs.Get()[i].Container().end(); begin != end; ++begin)
             {
                 if(begin->second.Exist())
                 {
