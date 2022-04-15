@@ -96,5 +96,30 @@ int main(int argc, char const *argv[])
         assert(msg.Container()["hello"].Get() == "world");
         assert(!msg.Container()["1234"].Exist());
     }
+    buf.Clear();
+    {
+        std::vector<Message> msgs;
+        for (sharpen::Size i = 0; i != 10; ++i)
+        {
+            Message msg;
+            msg.Container().emplace("hello","world");
+            msgs.emplace_back(msg);   
+        }
+        sharpen::BinarySerializator::StoreTo(msgs,buf);
+    }
+    {
+        std::vector<Message> msgs;
+        sharpen::BinarySerializator::LoadFrom(msgs,buf);
+        for (sharpen::Size i = 0,count = msgs.size(); i != count; ++i)
+        {
+            for (auto begin = msgs[i].Container().begin(),end = msgs[i].Container().end(); begin != end; ++begin)
+            {
+                if(begin->second.Exist())
+                {
+                    std::printf("%s:%s\n",begin->first.c_str(),begin->second.Get().c_str());
+                }
+            }
+        }
+    }
     return 0;
 }
