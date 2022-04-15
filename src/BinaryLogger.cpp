@@ -61,11 +61,11 @@ std::vector<sharpen::WriteBatch> sharpen::BinaryLogger::GetWriteBatchs()
             batch.LoadFrom(buf);
             offset += size + sizeof(size);
         }
-        catch(const std::exception&)
+        catch(const std::exception &ignore)
         {
             this->channel_->Truncate(offset);
             this->offset_ = offset;
-            throw;   
+            static_cast<void>(ignore);
         }
         batchs.emplace_back(std::move(batch));
     }

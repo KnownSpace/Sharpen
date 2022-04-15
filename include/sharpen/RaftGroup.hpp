@@ -114,6 +114,16 @@ namespace sharpen
             return this->leaderLoop_.Cancel();
         }
 
+        inline void DelayFollowerCycle()
+        {
+            this->followerLoop_.Cancel();
+        }
+
+        inline void DelayLeaderCycle()
+        {
+            this->leaderLoop_.Cancel();
+        }
+
         inline void Start()
         {
             this->followerLoop_.Start();
