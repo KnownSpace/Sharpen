@@ -123,7 +123,7 @@ namespace sharpen
 
         bool Seek(const sharpen::ByteBuffer &key);
 
-        bool IsEmpty() const noexcept;
+        bool Empty() const noexcept;
     };
 }
 

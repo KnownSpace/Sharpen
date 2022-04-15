@@ -310,7 +310,7 @@ void Entry()
                     }
                 }
                 auto scanner{pt.Scan(true)};
-                if(!scanner.IsEmpty())
+                if(!scanner.Empty())
                 {
                     do
                     {
@@ -444,7 +444,7 @@ void Entry()
                     sharpen::ByteBuffer endKey{sizeof(sharpen::Uint32)};
                     endKey.As<sharpen::Uint32>() = 10000;
                     auto scanner{pt.Scan(beginKey,endKey,true)};
-                    if(!scanner.IsEmpty())
+                    if(!scanner.Empty())
                     {
                         do
                         {
@@ -487,7 +487,7 @@ void Entry()
             begin.As<sharpen::Uint32>() = 0;
             end.As<sharpen::Uint32>() = 10000;
             auto scanner{table.Scan(begin,end,true)};
-            if(!scanner.IsEmpty())
+            if(!scanner.Empty())
             {
                 do 
                 {

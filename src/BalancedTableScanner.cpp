@@ -91,7 +91,7 @@ bool sharpen::BalancedTableScanner::HasNext(const sharpen::BtBlock &block,const 
 
 bool sharpen::BalancedTableScanner::HasNext() const
 {
-    if(this->IsEmpty())
+    if(this->Empty())
     {
         return false;
     }
@@ -114,7 +114,7 @@ bool sharpen::BalancedTableScanner::HasNext() const
 
 bool sharpen::BalancedTableScanner::Next()
 {
-    if(this->IsEmpty())
+    if(this->Empty())
     {
         return false;
     }

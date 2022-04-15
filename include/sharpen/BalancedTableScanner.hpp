@@ -109,7 +109,7 @@ namespace sharpen
 
         bool Seek(const sharpen::ByteBuffer &key);
 
-        inline bool IsEmpty() const noexcept
+        inline bool Empty() const noexcept
         {
             return this->pointers_.empty();
         }

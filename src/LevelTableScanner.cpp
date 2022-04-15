@@ -224,7 +224,7 @@ bool sharpen::LevelTableScanner::HasNext() const
     return next.Exist();
 }
 
-bool sharpen::LevelTableScanner::IsEmpty() const noexcept
+bool sharpen::LevelTableScanner::Empty() const noexcept
 {
     return this->isEmpty_;
 }
