@@ -16,6 +16,7 @@
 #include "CompressedPair.hpp"
 #include "Optional.hpp"
 #include "RaftConcepts.hpp"
+#include "RaftApplyPolicy.hpp"
 
 namespace sharpen
 {
@@ -93,11 +94,7 @@ namespace sharpen
     public:
         static constexpr sharpen::Uint64 sentinelLogIndex_{0};
 
-        enum class LostPolicy
-        {
-            Stop,
-            Ignore
-        };
+        using LostPolicy = sharpen::RaftApplyPolicy;
 
         InternalRaftWrapper(_Id id,_PersistentStorage pm,std::shared_ptr<_Application> application)
             :selfId_(std::move(id))
