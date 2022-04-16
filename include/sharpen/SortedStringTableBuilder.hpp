@@ -40,28 +40,6 @@ namespace sharpen
             }
         };
 
-        template<typename _Iterator>
-        struct Helper<std::move_iterator<_Iterator>>
-        {
-            template<typename _Block>
-            static void PutWalKv(_Block &block,std::move_iterator<_Iterator> ite)
-            {
-                if(!ite->second.IsDeleted())
-                {
-                    block.Put(std::move(ite->first),std::move(ite->second.Value()));
-                }
-                else
-                {
-                    block.Delete(std::move(ite->first));
-                }
-            }
-
-            static void AssignKv(std::move_iterator<_Iterator> ite,sharpen::ByteBuffer &key,sharpen::ByteBuffer &value)
-            {
-                key = std::move(ite->first);
-                value = std::move(ite->second.Value());
-            }
-        };
 
         template<typename _Block,typename _Check = sharpen::EnableIf<sharpen::IsSstDataBlock<_Block>::Value>>
         static bool GetKv(_Block &block,sharpen::Size &groupIndex,sharpen::Size &keyIndex,sharpen::ByteBuffer &key,sharpen::ByteBuffer &value)
