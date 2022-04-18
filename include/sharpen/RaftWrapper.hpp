@@ -83,7 +83,10 @@ namespace sharpen
         void ConvertFollower()
         {
             this->votes_ = 0;
-            this->SetRole(sharpen::RaftRole::Follower);
+            if(this->role_ != sharpen::RaftRole::Learner)
+            {
+                this->SetRole(sharpen::RaftRole::Follower);
+            }
         }
 
         void BiggerTerm(sharpen::Uint64 term)
@@ -335,8 +338,26 @@ namespace sharpen
             return false;
         }
 
+        void BecomeLearner()
+        {
+            this->role_ = sharpen::RaftRole::Learner;
+        }
+
+        void LearnerConvertToFollower()
+        {
+            if(this->role_ == sharpen::RaftRole::Learner)
+            {
+                this->role_ = sharpen::RaftRole::Follower;
+            }
+        }
+
         bool RequestVote(sharpen::Uint64 candidateTerm,const _Id &candidateId,sharpen::Uint64 lastLogIndex,sharpen::Uint64 lastLogTerm)
         {
+            //check role
+            if(this->GetRole() == sharpen::RaftRole::Leader)
+            {
+                return false;
+            }
             //check term
             if(this->GetCurrentTerm() > candidateTerm)
             {
