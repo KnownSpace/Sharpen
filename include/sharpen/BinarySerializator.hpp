@@ -55,7 +55,7 @@ namespace sharpen
         template<typename _Container,typename _Check = decltype(Self::InternalComputeSize(*sharpen::Begin(std::declval<const _Container&>()),0,0,0,0))>
         static sharpen::Size InternalComputeSize(const _Container &container,int,int,int,...) noexcept
         {
-            sharpen::Size size{sharpen::GetRangeSize(sharpen::Begin(container),sharpen::End(container))};
+            sharpen::Size size{Self::ComputeRangeSize(sharpen::Begin(container),sharpen::End(container))};
             sharpen::Varuint64 builder{size};
             return builder.ComputeSize() + size;
         }
