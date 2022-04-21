@@ -100,7 +100,7 @@ namespace sharpen
 
         Self &operator=(const Self &other)
         {
-            if (this != &other)
+            if (this != std::addressof(other))
             {
                 this->hasValue_ = other.hasValue_;
                 if (this->hasValue_)
@@ -113,7 +113,7 @@ namespace sharpen
 
         Self &operator=(Self &&other) noexcept
         {
-            if (this != &other)
+            if (this != std::addressof(other))
             {
                 std::swap(this->hasValue_,other.hasValue_);
                 other.hasValue_ = false;
@@ -152,11 +152,6 @@ namespace sharpen
         bool Exist() const noexcept
         {
             return this->hasValue_;
-        }
-
-        operator bool() const noexcept
-        {
-            return this->Exist();
         }
 
         void Reset() noexcept
@@ -280,11 +275,6 @@ namespace sharpen
         bool Exist() const noexcept
         {
             return this->hasValue_;
-        }
-
-        operator bool() const noexcept
-        {
-            return this->Exist();
         }
 
         void Reset() noexcept
