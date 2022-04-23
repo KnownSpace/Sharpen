@@ -226,7 +226,7 @@ void sharpen::MakeDirectory(const char *name)
         sharpen::ThrowLastError();
     }
 #else
-    if(::mkdir(name,S_IRUSR|S_IWUSR) == -1 && sharpen::GetLastError() != EEXIST)
+    if(::mkdir(name,S_IRWXU) == -1 && sharpen::GetLastError() != EEXIST)
     {
         sharpen::ThrowLastError();
     }
