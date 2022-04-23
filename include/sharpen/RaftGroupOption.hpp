@@ -34,9 +34,9 @@ namespace sharpen
         {}
 
         explicit RaftGroupOption(sharpen::Uint32 seed) noexcept
-            :appendEntriesCycle_(Self::defaultAppendEntriesCycle_)
-            ,minElectionCycle_(Self::defaultMinElectionCycle_)
-            ,maxElectionCycle_(Self::defaultMaxElectionCycle_)
+            :appendEntriesCycle_(static_cast<std::int64_t>(Self::defaultAppendEntriesCycle_))
+            ,minElectionCycle_(static_cast<std::int64_t>(Self::defaultMinElectionCycle_))
+            ,maxElectionCycle_(static_cast<std::int64_t>(Self::defaultMaxElectionCycle_))
             ,randomSeed_(seed)
             ,timerMaker_(nullptr)
         {}
