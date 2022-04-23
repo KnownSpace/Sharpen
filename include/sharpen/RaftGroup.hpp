@@ -105,15 +105,6 @@ namespace sharpen
             return *this;
         }
 
-        inline void DelayCycle()
-        {
-            if(this->raft_.GetRole() == sharpen::RaftRole::Follower)
-            {
-                return this->followerLoop_.Cancel();
-            }
-            return this->leaderLoop_.Cancel();
-        }
-
         inline void DelayFollowerCycle()
         {
             this->followerLoop_.Cancel();
