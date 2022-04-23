@@ -17,6 +17,9 @@ void ServerTest()
     sharpen::IpEndPoint serverEndpoint;
     serverEndpoint.SetAddrByString("127.0.0.1");
     serverEndpoint.SetPort(8080);
+#ifdef SHARPEN_IS_LINUX
+    server->SetReuseAddress(true);
+#endif
     server->Bind(serverEndpoint);
     server->Register(sharpen::EventEngine::GetEngine());
     server->Listen(65535);
@@ -80,6 +83,9 @@ void CancelTest()
     sharpen::IpEndPoint addr;
     addr.SetAddrByString("127.0.0.1");
     addr.SetPort(8080);
+#ifdef SHARPEN_IS_LINUX
+    server->SetReuseAddress(true);
+#endif
     server->Bind(addr);
     server->Register(sharpen::EventEngine::GetEngine());
     addr.SetPort(0);
@@ -122,6 +128,9 @@ void TimeoutTest()
     ep.SetAddrByString("127.0.0.1");
     client->Bind(ep);
     ep.SetPort(8080);
+#ifdef SHARPEN_IS_LINUX
+    server->SetReuseAddress(true);
+#endif
     server->Bind(ep);
     server->Register(sharpen::EventEngine::GetEngine());
     client->Register(sharpen::EventEngine::GetEngine());
@@ -146,11 +155,9 @@ void NetworkTest()
     sharpen::EventEngine &engine = sharpen::EventEngine::SetupSingleThreadEngine();
     engine.Startup([&engine]()
     {
-        std::printf("network test begin\n");
         ServerTest();
         CancelTest();
         TimeoutTest();
-        std::printf("network test pass\n");
         sharpen::CleanupNetSupport();
     });
 }
