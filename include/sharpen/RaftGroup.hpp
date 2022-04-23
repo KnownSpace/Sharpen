@@ -37,7 +37,7 @@ namespace sharpen
 
         sharpen::EventEngine *engine_;
         mutable std::minstd_rand random_;
-        std::uniform_int_distribution<std::uint32_t> distribution_;
+        mutable std::uniform_int_distribution<std::uint32_t> distribution_;
     protected:
 
         RaftType raft_;
