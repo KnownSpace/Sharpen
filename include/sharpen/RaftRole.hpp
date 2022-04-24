@@ -8,8 +8,7 @@ namespace sharpen
     {
         Follower,
         Leader,
-        Candidate,
-        Learner
+        Candidate
     };
 }
 
