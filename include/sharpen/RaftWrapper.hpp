@@ -233,12 +233,9 @@ namespace sharpen
                 return false;
             }
             //access denied
-            else if(this->KnowLeader())
+            else if(this->KnowLeader() && this->GetLeaderId() != leaderId)
             {
-                if(this->GetLeaderId() != leaderId)
-                {
-                    return false;
-                }
+                return false;
             }
             //new leader
             else
@@ -393,19 +390,15 @@ namespace sharpen
                 return false;
             }
             //access denied
-            else if(this->KnowLeader())
+            else if(this->KnowLeader() && this->GetLeaderId() != leaderId)
             {
-                if(this->GetLeaderId() != leaderId)
-                {
-                    return false;
-                }
+                return false;
             }
             //new leader
             else
             {
                 this->leaderId_.Construct(leaderId);
             }
-            this->leaderId_.Construct(leaderId);
             this->Application().InstallSnapshot(this->PersistenceStorage(),this->Members(),leaderTerm,lastIncludedIndex,lastIncludedTerm,offset,data,done);
             return !done;
         }
