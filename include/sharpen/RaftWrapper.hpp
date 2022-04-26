@@ -89,6 +89,7 @@ namespace sharpen
         void BiggerTerm(sharpen::Uint64 term)
         {
             this->ConvertFollower();
+            this->ResetLeader();
             this->SetCurrentTerm(term);
         }
     public:
