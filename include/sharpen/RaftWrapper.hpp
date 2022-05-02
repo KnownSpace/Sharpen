@@ -17,6 +17,7 @@
 #include "Optional.hpp"
 #include "RaftConcepts.hpp"
 #include "RaftApplyPolicy.hpp"
+#include "RaftAppendResult.hpp"
 
 namespace sharpen
 {
@@ -216,12 +217,12 @@ namespace sharpen
 
         //append entires
         template<typename _LogIterator,typename _Check = sharpen::EnableIf<sharpen::IsRaftLogIterator<_LogIterator>::Value>>
-        bool AppendEntries(_LogIterator begin,_LogIterator end,const _Id &leaderId,sharpen::Uint64 leaderTerm,sharpen::Uint64 prevLogIndex,sharpen::Uint64 prevLogTerm,sharpen::Uint64 leaderCommit)
+        sharpen::RaftAppendResult AppendEntries(_LogIterator begin,_LogIterator end,const _Id &leaderId,sharpen::Uint64 leaderTerm,sharpen::Uint64 prevLogIndex,sharpen::Uint64 prevLogTerm,sharpen::Uint64 leaderCommit)
         {
             //if is old leader
             if(leaderTerm < this->GetCurrentTerm())
             {
-                return false;
+                return sharpen::RaftAppendResult::LowerTerm;
             }
             //update term
             if(this->GetCurrentTerm() < leaderTerm)
@@ -231,12 +232,12 @@ namespace sharpen
             }
             else if(this->GetRole() == sharpen::RaftRole::Leader)
             {
-                return false;
+                return sharpen::RaftAppendResult::AccessDenied;
             }
             //access denied
             else if(this->KnowLeader() && this->GetLeaderId() != leaderId)
             {
-                return false;
+                return sharpen::RaftAppendResult::AccessDenied;
             }
             //new leader
             else
@@ -252,12 +253,12 @@ namespace sharpen
                 {
                     if(!this->PersistenceStorage().CheckLog(prevLogIndex,prevLogTerm))
                     {
-                        return false;
+                        return sharpen::RaftAppendResult::LeakOfLogs;
                     }
                 }
                 else
                 {
-                    return false;
+                    return sharpen::RaftAppendResult::LeakOfLogs;
                 }
             }
             bool noskip{true};
@@ -297,7 +298,7 @@ namespace sharpen
             //apply logs
             //stop if we lost the logs
             this->ApplyLogs(LostPolicy::Stop);
-            return true;
+            return sharpen::RaftAppendResult::Success;
         }
 
         //we should wait a random time before you call it
@@ -374,12 +375,12 @@ namespace sharpen
         //return true if we continue
         //this impl is optional
         template<typename _UCommiter = _Application,typename _Check = decltype(std::declval<_UCommiter&>().InstallSnapshot(std::declval<_PersistentStorage&>(),std::declval<MemberMap&>(),0,0,0,0,nullptr,false)),typename _Assert = sharpen::EnableIf<std::is_same<_Application,_UCommiter>::value>>
-        bool InstallSnapshot(const _Id &leaderId,sharpen::Uint64 leaderTerm,sharpen::Uint64 lastIncludedIndex,sharpen::Uint64 lastIncludedTerm,sharpen::Uint64 offset,const char *data,bool done)
+        sharpen::RaftAppendResult InstallSnapshot(const _Id &leaderId,sharpen::Uint64 leaderTerm,sharpen::Uint64 lastIncludedIndex,sharpen::Uint64 lastIncludedTerm,sharpen::Uint64 offset,const char *data,bool done)
         {
             //check term
             if (this->GetCurrentTerm() > leaderTerm)
             {
-                return false;
+                return sharpen::RaftAppendResult::LowerTerm;
             }
             if(this->GetCurrentTerm() < leaderTerm)
             {
@@ -388,12 +389,12 @@ namespace sharpen
             }
             else if(this->GetRole() == sharpen::RaftRole::Leader)
             {
-                return false;
+                return sharpen::RaftAppendResult::AccessDenied;
             }
             //access denied
             else if(this->KnowLeader() && this->GetLeaderId() != leaderId)
             {
-                return false;
+                return sharpen::RaftAppendResult::AccessDenied;
             }
             //new leader
             else
@@ -401,7 +402,7 @@ namespace sharpen
                 this->leaderId_.Construct(leaderId);
             }
             this->Application().InstallSnapshot(this->PersistenceStorage(),this->Members(),leaderTerm,lastIncludedIndex,lastIncludedTerm,offset,data,done);
-            return !done;
+            return sharpen::RaftAppendResult::Success;
         }
 
         bool KnowLeader() const noexcept
