@@ -38,5 +38,9 @@ int main()
         auto fp = sharpen::TrivialFunction(&Simple::PrintInt);
         fp(nullptr,1,2);
     }
+    {
+        auto fp = sharpen::UncheckedTrivialFunction(&Simple::PrintInt);
+        fp(nullptr,1,2);
+    }
     return 0;
 }

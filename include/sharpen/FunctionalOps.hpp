@@ -16,6 +16,9 @@ namespace sharpen
     template<typename _Class,typename _Ret,typename ..._Args>
     using TrivialFunctionPtr = _Ret(SHARPEN_THIS_CALL *)(_Class*,_Args...);
 
+    template<typename _Ret,typename ..._Args>
+    using UncheckedTruvialFunctionPtr = _Ret(SHARPEN_THIS_CALL *)(void*,_Args...);
+
     template<typename _Class,typename _Ret,typename ..._Args>
     union InternalMemberFunctionConvertor
     {
@@ -50,6 +53,18 @@ namespace sharpen
     inline auto TrivialFunction(_Fn fn) -> decltype(sharpen::InternalConvertToFunctionPtr(fn,0))
     {
         return sharpen::InternalConvertToFunctionPtr(fn,0);
+    }
+
+    template<typename _Class,typename _Ret,typename ..._Args>
+    inline sharpen::UncheckedTruvialFunctionPtr<_Ret,_Args...> UncheckedTrivialFunctionCast(sharpen::TrivialFunctionPtr<_Class,_Ret,_Args...> fp)
+    {
+        return reinterpret_cast<sharpen::UncheckedTruvialFunctionPtr<_Ret,_Args...>>(fp);
+    }
+
+    template<typename _Fn>
+    inline auto UncheckedTrivialFunction(_Fn fp) -> decltype(sharpen::UncheckedTrivialFunctionCast(sharpen::TrivialFunction(fp)))
+    {
+        return sharpen::UncheckedTrivialFunctionCast(sharpen::TrivialFunction(fp));
     }
 }
 
