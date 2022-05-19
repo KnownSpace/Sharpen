@@ -74,46 +74,10 @@ void Entry()
             std::vector<sharpen::FilePointer> pointers;
             pt.TableScan(std::back_inserter(pointers), sharpen::ByteBuffer{"abc", 3}, sharpen::ByteBuffer{"other", 5});
             std::printf("sst range query need to load %zu blocks\n", pointers.size());
-            for (auto begin = pointers.begin(), end = pointers.end(); begin != end; ++begin)
-            {
-                sharpen::SstDataBlock block{pt.LoadBlock(begin->offset_, begin->size_)};
-                for (auto keyBegin = block.TwoWayBegin(), keyEnd = block.TwoWayEnd(); keyBegin != keyEnd; ++keyBegin)
-                {
-                    std::fputs("key is ", stdout);
-                    for (sharpen::Size i = 0; i != keyBegin->GetKey().GetSize(); ++i)
-                    {
-                        std::putchar(keyBegin->GetKey()[i]);
-                    }
-                    std::fputs(" value is ", stdout);
-                    for (sharpen::Size i = 0; i != keyBegin->Value().GetSize(); ++i)
-                    {
-                        std::putchar(keyBegin->Value()[i]);
-                    }
-                    std::putchar('\n');
-                }
-            }
             // range query
             pointers.clear();
             pt.TableScan(std::back_inserter(pointers), sharpen::ByteBuffer{"othera", 6}, sharpen::ByteBuffer{"otherz", 6});
             std::printf("sst range query need to load %zu blocks\n", pointers.size());
-            for (auto begin = pointers.begin(), end = pointers.end(); begin != end; ++begin)
-            {
-                sharpen::SstDataBlock block{pt.LoadBlock(begin->offset_, begin->size_)};
-                for (auto keyBegin = block.TwoWayBegin(), keyEnd = block.TwoWayEnd(); keyBegin != keyEnd; ++keyBegin)
-                {
-                    std::fputs("key is ", stdout);
-                    for (sharpen::Size i = 0; i != keyBegin->GetKey().GetSize(); ++i)
-                    {
-                        std::putchar(keyBegin->GetKey()[i]);
-                    }
-                    std::fputs(" value is ", stdout);
-                    for (sharpen::Size i = 0; i != keyBegin->Value().GetSize(); ++i)
-                    {
-                        std::putchar(keyBegin->Value()[i]);
-                    }
-                    std::putchar('\n');
-                }
-            }
         }
         table->Truncate();
         {
@@ -137,7 +101,6 @@ void Entry()
                 key.As<sharpen::Uint32>() = i;
                 sharpen::ByteBuffer value{sizeof(sharpen::Uint32)};
                 value.As<sharpen::Uint32>() = i;
-                std::printf("sst check %u/%u\n",i,count - 1);
                 assert(pt.Get(key) == value);
             }
             {
@@ -149,7 +112,6 @@ void Entry()
                     for (auto begin = block.TwoWayBegin(),end = block.TwoWayEnd(); begin != end; ++begin)
                     {
                         count += 1;
-                        std::printf("sst table scan %u:%u\n",begin->GetKey().As<sharpen::Uint32>(),begin->Value().As<sharpen::Uint32>());
                     }
                 }
                 std::printf("sst scan %zu keys\n",count);
@@ -291,38 +253,6 @@ void Entry()
                 std::vector<sharpen::FilePointer> pointers;
                 pt.TableScan(std::back_inserter(pointers), beginKey, endKey);
                 std::printf("bt range query need to load %zu blocks\n", pointers.size());
-                for (auto begin = pointers.begin(), end = pointers.end(); begin != end; ++begin)
-                {
-                    sharpen::BtBlock block{pt.LoadBlock(begin->offset_, begin->size_)};
-                    for (auto keyBegin = block.Begin(), keyEnd = block.End(); keyBegin != keyEnd; ++keyBegin)
-                    {
-                        std::fputs("key is ", stdout);
-                        for (sharpen::Size i = 0; i != keyBegin->GetKey().GetSize(); ++i)
-                        {
-                            std::putchar(keyBegin->GetKey()[i]);
-                        }
-                        std::fputs(" value is ", stdout);
-                        for (sharpen::Size i = 0; i != keyBegin->Value().GetSize(); ++i)
-                        {
-                            std::putchar(keyBegin->Value()[i]);
-                        }
-                        std::putchar('\n');
-                    }
-                }
-                auto scanner{pt.Scan(true)};
-                if(!scanner.Empty())
-                {
-                    do
-                    {
-                        sharpen::ByteBuffer val{scanner.GetCurrentValue()};
-                        std::fputs("bt scanner value is ", stdout);
-                        for (sharpen::Size i = 0; i != val.GetSize(); ++i)
-                        {
-                            std::putchar(val[i]);
-                        }
-                        std::putchar('\n');
-                    } while (scanner.Next());
-                }   
                 assert(pt.IsFault() == false);
             }
         }
@@ -381,24 +311,6 @@ void Entry()
                 std::vector<sharpen::FilePointer> pointers;
                 pt.TableScan(std::back_inserter(pointers), beginKey, endKey);
                 std::printf("bt range query need to load %zu blocks\n", pointers.size());
-                for (auto begin = pointers.begin(), end = pointers.end(); begin != end; ++begin)
-                {
-                    sharpen::BtBlock block{pt.LoadBlock(begin->offset_, begin->size_)};
-                    for (auto keyBegin = block.Begin(), keyEnd = block.End(); keyBegin != keyEnd; ++keyBegin)
-                    {
-                        std::fputs("key is ", stdout);
-                        for (sharpen::Size i = 0; i != keyBegin->GetKey().GetSize(); ++i)
-                        {
-                            std::putchar(keyBegin->GetKey()[i]);
-                        }
-                        std::fputs(" value is ", stdout);
-                        for (sharpen::Size i = 0; i != keyBegin->Value().GetSize(); ++i)
-                        {
-                            std::putchar(keyBegin->Value()[i]);
-                        }
-                        std::putchar('\n');
-                    }
-                }
                 assert(pt.IsFault() == false);
             }
             table->Truncate();
@@ -421,7 +333,6 @@ void Entry()
                     key.As<sharpen::Uint32>() = i;
                     sharpen::ByteBuffer value{sizeof(sharpen::Uint32)};
                     value.As<sharpen::Uint32>() = i;
-                    std::printf("bt check %u/%u\n",i,count - 1);
                     assert(pt.Get(key) == value);
                 }
                 {
@@ -435,23 +346,9 @@ void Entry()
                         for (auto begin = block.Begin(),end = block.End(); begin != end; ++begin)
                         {
                             count += 1;
-                            std::printf("bt table scan %u:%u\n",begin->GetKey().As<sharpen::Uint32>(),begin->Value().As<sharpen::Uint32>());
                         }
                     }
                     std::printf("bt scan %zu keys\n",count);
-                    sharpen::ByteBuffer beginKey{sizeof(sharpen::Uint32)};
-                    beginKey.As<sharpen::Uint32>() = 0;
-                    sharpen::ByteBuffer endKey{sizeof(sharpen::Uint32)};
-                    endKey.As<sharpen::Uint32>() = 10000;
-                    auto scanner{pt.Scan(beginKey,endKey,true)};
-                    if(!scanner.Empty())
-                    {
-                        do
-                        {
-                            sharpen::ByteBuffer val{scanner.GetCurrentValue()};
-                            std::printf("bt scanner value is %u\n",val.As<sharpen::Uint32>());
-                        } while (scanner.Next());
-                    }
                 }
             }
             table->Truncate();
@@ -480,21 +377,11 @@ void Entry()
                 key.As<sharpen::Uint32>() = i;
                 sharpen::ByteBuffer value{sizeof(sharpen::Uint32)};
                 value.As<sharpen::Uint32>() = i;
-                std::printf("lt check %u/%u\n",i,count - 1);
                 assert(table.Get(key) == value);
             }
             sharpen::ByteBuffer begin{sizeof(sharpen::Uint32)},end{sizeof(sharpen::Uint32)};
             begin.As<sharpen::Uint32>() = 0;
             end.As<sharpen::Uint32>() = 10000;
-            auto scanner{table.Scan(begin,end,true)};
-            if(!scanner.Empty())
-            {
-                do 
-                {
-                    sharpen::ByteBuffer val{scanner.GetCurrentValue()};
-                    std::printf("lt scanner value is %u\n",val.As<sharpen::Uint32>());
-                } while(scanner.Next());
-            }
             table.Destory();
         }
     }
