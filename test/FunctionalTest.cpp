@@ -55,5 +55,11 @@ int main()
         std::printf("r = %d\n",r);
         assert(r == 2);
     }
+    {
+        sharpen::MethodInvoker<int,char,char> method{&Simple::PrintChar};
+        int r{method.Invoke(nullptr,'a','c')};
+        std::printf("r = %d\n",r);
+        assert(r == 2);
+    }
     return 0;
 }
