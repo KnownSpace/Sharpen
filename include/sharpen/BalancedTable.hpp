@@ -29,7 +29,7 @@
 #include "Optional.hpp"
 #include "SegmentedCircleCache.hpp"
 #include "BtOption.hpp"
-#include "LockTable.hpp"
+#include "LockContainer.hpp"
 #include "AsyncReadWriteLock.hpp"
 #include "AsyncMutex.hpp"
 #include "BalancedTableScanner.hpp"
@@ -50,7 +50,7 @@ namespace sharpen
         //block cache
         mutable sharpen::SegmentedCircleCache<sharpen::BtBlock> caches_;
         //concurrency control
-        mutable sharpen::LockTable<sharpen::Uint64,sharpen::AsyncReadWriteLock> lockTable_;
+        mutable sharpen::LockContainer<sharpen::Uint64,sharpen::AsyncReadWriteLock> lockTable_;
         mutable std::unique_ptr<sharpen::AsyncMutex> allocLock_;
 
         constexpr static sharpen::Size blockSize_{4*1024};

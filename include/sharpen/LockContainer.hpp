@@ -11,10 +11,10 @@
 namespace sharpen
 {
     template<typename _Key,typename _Lock>
-    class LockTable:public sharpen::Noncopyable
+    class LockContainer:public sharpen::Noncopyable
     {
     private:
-        using Self = sharpen::LockTable<_Key,_Lock>;
+        using Self = sharpen::LockContainer<_Key,_Lock>;
         using LockPtr = std::unique_ptr<_Lock>;
         using MapType = std::unordered_map<_Key,LockPtr>;
     
@@ -22,7 +22,7 @@ namespace sharpen
         MapType map_;
     public:
     
-        LockTable()
+        LockContainer()
             :lock_(nullptr)
             ,map_()
         {
@@ -33,7 +33,7 @@ namespace sharpen
             }
         }
 
-        LockTable(Self &&other) noexcept
+        LockContainer(Self &&other) noexcept
             :lock_(std::move(other.lock_))
             ,map_(std::move(other.map_))
         {}
@@ -48,7 +48,7 @@ namespace sharpen
             return *this;
         }
 
-        ~LockTable() noexcept = default;
+        ~LockContainer() noexcept = default;
 
         template<typename _K,typename _Check = decltype(std::declval<MapType&>().find(std::declval<_K>()))>
         _Lock &GetLock(_K &&key)
