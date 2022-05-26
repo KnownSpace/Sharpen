@@ -61,7 +61,7 @@ std::vector<sharpen::WriteBatch> sharpen::BinaryLogger::GetWriteBatchs()
             batch.LoadFrom(buf);
             offset += size + sizeof(size);
         }
-        catch(const std::exception &ignore)
+        catch(const std::system_error &ignore)
         {
             this->channel_->Truncate(offset);
             this->offset_ = offset;

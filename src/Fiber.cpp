@@ -1,5 +1,8 @@
 #include <sharpen/Fiber.hpp>
 #include <cassert>
+#include <stdexcept>
+
+#include <sharpen/SystemError.hpp>
 
 #ifdef __cplusplus
 extern "C" {
@@ -77,9 +80,21 @@ void sharpen::Fiber::FiberEntry(transfer_t from)
     {
         fiber->task_();
     }
-    catch(const std::exception& ignore)
+    catch(const std::bad_alloc &fault)
     {
-        assert(ignore.what() != nullptr);
+        (void)fault;
+        std::terminate();
+    }
+    catch(const std::system_error &error)
+    {
+        if(sharpen::IsFatalError(error.code().value()))
+        {
+            std::terminate();
+        }
+    }
+    catch(const std::exception &ignore)
+    {
+        assert(ignore.what() == nullptr && "an exception occured in event loop");
         (void)ignore;
     }
     if (!fiber->callback_.expired())

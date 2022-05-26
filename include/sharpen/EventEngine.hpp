@@ -38,6 +38,10 @@ namespace sharpen
         explicit EventEngine(sharpen::Size workerCount);
 
         static void CallSwitchCallback();
+
+        void ProcessStartup(std::function<void()> fn);
+
+        void ProcessStartupWithCode(std::function<int()> fn,int *code);
     public:
         
         virtual ~EventEngine() noexcept;
@@ -68,19 +72,18 @@ namespace sharpen
         void Startup(_Fn &&fn,_Args &&...args)
         {
             auto task = std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...);
-            this->Launch([task,this]() mutable
-            {
-                try
-                {
-                    task();
-                }
-                catch(const std::exception& ignore)
-                {
-                    (void)ignore;
-                }
-                this->Stop();
-            });
+            this->Launch(std::bind(&Self::ProcessStartup,fn));
             this->Run();
+        }
+
+        template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<int,_Fn,_Args...>::Value>>
+        int StartupWithCode(_Fn &&fn,_Args &&...args)
+        {
+            int code{0};
+            auto task = std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...);
+            this->Launch(std::bind(&Self::ProcessStartupWithCode,fn,&code));
+            this->Run();
+            return code;
         }
 
         sharpen::Size LoopNumber() const noexcept

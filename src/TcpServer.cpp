@@ -17,8 +17,21 @@ void sharpen::TcpServer::RunAsync()
             channel->Register(*this->engine_);
             this->engine_->Launch(&sharpen::TcpServer::OnNewChannel,this,channel);
         }
-        catch(const std::exception&)
+        catch(const std::system_error &error)
         {
+            if(sharpen::IsFatalError(error.code().value()))
+            {
+                std::terminate();
+            }
+            return;
+        }
+        catch(const std::bad_alloc &fatal)
+        {
+            std::terminate();
+        }
+        catch(const std::exception &ignore)
+        {
+            (void)ignore;
             return;
         }
     }

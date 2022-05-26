@@ -906,10 +906,14 @@ void sharpen::LevelTable::DummpImmutableTables()
         {
             sharpen::RemoveFile(name.c_str());
         }
-        catch(const std::exception &ignore)
+        catch(const std::system_error &error)
         {
+            if(sharpen::IsFatalError(error.code().value()))
+            {
+                std::terminate();
+            }
             //ignore error
-            static_cast<void>(ignore);
+            static_cast<void>(error);
         }
         ++beginKey;
     }
@@ -1131,9 +1135,14 @@ void sharpen::LevelTable::Destory()
         {
             sharpen::RemoveFile(name.c_str());
         }
-        catch(const std::exception &ignore)
+        catch(const std::system_error &error)
         {
-            static_cast<void>(ignore);
+            if(sharpen::IsFatalError(error.code().value()))
+            {
+                std::terminate();
+            }
+            //ignore error
+            static_cast<void>(error);
         }
     }
     for (sharpen::Size i = 0,end = this->GetCurrentTableId() + 1; i != end; ++i)
@@ -1145,9 +1154,14 @@ void sharpen::LevelTable::Destory()
             {
                 sharpen::RemoveFile(name.c_str());
             }
-            catch(const std::exception &ignore)
+            catch(const std::system_error &error)
             {
-                static_cast<void>(ignore);
+                if(sharpen::IsFatalError(error.code().value()))
+                {
+                    std::terminate();
+                }
+                //ignore error
+                static_cast<void>(error);
             }
         }
     }
@@ -1157,8 +1171,13 @@ void sharpen::LevelTable::Destory()
     {
         sharpen::RemoveFile(name.c_str());
     }
-    catch(const std::exception &ignore)
+    catch(const std::system_error &error)
     {
-        static_cast<void>(ignore);
+        if(sharpen::IsFatalError(error.code().value()))
+        {
+            std::terminate();
+        }
+        //ignore error
+        static_cast<void>(error);
     }
 }

@@ -91,9 +91,21 @@ void sharpen::EventEngine::ProcessFiber(sharpen::FiberPtr fiber)
         sharpen::FiberPtr current = sharpen::Fiber::GetCurrentFiber();
         fiber->Switch(current);
     }
-    catch(const std::exception& ignore)
+    catch(const std::bad_alloc &fault)
     {
-        assert(ignore.what() == nullptr);
+        (void)fault;
+        std::terminate();
+    }
+    catch(std::system_error &error)
+    {
+        if(sharpen::IsFatalError(error.code().value()))
+        {
+            std::terminate();
+        }
+    }
+    catch(const std::exception &ignore)
+    {
+        assert(ignore.what() == nullptr && "an exception occured in event loop");
         (void)ignore;
     }
     sharpen::EventEngine::CallSwitchCallback();
@@ -151,4 +163,63 @@ void sharpen::EventEngine::SetSwitchCallback(std::function<void()> fn)
 void sharpen::EventEngine::Run()
 {
     this->mainLoop_->Run();
+}
+
+void sharpen::EventEngine::ProcessStartup(std::function<void()> fn)
+{
+    if(fn)
+    {
+        try
+        {
+            fn();
+        }
+        catch(const std::bad_alloc &fault)
+        {
+            (void)fault;
+            std::terminate();
+        }
+        catch(std::system_error &error)
+        {
+            if(sharpen::IsFatalError(error.code().value()))
+            {
+                std::terminate();
+            }
+        }
+        catch(const std::exception &ignore)
+        {
+            assert(ignore.what() == nullptr && "an exception occured in event engine");
+            (void)ignore;
+        }
+    }
+    this->Stop();
+}
+
+void sharpen::EventEngine::ProcessStartupWithCode(std::function<int()> fn,int *code)
+{
+    assert(code != nullptr);
+    if(fn)
+    {
+        try
+        {
+            *code = fn();
+        }
+        catch(const std::bad_alloc &fault)
+        {
+            (void)fault;
+            std::terminate();
+        }
+        catch(std::system_error &error)
+        {
+            if(sharpen::IsFatalError(error.code().value()))
+            {
+                std::terminate();
+            }
+        }
+        catch(const std::exception &ignore)
+        {
+            assert(ignore.what() == nullptr && "an exception occured in event engine");
+            (void)ignore;
+        }
+    }
+    this->Stop();
 }

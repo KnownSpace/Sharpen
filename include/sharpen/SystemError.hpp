@@ -100,6 +100,11 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorBadSocketHandle = EBADF;
     constexpr sharpen::ErrorCode ErrorBadFileHandle = EBADF;
 #endif
+
+    inline bool IsFatalError(sharpen::ErrorCode code) noexcept
+    {
+        return code == sharpen::ErrorIo || code == sharpen::ErrorNotEnoughMemory;
+    }
 }
 
 #endif

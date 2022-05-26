@@ -108,8 +108,9 @@ bool sharpen::TestIoUring() noexcept
             status = 1;
             static_cast<void>(queue);
         }
-        catch(const std::exception&)
+        catch(const std::system_error &ignore)
         {
+            (void)ignore;
             status = 2;   
         }
     }

@@ -39,9 +39,21 @@ void sharpen::EventLoop::RunInLoop(Task task)
         {
             task();
         }
-        catch(const std::exception& ignore)
+        catch(const std::bad_alloc &fault)
         {
-            assert(ignore.what() == nullptr);
+            (void)fault;
+            std::terminate();
+        }
+        catch(std::system_error &error)
+        {
+            if(sharpen::IsFatalError(error.code().value()))
+            {
+                std::terminate();
+            }
+        }
+        catch(const std::exception &ignore)
+        {
+            assert(ignore.what() == nullptr && "an exception occured in event loop");
             (void)ignore;
         }
         return;
@@ -82,9 +94,21 @@ void sharpen::EventLoop::ExecuteTask()
                 (*begin)();
             }
         }
-        catch(const std::exception& ignore)
+        catch(const std::bad_alloc &fault)
         {
-            assert(ignore.what() == nullptr);
+            (void)fault;
+            std::terminate();
+        }
+        catch(std::system_error &error)
+        {
+            if(sharpen::IsFatalError(error.code().value()))
+            {
+                std::terminate();
+            }
+        }
+        catch(const std::exception &ignore)
+        {
+            assert(ignore.what() == nullptr && "an exception occured in event loop");
             (void)ignore;
         }
     }
