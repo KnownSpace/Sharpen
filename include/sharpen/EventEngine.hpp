@@ -86,7 +86,7 @@ namespace sharpen
             return code;
         }
 
-        sharpen::Size LoopNumber() const noexcept
+        sharpen::Size LoopCount() const noexcept
         {
             return this->loops_.size();
         }

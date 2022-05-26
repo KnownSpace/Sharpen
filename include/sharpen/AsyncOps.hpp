@@ -72,7 +72,7 @@ namespace sharpen
         {
             return;
         }
-        sharpen::Size parallelNumber{sharpen::EventEngine::GetEngine().LoopNumber()};
+        sharpen::Size parallelNumber{sharpen::EventEngine::GetEngine().LoopCount()};
         sharpen::Size count{sharpen::GetRangeSize(begin,end)};
         sharpen::Size max{count};
         std::atomic_size_t ite{0};

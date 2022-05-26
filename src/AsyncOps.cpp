@@ -7,7 +7,7 @@ void sharpen::ParallelFor(sharpen::Size begin,sharpen::Size end,sharpen::Size gr
     {
         return;
     }
-    sharpen::Size parallelNumber{sharpen::EventEngine::GetEngine().LoopNumber()};
+    sharpen::Size parallelNumber{sharpen::EventEngine::GetEngine().LoopCount()};
     //compute max grainsSize
     sharpen::Size max {end - begin};
     max /= parallelNumber;
