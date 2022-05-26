@@ -71,8 +71,8 @@ namespace sharpen
         template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<void,_Fn,_Args...>::Value>>
         void Startup(_Fn &&fn,_Args &&...args)
         {
-            auto task = std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...);
-            this->Launch(std::bind(&Self::ProcessStartup,fn));
+            std::function<void()> task{std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...)};
+            this->Launch(&Self::ProcessStartup,this,task);
             this->Run();
         }
 
@@ -80,8 +80,8 @@ namespace sharpen
         int StartupWithCode(_Fn &&fn,_Args &&...args)
         {
             int code{0};
-            auto task = std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...);
-            this->Launch(std::bind(&Self::ProcessStartupWithCode,fn,&code));
+            std::function<int()> task{std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...)};
+            this->Launch(&Self::ProcessStartupWithCode,this,task,&code);
             this->Run();
             return code;
         }
