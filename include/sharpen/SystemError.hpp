@@ -75,6 +75,7 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorBrokenPipe = ERROR_BROKEN_PIPE;
     constexpr sharpen::ErrorCode ErrorBadSocketHandle = WSAEBADF;
     constexpr sharpen::ErrorCode ErrorBadFileHandle = ERROR_INVALID_HANDLE;
+    constexpr sharpen::ErrorCode ErrorNoSpace = ERROR_DISK_FULL;
 #else
     constexpr sharpen::ErrorCode ErrorCancel = ECANCELED;
     constexpr sharpen::ErrorCode ErrorConnectionAborted = ECONNABORTED;
@@ -99,11 +100,14 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorBrokenPipe = EPIPE;
     constexpr sharpen::ErrorCode ErrorBadSocketHandle = EBADF;
     constexpr sharpen::ErrorCode ErrorBadFileHandle = EBADF;
+    constexpr sharpen::ErrorCode ErrorNoSpace = ENOSPC;
 #endif
 
     inline bool IsFatalError(sharpen::ErrorCode code) noexcept
     {
-        return code == sharpen::ErrorIo || code == sharpen::ErrorNotEnoughMemory;
+        return code == sharpen::ErrorIo 
+                || code == sharpen::ErrorNotEnoughMemory
+                || code == sharpen::ErrorNoSpace;
     }
 }
 
