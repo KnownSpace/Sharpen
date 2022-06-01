@@ -114,9 +114,11 @@ void sharpen::IpEndPoint::SetAddrByString(const char *addrStr)
 sharpen::Int64 sharpen::IpEndPoint::CompareWith(const Self &other) const noexcept
 {
     sharpen::Uint64 thiz,otherval;
-    thiz = this->GetAddr() << 16;
+    thiz = this->GetAddr();
+    thiz <<= 16;
     thiz |= this->GetPort();
-    otherval = other.GetAddr() << 16;
+    otherval = other.GetAddr();
+    otherval <<= 16;
     otherval |= other.GetPort();
     if(thiz > otherval)
     {

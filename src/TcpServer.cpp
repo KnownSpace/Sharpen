@@ -27,6 +27,7 @@ void sharpen::TcpServer::RunAsync()
         }
         catch(const std::bad_alloc &fatal)
         {
+            (void)fatal;
             std::terminate();
         }
         catch(const std::exception &ignore)
