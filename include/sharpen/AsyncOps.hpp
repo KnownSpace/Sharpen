@@ -7,7 +7,7 @@
 
 #include "AwaitableFuture.hpp"
 #include "AsyncHelper.hpp"
-#include "ITimer.hpp"
+#include "TimerPool.hpp"
 #include "IteratorOps.hpp"
 #include "TypeTraits.hpp"
 
@@ -51,11 +51,27 @@ namespace sharpen
         return future;
     }
 
+    struct DelayHelper
+    {
+    private:
+        using Maker = sharpen::TimerPtr(*)(sharpen::EventEngine*);
+
+        static std::unique_ptr<sharpen::TimerPool> delayTimerPool_;
+        static std::once_flag flag_;
+
+        static void InitTimerPool(sharpen::EventEngine *engine,Maker maker);
+    public:
+
+        static sharpen::TimerPool &GetTimerPool(sharpen::EventEngine &engine,Maker maker);
+    };
+
     template<typename _Rep,typename _Period>
     inline void Delay(const std::chrono::duration<_Rep,_Period> &time)
     {
-        sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::EventEngine::GetEngine());
+        sharpen::TimerPool &pool{sharpen::DelayHelper::GetTimerPool(sharpen::EventEngine::GetEngine(),nullptr)};
+        sharpen::TimerPtr timer{pool.GetTimer()};
         timer->Await(time);
+        pool.PutTimer(std::move(timer));
     }
 
     void ParallelFor(sharpen::Size begin,sharpen::Size end,sharpen::Size grainsSize,std::function<void(sharpen::Size)> fn);

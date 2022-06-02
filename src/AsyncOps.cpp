@@ -1,5 +1,30 @@
 #include <sharpen/AsyncOps.hpp>
 
+std::unique_ptr<sharpen::TimerPool> sharpen::DelayHelper::delayTimerPool_{nullptr};
+
+std::once_flag sharpen::DelayHelper::flag_;
+
+void sharpen::DelayHelper::InitTimerPool(sharpen::EventEngine *engine,Maker maker)
+{
+    assert(engine != nullptr);
+    auto *p = new sharpen::TimerPool{*engine,maker};
+    if(!p)
+    {
+        throw std::bad_alloc();
+    }
+    delayTimerPool_.reset(p);
+}
+
+sharpen::TimerPool &sharpen::DelayHelper::GetTimerPool(sharpen::EventEngine &engine,Maker maker)
+{
+    if(!sharpen::DelayHelper::delayTimerPool_)
+    {
+        using FnPtr = void(*)(sharpen::EventEngine *,Maker);
+        std::call_once(sharpen::DelayHelper::flag_,std::bind(static_cast<FnPtr>(&sharpen::DelayHelper::InitTimerPool),&engine,maker));
+    }
+    return *sharpen::DelayHelper::delayTimerPool_;
+}
+
 //[begin,end)
 void sharpen::ParallelFor(sharpen::Size begin,sharpen::Size end,sharpen::Size grainsSize,std::function<void(sharpen::Size)> fn)
 {
