@@ -65,10 +65,15 @@ namespace sharpen
         static sharpen::TimerPool &GetTimerPool(sharpen::EventEngine &engine,Maker maker);
     };
 
+    inline sharpen::TimerPool &GetDelayTimerPool()
+    {
+        return sharpen::DelayHelper::GetTimerPool(sharpen::EventEngine::GetEngine(),nullptr);   
+    }
+
     template<typename _Rep,typename _Period>
     inline void Delay(const std::chrono::duration<_Rep,_Period> &time)
     {
-        sharpen::TimerPool &pool{sharpen::DelayHelper::GetTimerPool(sharpen::EventEngine::GetEngine(),nullptr)};
+        sharpen::TimerPool &pool{sharpen::GetDelayTimerPool()};
         sharpen::TimerPtr timer{pool.GetTimer()};
         timer->Await(time);
         pool.PutTimer(std::move(timer));
