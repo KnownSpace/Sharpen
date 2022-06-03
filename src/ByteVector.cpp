@@ -18,13 +18,13 @@ sharpen::ByteVector::ByteVector(sharpen::Size size)
     if(!this->InlineBuffer(size))
     {
         sharpen::Size cap{this->ComputeHeapSize(size)};
-        char *buf = reinterpret_cast<char*>(std::malloc(cap));
+        char *buf = reinterpret_cast<char*>(this->Alloc(cap));
         if(!buf)
         {
             throw std::bad_alloc();
         }
-        this->rawVector_.heap_.data_ = buf;
-        this->rawVector_.heap_.cap_ = cap;
+        this->rawVector_.external_.data_ = buf;
+        this->rawVector_.external_.cap_ = cap;
     }
     this->size_ = size;
 }
@@ -35,19 +35,19 @@ sharpen::ByteVector::ByteVector(const Self &other)
 {
     if(!other.InlineBuffer())
     {
-        sharpen::Size cap{other.rawVector_.heap_.cap_};
-        char *buf{reinterpret_cast<char*>(std::malloc(cap))};
+        sharpen::Size cap{other.rawVector_.external_.cap_};
+        char *buf{reinterpret_cast<char*>(this->Alloc(cap))};
         if(!buf)
         {
             throw std::bad_alloc();
         }
-        std::memcpy(buf,other.rawVector_.heap_.data_,other.size_);
-        this->rawVector_.heap_.data_ = buf;
-        this->rawVector_.heap_.cap_ = cap;
+        std::memcpy(buf,other.rawVector_.external_.data_,other.size_);
+        this->rawVector_.external_.data_ = buf;
+        this->rawVector_.external_.cap_ = cap;
     }
     else if(other.size_)
     {
-        std::memcpy(this->rawVector_.stack_,other.rawVector_.stack_,other.size_);   
+        std::memcpy(this->rawVector_.inline_,other.rawVector_.inline_,other.size_);   
     }
     this->size_ = other.size_;
 }
@@ -57,14 +57,14 @@ void sharpen::ByteVector::MoveFrom(Self &&other) noexcept
     this->Clear();
     if(!other.InlineBuffer())
     {
-        this->rawVector_.heap_.cap_ = other.rawVector_.heap_.cap_;
-        this->rawVector_.heap_.data_ = other.rawVector_.heap_.data_;
-        other.rawVector_.heap_.data_ = nullptr;
-        other.rawVector_.heap_.cap_ = 0;
+        this->rawVector_.external_.cap_ = other.rawVector_.external_.cap_;
+        this->rawVector_.external_.data_ = other.rawVector_.external_.data_;
+        other.rawVector_.external_.data_ = nullptr;
+        other.rawVector_.external_.cap_ = 0;
     }
     else if(other.size_)
     {
-        std::memcpy(this->rawVector_.stack_,other.rawVector_.stack_,other.size_);
+        std::memcpy(this->rawVector_.inline_,other.rawVector_.inline_,other.size_);
     }
     std::swap(this->size_,other.size_);
 }
@@ -91,9 +91,9 @@ char *sharpen::ByteVector::Data() noexcept
     {
         if(this->InlineBuffer())
         {
-            return this->rawVector_.stack_;
+            return this->rawVector_.inline_;
         }
-        return this->rawVector_.heap_.data_;
+        return this->rawVector_.external_.data_;
     }
     return nullptr;
 }
@@ -104,9 +104,9 @@ const char *sharpen::ByteVector::Data() const noexcept
     {
         if(this->InlineBuffer())
         {
-            return this->rawVector_.stack_;
+            return this->rawVector_.inline_;
         }
-        return this->rawVector_.heap_.data_;
+        return this->rawVector_.external_.data_;
     }
     return nullptr;
 }
@@ -134,11 +134,11 @@ void sharpen::ByteVector::Clear() noexcept
     if(!this->InlineBuffer())
     {
         char *p{nullptr};
-        std::swap(p,this->rawVector_.heap_.data_);
-        this->rawVector_.heap_.cap_ = 0;
+        std::swap(p,this->rawVector_.external_.data_);
+        this->rawVector_.external_.cap_ = 0;
         if(p)
         {
-            std::free(p);
+            this->Free(p);
         }
     }
     this->size_ = 0;
@@ -156,7 +156,7 @@ void sharpen::ByteVector::Resize(sharpen::Size newSize,char defalutVal)
                 sharpen::Size sz{(std::max)(static_cast<sharpen::Size>(1),this->size_)};
                 newCap = (std::max)(sz*2,newCap);
             }
-            char *buf{reinterpret_cast<char*>(std::malloc(newCap))};
+            char *buf{reinterpret_cast<char*>(this->Alloc(newCap))};
             if(!buf)
             {
                 throw std::bad_alloc();
@@ -164,25 +164,25 @@ void sharpen::ByteVector::Resize(sharpen::Size newSize,char defalutVal)
             std::memcpy(buf,this->Data(),this->size_);
             if(!this->InlineBuffer())
             {
-                std::free(this->rawVector_.heap_.data_);
+                this->Free(this->rawVector_.external_.data_);
             }
             for(sharpen::Size i = this->size_;i != newSize;++i)
             {
                 buf[i] = defalutVal;
             }
-            this->rawVector_.heap_.data_ = buf;
-            this->rawVector_.heap_.cap_ = newCap;
+            this->rawVector_.external_.data_ = buf;
+            this->rawVector_.external_.cap_ = newCap;
         }
     }
     else if(!this->InlineBuffer())
     {
-        char *p = this->rawVector_.heap_.data_;
-        std::memcpy(this->rawVector_.stack_,p,newSize);
-        std::free(p);
+        char *p = this->rawVector_.external_.data_;
+        std::memcpy(this->rawVector_.inline_,p,newSize);
+        this->Free(p);
     }
     else if(this->size_ < newSize)
     {
-        char *buf{this->rawVector_.stack_};
+        char *buf{this->rawVector_.inline_};
         for(sharpen::Size i = this->size_;i != newSize;++i)
         {
             buf[i] = defalutVal;
@@ -207,17 +207,17 @@ void sharpen::ByteVector::Erase(sharpen::Size begin,sharpen::Size end) noexcept
         }
         if(!this->InlineBuffer() && this->InlineBuffer(newSize))
         {
-            char *p{this->rawVector_.heap_.data_};
+            char *p{this->rawVector_.external_.data_};
             if(begin)
             {
-                std::memcpy(this->rawVector_.stack_,p,begin);
+                std::memcpy(this->rawVector_.inline_,p,begin);
             }
             sharpen::Size moveSize{oldSize - end};
             if(moveSize)
             {
-                std::memcpy(this->rawVector_.stack_ + begin,p + end,moveSize);
+                std::memcpy(this->rawVector_.inline_ + begin,p + end,moveSize);
             }
-            std::free(p);
+            this->Free(p);
         }
         else
         {

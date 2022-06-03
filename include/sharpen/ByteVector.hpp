@@ -23,8 +23,8 @@ namespace sharpen
     template<std::size_t _InlineSize>
     union ByteVectorUnion
     {
-        sharpen::ByteVectorStruct heap_;
-        char stack_[_InlineSize];
+        sharpen::ByteVectorStruct external_;
+        char inline_[_InlineSize];
     };
 
     class ByteVector
@@ -53,6 +53,16 @@ namespace sharpen
         void MoveFrom(Self &&other) noexcept;
 
         bool CheckPointer(const char *p);
+
+        inline static void *Alloc(sharpen::Size size) noexcept
+        {
+            return std::malloc(size);
+        }
+
+        static void Free(void *p) noexcept
+        {
+            std::free(p);
+        }
     public:
         using Iterator = sharpen::PointerIterator<char>;
         using ConstIterator = sharpen::PointerIterator<const char>;
