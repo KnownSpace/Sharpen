@@ -15,17 +15,12 @@ namespace sharpen
 {
     class ByteBuffer
     {
+    private:
         using Vector = std::vector<sharpen::Char>;
 
         using Self = ByteBuffer;
         
-    protected:
         Vector vector_;
-
-        sharpen::Size mark_;
-
-    private:
-        void CheckAndMoveMark() noexcept;
     public:
         using Iterator = typename Vector::iterator;
 
@@ -35,30 +30,37 @@ namespace sharpen
 
         using ConstReverseIterator = typename Vector::const_reverse_iterator;
 
-        ByteBuffer();
+        ByteBuffer() = default;
 
         explicit ByteBuffer(sharpen::Size size);
 
-        explicit ByteBuffer(Vector &&vector) noexcept;
+        explicit ByteBuffer(Vector vector) noexcept;
 
         ByteBuffer(const sharpen::Char *p,sharpen::Size size);
 
-        ByteBuffer(const Self &other);
+        ByteBuffer(const Self &other) = default;
 
-        ByteBuffer(Self &&other) noexcept;
+        ByteBuffer(Self &&other) noexcept = default;
 
         ~ByteBuffer() noexcept = default;
 
-        Self &operator=(const Self &other);
-
-        Self &operator=(Self &&other) noexcept;
-
-        //use by stl
-        void swap(Self &other) noexcept;
-
-        inline void Swap(Self &other) noexcept
+        inline Self &operator=(const Self &other)
         {
-            this->swap(other);
+            if(this != std::addressof(other))
+            {
+                sharpen::ByteBuffer tmp{other};
+                std::swap(tmp,*this);
+            }
+            return *this;
+        }
+
+        inline Self &operator=(Self &&other) noexcept
+        {
+            if(this != std::addressof(other))
+            {
+                this->vector_ = std::move(other.vector_);
+            }
+            return *this;
         }
 
         void PushBack(sharpen::Char val);
@@ -131,48 +133,42 @@ namespace sharpen
 
         void Erase(ConstIterator begin,ConstIterator end);
 
-        void Mark(sharpen::Size pos);
-
-        sharpen::Size Remaining() const noexcept;
-
-        sharpen::Size GetMark() const noexcept;
-
-        inline Iterator Begin()
+        inline Iterator Begin() noexcept
         {
             return this->vector_.begin();
         }
 
-        inline ConstIterator Begin() const
+        inline ConstIterator Begin() const noexcept
         {
             return this->vector_.cbegin();
         }
 
-        inline ReverseIterator ReverseBegin()
+        inline ReverseIterator ReverseBegin() noexcept
         {
             return this->vector_.rbegin();
         }
 
-        inline ConstReverseIterator ReverseBegin() const
+        inline ConstReverseIterator ReverseBegin() const noexcept
         {
             return this->vector_.crbegin();
         }
 
-        inline Iterator End()
+        inline Iterator End() noexcept
         {
             return this->vector_.end();
         }
 
-        inline ConstIterator End() const
+        inline ConstIterator End() const noexcept
         {
             return this->vector_.cend();
         }
 
-        inline ReverseIterator ReverseEnd()
+        inline ReverseIterator ReverseEnd() noexcept
         {
             return this->vector_.rend();
         }
 
-        inline ConstReverseIterator ReverseEnd() const
+        inline ConstReverseIterator ReverseEnd() const noexcept
         {
             return this->vector_.crend();
         }
@@ -186,27 +182,26 @@ namespace sharpen
         ConstReverseIterator ReverseFind(sharpen::Char e) const noexcept;
 
         template<typename _Iterator,typename _Check = decltype(std::declval<Self>().Get(0) == *std::declval<_Iterator>())>
-        Iterator Search(const _Iterator begin,const _Iterator end)
+        inline Iterator Search(const _Iterator begin,const _Iterator end)
         {
             return std::search(this->Begin(),this->End(),begin,end);
         }
 
         template<typename _Iterator,typename _Check = decltype(std::declval<Self>().Get(0) == *std::declval<_Iterator>())>
-        ConstIterator Search(const _Iterator begin,const _Iterator end) const
+        inline ConstIterator Search(const _Iterator begin,const _Iterator end) const
         {
             return std::search(this->Begin(),this->End(),begin,end);
         }
 
         inline void Clear() noexcept
         {
-            this->CheckAndMoveMark();
             this->vector_.clear();
         }
 
         inline void ClearAndShrink() noexcept
         {
-            this->Clear();
-            this->Shrink();
+            Vector tmp;
+            std::swap(this->vector_,tmp);
         }
 
         inline sharpen::Uint32 Adler32() const noexcept
@@ -333,7 +328,7 @@ namespace std
     template<>
     struct hash<sharpen::ByteBuffer>
     {
-        std::size_t operator()(const sharpen::ByteBuffer& buf) const noexcept
+        inline std::size_t operator()(const sharpen::ByteBuffer& buf) const noexcept
         {
             return buf.Hash();
         }

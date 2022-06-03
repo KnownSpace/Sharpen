@@ -6,68 +6,21 @@
 #include <sharpen/Varint.hpp>
 #include <sharpen/DataCorruptionException.hpp>
 
-void sharpen::ByteBuffer::swap(sharpen::ByteBuffer &other) noexcept
-{
-    vector_.swap(other.vector_);
-    mark_ = other.mark_;
-}
-
-sharpen::ByteBuffer::ByteBuffer()
-    :vector_()
-    ,mark_(0)
-{}
-
 sharpen::ByteBuffer::ByteBuffer(sharpen::Size size)
     :vector_(size)
-    ,mark_(0)
 {}
 
-sharpen::ByteBuffer::ByteBuffer(Vector &&vector) noexcept
+sharpen::ByteBuffer::ByteBuffer(Vector vector) noexcept
     :vector_(std::move(vector))
-    ,mark_(0)
 {}
 
 sharpen::ByteBuffer::ByteBuffer(const sharpen::Char *p,sharpen::Size size)
     :vector_()
-    ,mark_(0)
 {
     for (size_t i = 0; i < size; i++)
     {
         this->vector_.push_back(p[i]);
     }
-}
-
-sharpen::ByteBuffer::ByteBuffer(const sharpen::ByteBuffer &other)
-    :vector_(other.vector_)
-    ,mark_(other.mark_)
-{}
-
-sharpen::ByteBuffer::ByteBuffer(sharpen::ByteBuffer &&other) noexcept
-    :vector_(std::move(other.vector_))
-    ,mark_(other.mark_)
-{
-    other.mark_ = 0;
-}
-
-sharpen::ByteBuffer &sharpen::ByteBuffer::operator=(const sharpen::ByteBuffer &other)
-{
-    if(this != std::addressof(other))
-    {
-        sharpen::ByteBuffer tmp{other};
-        std::swap(tmp,*this);
-    }
-    return *this;
-}
-
-sharpen::ByteBuffer &sharpen::ByteBuffer::operator=(sharpen::ByteBuffer &&other) noexcept
-{
-    if(this != std::addressof(other))
-    {
-        this->vector_ = std::move(other.vector_);
-        this->mark_ = other.mark_;
-        other.mark_ = 0;
-    }
-    return *this;
 }
 
 void sharpen::ByteBuffer::PushBack(sharpen::Char val)
@@ -80,18 +33,9 @@ sharpen::Size sharpen::ByteBuffer::GetSize() const noexcept
     return this->vector_.size();
 }
 
-void sharpen::ByteBuffer::CheckAndMoveMark() noexcept
-{
-    if (this->mark_ > this->vector_.size())
-    {
-        this->mark_ = this->vector_.size();
-    }
-}
-
 void sharpen::ByteBuffer::PopBack()
 {
     this->vector_.pop_back();
-    this->CheckAndMoveMark();
 }
 
 sharpen::Char sharpen::ByteBuffer::Back() const
@@ -171,18 +115,19 @@ void sharpen::ByteBuffer::Reset() noexcept
 void sharpen::ByteBuffer::Shrink()
 {
     this->vector_.shrink_to_fit();
-    this->CheckAndMoveMark();
 }
 
 void sharpen::ByteBuffer::Append(const sharpen::Char *p,sharpen::Size size)
 {
-    if (size == 0)
+    if (!size)
     {
         return;
     }
-    for (size_t i = 0; i < size; i++)
+    sharpen::Size oldSize{this->GetSize()};
+    this->Extend(size);
+    for (sharpen::Size i = oldSize,newSize = this->GetSize(); i != newSize; ++i)
     {
-        this->PushBack(p[i]);
+        this->Get(i) = *p++;
     }
 }
 
@@ -194,78 +139,72 @@ void sharpen::ByteBuffer::Append(const sharpen::ByteBuffer &other)
 void sharpen::ByteBuffer::Erase(sharpen::Size pos)
 {
     this->vector_.erase(this->vector_.begin() + pos);
-    this->CheckAndMoveMark();
 }
 
 void sharpen::ByteBuffer::Erase(sharpen::Size begin,sharpen::Size end)
 {
     auto ite = this->vector_.begin();
     this->vector_.erase(ite + begin,ite + end);
-    this->CheckAndMoveMark();
-}
-
-void sharpen::ByteBuffer::Mark(sharpen::Size pos)
-{
-    mark_ = pos;
-    this->CheckAndMoveMark();
-}
-
-sharpen::Size sharpen::ByteBuffer::Remaining() const noexcept
-{
-    return GetSize() - mark_;
-}
-
-sharpen::Size sharpen::ByteBuffer::GetMark() const noexcept
-{
-    return mark_;
 }
 
 sharpen::ByteBuffer::Iterator sharpen::ByteBuffer::Find(char e) noexcept
 {
-    for (auto begin = this->Begin(); begin != this->End(); begin++)
+    auto begin = this->Begin();
+    auto end = this->End();
+    while(begin != end)
     {
-        if (*begin == e)
+        if(*begin == e)
         {
             return begin;
         }
+        ++begin;
     }
-    return this->End();
+    return begin;
 }
 
 sharpen::ByteBuffer::ConstIterator sharpen::ByteBuffer::Find(char e) const noexcept
 {
-    for (auto begin = this->Begin(); begin != this->End(); ++begin)
+    auto begin = this->Begin();
+    auto end = this->End();
+    while(begin != end)
     {
-        if (*begin == e)
+        if(*begin == e)
         {
             return begin;
         }
+        ++begin;
     }
-    return this->End();
+    return begin;
 }
 
 sharpen::ByteBuffer::ReverseIterator sharpen::ByteBuffer::ReverseFind(char e) noexcept
 {
-    for (auto begin = this->ReverseBegin(); begin != this->ReverseEnd(); ++begin)
+    auto begin = this->ReverseBegin();
+    auto end = this->ReverseEnd();
+    while(begin != end)
     {
-        if (*begin == e)
+        if(*begin == e)
         {
             return begin;
         }
+        ++begin;
     }
-    return this->ReverseEnd();
+    return begin;
 }
 
 sharpen::ByteBuffer::ConstReverseIterator sharpen::ByteBuffer::ReverseFind(char e) const noexcept
 {
-    for (auto begin = this->ReverseBegin(); begin != this->ReverseEnd(); begin++)
+    auto begin = this->ReverseBegin();
+    auto end = this->ReverseEnd();
+    while(begin != end)
     {
-        if (*begin == e)
+        if(*begin == e)
         {
             return begin;
         }
+        ++begin;
     }
-    return this->ReverseEnd();
+    return begin;
 }
 
 void sharpen::ByteBuffer::Erase(ConstIterator where)
