@@ -14,6 +14,8 @@
 +------------+
 */
 
+#include <vector>
+
 #include "LevelViewItem.hpp"
 #include "Optional.hpp"
 

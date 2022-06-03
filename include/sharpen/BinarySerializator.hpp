@@ -3,6 +3,7 @@
 #define _SHARPEN_BINARYSERIALIZATOR_HPP
 
 #include <stdexcept>
+#include <vector>
 
 #include "TypeTraits.hpp"
 #include "ByteBuffer.hpp"

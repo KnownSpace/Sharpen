@@ -384,6 +384,7 @@ void Entry()
             end.As<sharpen::Uint32>() = 10000;
             table.Destory();
         }
+        std::puts("pass");
     }
     catch (const std::exception &e)
     {

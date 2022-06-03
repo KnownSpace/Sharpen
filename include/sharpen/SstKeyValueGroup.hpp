@@ -15,6 +15,7 @@ Key Value Group
 
 #include <stdexcept>
 #include <algorithm>
+#include <vector>
 
 #include "SstKeyValuePair.hpp"
 #include "IteratorOps.hpp"

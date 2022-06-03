@@ -22,6 +22,8 @@
 +--------------+
 */
 
+#include <vector>
+
 #include "FilePointer.hpp"
 #include "BtKeyValuePair.hpp"
 #include "DataCorruptionException.hpp"

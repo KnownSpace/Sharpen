@@ -10,82 +10,73 @@ sharpen::ByteBuffer::ByteBuffer(sharpen::Size size)
     :vector_(size)
 {}
 
-sharpen::ByteBuffer::ByteBuffer(Vector vector) noexcept
-    :vector_(std::move(vector))
-{}
-
 sharpen::ByteBuffer::ByteBuffer(const sharpen::Char *p,sharpen::Size size)
-    :vector_()
+    :vector_(size)
 {
     for (size_t i = 0; i < size; i++)
     {
-        this->vector_.push_back(p[i]);
+        this->vector_[i] = p[i];
     }
 }
 
 void sharpen::ByteBuffer::PushBack(sharpen::Char val)
 {
-    this->vector_.push_back(val);
+    this->vector_.PushBack(val);
 }
 
 sharpen::Size sharpen::ByteBuffer::GetSize() const noexcept
 {
-    return this->vector_.size();
+    return this->vector_.GetSize();
 }
 
 void sharpen::ByteBuffer::PopBack()
 {
-    this->vector_.pop_back();
+    this->vector_.PopBack();
 }
 
 sharpen::Char sharpen::ByteBuffer::Back() const
 {
-    return this->vector_.back();
+    return this->vector_.Back();
 }
 
 sharpen::Char &sharpen::ByteBuffer::Back()
 {
-    return this->vector_.back();
+    return this->vector_.Back();
 }
 
 sharpen::Char sharpen::ByteBuffer::Front() const
 {
-    return this->vector_.front();
+    return this->vector_.Front();
 }
 
 sharpen::Char &sharpen::ByteBuffer::Front()
 {
-    return this->vector_.front();
+    return this->vector_.Front();
 }
 
 sharpen::Char sharpen::ByteBuffer::Get(sharpen::Size index) const
 {
-    return this->vector_.at(index);
+    return this->vector_.Get(index);
 }
 
 sharpen::Char &sharpen::ByteBuffer::Get(sharpen::Size index)
 {
-    return this->vector_.at(index);
+    return this->vector_.Get(index);
 }
 
 const sharpen::Char *sharpen::ByteBuffer::Data() const noexcept
 {
-    return this->vector_.data();
+    return this->vector_.Data();
 }
 
 sharpen::Char *sharpen::ByteBuffer::Data() noexcept
 {
-    return reinterpret_cast<sharpen::Char*>(this->vector_.data());
-}
-
-void sharpen::ByteBuffer::Reserve(sharpen::Size size)
-{
-    this->vector_.reserve(size);
+    return reinterpret_cast<sharpen::Char*>(this->vector_.Data());
 }
 
 void sharpen::ByteBuffer::Extend(sharpen::Size size,sharpen::Char defaultValue)
 {
-    this->vector_.resize(this->GetSize() + size,defaultValue);
+    this->vector_.Resize(this->GetSize() + size,defaultValue);
 }
 
 void sharpen::ByteBuffer::Extend(sharpen::Size size)
@@ -95,7 +86,7 @@ void sharpen::ByteBuffer::Extend(sharpen::Size size)
 
 void sharpen::ByteBuffer::ExtendTo(sharpen::Size size,sharpen::Char defaultValue)
 {
-    this->vector_.resize(size,defaultValue);
+    this->vector_.Resize(size,defaultValue);
 }
 
 void sharpen::ByteBuffer::ExtendTo(sharpen::Size size)
@@ -109,12 +100,7 @@ void sharpen::ByteBuffer::Reset() noexcept
     {
         return;
     }
-    std::memset(this->vector_.data(),0,this->vector_.size());
-}
-
-void sharpen::ByteBuffer::Shrink()
-{
-    this->vector_.shrink_to_fit();
+    std::memset(this->Data(),0,this->GetSize());
 }
 
 void sharpen::ByteBuffer::Append(const sharpen::Char *p,sharpen::Size size)
@@ -138,13 +124,12 @@ void sharpen::ByteBuffer::Append(const sharpen::ByteBuffer &other)
 
 void sharpen::ByteBuffer::Erase(sharpen::Size pos)
 {
-    this->vector_.erase(this->vector_.begin() + pos);
+    this->vector_.Erase(pos);
 }
 
 void sharpen::ByteBuffer::Erase(sharpen::Size begin,sharpen::Size end)
 {
-    auto ite = this->vector_.begin();
-    this->vector_.erase(ite + begin,ite + end);
+    this->vector_.Erase(begin,end);
 }
 
 sharpen::ByteBuffer::Iterator sharpen::ByteBuffer::Find(char e) noexcept
@@ -209,12 +194,12 @@ sharpen::ByteBuffer::ConstReverseIterator sharpen::ByteBuffer::ReverseFind(char 
 
 void sharpen::ByteBuffer::Erase(ConstIterator where)
 {
-    this->vector_.erase(where);
+    this->vector_.Erase(where);
 }
 
 void sharpen::ByteBuffer::Erase(ConstIterator begin,ConstIterator end)
 {
-    this->vector_.erase(begin,end);
+    this->vector_.Erase(begin,end);
 }
 
 sharpen::Char sharpen::ByteBuffer::GetOrDefault(sharpen::Size index,sharpen::Char defaultVal) const noexcept

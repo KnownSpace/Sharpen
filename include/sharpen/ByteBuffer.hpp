@@ -2,39 +2,37 @@
 #ifndef _SHARPEN_BYTEBUFFER_HPP
 #define _SHARPEN_BYTEBUFFER_HPP
 
-#include <vector>
-#include <algorithm>
 #include <functional>
 #include <cassert>
 
-#include "TypeDef.hpp"
+#include "ByteVector.hpp"
 #include "BufferOps.hpp"
 #include "TypeTraits.hpp"
+#include "PointerIterator.hpp"
+#include "ReversePointerIterator.hpp"
 
 namespace sharpen
 {
     class ByteBuffer
     {
     private:
-        using Vector = std::vector<sharpen::Char>;
+        using Vector = sharpen::ByteVector;
 
-        using Self = ByteBuffer;
+        using Self = sharpen::ByteBuffer;
         
         Vector vector_;
     public:
-        using Iterator = typename Vector::iterator;
+        using Iterator = sharpen::PointerIterator<char>;
 
-        using ConstIterator = typename Vector::const_iterator;
+        using ConstIterator = sharpen::PointerIterator<const char>;
 
-        using ReverseIterator = typename Vector::reverse_iterator;
+        using ReverseIterator = sharpen::ReversePointerIterator<char>;
 
-        using ConstReverseIterator = typename Vector::const_reverse_iterator;
+        using ConstReverseIterator = sharpen::ReversePointerIterator<const char>;
 
         ByteBuffer() = default;
 
         explicit ByteBuffer(sharpen::Size size);
-
-        explicit ByteBuffer(Vector vector) noexcept;
 
         ByteBuffer(const sharpen::Char *p,sharpen::Size size);
 
@@ -97,8 +95,6 @@ namespace sharpen
             return this->Get(index);
         }
 
-        void Reserve(sharpen::Size size);
-
         void Reset() noexcept;
 
         void Extend(sharpen::Size size);
@@ -109,8 +105,6 @@ namespace sharpen
 
         void ExtendTo(sharpen::Size size,sharpen::Char defaultValue);
 
-        void Shrink();
-
         void Append(const sharpen::Char *p,sharpen::Size size);
 
         void Append(const Self &other);
@@ -118,11 +112,7 @@ namespace sharpen
         template<typename _Iterator,typename _Checker = decltype(std::declval<Self>().PushBack(*std::declval<_Iterator>()))>
         void Append(_Iterator begin,_Iterator end)
         {
-            while (begin != end)
-            {
-                this->vector_.push_back(*begin);
-                ++begin;
-            }
+            this->vector_.Append(begin,end);
         }
 
         void Erase(sharpen::Size pos);
@@ -135,42 +125,42 @@ namespace sharpen
 
         inline Iterator Begin() noexcept
         {
-            return this->vector_.begin();
+            return this->vector_.Begin();
         }
 
         inline ConstIterator Begin() const noexcept
         {
-            return this->vector_.cbegin();
+            return this->vector_.Begin();
         }
 
         inline ReverseIterator ReverseBegin() noexcept
         {
-            return this->vector_.rbegin();
+            return this->vector_.ReverseBegin();
         }
 
         inline ConstReverseIterator ReverseBegin() const noexcept
         {
-            return this->vector_.crbegin();
+            return this->vector_.ReverseBegin();
         }
 
         inline Iterator End() noexcept
         {
-            return this->vector_.end();
+            return this->vector_.End();
         }
 
         inline ConstIterator End() const noexcept
         {
-            return this->vector_.cend();
+            return this->vector_.End();
         }
 
         inline ReverseIterator ReverseEnd() noexcept
         {
-            return this->vector_.rend();
+            return this->vector_.ReverseEnd();
         }
 
         inline ConstReverseIterator ReverseEnd() const noexcept
         {
-            return this->vector_.crend();
+            return this->vector_.ReverseEnd();
         }
 
         ConstIterator Find(sharpen::Char e) const noexcept;
@@ -195,13 +185,7 @@ namespace sharpen
 
         inline void Clear() noexcept
         {
-            this->vector_.clear();
-        }
-
-        inline void ClearAndShrink() noexcept
-        {
-            Vector tmp;
-            std::swap(this->vector_,tmp);
+            this->vector_.Clear();
         }
 
         inline sharpen::Uint32 Adler32() const noexcept
@@ -282,7 +266,7 @@ namespace sharpen
 
         inline bool Empty() const noexcept
         {
-            return this->vector_.empty();
+            return this->vector_.Empty();
         }
 
         template<typename _T,typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>

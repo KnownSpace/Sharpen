@@ -172,12 +172,15 @@ namespace sharpen
                 {
                     if(eraseDeleted)
                     {
-                       block.EraseDeleted();
+                        block.EraseDeleted();
                     }
-                    Self::WriteBlock(block,channel,root,buf,filterBits,filters,offset);
-                    block.Clear();
-                    blockSize = 0;
-                    blockCount += 1;
+                    if(!block.Empty())
+                    {
+                        Self::WriteBlock(block,channel,root,buf,filterBits,filters,offset);
+                        block.Clear();
+                        blockSize = 0;
+                        blockCount += 1;
+                    }
                 }
                 ++begin;
             }
@@ -187,10 +190,13 @@ namespace sharpen
                 {
                     block.EraseDeleted();
                 }
-                Self::WriteBlock(block,channel,root,buf,filterBits,filters,offset);
-                block.Clear();
-                blockSize = 0;
-                blockCount += 1;
+                if(!block.Empty())
+                {
+                    Self::WriteBlock(block,channel,root,buf,filterBits,filters,offset);
+                    block.Clear();
+                    blockSize = 0;
+                    blockCount += 1;
+                }
             }
             if(filterBits)
             {

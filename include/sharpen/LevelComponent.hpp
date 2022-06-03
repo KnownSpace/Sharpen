@@ -15,6 +15,7 @@
 */
 
 #include <utility>
+#include <vector>
 
 #include "TypeDef.hpp"
 #include "ByteBuffer.hpp"

@@ -26,6 +26,7 @@ Index Block
 */
 
 #include <vector>
+#include <algorithm>
 
 #include "SstBlockHandle.hpp"
 
