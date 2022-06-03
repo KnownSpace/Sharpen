@@ -101,45 +101,52 @@ namespace sharpen
             return *this;
         }
 
-        inline sharpen::Int32 CompareWith(const Self &other) const noexcept
+        template<typename _NewT,typename _Check = decltype(std::declval<_T*&>() == std::declval<_NewT*&>())>
+        inline sharpen::Int32 CompareWith(const sharpen::ReversePointerIterator<_NewT> &other) const noexcept
         {
-            if(this->ptr_ > other.ptr_)
-            {
-                return 1;
-            }
-            else if(this->ptr_ < other.ptr_)
+            if(this->ptr_ > other.GetPointer())
             {
                 return -1;
+            }
+            else if(this->ptr_ < other.GetPointer())
+            {
+                return 1;
             }
             return 0;
         }
         
-        inline bool operator==(const Self &other) const noexcept
+        template<typename _NewT,typename _Check = decltype(std::declval<_T*&>() == std::declval<_NewT*&>())>
+        inline bool operator==(const sharpen::ReversePointerIterator<_NewT> &other) const noexcept
         {
             return this->CompareWith(other) == 0;
         }
         
-        inline bool operator!=(const Self &other) const noexcept
+        template<typename _NewT,typename _Check = decltype(std::declval<_T*&>() == std::declval<_NewT*&>())>
+        inline bool operator!=(const sharpen::ReversePointerIterator<_NewT> &other) const noexcept
         {
             return this->CompareWith(other) != 0;
         }
         
-        inline bool operator<(const Self &other) const noexcept
+        template<typename _NewT,typename _Check = decltype(std::declval<_T*&>() == std::declval<_NewT*&>())>
+        inline bool operator<(const sharpen::ReversePointerIterator<_NewT> &other) const noexcept
         {
             return this->CompareWith(other) < 0;
         }
         
-        inline bool operator>(const Self &other) const noexcept
+        template<typename _NewT,typename _Check = decltype(std::declval<_T*&>() == std::declval<_NewT*&>())>
+        inline bool operator>(const sharpen::ReversePointerIterator<_NewT> &other) const noexcept
         {
             return this->CompareWith(other) > 0;
         }
         
-        inline bool operator>=(const Self &other) const noexcept
+        template<typename _NewT,typename _Check = decltype(std::declval<_T*&>() == std::declval<_NewT*&>())>
+        inline bool operator>=(const sharpen::ReversePointerIterator<_NewT> &other) const noexcept
         {
             return this->CompareWith(other) >= 0;
         }
         
-        inline bool operator<=(const Self &other) const noexcept
+        template<typename _NewT,typename _Check = decltype(std::declval<_T*&>() == std::declval<_NewT*&>())>
+        inline bool operator<=(const sharpen::ReversePointerIterator<_NewT> &other) const noexcept
         {
             return this->CompareWith(other) <= 0;
         }

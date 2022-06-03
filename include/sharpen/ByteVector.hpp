@@ -20,10 +20,11 @@ namespace sharpen
         sharpen::Size cap_;
     };
 
+    template<std::size_t _InlineSize>
     union ByteVectorUnion
     {
         sharpen::ByteVectorStruct heap_;
-        char stack_[sizeof(heap_)];
+        char stack_[_InlineSize];
     };
 
     class ByteVector
@@ -31,11 +32,11 @@ namespace sharpen
     private:
         using Self = ByteVector;
 
-        static constexpr sharpen::Size inlineSize_{sizeof(sharpen::ByteVectorUnion)};
+        static constexpr sharpen::Size inlineSize_{sizeof(sharpen::ByteVectorStruct) + sizeof(void*)};
         static constexpr sharpen::Size blobSize_{1*1024*1024};
     
         sharpen::Size size_;
-        sharpen::ByteVectorUnion rawVector_;
+        sharpen::ByteVectorUnion<sharpen::ByteVector::inlineSize_> rawVector_;
 
         inline static bool InlineBuffer(sharpen::Size size) noexcept
         {
@@ -181,7 +182,7 @@ namespace sharpen
             return this->Data()[index];
         }
 
-        const char operator[](sharpen::Size index) const noexcept
+        char operator[](sharpen::Size index) const noexcept
         {
             return this->Data()[index];
         }

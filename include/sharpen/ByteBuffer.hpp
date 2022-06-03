@@ -4,6 +4,7 @@
 
 #include <functional>
 #include <cassert>
+#include <algorithm>
 
 #include "ByteVector.hpp"
 #include "BufferOps.hpp"
@@ -22,13 +23,13 @@ namespace sharpen
         
         Vector vector_;
     public:
-        using Iterator = sharpen::PointerIterator<char>;
+        using Iterator = typename Vector::Iterator;
 
-        using ConstIterator = sharpen::PointerIterator<const char>;
+        using ConstIterator = typename Vector::ConstIterator;
 
-        using ReverseIterator = sharpen::ReversePointerIterator<char>;
+        using ReverseIterator = typename Vector::ReverseIterator;
 
-        using ConstReverseIterator = sharpen::ReversePointerIterator<const char>;
+        using ConstReverseIterator = typename Vector::ConstReverseIterator;
 
         ByteBuffer() = default;
 
