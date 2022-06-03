@@ -207,9 +207,6 @@ namespace sharpen
             return !(*this == other);
         }
     };
-
-    template<typename _Iterator>
-    using ConstTwoWayIterator = const sharpen::TwoWayIterator<_Iterator>;
 }
 
 #endif

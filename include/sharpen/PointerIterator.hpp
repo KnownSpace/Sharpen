@@ -44,24 +44,14 @@ namespace sharpen
             return *this;
         }
 
-        inline _T &operator*() noexcept
+        inline _T &operator*() const noexcept
         {
             return *this->ptr_;
         }
 
-        inline const _T &operator*() const noexcept
+        inline _T *operator->() const noexcept
         {
-            return *this->ptr_;
-        }
-
-        inline _T &operator->() noexcept
-        {
-            return *this->ptr_;
-        }
-
-        inline const _T &operator->() const noexcept
-        {
-            return *this->ptr_;
+            return this->ptr_;
         }
 
         inline Self &operator++() noexcept

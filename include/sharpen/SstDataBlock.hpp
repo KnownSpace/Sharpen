@@ -68,7 +68,7 @@ namespace sharpen
         using ReverseIterator = typename Groups::reverse_iterator;
         using ConstReverseIterator = typename Groups::const_reverse_iterator;
         using TwoWayIterator = sharpen::TwoWayIterator<Iterator>;
-        using ConstTwoWayIterator = sharpen::ConstTwoWayIterator<ConstIterator>;
+        using ConstTwoWayIterator = sharpen::TwoWayIterator<ConstIterator>;
         using Comparator = sharpen::Int32(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
     private:
 
