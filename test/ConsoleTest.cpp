@@ -20,6 +20,7 @@ void ConsoleTest()
     //output std::string
     std::string str{"std::string\n"};
     sharpen::Print(str);
+    sharpen::ClearConsole();
 }
 
 int main()

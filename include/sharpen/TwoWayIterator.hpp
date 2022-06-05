@@ -95,22 +95,12 @@ namespace sharpen
     
         ~TwoWayIterator() noexcept = default;
 
-        _Value &operator*()
+        _Value &operator*() const noexcept
         {
             return *this->sub_;
         }
 
-        const _Value &operator*() const
-        {
-            return *this->sub_;
-        }
-
-        _Value *operator->()
-        {
-            return &*this->sub_;
-        }
-
-        const _Value *operator->() const
+        _Value *operator->() const noexcept
         {
             return &*this->sub_;
         }

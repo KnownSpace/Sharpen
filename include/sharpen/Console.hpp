@@ -266,6 +266,8 @@ namespace sharpen
         sharpen::ConsolePrinter<_T,_Ts...>::Perror(std::forward<_T>(arg),std::forward<_Ts>(args)...);
         std::putchar('\n');
     }
+
+    void ClearConsole();
 }
 
 #endif
