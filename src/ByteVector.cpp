@@ -150,28 +150,31 @@ void sharpen::ByteVector::Resize(sharpen::Size newSize,char defalutVal)
     {
         if(this->size_ < newSize)
         {
-            sharpen::Size newCap{this->ComputeHeapSize(newSize)};
-            if(newCap < sharpen::ByteVector::blobSize_)
+            if(this->InlineBuffer() || this->rawVector_.external_.cap_ < newSize)
             {
-                sharpen::Size sz{(std::max)(static_cast<sharpen::Size>(1),this->size_)};
-                newCap = (std::max)(sz*2,newCap);
+                sharpen::Size newCap{this->ComputeHeapSize(newSize)};
+                if(newCap < sharpen::ByteVector::blobSize_)
+                {
+                    sharpen::Size sz{(std::max)(static_cast<sharpen::Size>(1),this->size_)};
+                    newCap = (std::max)(sz*2,newCap);
+                }
+                char *buf{reinterpret_cast<char*>(this->Alloc(newCap))};
+                if(!buf)
+                {
+                    throw std::bad_alloc();
+                }
+                std::memcpy(buf,this->Data(),this->size_);
+                if(!this->InlineBuffer())
+                {
+                    this->Free(this->rawVector_.external_.data_);
+                }
+                for(sharpen::Size i = this->size_;i != newSize;++i)
+                {
+                    buf[i] = defalutVal;
+                }
+                this->rawVector_.external_.data_ = buf;
+                this->rawVector_.external_.cap_ = newCap;
             }
-            char *buf{reinterpret_cast<char*>(this->Alloc(newCap))};
-            if(!buf)
-            {
-                throw std::bad_alloc();
-            }
-            std::memcpy(buf,this->Data(),this->size_);
-            if(!this->InlineBuffer())
-            {
-                this->Free(this->rawVector_.external_.data_);
-            }
-            for(sharpen::Size i = this->size_;i != newSize;++i)
-            {
-                buf[i] = defalutVal;
-            }
-            this->rawVector_.external_.data_ = buf;
-            this->rawVector_.external_.cap_ = newCap;
         }
     }
     else if(!this->InlineBuffer())

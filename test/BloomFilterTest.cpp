@@ -16,7 +16,7 @@ int main(int argc, char const *argv[])
         assert(filter.Containe(i));
     }
     sharpen::Size fake{0};
-    constexpr sharpen::Size testCount = static_cast<sharpen::Size>(1e9);
+    constexpr sharpen::Size testCount = static_cast<sharpen::Size>(1e5);
     for (sharpen::Size i = count; i < testCount; ++i)
     {
         if(filter.Containe(i))
