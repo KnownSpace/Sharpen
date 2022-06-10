@@ -51,6 +51,20 @@ void sharpen::CtrlHelper::CtrlHandler(int signalType)
 
 #endif
 
+void sharpen::InitCtrlHandler()
+{
+#ifdef SHARPEN_IS_WIN
+    using FnPtr = BOOL(WINAPI *)(DWORD);
+    ::SetConsoleCtrlHandler(static_cast<FnPtr>(&sharpen::CtrlHelper::CtrlHandler),TRUE);
+#else
+    using FnPtr = void(*)(int);
+    struct sigaction sa;
+    sa.sa_handler = static_cast<FnPtr>(&sharpen::CtrlHelper::CtrlHandler);
+    ::sigaction(SIGINT,&sa,0);
+    ::sigaction(SIGQUIT,&sa,0);
+#endif
+}
+
 void sharpen::RegisterCtrlHandler(sharpen::CtrlType type,sharpen::CtrlHelper::Handler handler)
 {
     switch (type)
@@ -64,17 +78,6 @@ void sharpen::RegisterCtrlHandler(sharpen::CtrlType type,sharpen::CtrlHelper::Ha
     default:
         break;
     }
-    std::call_once(sharpen::CtrlHelper::flag_,[]()
-    {
-#ifdef SHARPEN_IS_WIN
-        using FnPtr = BOOL(WINAPI *)(DWORD);
-        ::SetConsoleCtrlHandler(static_cast<FnPtr>(&sharpen::CtrlHelper::CtrlHandler),TRUE);
-#else
-        using FnPtr = void(*)(int);
-        struct sigaction sa;
-        sa.sa_handler = static_cast<FnPtr>(&sharpen::CtrlHelper::CtrlHandler);
-        ::sigaction(SIGINT,&sa,0);
-        ::sigaction(SIGQUIT,&sa,0);
-#endif
-    });
+    using FnPtr = void(*)();
+    std::call_once(sharpen::CtrlHelper::flag_,static_cast<FnPtr>(&sharpen::InitCtrlHandler));
 }

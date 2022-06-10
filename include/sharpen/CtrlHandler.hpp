@@ -44,6 +44,8 @@ namespace sharpen
     };
     
 
+    void InitCtrlHandler();
+
     void RegisterCtrlHandler(sharpen::CtrlType type,sharpen::CtrlHelper::Handler handler);
 }
 

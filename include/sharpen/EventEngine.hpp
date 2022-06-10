@@ -42,6 +42,8 @@ namespace sharpen
         void ProcessStartup(std::function<void()> fn);
 
         void ProcessStartupWithCode(std::function<int()> fn,int *code);
+
+        static void InitEngine();
     public:
         
         virtual ~EventEngine() noexcept;

@@ -121,13 +121,20 @@ sharpen::EventEngine &sharpen::EventEngine::SetupEngine(std::size_t workerCount)
     return *sharpen::EventEngine::engine_;
 }
 
+void sharpen::EventEngine::InitEngine()
+{
+    sharpen::EventEngine *engine = new sharpen::EventEngine();
+    if(!engine)
+    {
+        throw std::bad_alloc();
+    }
+    sharpen::EventEngine::engine_.reset(engine);
+}
+
 sharpen::EventEngine &sharpen::EventEngine::SetupEngine()
 {
-    std::call_once(sharpen::EventEngine::flag_,[]()
-    {
-        sharpen::EventEngine *engine = new sharpen::EventEngine();
-        sharpen::EventEngine::engine_.reset(engine);
-    });
+    using FnPtr = void(*)();
+    std::call_once(sharpen::EventEngine::flag_,static_cast<FnPtr>(&Self::InitEngine));
     return *sharpen::EventEngine::engine_;
 }
 
