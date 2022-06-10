@@ -16,7 +16,8 @@ sharpen::MemoryStack::MemoryStack(sharpen::MemoryStack &&other) noexcept
     :mem_(nullptr)
     ,size_(0)
 {
-    std::swap(other,*this);
+    std::swap(other.mem_,this->mem_);
+    std::swap(other.size_,this->size_);
 }
 
 sharpen::MemoryStack::~MemoryStack() noexcept
@@ -28,9 +29,9 @@ sharpen::MemoryStack &sharpen::MemoryStack::operator=(sharpen::MemoryStack &&oth
 {
     if(this != std::addressof(other))
     {
-        this->size_ = 0;
-        this->mem_ = nullptr;
-        std::swap(*this,other);
+        this->Release();
+        std::swap(other.mem_,this->mem_);
+        std::swap(other.size_,this->size_);
     }
     return *this;
 }
