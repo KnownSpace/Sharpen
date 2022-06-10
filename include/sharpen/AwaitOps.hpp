@@ -89,19 +89,26 @@ namespace sharpen
     template<typename _MainFuture,typename ..._Futures>
     struct AwaitAnyHelper
     {
+    private:
+        using Self = sharpen::AwaitAnyHelper<_MainFuture,_Futures...>;
+
+        static void Callback(std::shared_ptr<std::atomic_flag> token,sharpen::Future<void> *future,_MainFuture &)
+        {
+            bool t = token->test_and_set();
+            if(!t)
+            {
+                future->Complete();
+            }
+        }
+
+    public:
         static void SetCallback(std::shared_ptr<std::atomic_flag> token,sharpen::AwaitableFuture<void> &future,_MainFuture &mainFuture,_Futures &...futures)
         {
-            mainFuture.SetCallback([token,&future](_MainFuture &) mutable
-            {
-                bool t = token->test_and_set();
-                if (!t)
-                {
-                    future.Complete();
-                }
-            });
+            using FnPtr = void(*)(std::shared_ptr<std::atomic_flag>,sharpen::Future<void>*,_MainFuture&);
+            mainFuture.SetCallback(std::bind(static_cast<FnPtr>(&Self::Callback),token,&future,std::placeholders::_1));
             if (future.IsPending())
             {
-                sharpen::AwaitAnyHelper<_Futures...>::SetCallback(token,future,futures...);
+                sharpen::AwaitAnyHelper<_Futures...>::SetCallback(std::move(token),future,futures...);
             }
         }
     };
@@ -109,16 +116,24 @@ namespace sharpen
     template<typename _Future>
     struct AwaitAnyHelper<_Future>
     {
+    private:
+        using Self = sharpen::AwaitAnyHelper<_Future>;
+
+        static void Callback(std::shared_ptr<std::atomic_flag> token,sharpen::Future<void> *future,_Future &)
+        {
+            bool t = token->test_and_set();
+            if(!t)
+            {
+                future->Complete();
+            }
+        }
+
+    public:
+
         static void SetCallback(std::shared_ptr<std::atomic_flag> token,sharpen::AwaitableFuture<void> &future,_Future &last)
         {
-            last.SetCallback([token,&future](_Future &) mutable
-            {
-                bool t = token->test_and_set();
-                if (!t)
-                {
-                    future.Complete();
-                }
-            });
+            using FnPtr = void(*)(std::shared_ptr<std::atomic_flag>,sharpen::Future<void>*,_Future&);
+            last.SetCallback(std::bind(static_cast<FnPtr>(&Self::Callback),std::move(token),&future,std::placeholders::_1));
         }
     };
     
