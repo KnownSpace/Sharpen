@@ -23,7 +23,7 @@ namespace sharpen
             return Self::Value;
         }
 
-        constexpr _Type operator _Type() const noexcept
+        constexpr operator _Type() const noexcept
         {
             return Self::Value;
         }
