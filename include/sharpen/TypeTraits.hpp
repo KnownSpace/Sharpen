@@ -4,27 +4,33 @@
 
 #include <type_traits>
 #include <functional>
-
 #include <cstdint>
 #include <cstddef>
 
 namespace sharpen
 {
-    template<bool _Value>
-    struct BoolType
+    template<typename _Type,_Type _Value>
+    struct ConstValue
     {
-        constexpr static bool Value = _Value;
+    private:
+        using Self = sharpen::ConstValue<_Type,_Value>;
 
-        constexpr bool operator()() const noexcept
+    public:
+        constexpr static _Type Value{_Value};
+
+        constexpr _Type operator()() const noexcept
         {
-            return _Value;
+            return Self::Value;
         }
 
-        constexpr operator bool() const noexcept
+        constexpr _Type operator _Type() const noexcept
         {
-            return _Value;
+            return Self::Value;
         }
     };
+
+    template<bool _Value>
+    using BoolType = sharpen::ConstValue<bool,_Value>;
     
     using TrueType = sharpen::BoolType<true>;
 
