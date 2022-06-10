@@ -9,7 +9,8 @@
 #include <vector>
 #include <chrono>
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "Future.hpp"
 #include "IteratorOps.hpp"
 #include "QuorumConcepts.hpp"
@@ -29,7 +30,7 @@ namespace sharpen
             std::atomic_size_t errorCounter_;
             sharpen::Future<bool>* continuation_;
             sharpen::Future<void>* finish_;
-            sharpen::Size majority_;
+            std::size_t majority_;
             std::vector<sharpen::Future<bool>> futures_;
         };
 
@@ -55,10 +56,10 @@ namespace sharpen
         static void CompletedCallback(sharpen::Future<bool> &future,std::shared_ptr<Waiter> waiterPtr)
         {
             bool success = !future.IsError() && future.Get();
-            sharpen::Size finishCounter = waiterPtr->finishCounter_.fetch_sub(1) - 1;
+            std::size_t finishCounter = waiterPtr->finishCounter_.fetch_sub(1) - 1;
             if (success)
             {
-                sharpen::Size successCounter = waiterPtr->successCounter_.fetch_add(1) + 1;
+                std::size_t successCounter = waiterPtr->successCounter_.fetch_add(1) + 1;
                 if(successCounter == waiterPtr->majority_)
                 {
                     CompleteFuture(waiterPtr->continuation_,true);
@@ -66,7 +67,7 @@ namespace sharpen
             }
             else
             {
-                sharpen::Size errorCount = waiterPtr->errorCounter_.fetch_add(1);
+                std::size_t errorCount = waiterPtr->errorCounter_.fetch_add(1);
                 if(waiterPtr->futures_.size() - errorCount == waiterPtr->majority_)
                 {
                     CompleteFuture(waiterPtr->continuation_,false);
@@ -86,10 +87,10 @@ namespace sharpen
             void operator()(sharpen::Future<bool> &future)
             {
                 bool success = !future.IsError() && future.Get();
-                sharpen::Size finishCounter = this->waiterPtr_->finishCounter_.fetch_sub(1) - 1;
+                std::size_t finishCounter = this->waiterPtr_->finishCounter_.fetch_sub(1) - 1;
                 if (success)
                 {
-                    sharpen::Size successCounter = this->waiterPtr_->successCounter_.fetch_add(1) + 1;
+                    std::size_t successCounter = this->waiterPtr_->successCounter_.fetch_add(1) + 1;
                     if(successCounter == this->waiterPtr_->majority_)
                     {
                         CompleteFuture(this->waiterPtr_->continuation_,true);
@@ -97,7 +98,7 @@ namespace sharpen
                 }
                 else
                 {
-                    sharpen::Size errorCount = this->waiterPtr_->errorCounter_.fetch_add(1);
+                    std::size_t errorCount = this->waiterPtr_->errorCounter_.fetch_add(1);
                     if(this->waiterPtr_->futures_.size() - errorCount == this->waiterPtr_->majority_)
                     {
                         CompleteFuture(this->waiterPtr_->continuation_,false);
@@ -123,7 +124,7 @@ namespace sharpen
                     _Iterator begin = this->waiter_->iterator_;
                     _Iterator end = sharpen::IteratorForward(begin,this->waiter_->futures_.size());
                     _Iterator ite = end;
-                    for (sharpen::Size i = 0; i < this->waiter_->futures_.size(); i++)
+                    for (std::size_t i = 0; i < this->waiter_->futures_.size(); i++)
                     {
                         if(this->waiter_->futures_[i].IsPending())
                         {
@@ -156,7 +157,7 @@ namespace sharpen
                     _Iterator begin = waiter_->iterator_;
                     _Iterator end = sharpen::IteratorForward(begin,this->waiter_->futures_.size());
                     _Iterator ite = end;
-                    for (sharpen::Size i = 0; i < waiter_->futures_.size(); i++)
+                    for (std::size_t i = 0; i < waiter_->futures_.size(); i++)
                     {
                         if(waiter_->futures_[i].IsPending())
                         {
@@ -177,7 +178,7 @@ namespace sharpen
             }
         };
 
-        static void InitWaiter(std::shared_ptr<Waiter> &waiterPtr,sharpen::Size size,sharpen::Future<bool> *continuation,sharpen::Future<void> *finish,sharpen::Size majority) noexcept
+        static void InitWaiter(std::shared_ptr<Waiter> &waiterPtr,std::size_t size,sharpen::Future<bool> *continuation,sharpen::Future<void> *finish,std::size_t majority) noexcept
         {
             waiterPtr->finish_ = finish;
             waiterPtr->continuation_ = continuation;
@@ -189,7 +190,7 @@ namespace sharpen
         }
 
         template<typename _Iterator>
-        static void InitTimeLimitedWaiter(std::shared_ptr<TimeLimitedWaiter<_Iterator>> &waiterPtr,sharpen::TimerPtr timer,_Iterator iterator,sharpen::Size size,sharpen::Future<bool> *continuation,sharpen::Future<void> *finish,sharpen::Size majority) noexcept
+        static void InitTimeLimitedWaiter(std::shared_ptr<TimeLimitedWaiter<_Iterator>> &waiterPtr,sharpen::TimerPtr timer,_Iterator iterator,std::size_t size,sharpen::Future<bool> *continuation,sharpen::Future<void> *finish,std::size_t majority) noexcept
         {
             waiterPtr->finish_ = finish;
             waiterPtr->continuation_ = continuation;
@@ -205,12 +206,12 @@ namespace sharpen
         static constexpr bool emptyQuorumResult_{true};
 
         template<typename _Iterator,typename _Proposal,typename _Check = sharpen::EnableIf<sharpen::IsQuorumProposerIterator<_Iterator,_Proposal>::Value>>
-        static void InternalProposeAsync(_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> *finish,sharpen::Size majority,...)
+        static void InternalProposeAsync(_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> *finish,std::size_t majority,...)
         {
             using FnPtr = void(*)(sharpen::Future<bool>&,std::shared_ptr<Waiter>);
             //init waiter
             std::shared_ptr<Waiter> waiterPtr = std::make_shared<Waiter>();
-            sharpen::Size size = sharpen::GetRangeSize(begin,end);
+            std::size_t size = sharpen::GetRangeSize(begin,end);
             if(!size)
             {
                 continuation.CompleteForBind(Self::emptyQuorumResult_);
@@ -219,7 +220,7 @@ namespace sharpen
             }
             assert(majority != 0);
             InitWaiter(waiterPtr,size,&continuation,finish,majority);
-            sharpen::Size index{0};
+            std::size_t index{0};
             //launch operations
             while (begin != end)
             {
@@ -231,12 +232,12 @@ namespace sharpen
         }
 
         template<typename _Iterator,typename _Proposal,typename _Check = sharpen::EnableIf<sharpen::IsQuorumProposerMapIterator<_Iterator,_Proposal>::Value>>
-        static void InternalProposeAsync(_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> *finish,sharpen::Size majority,int)
+        static void InternalProposeAsync(_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> *finish,std::size_t majority,int)
         {
             using FnPtr = void(*)(sharpen::Future<bool>&,std::shared_ptr<Waiter>);
             //init waiter
             std::shared_ptr<Waiter> waiterPtr = std::make_shared<Waiter>();
-            sharpen::Size size = sharpen::GetRangeSize(begin,end);
+            std::size_t size = sharpen::GetRangeSize(begin,end);
             if(!size)
             {
                 continuation.CompleteForBind(Self::emptyQuorumResult_);
@@ -245,7 +246,7 @@ namespace sharpen
             }
             assert(majority != 0);
             InitWaiter(waiterPtr,size,&continuation,finish,majority);
-            sharpen::Size index{0};
+            std::size_t index{0};
             //launch operations
             while (begin != end)
             {
@@ -257,12 +258,12 @@ namespace sharpen
         }
 
         template<typename _Iterator,typename _Proposal,typename _Rep,typename _Period,typename _Check = sharpen::EnableIf<sharpen::IsCancelableQuorumProposerIterator<_Iterator,_Proposal>::Value>>
-        static void InternalTimeLimitedProposeAsync(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> *finish,sharpen::Size majority,...)
+        static void InternalTimeLimitedProposeAsync(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,_Iterator begin,_Iterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> *finish,std::size_t majority,...)
         {
             using WaiterType = TimeLimitedWaiter<_Iterator>;
             //init waiter
             std::shared_ptr<WaiterType> waiterPtr = std::make_shared<WaiterType>();
-            sharpen::Size size = sharpen::GetRangeSize(begin,end);
+            std::size_t size = sharpen::GetRangeSize(begin,end);
             if(!size)
             {
                 continuation.CompleteForBind(Self::emptyQuorumResult_);
@@ -271,7 +272,7 @@ namespace sharpen
             }
             assert(majority != 0);
             InitTimeLimitedWaiter(waiterPtr,std::move(timer),begin,size,&continuation,finish,majority);
-            sharpen::Size index{0};
+            std::size_t index{0};
             //launch operations
             IteratorTimeoutCallback<_Iterator> timeoutCb;
             timeoutCb.waiter_ = waiterPtr;
@@ -289,12 +290,12 @@ namespace sharpen
         }
 
         template<typename _MapIterator,typename _Proposal,typename _Rep,typename _Period,typename _Check = sharpen::EnableIf<sharpen::IsCancelableQuorumProposerMapIterator<_MapIterator,_Proposal>::Value>>
-        static void InternalTimeLimitedProposeAsync(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,_MapIterator begin,_MapIterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> *finish,sharpen::Size majority,int)
+        static void InternalTimeLimitedProposeAsync(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,_MapIterator begin,_MapIterator end,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> *finish,std::size_t majority,int)
         {
             using WaiterType = TimeLimitedWaiter<_MapIterator>;
             //init waiter
             std::shared_ptr<WaiterType> waiterPtr = std::make_shared<WaiterType>();
-            sharpen::Size size = sharpen::GetRangeSize(begin,end);
+            std::size_t size = sharpen::GetRangeSize(begin,end);
             if(!size)
             {
                 continuation.CompleteForBind(Self::emptyQuorumResult_);
@@ -303,7 +304,7 @@ namespace sharpen
             }
             assert(majority != 0);
             InitTimeLimitedWaiter(waiterPtr,std::move(timer),begin,size,&continuation,finish,majority);
-            sharpen::Size index{0};
+            std::size_t index{0};
             //launch operations
             MapIteratorTimeoutCallback<_MapIterator> timeoutCb;
             timeoutCb.waiter_ = waiterPtr;
@@ -334,13 +335,13 @@ namespace sharpen
         }
 
         template<typename _Iterator,typename _Proposal>
-        static auto ProposeAsync(_Iterator begin,_Iterator end,sharpen::Size majority,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> &finish) ->decltype(Self::InternalProposeAsync(begin,end,std::forward<_Proposal>(proposal),continuation,&finish,0,0))
+        static auto ProposeAsync(_Iterator begin,_Iterator end,std::size_t majority,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> &finish) ->decltype(Self::InternalProposeAsync(begin,end,std::forward<_Proposal>(proposal),continuation,&finish,0,0))
         {
             return Self::InternalProposeAsync(begin,end,std::forward<_Proposal>(proposal),continuation,&finish,majority,0);
         }
 
         template<typename _Iterator,typename _Proposal>
-        static auto ProposeAsync(_Iterator begin,_Iterator end,sharpen::Size majority,_Proposal &&proposal,sharpen::Future<bool> &continuation) ->decltype(Self::InternalProposeAsync(begin,end,std::forward<_Proposal>(proposal),continuation,nullptr,0,0))
+        static auto ProposeAsync(_Iterator begin,_Iterator end,std::size_t majority,_Proposal &&proposal,sharpen::Future<bool> &continuation) ->decltype(Self::InternalProposeAsync(begin,end,std::forward<_Proposal>(proposal),continuation,nullptr,0,0))
         {
             return Self::InternalProposeAsync(begin,end,std::forward<_Proposal>(proposal),continuation,nullptr,majority,0);
         }
@@ -358,13 +359,13 @@ namespace sharpen
         }
 
         template<typename _Iterator,typename _Proposal,typename _Rep,typename _Period>
-        static auto TimeLimitedProposeAsync(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,_Iterator begin,_Iterator end,sharpen::Size majority,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> &finish) ->decltype(Self::InternalTimeLimitedProposeAsync(timer,timeout,begin,end,std::forward<_Proposal>(proposal),continuation,&finish,0,0))
+        static auto TimeLimitedProposeAsync(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,_Iterator begin,_Iterator end,std::size_t majority,_Proposal &&proposal,sharpen::Future<bool> &continuation,sharpen::Future<void> &finish) ->decltype(Self::InternalTimeLimitedProposeAsync(timer,timeout,begin,end,std::forward<_Proposal>(proposal),continuation,&finish,0,0))
         {
             return Self::InternalTimeLimitedProposeAsync(std::move(timer),timeout,begin,end,std::forward<_Proposal>(proposal),continuation,&finish,majority,0);
         }
 
         template<typename _Iterator,typename _Proposal,typename _Rep,typename _Period>
-        static auto TimeLimitedProposeAsync(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,_Iterator begin,_Iterator end,sharpen::Size majority,_Proposal &&proposal,sharpen::Future<bool> &continuation) ->decltype(Self::InternalTimeLimitedProposeAsync(timer,timeout,begin,end,std::forward<_Proposal>(proposal),continuation,nullptr,0,0))
+        static auto TimeLimitedProposeAsync(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,_Iterator begin,_Iterator end,std::size_t majority,_Proposal &&proposal,sharpen::Future<bool> &continuation) ->decltype(Self::InternalTimeLimitedProposeAsync(timer,timeout,begin,end,std::forward<_Proposal>(proposal),continuation,nullptr,0,0))
         {
             return Self::InternalTimeLimitedProposeAsync(std::move(timer),timeout,begin,end,std::forward<_Proposal>(proposal),continuation,nullptr,majority,0);
         }

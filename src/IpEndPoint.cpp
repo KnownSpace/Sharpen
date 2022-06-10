@@ -19,7 +19,7 @@ sharpen::IpEndPoint::IpEndPoint() noexcept
     this->addr_.sin_family = AF_INET;
 }
 
-sharpen::IpEndPoint::IpEndPoint(sharpen::UintIpAddr addr,sharpen::UintPort port)
+sharpen::IpEndPoint::IpEndPoint(std::uint32_t addr,std::uint16_t port)
     :addr_()
 {
     addr_.sin_family = AF_INET;
@@ -62,17 +62,17 @@ const sharpen::IpEndPoint::NativeAddr *sharpen::IpEndPoint::GetAddrPtr() const n
     return reinterpret_cast<const sharpen::IpEndPoint::NativeAddr*>(&(this->addr_));
 }
 
-sharpen::UintPort sharpen::IpEndPoint::GetPort() const noexcept
+std::uint16_t sharpen::IpEndPoint::GetPort() const noexcept
 {
     return ::ntohs(this->addr_.sin_port);
 }
 
-void sharpen::IpEndPoint::SetPort(sharpen::UintPort port) noexcept
+void sharpen::IpEndPoint::SetPort(std::uint16_t port) noexcept
 {
     this->addr_.sin_port = ::htons(port);
 }
 
-sharpen::UintIpAddr sharpen::IpEndPoint::GetAddr() const noexcept
+std::uint32_t sharpen::IpEndPoint::GetAddr() const noexcept
 {
 #ifdef SHARPEN_IS_WIN
     return this->addr_.sin_addr.S_un.S_addr;
@@ -81,7 +81,7 @@ sharpen::UintIpAddr sharpen::IpEndPoint::GetAddr() const noexcept
 #endif
 }
 
-void sharpen::IpEndPoint::SetAddr(sharpen::UintIpAddr addr) noexcept
+void sharpen::IpEndPoint::SetAddr(std::uint32_t addr) noexcept
 {
 #ifdef SHARPEN_IS_WIN
     this->addr_.sin_addr.S_un.S_addr = addr;
@@ -90,7 +90,7 @@ void sharpen::IpEndPoint::SetAddr(sharpen::UintIpAddr addr) noexcept
 #endif
 }
 
-void sharpen::IpEndPoint::GetAddrString(char *addrStr,sharpen::Size size) const
+void sharpen::IpEndPoint::GetAddrString(char *addrStr,std::size_t size) const
 {
     if(::inet_ntop(AF_INET,&(this->addr_.sin_addr),addrStr,size) == nullptr)
     {
@@ -111,9 +111,9 @@ void sharpen::IpEndPoint::SetAddrByString(const char *addrStr)
     }
 }
 
-sharpen::Int64 sharpen::IpEndPoint::CompareWith(const Self &other) const noexcept
+std::int64_t sharpen::IpEndPoint::CompareWith(const Self &other) const noexcept
 {
-    sharpen::Uint64 thiz,otherval;
+    std::uint64_t thiz,otherval;
     thiz = this->GetAddr();
     thiz <<= 16;
     thiz |= this->GetPort();
@@ -131,35 +131,35 @@ sharpen::Int64 sharpen::IpEndPoint::CompareWith(const Self &other) const noexcep
     return 0;
 }
 
-sharpen::Size sharpen::IpEndPoint::LoadFrom(const char *data,sharpen::Size size)
+std::size_t sharpen::IpEndPoint::LoadFrom(const char *data,std::size_t size)
 {
-    if(size < sizeof(sharpen::Uint32) + sizeof(sharpen::Uint16))
+    if(size < sizeof(std::uint32_t) + sizeof(std::uint16_t))
     {
         throw std::invalid_argument("invalid ip endpoint buffer");
     }
-    sharpen::Uint32 ip{0};
-    sharpen::Size offset{0};
+    std::uint32_t ip{0};
+    std::size_t offset{0};
     std::memcpy(&ip,data,sizeof(ip));
     this->SetAddr(ip);
     offset += sizeof(ip);
-    sharpen::Uint16 port;
+    std::uint16_t port;
     std::memcpy(&port,data + offset,sizeof(port));
     this->SetPort(port);
     offset += sizeof(port);
     return offset;
 }
 
-sharpen::Size sharpen::IpEndPoint::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset)
+std::size_t sharpen::IpEndPoint::LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset)
 {
     assert(buf.GetSize() >= offset);
     return this->LoadFrom(buf.Data() + offset,buf.GetSize() - offset);
 }
 
-sharpen::Size sharpen::IpEndPoint::UnsafeStoreTo(char *data) const noexcept
+std::size_t sharpen::IpEndPoint::UnsafeStoreTo(char *data) const noexcept
 {
-    sharpen::Size offset{0};
-    sharpen::Uint32 ip{this->GetAddr()};
-    sharpen::Uint16 port{this->GetPort()};
+    std::size_t offset{0};
+    std::uint32_t ip{this->GetAddr()};
+    std::uint16_t port{this->GetPort()};
     std::memcpy(data,&ip,sizeof(ip));
     offset += sizeof(ip);
     std::memcpy(data + offset,&port,sizeof(port));
@@ -167,9 +167,9 @@ sharpen::Size sharpen::IpEndPoint::UnsafeStoreTo(char *data) const noexcept
     return offset;
 }
 
-sharpen::Size sharpen::IpEndPoint::StoreTo(char *data,sharpen::Size size) const
+std::size_t sharpen::IpEndPoint::StoreTo(char *data,std::size_t size) const
 {
-    sharpen::Size needSize{this->ComputeSize()};
+    std::size_t needSize{this->ComputeSize()};
     if(size < needSize)
     {
         throw std::invalid_argument("buffer too small");
@@ -177,11 +177,11 @@ sharpen::Size sharpen::IpEndPoint::StoreTo(char *data,sharpen::Size size) const
     return this->UnsafeStoreTo(data);
 }
 
-sharpen::Size sharpen::IpEndPoint::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
+std::size_t sharpen::IpEndPoint::StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const
 {
     assert(buf.GetSize() >= offset);
-    sharpen::Size needSize{this->ComputeSize()};
-    sharpen::Size size{buf.GetSize() - offset};
+    std::size_t needSize{this->ComputeSize()};
+    std::size_t size{buf.GetSize() - offset};
     if(size < needSize)
     {
         buf.Extend(needSize - size);

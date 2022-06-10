@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #endif
 
-void *sharpen::AlignedAlloc(sharpen::Size size,sharpen::Size alignment) noexcept
+void *sharpen::AlignedAlloc(std::size_t size,std::size_t alignment) noexcept
 {
     assert(size != 0);
 #ifdef SHARPEN_IS_WIN

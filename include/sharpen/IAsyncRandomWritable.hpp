@@ -2,7 +2,8 @@
 #ifndef _SHARPEN_IASYNCRANDOMWRITABLE_HPP
 #define _SHARPEN_IASYNCRANDOMWRITABLE_HPP
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "ByteBuffer.hpp"
 #include "Future.hpp"
 
@@ -24,18 +25,18 @@ namespace sharpen
         
         virtual ~IAsyncRandomWritable() noexcept = default;
         
-        virtual void WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future) = 0;
+        virtual void WriteAsync(const char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> &future) = 0;
         
-        virtual void WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future) = 0;
+        virtual void WriteAsync(const sharpen::ByteBuffer &buf,std::size_t bufferOffset,std::uint64_t offset,sharpen::Future<std::size_t> &future) = 0;
 
-        sharpen::Size WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset);
+        std::size_t WriteAsync(const char *buf,std::size_t bufSize,std::uint64_t offset);
 
-        sharpen::Size WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Uint64 offset);
+        std::size_t WriteAsync(const sharpen::ByteBuffer &buf,std::size_t bufferOffset,std::uint64_t offset);
 
-        sharpen::Size WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Uint64 offset);
+        std::size_t WriteAsync(const sharpen::ByteBuffer &buf,std::uint64_t offset);
 
         template<typename _T,typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>
-        inline sharpen::Size WriteObjectAsync(const _T &obj,sharpen::Uint64 offset)
+        inline std::size_t WriteObjectAsync(const _T &obj,std::uint64_t offset)
         {
             return this->WriteAsync(reinterpret_cast<const char*>(&obj),sizeof(obj),offset);
         }

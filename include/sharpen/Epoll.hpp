@@ -15,7 +15,8 @@
 #include "FileTypeDef.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 
 namespace sharpen
 {
@@ -30,7 +31,7 @@ namespace sharpen
         
         ~Epoll() noexcept;
     
-        sharpen::Uint32 Wait(Event *events,sharpen::Int32 maxEvents,sharpen::Int32 timeout);
+        std::uint32_t Wait(Event *events,std::int32_t maxEvents,std::int32_t timeout);
         
         void Add(sharpen::FileHandle handle,Event *event);
         

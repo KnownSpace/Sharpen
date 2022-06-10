@@ -70,9 +70,9 @@ namespace sharpen
 
         bool HandleConnect();
 
-        void TryRead(char *buf,sharpen::Size bufSize,Callback cb);
+        void TryRead(char *buf,std::size_t bufSize,Callback cb);
 
-        void TryWrite(const char *buf,sharpen::Size bufSize,Callback cb);
+        void TryWrite(const char *buf,std::size_t bufSize,Callback cb);
 
         void TryAccept(AcceptCallback cb);
 
@@ -82,11 +82,11 @@ namespace sharpen
 
         void TryPollWrite(Callback cb);
 
-        void RequestRead(char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future);
+        void RequestRead(char *buf,std::size_t bufSize,sharpen::Future<std::size_t> *future);
 
-        void RequestWrite(const char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future);
+        void RequestWrite(const char *buf,std::size_t bufSize,sharpen::Future<std::size_t> *future);
 
-        void RequestSendFile(sharpen::FileHandle handle,sharpen::Uint64 offset,sharpen::Size size,sharpen::Future<void> *future);
+        void RequestSendFile(sharpen::FileHandle handle,std::uint64_t offset,std::size_t size,sharpen::Future<void> *future);
 
         void RequestConnect(const sharpen::IEndPoint &endPoint,sharpen::Future<void> *future);
 
@@ -98,9 +98,9 @@ namespace sharpen
 
         static void CompleteConnectCallback(sharpen::EventLoop *loop,sharpen::Future<void> *future) noexcept;
 
-        static void CompleteIoCallback(sharpen::EventLoop *loop,sharpen::Future<sharpen::Size> *future,ssize_t size) noexcept;
+        static void CompleteIoCallback(sharpen::EventLoop *loop,sharpen::Future<std::size_t> *future,ssize_t size) noexcept;
 
-        static void CompleteSendFileCallback(sharpen::EventLoop *loop,sharpen::Future<void> *future,void *mem,sharpen::Size memLen,ssize_t) noexcept;
+        static void CompleteSendFileCallback(sharpen::EventLoop *loop,sharpen::Future<void> *future,void *mem,std::size_t memLen,ssize_t) noexcept;
 
         static void CompleteAcceptCallback(sharpen::EventLoop *loop,sharpen::Future<sharpen::NetStreamChannelPtr> *future,sharpen::FileHandle accept) noexcept;
 
@@ -115,17 +115,17 @@ namespace sharpen
 
         virtual ~PosixNetStreamChannel() noexcept;
 
-        virtual void WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future) override;
+        virtual void WriteAsync(const char *buf,std::size_t bufSize,sharpen::Future<std::size_t> &future) override;
         
-        virtual void WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Future<sharpen::Size> &future) override;
+        virtual void WriteAsync(const sharpen::ByteBuffer &buf,std::size_t bufferOffset,sharpen::Future<std::size_t> &future) override;
 
-        virtual void ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future) override;
+        virtual void ReadAsync(char *buf,std::size_t bufSize,sharpen::Future<std::size_t> &future) override;
         
-        virtual void ReadAsync(sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Future<sharpen::Size> &future) override;
+        virtual void ReadAsync(sharpen::ByteBuffer &buf,std::size_t bufferOffset,sharpen::Future<std::size_t> &future) override;
 
         virtual void OnEvent(sharpen::IoEvent *event) override;
 
-        virtual void SendFileAsync(sharpen::FileChannelPtr file,sharpen::Uint64 size,sharpen::Uint64 offset,sharpen::Future<void> &future) override;
+        virtual void SendFileAsync(sharpen::FileChannelPtr file,std::uint64_t size,std::uint64_t offset,sharpen::Future<void> &future) override;
         
         virtual void SendFileAsync(sharpen::FileChannelPtr file,sharpen::Future<void> &future) override;
 
@@ -133,7 +133,7 @@ namespace sharpen
 
         virtual void ConnectAsync(const sharpen::IEndPoint &endpoint,sharpen::Future<void> &future) override;
 
-        virtual void Listen(sharpen::Uint16 queueLength) override;
+        virtual void Listen(std::uint16_t queueLength) override;
 
         virtual void PollReadAsync(sharpen::Future<void> &future) override;
 

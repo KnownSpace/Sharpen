@@ -24,7 +24,7 @@ void sharpen::HttpServer::OnNewChannel(sharpen::NetStreamChannelPtr channel)
         //parse request
         while (!parser.IsCompleted())
         {
-            sharpen::Size n = channel->ReadAsync(buf);
+            std::size_t n = channel->ReadAsync(buf);
             if (n == 0)
             {
                 return;
@@ -56,7 +56,7 @@ void sharpen::HttpServer::OnNewChannel(sharpen::NetStreamChannelPtr channel)
         //handle
         this->OnNewMessage(channel,req,res);
         //send res
-        sharpen::Size n = res.CopyTo(buf);
+        std::size_t n = res.CopyTo(buf);
         channel->WriteAsync(buf.Data(),n);
         //reset
         res.Clear();

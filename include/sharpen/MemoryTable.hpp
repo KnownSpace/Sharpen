@@ -348,7 +348,7 @@ namespace sharpen
             return *this->lock_;
         }
 
-        inline sharpen::Size GetSize() const noexcept
+        inline std::size_t GetSize() const noexcept
         {
             return this->Map().size();
         }

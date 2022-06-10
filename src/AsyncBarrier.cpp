@@ -1,7 +1,7 @@
 #include <sharpen/AsyncBarrier.hpp>
 #include <cassert>
 
-sharpen::AsyncBarrier::AsyncBarrier(sharpen::Uint64 counter)
+sharpen::AsyncBarrier::AsyncBarrier(std::uint64_t counter)
     :counter_(counter)
     ,waiters_()
     ,beginCounter_(counter)
@@ -44,7 +44,7 @@ void sharpen::AsyncBarrier::Notice() noexcept
     futurePtr->Complete();
 }
 
-void sharpen::AsyncBarrier::AddCount(sharpen::Uint64 count)
+void sharpen::AsyncBarrier::AddCount(std::uint64_t count)
 {
     std::unique_lock<sharpen::SpinLock> lock(this->lock_);
     this->counter_ += count;

@@ -7,7 +7,8 @@
 #include <memory>
 
 #include "SpinLock.hpp"
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 
 namespace sharpen
 {
@@ -16,7 +17,7 @@ namespace sharpen
     {
     private:
         using Self = sharpen::TimestampLock<_Key>;
-        using Map = std::unordered_map<_Key,sharpen::Uint64>;
+        using Map = std::unordered_map<_Key,std::uint64_t>;
 
         std::unique_ptr<sharpen::SpinLock> lock_;
         Map map_;
@@ -50,9 +51,9 @@ namespace sharpen
     
         ~TimestampLock() noexcept = default;
 
-        sharpen::Uint64 GetTimestamp(const _Key &key)
+        std::uint64_t GetTimestamp(const _Key &key)
         {
-            sharpen::Uint64 time{0};
+            std::uint64_t time{0};
             {
                 std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
                 auto pair = this->map_.emplace(key,time);
@@ -64,7 +65,7 @@ namespace sharpen
             return time;
         }
 
-        bool Valid(const _Key &key,sharpen::Uint64 time)
+        bool Valid(const _Key &key,std::uint64_t time)
         {
             std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
             return this->map_[key] == time;

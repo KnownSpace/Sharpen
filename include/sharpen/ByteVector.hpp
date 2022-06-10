@@ -7,7 +7,8 @@
 #include <cstdlib>
 #include <stdexcept>
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "IteratorOps.hpp"
 #include "PointerIterator.hpp"
 #include "ReversePointerIterator.hpp"
@@ -17,7 +18,7 @@ namespace sharpen
     struct ByteVectorStruct
     {
         char *data_;
-        sharpen::Size cap_;
+        std::size_t cap_;
     };
 
     template<std::size_t _InlineSize>
@@ -32,13 +33,13 @@ namespace sharpen
     private:
         using Self = ByteVector;
 
-        static constexpr sharpen::Size inlineSize_{sizeof(sharpen::ByteVectorStruct) + sizeof(void*)};
-        static constexpr sharpen::Size blobSize_{1*1024*1024};
+        static constexpr std::size_t inlineSize_{sizeof(sharpen::ByteVectorStruct) + sizeof(void*)};
+        static constexpr std::size_t blobSize_{1*1024*1024};
     
-        sharpen::Size size_;
+        std::size_t size_;
         sharpen::ByteVectorUnion<sharpen::ByteVector::inlineSize_> rawVector_;
 
-        inline static bool InlineBuffer(sharpen::Size size) noexcept
+        inline static bool InlineBuffer(std::size_t size) noexcept
         {
             return size <= inlineSize_;
         }
@@ -48,13 +49,13 @@ namespace sharpen
             return this->InlineBuffer(this->size_);
         }
 
-        static sharpen::Size ComputeHeapSize(sharpen::Size size) noexcept;
+        static std::size_t ComputeHeapSize(std::size_t size) noexcept;
 
         void MoveFrom(Self &&other) noexcept;
 
         bool CheckPointer(const char *p);
 
-        inline static void *Alloc(sharpen::Size size) noexcept
+        inline static void *Alloc(std::size_t size) noexcept
         {
             return std::malloc(size);
         }
@@ -74,7 +75,7 @@ namespace sharpen
             ,rawVector_()
         {}
 
-        explicit ByteVector(sharpen::Size size);
+        explicit ByteVector(std::size_t size);
     
         ByteVector(const Self &other);
     
@@ -106,20 +107,20 @@ namespace sharpen
 
         const char *Data() const noexcept;
 
-        char &Get(sharpen::Size index);
+        char &Get(std::size_t index);
 
-        char Get(sharpen::Size index) const;
+        char Get(std::size_t index) const;
 
-        inline sharpen::Size GetSize() const noexcept
+        inline std::size_t GetSize() const noexcept
         {
             return this->size_;
         }
 
         void Clear() noexcept;
 
-        void Resize(sharpen::Size newSize,char defaultVal);
+        void Resize(std::size_t newSize,char defaultVal);
 
-        inline void Resize(sharpen::Size newSize)
+        inline void Resize(std::size_t newSize)
         {
             this->Resize(newSize,0);
         }
@@ -127,9 +128,9 @@ namespace sharpen
         template<typename _Iterator,typename _Check = decltype(std::declval<char&>() = *std::declval<_Iterator&>()++)>
         inline void Append(_Iterator begin,_Iterator end)
         {
-            sharpen::Size size{sharpen::GetRangeSize(begin,end)};
-            sharpen::Size oldSize{this->GetSize()};
-            sharpen::Size newSize{oldSize + size};
+            std::size_t size{sharpen::GetRangeSize(begin,end)};
+            std::size_t oldSize{this->GetSize()};
+            std::size_t newSize{oldSize + size};
             this->Resize(newSize);
             char *buf = this->Data();
             while(oldSize != newSize)
@@ -143,9 +144,9 @@ namespace sharpen
             this->Append(&c,&c + 1);
         }
 
-        void Erase(sharpen::Size begin,sharpen::Size end) noexcept;
+        void Erase(std::size_t begin,std::size_t end) noexcept;
 
-        inline void Erase(sharpen::Size where) noexcept
+        inline void Erase(std::size_t where) noexcept
         {
             return this->Erase(where,where + 1);
         }
@@ -187,12 +188,12 @@ namespace sharpen
         
         ConstReverseIterator ReverseEnd() const noexcept;
 
-        char &operator[](sharpen::Size index) noexcept
+        char &operator[](std::size_t index) noexcept
         {
             return this->Data()[index];
         }
 
-        char operator[](sharpen::Size index) const noexcept
+        char operator[](std::size_t index) const noexcept
         {
             return this->Data()[index];
         }

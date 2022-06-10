@@ -13,7 +13,7 @@ sharpen::EventEngine::EventEngine()
     :EventEngine(std::thread::hardware_concurrency())
 {}
 
-sharpen::EventEngine::EventEngine(sharpen::Size workerCount)
+sharpen::EventEngine::EventEngine(std::size_t workerCount)
     :workers_()
     ,pos_(0)
     ,mainLoop_(nullptr)
@@ -37,7 +37,7 @@ sharpen::EventEngine::~EventEngine() noexcept
 
 sharpen::EventLoop *sharpen::EventEngine::RoundRobinLoop() noexcept
 {
-    sharpen::Size pos = this->pos_++;
+    std::size_t pos = this->pos_++;
     return this->loops_[pos % this->loops_.size()];
 }
 
@@ -111,7 +111,7 @@ void sharpen::EventEngine::ProcessFiber(sharpen::FiberPtr fiber)
     sharpen::EventEngine::CallSwitchCallback();
 }
 
-sharpen::EventEngine &sharpen::EventEngine::SetupEngine(sharpen::Size workerCount)
+sharpen::EventEngine &sharpen::EventEngine::SetupEngine(std::size_t workerCount)
 {
     std::call_once(sharpen::EventEngine::flag_,[workerCount]()
     {

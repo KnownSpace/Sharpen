@@ -2,7 +2,7 @@
 
 #include <sharpen/IteratorOps.hpp>
 
-sharpen::AsyncSemaphore::AsyncSemaphore(sharpen::Uint32 count)
+sharpen::AsyncSemaphore::AsyncSemaphore(std::uint32_t count)
     :waiters_()
     ,lock_()
     ,counter_(count)
@@ -59,7 +59,7 @@ void sharpen::AsyncSemaphore::Unlock() noexcept
     futurePtr->Complete();
 }
 
-void sharpen::AsyncSemaphore::Unlock(sharpen::Uint32 count) noexcept
+void sharpen::AsyncSemaphore::Unlock(std::uint32_t count) noexcept
 {
     std::unique_lock<sharpen::SpinLock> lock(this->lock_);
     if (this->waiters_.empty())
@@ -71,7 +71,7 @@ void sharpen::AsyncSemaphore::Unlock(sharpen::Uint32 count) noexcept
     {
         sharpen::AsyncSemaphore::Waiters futures;
         this->waiters_.swap(futures);
-        this->counter_ += static_cast<sharpen::Uint32>(count - this->waiters_.size());
+        this->counter_ += static_cast<std::uint32_t>(count - this->waiters_.size());
         lock.unlock();
         for(auto begin = futures.begin(),end = futures.end();begin != end; ++begin)
         {

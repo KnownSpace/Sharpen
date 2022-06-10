@@ -96,13 +96,13 @@ namespace sharpen
 
         void Clear();
 
-        sharpen::Size ComputeSize() const;
+        std::size_t ComputeSize() const;
 
-        sharpen::Size CopyTo(char *buf,sharpen::Size size) const;
+        std::size_t CopyTo(char *buf,std::size_t size) const;
 
-        sharpen::Size CopyTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
+        std::size_t CopyTo(sharpen::ByteBuffer &buf,std::size_t offset) const;
 
-        inline sharpen::Size CopyTo(sharpen::ByteBuffer &buf) const
+        inline std::size_t CopyTo(sharpen::ByteBuffer &buf) const
         {
             return this->CopyTo(buf,0);
         }

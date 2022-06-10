@@ -19,18 +19,18 @@ namespace sharpen
     class WinFileChannel:public sharpen::IFileChannel,public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
-        using MyFuture = sharpen::Future<sharpen::Size>;
+        using MyFuture = sharpen::Future<std::size_t>;
         using MyFuturePtr = MyFuture*;
         using Mybase = sharpen::IFileChannel;
         using Self = sharpen::WinFileChannel;
         
-        static void InitOverlapped(OVERLAPPED &ol,sharpen::Uint64 offset);
+        static void InitOverlapped(OVERLAPPED &ol,std::uint64_t offset);
 
-        void InitOverlappedStruct(sharpen::IocpOverlappedStruct &event,sharpen::Uint64 offset);
+        void InitOverlappedStruct(sharpen::IocpOverlappedStruct &event,std::uint64_t offset);
 
-        void RequestWrite(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> *future);
+        void RequestWrite(const char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> *future);
 
-        void RequestRead(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> *future);
+        void RequestRead(char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> *future);
 
     public:
 
@@ -38,23 +38,23 @@ namespace sharpen
 
         ~WinFileChannel() noexcept = default;
 
-        virtual void WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future) override;
+        virtual void WriteAsync(const char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> &future) override;
         
-        virtual void WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future) override;
+        virtual void WriteAsync(const sharpen::ByteBuffer &buf,std::size_t bufferOffset,std::uint64_t offset,sharpen::Future<std::size_t> &future) override;
 
-        virtual void ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future) override;
+        virtual void ReadAsync(char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> &future) override;
         
-        virtual void ReadAsync(sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future) override;
+        virtual void ReadAsync(sharpen::ByteBuffer &buf,std::size_t bufferOffset,std::uint64_t offset,sharpen::Future<std::size_t> &future) override;
 
         virtual void OnEvent(sharpen::IoEvent *event) override;
 
-        virtual sharpen::Uint64 GetFileSize() const override;
+        virtual std::uint64_t GetFileSize() const override;
 
-        virtual sharpen::FileMemory MapMemory(sharpen::Size size,sharpen::Uint64 offset) override;
+        virtual sharpen::FileMemory MapMemory(std::size_t size,std::uint64_t offset) override;
 
         virtual void Truncate() override;
 
-        virtual void Truncate(sharpen::Uint64 size) override;
+        virtual void Truncate(std::uint64_t size) override;
         
         virtual void Flush() override;
     };

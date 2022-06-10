@@ -2,7 +2,8 @@
 #ifndef _SHARPEN_HTTPMETHOD_HPP
 #define _SHARPEN_HTTPMETHOD_HPP
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 
 namespace sharpen
 {
@@ -48,13 +49,13 @@ namespace sharpen
 
     const char *GetHttpMethodName(sharpen::HttpMethod method);
 
-    void InternalCopyHttpMethodNameToMem(sharpen::HttpMethod method,char *buf,sharpen::Size offset);
+    void InternalCopyHttpMethodNameToMem(sharpen::HttpMethod method,char *buf,std::size_t offset);
 
-    sharpen::Size CopyHttpMethodNameTo(sharpen::HttpMethod method,char *buf,sharpen::Size size);
+    std::size_t CopyHttpMethodNameTo(sharpen::HttpMethod method,char *buf,std::size_t size);
 
-    sharpen::Size CopyHttpMethodNameTo(sharpen::HttpMethod method,sharpen::ByteBuffer &buf,sharpen::Size offset);
+    std::size_t CopyHttpMethodNameTo(sharpen::HttpMethod method,sharpen::ByteBuffer &buf,std::size_t offset);
 
-    inline sharpen::Size CopyHttpMethodNameTo(sharpen::HttpMethod method,sharpen::ByteBuffer &buf)
+    inline std::size_t CopyHttpMethodNameTo(sharpen::HttpMethod method,sharpen::ByteBuffer &buf)
     {
         return sharpen::CopyHttpMethodNameTo(method,buf,0);
     }

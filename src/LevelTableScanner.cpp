@@ -17,7 +17,7 @@ sharpen::Optional<sharpen::ByteBuffer> sharpen::LevelTableScanner::SelectKeyFrom
         {
             if(before)
             {
-                sharpen::Int32 r{this->table_->CompareKeys(begin->first,*before)};
+                std::int32_t r{this->table_->CompareKeys(begin->first,*before)};
                 if(r == 1)
                 {
                     return sharpen::EmptyOpt;
@@ -27,7 +27,7 @@ sharpen::Optional<sharpen::ByteBuffer> sharpen::LevelTableScanner::SelectKeyFrom
             {
                 if(after)
                 {
-                    sharpen::Int32 r{this->table_->CompareKeys(begin->first,*after)};
+                    std::int32_t r{this->table_->CompareKeys(begin->first,*after)};
                     if(r == 1)
                     {
                         break;
@@ -65,7 +65,7 @@ sharpen::Optional<sharpen::ByteBuffer> sharpen::LevelTableScanner::SelectKeyFrom
             {
                 if(before)
                 {
-                    sharpen::Int32 r{this->table_->CompareKeys(keyBegin->GetKey(),*before)};
+                    std::int32_t r{this->table_->CompareKeys(keyBegin->GetKey(),*before)};
                     if(r == 1)
                     {
                         return sharpen::EmptyOpt;
@@ -75,7 +75,7 @@ sharpen::Optional<sharpen::ByteBuffer> sharpen::LevelTableScanner::SelectKeyFrom
                 {
                     if(after)
                     {
-                        sharpen::Int32 r{this->table_->CompareKeys(keyBegin->GetKey(),*after)};
+                        std::int32_t r{this->table_->CompareKeys(keyBegin->GetKey(),*after)};
                         if(r == 1)
                         {
                             break;
@@ -233,7 +233,7 @@ bool sharpen::LevelTableScanner::Seek(const sharpen::ByteBuffer &key)
 {
     if(this->IsRangeQuery())
     {
-        sharpen::Int32 r{this->table_->CompareKeys(key,this->GetRangeBegin())};
+        std::int32_t r{this->table_->CompareKeys(key,this->GetRangeBegin())};
         if (r == -1)
         {
             return false;

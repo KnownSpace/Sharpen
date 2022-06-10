@@ -12,7 +12,8 @@
 #include "FileTypeDef.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 
 namespace sharpen
 {
@@ -29,11 +30,11 @@ namespace sharpen
         
         ~IoCompletionPort() noexcept;
         
-        sharpen::Uint32 Wait(Event *events,sharpen::Uint32 maxEvents,sharpen::Uint32 timeout);
+        std::uint32_t Wait(Event *events,std::uint32_t maxEvents,std::uint32_t timeout);
         
         void Bind(sharpen::FileHandle handle);
         
-        void Post(Overlapped *overlapped,sharpen::Uint32 bytesTransferred,void *completionKey);
+        void Post(Overlapped *overlapped,std::uint32_t bytesTransferred,void *completionKey);
         
         void Notify();
     };

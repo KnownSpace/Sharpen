@@ -2,16 +2,16 @@
 
 #include <sharpen/Varint.hpp>
 
-sharpen::Size sharpen::LevelViewItem::LoadFrom(const char *data,sharpen::Size size)
+std::size_t sharpen::LevelViewItem::LoadFrom(const char *data,std::size_t size)
 {
     if(size < 5)
     {
         throw std::invalid_argument("invalid buffer");
     }
-    sharpen::Size offset{0};
+    std::size_t offset{0};
     sharpen::Varuint64 builder{data + offset,size - offset};
     //load begin key size
-    sharpen::Size beginSize{sharpen::IntCast<sharpen::Size>(builder.Get())};
+    std::size_t beginSize{sharpen::IntCast<std::size_t>(builder.Get())};
     if(!beginSize)
     {
         throw sharpen::DataCorruptionException("level view item corruption");
@@ -28,7 +28,7 @@ sharpen::Size sharpen::LevelViewItem::LoadFrom(const char *data,sharpen::Size si
     this->beginKey_ = std::move(beginKey);
     //load end key size
     builder.Set(data + offset,size - offset);
-    sharpen::Size endSize{builder.Get()};
+    std::size_t endSize{builder.Get()};
     if(!endSize)
     {
         throw sharpen::DataCorruptionException("level view item corruption");
@@ -54,20 +54,20 @@ sharpen::Size sharpen::LevelViewItem::LoadFrom(const char *data,sharpen::Size si
     return offset;
 }
 
-sharpen::Size sharpen::LevelViewItem::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset)
+std::size_t sharpen::LevelViewItem::LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset)
 {
     assert(buf.GetSize() >= offset);
     return this->LoadFrom(buf.Data() + offset,buf.GetSize() - offset);
 }
 
-sharpen::Size sharpen::LevelViewItem::UnsafeStoreTo(char *data) const noexcept
+std::size_t sharpen::LevelViewItem::UnsafeStoreTo(char *data) const noexcept
 {
     assert(!this->beginKey_.Empty());
     assert(!this->endKey_.Empty());
-    sharpen::Size offset{0};
+    std::size_t offset{0};
     //store begin key size
     sharpen::Varuint64 builder{this->beginKey_.GetSize()};
-    sharpen::Size size{builder.ComputeSize()};
+    std::size_t size{builder.ComputeSize()};
     std::memcpy(data + offset,builder.Data(),size);
     offset += size;
     //store begin key
@@ -89,11 +89,11 @@ sharpen::Size sharpen::LevelViewItem::UnsafeStoreTo(char *data) const noexcept
     return offset;
 }
 
-sharpen::Size sharpen::LevelViewItem::ComputeSize() const noexcept
+std::size_t sharpen::LevelViewItem::ComputeSize() const noexcept
 {
     assert(!this->beginKey_.Empty());
     assert(!this->endKey_.Empty());
-    sharpen::Size size{0};
+    std::size_t size{0};
     //begin key size
     sharpen::Varuint64 builder{this->BeginKey().GetSize()};
     size += builder.ComputeSize();
@@ -110,9 +110,9 @@ sharpen::Size sharpen::LevelViewItem::ComputeSize() const noexcept
     return size;
 }
 
-sharpen::Size sharpen::LevelViewItem::StoreTo(char *data,sharpen::Size size) const
+std::size_t sharpen::LevelViewItem::StoreTo(char *data,std::size_t size) const
 {
-    sharpen::Size needSize{this->ComputeSize()};
+    std::size_t needSize{this->ComputeSize()};
     if(size < needSize)
     {
         throw std::invalid_argument("buffer too small");
@@ -120,11 +120,11 @@ sharpen::Size sharpen::LevelViewItem::StoreTo(char *data,sharpen::Size size) con
     return this->UnsafeStoreTo(data);
 }
 
-sharpen::Size sharpen::LevelViewItem::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
+std::size_t sharpen::LevelViewItem::StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const
 {
     assert(buf.GetSize() >= offset);
-    sharpen::Size size{buf.GetSize() - offset};
-    sharpen::Size needSize{this->ComputeSize()};
+    std::size_t size{buf.GetSize() - offset};
+    std::size_t needSize{this->ComputeSize()};
     if(size < needSize)
     {
         buf.Extend(needSize - size);

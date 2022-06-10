@@ -6,7 +6,8 @@
 #include <cassert>
 #include <stdexcept>
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 
 namespace sharpen
 {
@@ -49,15 +50,15 @@ namespace sharpen
     //unsafe
     //bufSize must be checked by user
     template<typename _T,typename _RawType = typename std::remove_const<typename std::remove_reference<_T>::type>::type,typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value>::type>
-    sharpen::Size Itoa(_T &&val,sharpen::Byte radix,char *buf)
+    std::size_t Itoa(_T &&val,unsigned char radix,char *buf)
     {
         if (!buf)
         {
             return 0;
         }
         const char *index = "0123456789ABCDEF";
-        sharpen::Size i{0};
-        sharpen::Size s{0};
+        std::size_t i{0};
+        std::size_t s{0};
         _RawType num{sharpen::GetAbs(val)};
         if (val < 0)
         {
@@ -82,7 +83,7 @@ namespace sharpen
             buf += 1;
             i--;
         }
-        for (sharpen::Size t = 0,size = i + 1,count = size/2;t < count;++t)
+        for (std::size_t t = 0,size = i + 1,count = size/2;t < count;++t)
         {
             char tmp = buf[t];
             buf[t] = buf[i - t];
@@ -92,7 +93,7 @@ namespace sharpen
     }
 
     template<typename _T,typename _RawType = typename std::remove_const<typename std::remove_reference<_T>::type>::type,typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value && !std::is_unsigned<_RawType>::value>::type>
-    _T InternalAtoi(const char *str,sharpen::Size size,sharpen::Size radix,int)
+    _T InternalAtoi(const char *str,std::size_t size,std::size_t radix,int)
     {
         _T data{0};
         bool n{false};
@@ -130,7 +131,7 @@ namespace sharpen
     }
 
     template<typename _T,typename _RawType = typename std::remove_const<typename std::remove_reference<_T>::type>::type,typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value>::type>
-    _T InternalAtoi(const char *str,sharpen::Size size,sharpen::Size radix,...)
+    _T InternalAtoi(const char *str,std::size_t size,std::size_t radix,...)
     {
         _T data{0};
         const char *end = str + size;
@@ -163,7 +164,7 @@ namespace sharpen
     }
 
     template<typename _T,typename _RawType = typename std::remove_const<typename std::remove_reference<_T>::type>::type,typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value>::type>
-    _T Atoi(const char *str,sharpen::Size size,sharpen::Size radix = 10)
+    _T Atoi(const char *str,std::size_t size,std::size_t radix = 10)
     {
         return sharpen::InternalAtoi<_T>(str,size,radix,0);
     }

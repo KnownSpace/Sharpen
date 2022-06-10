@@ -131,28 +131,28 @@ namespace sharpen
     class SortedStringTable:public sharpen::Noncopyable
     {
     public:
-        using Comparator = sharpen::Int32(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
+        using Comparator = std::int32_t(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
     private:
         using Self = sharpen::SortedStringTable;
 
-        static constexpr sharpen::Size defaultFilterBits{10};
+        static constexpr std::size_t defaultFilterBits{10};
 
         sharpen::FileChannelPtr channel_;
         sharpen::SstRoot root_;
-        sharpen::Size filterBitsOfElement_;
+        std::size_t filterBitsOfElement_;
         mutable sharpen::SegmentedCircleCache<sharpen::SstDataBlock> dataCache_;
         mutable sharpen::SegmentedCircleCache<sharpen::BloomFilter<sharpen::ByteBuffer>> filterCache_;
         Comparator comp_;
 
-        sharpen::Int32 CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept;
+        std::int32_t CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept;
 
         void LoadRoot();
 
-        std::shared_ptr<sharpen::SstDataBlock> LoadBlockCache(const sharpen::ByteBuffer &cacheKey,sharpen::Uint64 offset,sharpen::Uint64 size) const;
+        std::shared_ptr<sharpen::SstDataBlock> LoadBlockCache(const sharpen::ByteBuffer &cacheKey,std::uint64_t offset,std::uint64_t size) const;
 
         sharpen::BloomFilter<sharpen::ByteBuffer> LoadFilter(const sharpen::ByteBuffer &key) const;
 
-        std::shared_ptr<sharpen::BloomFilter<sharpen::ByteBuffer>> LoadFilterCache(const sharpen::ByteBuffer &cacheKey,sharpen::Uint64 offset,sharpen::Uint64 size) const;
+        std::shared_ptr<sharpen::BloomFilter<sharpen::ByteBuffer>> LoadFilterCache(const sharpen::ByteBuffer &cacheKey,std::uint64_t offset,std::uint64_t size) const;
 
     public:
         explicit SortedStringTable(sharpen::FileChannelPtr channel);
@@ -169,7 +169,7 @@ namespace sharpen
 
         sharpen::SstDataBlock LoadBlock(sharpen::FilePointer pointer) const;
 
-        sharpen::SstDataBlock LoadBlock(sharpen::Uint64 offset,sharpen::Uint64 size) const;
+        sharpen::SstDataBlock LoadBlock(std::uint64_t offset,std::uint64_t size) const;
 
         sharpen::SstDataBlock LoadBlock(const sharpen::ByteBuffer &key) const;
 
@@ -196,7 +196,7 @@ namespace sharpen
         template<typename _Iterator,typename _Check = sharpen::EnableIf<sharpen::IsWalKeyValuePairIterator<_Iterator>::Value>>
         void Build(_Iterator begin,_Iterator end,const sharpen::SstBuildOption &opt)
         {
-            sharpen::Uint64 size = this->channel_->GetFileSize();
+            std::uint64_t size = this->channel_->GetFileSize();
             if(size)
             {
                 this->channel_->Truncate();
@@ -209,14 +209,14 @@ namespace sharpen
         template<typename _Iterator,typename _Check = decltype(std::declval<Self*&>() = &(*std::declval<_Iterator>()))>
         void Merge(_Iterator begin,_Iterator end,const sharpen::SstBuildOption &opt,bool ordered)
         {
-            sharpen::Uint64 size = this->channel_->GetFileSize();
+            std::uint64_t size = this->channel_->GetFileSize();
             if(size)
             {
                 this->channel_->Truncate();
             }
             std::vector<sharpen::SstVector> vec;
             vec.reserve(sharpen::GetRangeSize(begin,end));
-            for (sharpen::Size i = 0;begin != end; ++begin,++i)
+            for (std::size_t i = 0;begin != end; ++begin,++i)
             {
                 vec.emplace_back(&begin->Root(),begin->channel_);
             }
@@ -232,11 +232,11 @@ namespace sharpen
         }
 
         template<typename _Iterator,typename _InsertIterator,typename _Check = decltype(std::declval<Self*&>() = &(*std::declval<_Iterator>())),typename _CheckInsertor = decltype(*std::declval<_InsertIterator&>()++ = std::declval<sharpen::SstRoot&>())>
-        static void Merge(std::function<sharpen::FileChannelPtr()> maker,_Iterator begin,_Iterator end,sharpen::Size blocksOfTable,Comparator comparator,const sharpen::SstBuildOption &opt,_InsertIterator inserter)
+        static void Merge(std::function<sharpen::FileChannelPtr()> maker,_Iterator begin,_Iterator end,std::size_t blocksOfTable,Comparator comparator,const sharpen::SstBuildOption &opt,_InsertIterator inserter)
         {
             std::vector<sharpen::SstVector> vec;
             vec.reserve(sharpen::GetRangeSize(begin,end));
-            for (sharpen::Size i = 0;begin != end; ++begin,++i)
+            for (std::size_t i = 0;begin != end; ++begin,++i)
             {
                 vec.emplace_back(&begin->Root(),begin->channel_);
             }
@@ -244,7 +244,7 @@ namespace sharpen
         }
 
         template<typename _Iterator,typename _Check = decltype(std::declval<Self*&>() = &(*std::declval<_Iterator>()))>
-        static void Merge(std::function<sharpen::FileChannelPtr()> maker,_Iterator begin,_Iterator end,sharpen::Size blocksOfTable,Comparator comparator,const sharpen::SstBuildOption &opt)
+        static void Merge(std::function<sharpen::FileChannelPtr()> maker,_Iterator begin,_Iterator end,std::size_t blocksOfTable,Comparator comparator,const sharpen::SstBuildOption &opt)
         {
             std::vector<sharpen::SstRoot> roots;
             roots.reserve(16);
@@ -283,7 +283,7 @@ namespace sharpen
             }
         }
 
-        inline sharpen::Uint64 GetSize() const
+        inline std::uint64_t GetSize() const
         {
             return this->channel_->GetFileSize();
         }
@@ -293,7 +293,7 @@ namespace sharpen
             this->channel_->Close();
         }
 
-        inline sharpen::Uint64 GetTableSize() const
+        inline std::uint64_t GetTableSize() const
         {
             return this->channel_->GetFileSize();
         }

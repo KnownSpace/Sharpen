@@ -21,7 +21,7 @@ namespace sharpen
     }
 
     template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<void,_Fn,_Args...>::Value>>
-    inline void LaunchSpecial(sharpen::Size stackSize,_Fn &&fn,_Args &&...args)
+    inline void LaunchSpecial(std::size_t stackSize,_Fn &&fn,_Args &&...args)
     {
         sharpen::EventEngine &engine = sharpen::EventEngine::GetEngine();
         engine.LaunchSpecial(stackSize,std::forward<_Fn>(fn),std::forward<_Args>(args)...);
@@ -40,7 +40,7 @@ namespace sharpen
     }
 
     template<typename _Fn,typename ..._Args,typename _Result = decltype(std::declval<_Fn>()(std::declval<_Args>()...))>
-    inline sharpen::AwaitableFuturePtr<_Result> AsyncSpecial(sharpen::Size stackSize,_Fn &&fn,_Args &&...args)
+    inline sharpen::AwaitableFuturePtr<_Result> AsyncSpecial(std::size_t stackSize,_Fn &&fn,_Args &&...args)
     {
         auto future = sharpen::MakeAwaitableFuture<_Result>();
         std::function<_Result()> func = std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...);
@@ -79,23 +79,23 @@ namespace sharpen
         pool.PutTimer(std::move(timer));
     }
 
-    void ParallelFor(sharpen::Size begin,sharpen::Size end,sharpen::Size grainsSize,std::function<void(sharpen::Size)> fn);
+    void ParallelFor(std::size_t begin,std::size_t end,std::size_t grainsSize,std::function<void(std::size_t)> fn);
 
-    inline void ParallelFor(sharpen::Size begin,sharpen::Size end,std::function<void(sharpen::Size)> fn)
+    inline void ParallelFor(std::size_t begin,std::size_t end,std::function<void(std::size_t)> fn)
     {
         sharpen::ParallelFor(begin,end,1000,std::move(fn));
     }
 
-    template<typename _Iterator,typename _HasForward = decltype(sharpen::IteratorForward(std::declval<_Iterator>(),std::declval<sharpen::Size>()))>
-    void ParallelForeach(_Iterator begin,_Iterator end,sharpen::Size grainsSize,std::function<void(_Iterator)> fn)
+    template<typename _Iterator,typename _HasForward = decltype(sharpen::IteratorForward(std::declval<_Iterator>(),std::declval<std::size_t>()))>
+    void ParallelForeach(_Iterator begin,_Iterator end,std::size_t grainsSize,std::function<void(_Iterator)> fn)
     {
         if (begin == end)
         {
             return;
         }
-        sharpen::Size parallelNumber{sharpen::EventEngine::GetEngine().LoopCount()};
-        sharpen::Size count{sharpen::GetRangeSize(begin,end)};
-        sharpen::Size max{count};
+        std::size_t parallelNumber{sharpen::EventEngine::GetEngine().LoopCount()};
+        std::size_t count{sharpen::GetRangeSize(begin,end)};
+        std::size_t max{count};
         std::atomic_size_t ite{0};
         std::atomic_size_t comp{parallelNumber};
         max /= parallelNumber;
@@ -110,8 +110,8 @@ namespace sharpen
             {
                 while (true)
                 {
-                    sharpen::Size iterator = ite.load();
-                    sharpen::Size size{0};
+                    std::size_t iterator = ite.load();
+                    std::size_t size{0};
                     //get size
                     do
                     {
@@ -126,7 +126,7 @@ namespace sharpen
                     auto bound = sharpen::IteratorForward(i,size);
                     if (i == bound)
                     {
-                        sharpen::Size copy = comp.fetch_sub(1);
+                        std::size_t copy = comp.fetch_sub(1);
                         copy -= 1;
                         if (copy == 0)
                         {

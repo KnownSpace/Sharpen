@@ -25,7 +25,7 @@ namespace sharpen
         static std::once_flag flag_;
 
         Workers workers_;
-        sharpen::Size pos_;
+        std::size_t pos_;
         std::unique_ptr<sharpen::EventLoop> mainLoop_;
         std::vector<sharpen::EventLoop*> loops_;
 
@@ -35,7 +35,7 @@ namespace sharpen
         
         EventEngine();
 
-        explicit EventEngine(sharpen::Size workerCount);
+        explicit EventEngine(std::size_t workerCount);
 
         static void CallSwitchCallback();
 
@@ -48,7 +48,7 @@ namespace sharpen
 
         static Self &SetupEngine();
 
-        static Self &SetupEngine(sharpen::Size workerCount);
+        static Self &SetupEngine(std::size_t workerCount);
 
         static Self &SetupSingleThreadEngine();
 
@@ -86,7 +86,7 @@ namespace sharpen
             return code;
         }
 
-        sharpen::Size LoopCount() const noexcept
+        std::size_t LoopCount() const noexcept
         {
             return this->loops_.size();
         }

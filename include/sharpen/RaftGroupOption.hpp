@@ -6,7 +6,8 @@
 #include <cassert>
 #include <random>
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "ITimer.hpp"
 
 namespace sharpen
@@ -17,23 +18,23 @@ namespace sharpen
         using Self = sharpen::RaftGroupOption;
         using TimerMaker = sharpen::TimerPtr(*)(sharpen::EventEngine&);
     
-        static constexpr sharpen::Uint32 defaultAppendEntriesCycle_{1*1000};
+        static constexpr std::uint32_t defaultAppendEntriesCycle_{1*1000};
 
-        static constexpr sharpen::Uint32 defaultMinElectionCycle_{3*1000};
+        static constexpr std::uint32_t defaultMinElectionCycle_{3*1000};
 
-        static constexpr sharpen::Uint32 defaultMaxElectionCycle_{5*1000};
+        static constexpr std::uint32_t defaultMaxElectionCycle_{5*1000};
 
         std::chrono::milliseconds appendEntriesCycle_;
         std::chrono::milliseconds minElectionCycle_;
         std::chrono::milliseconds maxElectionCycle_;
-        sharpen::Uint32 randomSeed_;
+        std::uint32_t randomSeed_;
         TimerMaker timerMaker_;
     public:
         RaftGroupOption()
             :RaftGroupOption(std::random_device{}())
         {}
 
-        explicit RaftGroupOption(sharpen::Uint32 seed) noexcept
+        explicit RaftGroupOption(std::uint32_t seed) noexcept
             :appendEntriesCycle_(static_cast<std::int64_t>(Self::defaultAppendEntriesCycle_))
             ,minElectionCycle_(static_cast<std::int64_t>(Self::defaultMinElectionCycle_))
             ,maxElectionCycle_(static_cast<std::int64_t>(Self::defaultMaxElectionCycle_))
@@ -100,12 +101,12 @@ namespace sharpen
             this->maxElectionCycle_ = time;
         }
 
-        inline sharpen::Uint32 GetRandomSeed() const noexcept
+        inline std::uint32_t GetRandomSeed() const noexcept
         {
             return this->randomSeed_;
         }
 
-        inline void SetRandomSeed(sharpen::Uint32 seed) noexcept
+        inline void SetRandomSeed(std::uint32_t seed) noexcept
         {
             this->randomSeed_ = seed;
         }

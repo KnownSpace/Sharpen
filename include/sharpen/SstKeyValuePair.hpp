@@ -31,15 +31,15 @@ namespace sharpen
     private:
         using Self = sharpen::SstKeyValuePair;
     
-        sharpen::Uint64 sharedSize_;
-        sharpen::Uint64 uniquedSize_;
+        std::uint64_t sharedSize_;
+        std::uint64_t uniquedSize_;
         sharpen::ByteBuffer key_;
         sharpen::ByteBuffer value_;
     public:
     
         SstKeyValuePair();
 
-        SstKeyValuePair(sharpen::Uint64 sharedSize,sharpen::Uint64 uniquedSize,sharpen::ByteBuffer key,sharpen::ByteBuffer value);
+        SstKeyValuePair(std::uint64_t sharedSize,std::uint64_t uniquedSize,sharpen::ByteBuffer key,sharpen::ByteBuffer value);
 
         SstKeyValuePair(sharpen::ByteBuffer key,sharpen::ByteBuffer value)
             :SstKeyValuePair(0,key.GetSize(),std::move(key),std::move(value))
@@ -74,27 +74,27 @@ namespace sharpen
     
         ~SstKeyValuePair() noexcept = default;
 
-        sharpen::Size LoadFrom(const char *data,sharpen::Size size);
+        std::size_t LoadFrom(const char *data,std::size_t size);
 
-        sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset);
+        std::size_t LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset);
 
-        inline sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf)
+        inline std::size_t LoadFrom(const sharpen::ByteBuffer &buf)
         {
             return this->LoadFrom(buf,0);
         }
 
-        sharpen::Size UnsafeStoreTo(char *data) const;
+        std::size_t UnsafeStoreTo(char *data) const;
 
-        sharpen::Size StoreTo(char *data,sharpen::Size size) const;
+        std::size_t StoreTo(char *data,std::size_t size) const;
 
-        sharpen::Size StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
+        std::size_t StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const;
 
-        inline sharpen::Size StoreTo(sharpen::ByteBuffer &buf) const
+        inline std::size_t StoreTo(sharpen::ByteBuffer &buf) const
         {
             return this->StoreTo(buf,0);
         }        
 
-        sharpen::Size ComputeSize() const noexcept;
+        std::size_t ComputeSize() const noexcept;
 
         inline const sharpen::ByteBuffer &GetKey() const noexcept
         {
@@ -118,29 +118,29 @@ namespace sharpen
             return this->value_;
         }
 
-        inline sharpen::Uint64 GetSharedKeySize() const noexcept
+        inline std::uint64_t GetSharedKeySize() const noexcept
         {
             return this->sharedSize_;
         }
 
-        inline void SetSharedKeySize(sharpen::Uint64 size) noexcept
+        inline void SetSharedKeySize(std::uint64_t size) noexcept
         {
             assert(this->key_.GetSize() >= size);
             this->sharedSize_ = size;
         }
 
-        inline sharpen::Uint64 GetUniquedKeySize() const noexcept
+        inline std::uint64_t GetUniquedKeySize() const noexcept
         {
             return this->uniquedSize_;
         }
 
-        inline void SetUniquedKeySize(sharpen::Uint64 size) noexcept
+        inline void SetUniquedKeySize(std::uint64_t size) noexcept
         {
             assert(this->key_.GetSize() >= size);
             this->uniquedSize_ = size;
         }
 
-        void SetSharedKey(const char *data,sharpen::Size size)
+        void SetSharedKey(const char *data,std::size_t size)
         {
             if(size < this->GetSharedKeySize())
             {

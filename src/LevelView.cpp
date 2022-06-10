@@ -18,7 +18,7 @@ bool sharpen::LevelView::WarpComp(Comparator comp,const sharpen::LevelViewItem &
     return Self::Comp(item,key);
 }
 
-sharpen::Int32 sharpen::LevelView::CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept
+std::int32_t sharpen::LevelView::CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept
 {
     if(this->comp_)
     {
@@ -49,26 +49,26 @@ sharpen::LevelView::ConstIterator sharpen::LevelView::Find(const sharpen::ByteBu
     return std::lower_bound(this->Begin(),this->End(),key,static_cast<FnPtr>(&Self::Comp));
 }
 
-sharpen::LevelView::LevelView(sharpen::Uint64 id)
+sharpen::LevelView::LevelView(std::uint64_t id)
     :id_(id)
     ,items_()
     ,comp_(nullptr)
 {}
 
-sharpen::Size sharpen::LevelView::LoadFrom(const char *data,sharpen::Size size)
+std::size_t sharpen::LevelView::LoadFrom(const char *data,std::size_t size)
 {
     if (size < 1)
     {
         throw std::invalid_argument("invalid buffer");
     }
-    sharpen::Size offset{0};
+    std::size_t offset{0};
     //load item count
     sharpen::Varuint64 builder{data + offset,size - offset};
-    sharpen::Size itemSize{builder.Get()};
+    std::size_t itemSize{builder.Get()};
     offset += builder.ComputeSize();
     this->items_.reserve(itemSize);
     //load items
-    for (sharpen::Size i = 0; i != itemSize; ++i)
+    for (std::size_t i = 0; i != itemSize; ++i)
     {
         sharpen::LevelViewItem item;
         try
@@ -85,18 +85,18 @@ sharpen::Size sharpen::LevelView::LoadFrom(const char *data,sharpen::Size size)
     return offset;
 }
 
-sharpen::Size sharpen::LevelView::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset)
+std::size_t sharpen::LevelView::LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset)
 {
     assert(buf.GetSize() >= offset);
     return this->LoadFrom(buf.Data() + offset,buf.GetSize() - offset);
 }
 
-sharpen::Size sharpen::LevelView::UnsafeStoreTo(char *data) const noexcept
+std::size_t sharpen::LevelView::UnsafeStoreTo(char *data) const noexcept
 {
-    sharpen::Size offset{0};
+    std::size_t offset{0};
     //store item count
     sharpen::Varuint64 builder{this->items_.size()};
-    sharpen::Size size{builder.ComputeSize()};
+    std::size_t size{builder.ComputeSize()};
     std::memcpy(data + offset,builder.Data(),size);
     offset += size;
     //store items
@@ -108,12 +108,12 @@ sharpen::Size sharpen::LevelView::UnsafeStoreTo(char *data) const noexcept
     return offset;
 }
 
-sharpen::Size sharpen::LevelView::ComputeSize() const noexcept
+std::size_t sharpen::LevelView::ComputeSize() const noexcept
 {
-    sharpen::Size offset{0};
+    std::size_t offset{0};
     //store item count
     sharpen::Varuint64 builder{this->items_.size()};
-    sharpen::Size size{builder.ComputeSize()};
+    std::size_t size{builder.ComputeSize()};
     offset += size;
     //store items
     for (auto begin = this->Begin(),end = this->End(); begin != end; ++begin)
@@ -124,9 +124,9 @@ sharpen::Size sharpen::LevelView::ComputeSize() const noexcept
     return offset;
 }
 
-sharpen::Size sharpen::LevelView::StoreTo(char *data,sharpen::Size size) const
+std::size_t sharpen::LevelView::StoreTo(char *data,std::size_t size) const
 {
-    sharpen::Size needSize{this->ComputeSize()};
+    std::size_t needSize{this->ComputeSize()};
     if (size < needSize)
     {
         throw std::invalid_argument("buffer too small");
@@ -134,11 +134,11 @@ sharpen::Size sharpen::LevelView::StoreTo(char *data,sharpen::Size size) const
     return this->UnsafeStoreTo(data);
 }
 
-sharpen::Size sharpen::LevelView::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
+std::size_t sharpen::LevelView::StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const
 {
     assert(buf.GetSize() >= offset);
-    sharpen::Size needSize{this->ComputeSize()};
-    sharpen::Size size{buf.GetSize() - offset};
+    std::size_t needSize{this->ComputeSize()};
+    std::size_t size{buf.GetSize() - offset};
     if(size < needSize)
     {
         buf.Extend(needSize - size);
@@ -146,12 +146,12 @@ sharpen::Size sharpen::LevelView::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size
     return this->UnsafeStoreTo(buf.Data() + offset);
 }
 
-sharpen::Optional<sharpen::Uint64> sharpen::LevelView::FindId(const sharpen::ByteBuffer &key) const
+sharpen::Optional<std::uint64_t> sharpen::LevelView::FindId(const sharpen::ByteBuffer &key) const
 {
     auto ite = this->Find(key);
     if(ite != this->End())
     {
-        sharpen::Int32 r{this->CompKey(ite->BeginKey(),key)};
+        std::int32_t r{this->CompKey(ite->BeginKey(),key)};
         if(r != 1)
         {
             return ite->GetId();
@@ -165,7 +165,7 @@ bool sharpen::LevelView::IsNotOverlapped(const sharpen::ByteBuffer &beginKey,con
     auto ite = this->Find(beginKey);
     if(ite != this->End())
     {
-        sharpen::Int32 r{this->CompKey(ite->BeginKey(),beginKey)};
+        std::int32_t r{this->CompKey(ite->BeginKey(),beginKey)};
         if(r != 1)
         {
             return false;
@@ -184,12 +184,12 @@ bool sharpen::LevelView::IsNotOverlapped(const sharpen::ByteBuffer &beginKey,con
     return true;
 }
 
-bool sharpen::LevelView::TryPut(sharpen::ByteBuffer beginKey,sharpen::ByteBuffer endKey,sharpen::Uint64 id)
+bool sharpen::LevelView::TryPut(sharpen::ByteBuffer beginKey,sharpen::ByteBuffer endKey,std::uint64_t id)
 {
     auto ite = this->Find(beginKey);
     if(ite != this->End())
     {
-        sharpen::Int32 r{this->CompKey(ite->BeginKey(),beginKey)};
+        std::int32_t r{this->CompKey(ite->BeginKey(),beginKey)};
         if(r != 1)
         {
             return false;
@@ -211,7 +211,7 @@ bool sharpen::LevelView::TryPut(sharpen::ByteBuffer beginKey,sharpen::ByteBuffer
     return true;
 }
 
-void sharpen::LevelView::Put(sharpen::ByteBuffer beginKey,sharpen::ByteBuffer endKey,sharpen::Uint64 id)
+void sharpen::LevelView::Put(sharpen::ByteBuffer beginKey,sharpen::ByteBuffer endKey,std::uint64_t id)
 {
     bool r{this->TryPut(std::move(beginKey),std::move(endKey),id)};
     if(!r)
@@ -220,7 +220,7 @@ void sharpen::LevelView::Put(sharpen::ByteBuffer beginKey,sharpen::ByteBuffer en
     }   
 }
 
-void sharpen::LevelView::Delete(sharpen::Uint64 id)
+void sharpen::LevelView::Delete(std::uint64_t id)
 {
     for (auto begin = this->Begin(),end = this->End(); begin != end; ++begin)
     {

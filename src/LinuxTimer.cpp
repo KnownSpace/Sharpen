@@ -19,7 +19,7 @@ sharpen::LinuxTimer::LinuxTimer()
     }
 }
 
-void sharpen::LinuxTimer::WaitAsync(sharpen::Future<bool> &future,sharpen::Uint64 waitMs)
+void sharpen::LinuxTimer::WaitAsync(sharpen::Future<bool> &future,std::uint64_t waitMs)
 {
     assert(this->handle_ != -1);
     if(waitMs == 0)

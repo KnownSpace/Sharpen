@@ -36,7 +36,7 @@ void sharpen::WinInputPipeChannel::InitOverlappedStruct(sharpen::IocpOverlappedS
     olStruct.channel_ = this->shared_from_this();
 }
 
-void sharpen::WinInputPipeChannel::RequestRead(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future)
+void sharpen::WinInputPipeChannel::RequestRead(char *buf,std::size_t bufSize,sharpen::Future<std::size_t> *future)
 {
     IocpOverlappedStruct *olStruct = new (std::nothrow) sharpen::IocpOverlappedStruct();
     if (!olStruct)
@@ -62,7 +62,7 @@ void sharpen::WinInputPipeChannel::RequestRead(sharpen::Char *buf,sharpen::Size 
     }
 }
 
-void sharpen::WinInputPipeChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future)
+void sharpen::WinInputPipeChannel::ReadAsync(char *buf,std::size_t bufSize,sharpen::Future<std::size_t> &future)
 {
     if (!this->IsRegistered())
     {
@@ -71,7 +71,7 @@ void sharpen::WinInputPipeChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bu
     this->loop_->RunInLoop(std::bind(&Self::RequestRead,this,buf,bufSize,&future));
 }
 
-void sharpen::WinInputPipeChannel::ReadAsync(sharpen::ByteBuffer &buf,sharpen::Size bufOffset,sharpen::Future<sharpen::Size> &future)
+void sharpen::WinInputPipeChannel::ReadAsync(sharpen::ByteBuffer &buf,std::size_t bufOffset,sharpen::Future<std::size_t> &future)
 {
     if (bufOffset > buf.GetSize())
     {
@@ -83,7 +83,7 @@ void sharpen::WinInputPipeChannel::ReadAsync(sharpen::ByteBuffer &buf,sharpen::S
 void sharpen::WinInputPipeChannel::OnEvent(sharpen::IoEvent *event)
 {
     std::unique_ptr<sharpen::IocpOverlappedStruct> ev(reinterpret_cast<sharpen::IocpOverlappedStruct*>(event->GetData()));
-    sharpen::Future<sharpen::Size> *future = reinterpret_cast<sharpen::Future<sharpen::Size>*>(ev->data_);
+    sharpen::Future<std::size_t> *future = reinterpret_cast<sharpen::Future<std::size_t>*>(ev->data_);
     if (event->IsErrorEvent())
     {
         future->Fail(sharpen::MakeSystemErrorPtr(event->GetErrorCode()));

@@ -217,7 +217,7 @@ void RandomQuorumTest()
     std::printf("status is %d\n",status);
     finish.Await();
     std::printf("finish\n");
-    sharpen::Size success{0};
+    std::size_t success{0};
     for (size_t i = 0; i < 10; i++)
     {
         if(proposers[i].Success())

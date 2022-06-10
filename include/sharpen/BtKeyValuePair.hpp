@@ -92,26 +92,26 @@ namespace sharpen
             return this->Value().GetSize() == sizeof(sharpen::FilePointer);
         }
 
-        sharpen::Size ComputeSize() const noexcept;
+        std::size_t ComputeSize() const noexcept;
 
-        static sharpen::Size ComputeSize(const sharpen::ByteBuffer &key,const sharpen::ByteBuffer &value) noexcept;
+        static std::size_t ComputeSize(const sharpen::ByteBuffer &key,const sharpen::ByteBuffer &value) noexcept;
 
-        sharpen::Size UnsafeStoreTo(char *data) const;
+        std::size_t UnsafeStoreTo(char *data) const;
 
-        sharpen::Size LoadFrom(const char *data,sharpen::Size size);
+        std::size_t LoadFrom(const char *data,std::size_t size);
 
-        sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset);
+        std::size_t LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset);
 
-        inline sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf)
+        inline std::size_t LoadFrom(const sharpen::ByteBuffer &buf)
         {
             return this->LoadFrom(buf,0);
         }
 
-        sharpen::Size StoreTo(char *data,sharpen::Size size) const;
+        std::size_t StoreTo(char *data,std::size_t size) const;
 
-        sharpen::Size StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
+        std::size_t StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const;
 
-        inline sharpen::Size StoreTo(sharpen::ByteBuffer &buf) const
+        inline std::size_t StoreTo(sharpen::ByteBuffer &buf) const
         {
             return this->StoreTo(buf,0);
         }

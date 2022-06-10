@@ -61,9 +61,9 @@ bool sharpen::HttpHeader::ExistHeader(const std::string &field) const
     return ite != this->headers_.cend();
 }
 
-sharpen::Size sharpen::HttpHeader::ComputeSize() const
+std::size_t sharpen::HttpHeader::ComputeSize() const
 {   
-    sharpen::Size size{0};
+    std::size_t size{0};
     for (auto begin = this->headers_.begin();begin != this->headers_.end(); ++begin)
     {
         //field: value\r\n
@@ -76,9 +76,9 @@ sharpen::Size sharpen::HttpHeader::ComputeSize() const
     return size;
 }
 
-void sharpen::HttpHeader::CopyToMem(char *buf,sharpen::Size offset) const
+void sharpen::HttpHeader::CopyToMem(char *buf,std::size_t offset) const
 {
-    sharpen::Size i = offset;
+    std::size_t i = offset;
     const char CRLF[] = "\r\n";
     const char div[] = ": ";
     for (auto begin = this->headers_.begin(); begin != this->headers_.end() ; begin++)
@@ -100,9 +100,9 @@ void sharpen::HttpHeader::CopyToMem(char *buf,sharpen::Size offset) const
     assert((i + sizeof(CRLF) - offset - 1) == this->ComputeSize());
 }
 
-sharpen::Size sharpen::HttpHeader::CopyTo(char *buf,sharpen::Size size) const
+std::size_t sharpen::HttpHeader::CopyTo(char *buf,std::size_t size) const
 {
-    sharpen::Size needSize = this->ComputeSize();
+    std::size_t needSize = this->ComputeSize();
     if (needSize > size)
     {
         throw std::length_error("buffer size less than needed");
@@ -111,11 +111,11 @@ sharpen::Size sharpen::HttpHeader::CopyTo(char *buf,sharpen::Size size) const
     return needSize;
 }
 
-sharpen::Size sharpen::HttpHeader::CopyTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
+std::size_t sharpen::HttpHeader::CopyTo(sharpen::ByteBuffer &buf,std::size_t offset) const
 {
     assert(offset <= buf.GetSize());
-    sharpen::Size needSize = this->ComputeSize();
-    sharpen::Size left = buf.GetSize() - offset;
+    std::size_t needSize = this->ComputeSize();
+    std::size_t left = buf.GetSize() - offset;
     if (left < needSize)
     {
         buf.Extend(left - needSize);

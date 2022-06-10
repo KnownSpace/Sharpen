@@ -9,11 +9,11 @@ sharpen::BtBlock::BtBlock()
     :BtBlock(0)
 {}
 
-sharpen::BtBlock::BtBlock(sharpen::Size blockSize)
+sharpen::BtBlock::BtBlock(std::size_t blockSize)
     :BtBlock(blockSize,Self::defaultMaxRecordCount_)
 {}
 
-sharpen::BtBlock::BtBlock(sharpen::Size blockSize,sharpen::Size maxRecordCount)
+sharpen::BtBlock::BtBlock(std::size_t blockSize,std::size_t maxRecordCount)
     :depth_(0)
     ,next_()
     ,prev_()
@@ -28,7 +28,7 @@ sharpen::BtBlock::BtBlock(sharpen::Size blockSize,sharpen::Size maxRecordCount)
     this->pairs_.reserve(maxRecordCount);
 }
 
-sharpen::Size sharpen::BtBlock::LoadFrom(const char *data,sharpen::Size size)
+std::size_t sharpen::BtBlock::LoadFrom(const char *data,std::size_t size)
 {
     if(size < 2*sizeof(sharpen::FilePointer) + Self::GetCounterSize() + 1)
     {
@@ -36,7 +36,7 @@ sharpen::Size sharpen::BtBlock::LoadFrom(const char *data,sharpen::Size size)
     }
     //load depth
     sharpen::Varuint64 builder{data,size};
-    sharpen::Size offset{0};
+    std::size_t offset{0};
     offset += builder.ComputeSize();
     if (size < 2*sizeof(sharpen::FilePointer) + Self::GetCounterSize() + offset)
     {
@@ -50,10 +50,10 @@ sharpen::Size sharpen::BtBlock::LoadFrom(const char *data,sharpen::Size size)
     std::memcpy(&this->prev_,data + offset,sizeof(this->prev_));
     offset += sizeof(this->prev_);
     //load records
-    sharpen::Size count{0};
+    std::size_t count{0};
     std::memcpy(&count,data + offset,Self::GetCounterSize());
     offset += Self::GetCounterSize();
-    for (sharpen::Size i = 0; i < count; ++i)
+    for (std::size_t i = 0; i < count; ++i)
     {
         if(offset >= size)
         {
@@ -72,18 +72,18 @@ sharpen::Size sharpen::BtBlock::LoadFrom(const char *data,sharpen::Size size)
     return offset;
 }
 
-sharpen::Size sharpen::BtBlock::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset)
+std::size_t sharpen::BtBlock::LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset)
 {
     assert(buf.GetSize() >= offset);
     return this->LoadFrom(buf.Data() + offset,buf.GetSize() - offset);
 }
 
-sharpen::Size sharpen::BtBlock::UnsafeStoreTo(char *data) const
+std::size_t sharpen::BtBlock::UnsafeStoreTo(char *data) const
 {
     //store depth
     sharpen::Varuint64 builder{this->depth_};
-    sharpen::Size offset{0};
-    sharpen::Size size{builder.ComputeSize()};
+    std::size_t offset{0};
+    std::size_t size{builder.ComputeSize()};
     std::memcpy(data,builder.Data(),size);
     offset += size;
     //store next
@@ -93,7 +93,7 @@ sharpen::Size sharpen::BtBlock::UnsafeStoreTo(char *data) const
     std::memcpy(data + offset,&this->prev_,sizeof(this->prev_));
     offset += sizeof(this->prev_);
     //store counter
-    sharpen::Uint16 count{sharpen::IntCast<sharpen::Uint16>(this->pairs_.size())};
+    std::uint16_t count{sharpen::IntCast<std::uint16_t>(this->pairs_.size())};
     std::memcpy(data + offset,&count,Self::GetCounterSize());
     offset += Self::GetCounterSize();
     //store records
@@ -104,7 +104,7 @@ sharpen::Size sharpen::BtBlock::UnsafeStoreTo(char *data) const
     return offset;
 }
 
-sharpen::Size sharpen::BtBlock::StoreTo(char *data,sharpen::Size size) const
+std::size_t sharpen::BtBlock::StoreTo(char *data,std::size_t size) const
 {
     if (size < this->usedSize_)
     {
@@ -113,10 +113,10 @@ sharpen::Size sharpen::BtBlock::StoreTo(char *data,sharpen::Size size) const
     return this->UnsafeStoreTo(data);
 }
 
-sharpen::Size sharpen::BtBlock::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
+std::size_t sharpen::BtBlock::StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const
 {
     assert(buf.GetSize() >= offset);
-    sharpen::Size size{buf.GetSize() - offset};
+    std::size_t size{buf.GetSize() - offset};
     if(size < this->usedSize_)
     {
         buf.Extend(this->usedSize_ - size);
@@ -136,7 +136,7 @@ sharpen::BtBlock &sharpen::BtBlock::operator=(Self &&other) noexcept
         this->usedSize_ = other.usedSize_;
         this->switzzPointer_ = other.switzzPointer_;
         this->comp_ = other.comp_;
-        other.usedSize_ = 1 + sizeof(this->next_) + sizeof(this->prev_) + sizeof(sharpen::Uint16);
+        other.usedSize_ = 1 + sizeof(this->next_) + sizeof(this->prev_) + sizeof(std::uint16_t);
         other.depth_ = 0;
         other.switzzPointer_ = 0;
         other.blockSize_ = 0;
@@ -159,7 +159,7 @@ bool sharpen::BtBlock::Comp(const sharpen::BtKeyValuePair &pair,const sharpen::B
     return pair.GetKey() < key;
 }
 
-sharpen::Int32 sharpen::BtBlock::CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept
+std::int32_t sharpen::BtBlock::CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept
 {
     if(this->comp_)
     {
@@ -244,7 +244,7 @@ void sharpen::BtBlock::Put(sharpen::ByteBuffer key,sharpen::ByteBuffer value)
     {
         if (this->CompKey(ite->GetKey(),pair.GetKey()) == 0)
         {
-            sharpen::Size size{this->usedSize_};
+            std::size_t size{this->usedSize_};
             size -= ite->ComputeSize();
             size += pair.ComputeSize();
             ite->Value() = std::move(pair.Value());
@@ -265,7 +265,7 @@ void sharpen::BtBlock::Delete(const sharpen::ByteBuffer &key)
     auto ite = this->BinaryFind(key);
     if(ite != this->End() && this->CompKey(ite->GetKey(),key) == 0)
     {
-        sharpen::Size size{ite->ComputeSize()};
+        std::size_t size{ite->ComputeSize()};
         this->pairs_.erase(ite);
         this->usedSize_ -= size;
     }
@@ -276,7 +276,7 @@ void sharpen::BtBlock::FuzzingDelete(const sharpen::ByteBuffer &key)
     auto ite = this->Find(key);
     if(ite != this->End())
     {
-        sharpen::Size size{ite->ComputeSize()};
+        std::size_t size{ite->ComputeSize()};
         this->pairs_.erase(ite);
         this->usedSize_ -= size;
     }
@@ -333,7 +333,7 @@ sharpen::BtBlock sharpen::BtBlock::Split()
     block.comp_ = this->comp_;
     if(!this->IsAtomic())
     {
-        sharpen::Size size{this->GetSize()/2};
+        std::size_t size{this->GetSize()/2};
         auto begin = sharpen::IteratorForward(this->Begin(),this->GetSize() - size);
         auto end = this->End();
         auto ite = begin;
@@ -341,7 +341,7 @@ sharpen::BtBlock sharpen::BtBlock::Split()
         while (ite != end)
         {
             block.pairs_.emplace_back(std::move(*ite));
-            sharpen::Size kvSize{begin->ComputeSize()};
+            std::size_t kvSize{begin->ComputeSize()};
             block.usedSize_ += kvSize;
             this->usedSize_ -= kvSize;
             ++ite;
@@ -363,7 +363,7 @@ void sharpen::BtBlock::Combine(Self other)
     }
 }
 
-sharpen::Size sharpen::BtBlock::ComputeCounterPointer() const noexcept
+std::size_t sharpen::BtBlock::ComputeCounterPointer() const noexcept
 {
     if(this->depth_ < 128)
     {
@@ -373,7 +373,7 @@ sharpen::Size sharpen::BtBlock::ComputeCounterPointer() const noexcept
     return  builder.ComputeSize() + sizeof(this->prev_) + sizeof(this->next_);
 }
 
-sharpen::Size sharpen::BtBlock::ComputeNextPointer() const noexcept
+std::size_t sharpen::BtBlock::ComputeNextPointer() const noexcept
 {
     if(this->depth_ < 128)
     {
@@ -383,7 +383,7 @@ sharpen::Size sharpen::BtBlock::ComputeNextPointer() const noexcept
     return builder.ComputeSize();
 }
 
-sharpen::Size sharpen::BtBlock::ComputePrevPointer() const noexcept
+std::size_t sharpen::BtBlock::ComputePrevPointer() const noexcept
 {
     if(this->depth_ < 128)
     {

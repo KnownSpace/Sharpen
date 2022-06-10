@@ -32,7 +32,7 @@ namespace sharpen
 
         virtual void OnEvent(sharpen::IoEvent *event) override;
 
-        virtual void WaitAsync(sharpen::Future<bool> &future,sharpen::Uint64 waitMs);
+        virtual void WaitAsync(sharpen::Future<bool> &future,std::uint64_t waitMs);
 
         virtual void Cancel() override;
     };

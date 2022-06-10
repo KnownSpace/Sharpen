@@ -34,7 +34,7 @@ sharpen::Dns::ResolveResult sharpen::Dns::ConvertAddrInfoToResolveResult(addrinf
     if(r.af_ == sharpen::AddressFamily::Ip)
     {
         sockaddr_in *paddr = reinterpret_cast<sockaddr_in*>(addrInfo->ai_addr);
-        sharpen::UintIpAddr addr{0};
+        std::uint32_t addr{0};
 #ifdef SHARPEN_IS_WIN
         addr = paddr->sin_addr.S_un.S_addr;
 #else

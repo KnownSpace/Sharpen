@@ -4,7 +4,7 @@
 
 void sharpen::PosixIoWriter::DoExecute(sharpen::FileHandle handle,bool &executed,bool &blocking)
 {
-    sharpen::Size size = this->GetRemainingSize();
+    std::size_t size = this->GetRemainingSize();
     if (size == 0)
     {
         blocking = false;
@@ -46,17 +46,17 @@ void sharpen::PosixIoWriter::DoExecute(sharpen::FileHandle handle,bool &executed
         this->MoveMark(size);
         return;
     }
-    sharpen::Size completed;
-    sharpen::Size lastSize;
+    std::size_t completed;
+    std::size_t lastSize;
     this->ConvertByteToBufferNumber(bytes,completed,lastSize);
     for (size_t i = 0; i < completed; i++)
     {
         cbs[i](bufs[i].iov_len);
     }
-    sharpen::Size lastBufSize = bufs[completed].iov_len;
+    std::size_t lastBufSize = bufs[completed].iov_len;
     if (lastBufSize != lastSize)
     {
-        sharpen::Uintptr p = reinterpret_cast<sharpen::Uintptr>(bufs[completed].iov_len);
+        std::uintptr_t p = reinterpret_cast<std::uintptr_t>(bufs[completed].iov_len);
         p += lastSize;
         bufs[completed].iov_base = reinterpret_cast<void*>(p);
         bufs[completed].iov_len -= lastSize;

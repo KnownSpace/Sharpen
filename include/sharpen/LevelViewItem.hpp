@@ -29,7 +29,7 @@ namespace sharpen
     
         sharpen::ByteBuffer beginKey_;
         sharpen::ByteBuffer endKey_;
-        sharpen::Uint64 id_;
+        std::uint64_t id_;
     public:
     
         LevelViewItem()
@@ -38,7 +38,7 @@ namespace sharpen
             ,id_(0)
         {}
 
-        LevelViewItem(sharpen::ByteBuffer beginKey,sharpen::ByteBuffer endKey,sharpen::Uint64 id)
+        LevelViewItem(sharpen::ByteBuffer beginKey,sharpen::ByteBuffer endKey,std::uint64_t id)
             :beginKey_(std::move(beginKey))
             ,endKey_(std::move(endKey))
             ,id_(id)
@@ -69,24 +69,24 @@ namespace sharpen
     
         ~LevelViewItem() noexcept = default;
 
-        sharpen::Size LoadFrom(const char *data,sharpen::Size size);
+        std::size_t LoadFrom(const char *data,std::size_t size);
 
-        sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset);
+        std::size_t LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset);
 
-        inline sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf)
+        inline std::size_t LoadFrom(const sharpen::ByteBuffer &buf)
         {
             return this->LoadFrom(buf,0);
         }
 
-        sharpen::Size UnsafeStoreTo(char *data) const noexcept;
+        std::size_t UnsafeStoreTo(char *data) const noexcept;
 
-        sharpen::Size ComputeSize() const noexcept;
+        std::size_t ComputeSize() const noexcept;
 
-        sharpen::Size StoreTo(char *data,sharpen::Size size) const;
+        std::size_t StoreTo(char *data,std::size_t size) const;
 
-        sharpen::Size StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
+        std::size_t StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const;
 
-        inline sharpen::Size StoreTo(sharpen::ByteBuffer &buf) const
+        inline std::size_t StoreTo(sharpen::ByteBuffer &buf) const
         {
             return this->StoreTo(buf,0);
         }
@@ -111,12 +111,12 @@ namespace sharpen
             return this->endKey_;
         }
 
-        inline sharpen::Uint64 GetId() const noexcept
+        inline std::uint64_t GetId() const noexcept
         {
             return this->id_;
         }
 
-        inline void SetId(sharpen::Uint64 id) noexcept
+        inline void SetId(std::uint64_t id) noexcept
         {
             this->id_ = id;
         }

@@ -3,11 +3,12 @@
 #define _SHARPEN_THREADINFO_HPP
 
 #include "SystemMacro.hpp"
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 
 namespace sharpen
 {
-    extern sharpen::Uint32 GetCurrentThreadId() noexcept;
+    extern std::uint32_t GetCurrentThreadId() noexcept;
 }
 
 #endif

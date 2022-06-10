@@ -15,9 +15,9 @@ namespace sharpen
         using MemTable = sharpen::MemoryTable<sharpen::BinaryLogger,sharpen::MemoryTableComparator>;
     private:
         using Self = sharpen::LevelTable;
-        using ComponentMap = std::map<sharpen::Uint64,sharpen::LevelComponent>;
-        using ViewMap = std::map<sharpen::Uint64,sharpen::LevelView>;
-        using Comparator = sharpen::Int32(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
+        using ComponentMap = std::map<std::uint64_t,sharpen::LevelComponent>;
+        using ViewMap = std::map<std::uint64_t,sharpen::LevelView>;
+        using Comparator = std::int32_t(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
         using FileGenerator = sharpen::FileChannelPtr(*)(const char*,sharpen::FileAccessModel,sharpen::FileOpenModel);    
 
         //manifest
@@ -66,84 +66,84 @@ namespace sharpen
         //comparator
         Comparator comp_;
         //config
-        sharpen::Size maxViewOfComponent_;
-        sharpen::Size maxTableOfComponent_;
-        sharpen::Size blockCacheSize_;
-        sharpen::Size filterBitsOfElement_;
-        sharpen::Size maxSizeOfMem_;
-        sharpen::Size maxSizeOfImMems_;
-        sharpen::Size blockSize_;
+        std::size_t maxViewOfComponent_;
+        std::size_t maxTableOfComponent_;
+        std::size_t blockCacheSize_;
+        std::size_t filterBitsOfElement_;
+        std::size_t maxSizeOfMem_;
+        std::size_t maxSizeOfImMems_;
+        std::size_t blockSize_;
         std::unique_ptr<std::atomic_size_t> usedMemory_;
         //engine
         sharpen::EventEngine *engine_;
 
-        static sharpen::ByteBuffer GetViewKey(sharpen::Uint64 id);
+        static sharpen::ByteBuffer GetViewKey(std::uint64_t id);
 
-        static sharpen::ByteBuffer GetComponetKey(sharpen::Uint64 level);
+        static sharpen::ByteBuffer GetComponetKey(std::uint64_t level);
 
         static void InitManifestKeys();
 
-        sharpen::Uint64 GetCurrentTableId() const noexcept;
+        std::uint64_t GetCurrentTableId() const noexcept;
 
-        sharpen::Uint64 GetCurrentViewId() const noexcept;
+        std::uint64_t GetCurrentViewId() const noexcept;
 
-        sharpen::Uint64 GetCurrentMemoryTableId() const noexcept;
+        std::uint64_t GetCurrentMemoryTableId() const noexcept;
 
-        sharpen::Uint64 GetPrevTableId() const noexcept;
+        std::uint64_t GetPrevTableId() const noexcept;
 
-        sharpen::Uint64 GetPrevViewId() const noexcept;
+        std::uint64_t GetPrevViewId() const noexcept;
 
-        sharpen::Uint64 GetPrevMemoryTableId() const noexcept;
+        std::uint64_t GetPrevMemoryTableId() const noexcept;
 
-        void SetCurrentTableId(sharpen::Uint64 id);
+        void SetCurrentTableId(std::uint64_t id);
 
-        void SetCurrentViewId(sharpen::Uint64 id);
+        void SetCurrentViewId(std::uint64_t id);
 
-        void SetMaxLevel(sharpen::Uint64 level);
+        void SetMaxLevel(std::uint64_t level);
 
-        void SetCurrentMemoryTableId(sharpen::Uint64 id);
+        void SetCurrentMemoryTableId(std::uint64_t id);
 
-        void SetPrevTableId(sharpen::Uint64 id);
+        void SetPrevTableId(std::uint64_t id);
 
-        void SetPrevViewId(sharpen::Uint64 id);
+        void SetPrevViewId(std::uint64_t id);
 
-        void SetPrevMemoryTableId(sharpen::Uint64 id);
+        void SetPrevMemoryTableId(std::uint64_t id);
 
         sharpen::FileChannelPtr OpenChannel(const char *name,sharpen::FileAccessModel accessModel,sharpen::FileOpenModel openModel) const;
 
-        sharpen::LevelView &GetView(sharpen::Uint64 id);
+        sharpen::LevelView &GetView(std::uint64_t id);
 
-        const sharpen::LevelView &GetView(sharpen::Uint64 id) const;
+        const sharpen::LevelView &GetView(std::uint64_t id) const;
 
-        void SaveView(sharpen::Uint64 id,const sharpen::LevelView &view);
+        void SaveView(std::uint64_t id,const sharpen::LevelView &view);
 
-        sharpen::LevelComponent &GetComponent(sharpen::Uint64 id);
+        sharpen::LevelComponent &GetComponent(std::uint64_t id);
 
-        const sharpen::LevelComponent &GetComponent(sharpen::Uint64 id) const;
+        const sharpen::LevelComponent &GetComponent(std::uint64_t id) const;
 
-        void SaveComponent(sharpen::Uint64 id,const sharpen::LevelComponent &component);
+        void SaveComponent(std::uint64_t id,const sharpen::LevelComponent &component);
 
-        sharpen::Size GetTableCount(const sharpen::LevelComponent &component) const;
+        std::size_t GetTableCount(const sharpen::LevelComponent &component) const;
 
-        std::string FormatTableName(sharpen::Uint64 tableId) const;
+        std::string FormatTableName(std::uint64_t tableId) const;
 
-        std::string FormatMemoryTableName(sharpen::Uint64 tableId) const;
+        std::string FormatMemoryTableName(std::uint64_t tableId) const;
 
         std::string FormatManifestName() const;
 
-        sharpen::SortedStringTable MergeTables(const sharpen::LevelComponent &component,sharpen::Uint64 newTableId,bool eraseDeleted,sharpen::Optional<sharpen::SortedStringTable> appendTable);
+        sharpen::SortedStringTable MergeTables(const sharpen::LevelComponent &component,std::uint64_t newTableId,bool eraseDeleted,sharpen::Optional<sharpen::SortedStringTable> appendTable);
 
-        void AddToComponent(sharpen::SortedStringTable table,sharpen::Uint64 tableId,sharpen::Uint64 componentId);
+        void AddToComponent(sharpen::SortedStringTable table,std::uint64_t tableId,std::uint64_t componentId);
 
-        sharpen::SortedStringTable LoadTable(sharpen::Uint64 id) const;
+        sharpen::SortedStringTable LoadTable(std::uint64_t id) const;
 
-        void DeleteTableFromCache(sharpen::Uint64 id);
+        void DeleteTableFromCache(std::uint64_t id);
 
-        void DeleteTable(sharpen::Uint64 id);
+        void DeleteTable(std::uint64_t id);
 
-        std::shared_ptr<sharpen::SortedStringTable> LoadTableFromCache(sharpen::Uint64 id) const;
+        std::shared_ptr<sharpen::SortedStringTable> LoadTableFromCache(std::uint64_t id) const;
 
-        std::shared_ptr<sharpen::SortedStringTable> LoadTableCache(sharpen::Uint64 id) const;
+        std::shared_ptr<sharpen::SortedStringTable> LoadTableCache(std::uint64_t id) const;
 
         std::unique_ptr<MemTable> MakeNewMemoryTable();
 
@@ -176,7 +176,7 @@ namespace sharpen
     
         ~LevelTable() noexcept = default;
 
-        sharpen::Int32 CompareKeys(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept;
+        std::int32_t CompareKeys(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept;
 
         void Put(sharpen::ByteBuffer key,sharpen::ByteBuffer value);
 
@@ -207,16 +207,16 @@ namespace sharpen
 
         //for range query
         //you should lock level lock(S) first
-        sharpen::Uint64 GetMaxLevel() const noexcept;
+        std::uint64_t GetMaxLevel() const noexcept;
 
         //for range query
         //you should lock level lock(S) first
-        inline std::shared_ptr<const sharpen::SortedStringTable> GetTable(sharpen::Uint64 id) const
+        inline std::shared_ptr<const sharpen::SortedStringTable> GetTable(std::uint64_t id) const
         {
             return this->LoadTableCache(id);
         }
 
-        inline sharpen::SortedStringTable GetTableCopy(sharpen::Uint64 id) const
+        inline sharpen::SortedStringTable GetTableCopy(std::uint64_t id) const
         {
             return this->LoadTable(id);
         }
@@ -224,7 +224,7 @@ namespace sharpen
         //for range query
         //you should lock level lock(S) first
         template<typename _InsertIterator,typename _Check = decltype(*std::declval<_InsertIterator&>()++ = static_cast<const sharpen::LevelView*>(nullptr))>
-        void GetAllViewOfComponent(sharpen::Uint64 level,_InsertIterator inserter) const
+        void GetAllViewOfComponent(std::uint64_t level,_InsertIterator inserter) const
         {
             const sharpen::LevelComponent *component{&this->GetComponent(level)};
             for (auto begin = component->Begin(),end = component->End(); begin != end; ++begin)
@@ -251,25 +251,25 @@ namespace sharpen
             }
         }
 
-        sharpen::Uint64 GetTableSize() const;
+        std::uint64_t GetTableSize() const;
 
         //for range query
         //you should lock level lock(S) first
         template<typename _InsertIterator,typename _Checker = decltype(*std::declval<_InsertIterator&>()++ = std::declval<sharpen::LevelViewItem&>())>
         inline void TableScan(_InsertIterator inserter) const
         {
-            std::map<sharpen::Uint64,sharpen::Size> viewStatus;
+            std::map<std::uint64_t,std::size_t> viewStatus;
             sharpen::Optional<sharpen::LevelViewItem> selectedItem;
-            sharpen::Uint64 selectedView{0};
-            sharpen::Uint64 maxLevel{this->GetMaxLevel()};
-            std::set<sharpen::Uint64> emptyComponents;
-            sharpen::Size levelBoundary{maxLevel + 1};
+            std::uint64_t selectedView{0};
+            std::uint64_t maxLevel{this->GetMaxLevel()};
+            std::set<std::uint64_t> emptyComponents;
+            std::size_t levelBoundary{maxLevel + 1};
             while (emptyComponents.size() != levelBoundary)
             {
-                for (sharpen::Size i = maxLevel;; --i)
+                for (std::size_t i = maxLevel;; --i)
                 {
                     const sharpen::LevelComponent *component{&this->GetComponent(i)};
-                    sharpen::Size emptyViews{0};
+                    std::size_t emptyViews{0};
                     if(!component->Empty())
                     {
                         for (auto begin = component->Begin(),end = component->End(); begin != end; ++begin)
@@ -277,7 +277,7 @@ namespace sharpen
                             const sharpen::LevelView *view{&this->GetView(*begin)};
                             if(!view->Empty())
                             {
-                                sharpen::Size skip{0};
+                                std::size_t skip{0};
                                 auto ite = viewStatus.find(*begin);
                                 if(ite != viewStatus.end())
                                 {
@@ -325,13 +325,13 @@ namespace sharpen
         template<typename _InsertIterator,typename _Checker = decltype(*std::declval<_InsertIterator&>()++ = std::declval<sharpen::LevelViewItem&>())>
         inline void TableScan(_InsertIterator inserter,const sharpen::ByteBuffer &beginKey,const sharpen::ByteBuffer &endKey) const
         {
-            std::map<sharpen::Uint64,std::pair<sharpen::Size,sharpen::Size>> viewStatus;
+            std::map<std::uint64_t,std::pair<std::size_t,std::size_t>> viewStatus;
             sharpen::Optional<sharpen::LevelViewItem> selectedItem;
-            sharpen::Uint64 selectedView{0};
-            sharpen::Uint64 maxLevel{this->GetMaxLevel()};
-            std::set<sharpen::Uint64> emptyComponents;
+            std::uint64_t selectedView{0};
+            std::uint64_t maxLevel{this->GetMaxLevel()};
+            std::set<std::uint64_t> emptyComponents;
             //set query range
-            for (sharpen::Size i = 0,count = maxLevel + 1; i != count; ++i)
+            for (std::size_t i = 0,count = maxLevel + 1; i != count; ++i)
             {
                 const sharpen::LevelComponent *component{&this->GetComponent(i)};
                 if(!component->Empty())
@@ -342,11 +342,11 @@ namespace sharpen
                         if(!view->Empty())
                         {
                             auto tableBegin = view->Begin(),tableEnd = view->End();
-                            sharpen::Size beginRange{0};
-                            sharpen::Size endRange{0};
+                            std::size_t beginRange{0};
+                            std::size_t endRange{0};
                             for (;tableBegin != tableEnd; ++tableBegin,++beginRange)
                             {
-                                sharpen::Int32 r{this->CompareKeys(beginKey,tableBegin->EndKey())};
+                                std::int32_t r{this->CompareKeys(beginKey,tableBegin->EndKey())};
                                 if(r != -1)
                                 {
                                     break;
@@ -355,24 +355,24 @@ namespace sharpen
                             endRange = beginRange + 1;
                             for (;tableBegin != tableEnd; ++tableBegin,++endRange)
                             {
-                                sharpen::Int32 r{this->CompareKeys(endKey,tableBegin->EndKey())};
+                                std::int32_t r{this->CompareKeys(endKey,tableBegin->EndKey())};
                                 if(r != -1)
                                 {
                                     break;
                                 }
                             }
-                            viewStatus.emplace(*begin,std::pair<sharpen::Size,sharpen::Size>{beginRange,endRange});
+                            viewStatus.emplace(*begin,std::pair<std::size_t,std::size_t>{beginRange,endRange});
                         }
                     }   
                 }
             }
-            sharpen::Size levelBoundary{maxLevel+1};
+            std::size_t levelBoundary{maxLevel+1};
             while (emptyComponents.size() != levelBoundary)
             {
-                for (sharpen::Size i = maxLevel;; --i)
+                for (std::size_t i = maxLevel;; --i)
                 {
                     const sharpen::LevelComponent *component{&this->GetComponent(i)};
-                    sharpen::Size emptyViews{0};
+                    std::size_t emptyViews{0};
                     if(!component->Empty())
                     {
                         for (auto begin = component->Begin(),end = component->End(); begin != end; ++begin)
@@ -380,7 +380,7 @@ namespace sharpen
                             const sharpen::LevelView *view{&this->GetView(*begin)};
                             if(!view->Empty())
                             {
-                                sharpen::Size skip{0};
+                                std::size_t skip{0};
                                 auto ite = viewStatus.find(*begin);
                                 assert(ite != viewStatus.end());
                                 skip = ite->second.first;

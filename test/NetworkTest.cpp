@@ -26,7 +26,7 @@ void ServerTest()
     sharpen::Launch(&ClientTest);
     sharpen::NetStreamChannelPtr client = server->AcceptAsync();
     client->Register(sharpen::EventEngine::GetEngine());
-    sharpen::Size size = client->WriteAsync(data,sizeof(data) - 1);
+    std::size_t size = client->WriteAsync(data,sizeof(data) - 1);
     assert(size == sizeof(data) - 1);
     sharpen::ByteBuffer buf{4096};
     size = client->ReadAsync(buf);
@@ -55,7 +55,7 @@ void ClientTest()
     client->ConnectAsync(serverEndpoint);
     std::printf("client connected\n");
     sharpen::ByteBuffer buf{4096};
-    sharpen::Size size = client->ReadAsync(buf);
+    std::size_t size = client->ReadAsync(buf);
     assert(size == sizeof(data) - 1);
     for (size_t i = 0; i < size; i++)
     {
@@ -64,7 +64,7 @@ void ClientTest()
     size = client->WriteAsync(data,sizeof(data) - 1);
     assert(size == sizeof(data) - 1);
     int val;
-    sharpen::Size sz{client->ReadObjectAsync(val)};
+    std::size_t sz{client->ReadObjectAsync(val)};
     if(sz != sizeof(val))
     {
         std::puts("client closed");
@@ -94,7 +94,7 @@ void CancelTest()
     server->Listen(65535);
     std::printf("cancel test begin\n");
     int flag = 0;
-    sharpen::AwaitableFuture<sharpen::Size> future[10];
+    sharpen::AwaitableFuture<std::size_t> future[10];
     addr.SetPort(8080);
     client->ConnectAsync(addr);
     char buf[512];

@@ -40,11 +40,11 @@ namespace sharpen
         
         INetStreamChannel(Self &&) noexcept = default;
 
-        virtual void SendFileAsync(sharpen::FileChannelPtr file,sharpen::Uint64 size,sharpen::Uint64 offset,sharpen::Future<void> &future) = 0;
+        virtual void SendFileAsync(sharpen::FileChannelPtr file,std::uint64_t size,std::uint64_t offset,sharpen::Future<void> &future) = 0;
         
         virtual void SendFileAsync(sharpen::FileChannelPtr file,sharpen::Future<void> &future) = 0;
 
-        void SendFileAsync(sharpen::FileChannelPtr file,sharpen::Uint64 size,sharpen::Uint64 offset);
+        void SendFileAsync(sharpen::FileChannelPtr file,std::uint64_t size,std::uint64_t offset);
 
         void SendFileAsync(sharpen::FileChannelPtr file);
 
@@ -58,7 +58,7 @@ namespace sharpen
 
         void Bind(const sharpen::IEndPoint &endpoint);
 
-        virtual void Listen(sharpen::Uint16 queueLength);
+        virtual void Listen(std::uint16_t queueLength);
 
         void GetLocalEndPoint(sharpen::IEndPoint &endPoint) const;
 
@@ -91,10 +91,10 @@ namespace sharpen
         virtual void Cancel() noexcept = 0;
 
         template<typename _Rep,typename _Period>
-        inline sharpen::Optional<sharpen::Size> ReadWithTimeout(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &duration,char *buf,sharpen::Size size)
+        inline sharpen::Optional<std::size_t> ReadWithTimeout(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &duration,char *buf,std::size_t size)
         {
             sharpen::AwaitableFuture<bool> timeout;
-            sharpen::AwaitableFuture<sharpen::Size> future;
+            sharpen::AwaitableFuture<std::size_t> future;
             using CancelFn = void(*)(sharpen::Future<bool>&,sharpen::INetStreamChannel*);
             timeout.SetCallback(std::bind(static_cast<CancelFn>(&Self::CancelCallback),std::placeholders::_1,this));
             this->ReadAsync(buf,size,future);
@@ -115,14 +115,14 @@ namespace sharpen
         }
 
         template<typename _Rep,typename _Period>
-        inline sharpen::Optional<sharpen::Size> ReadWithTimeout(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &duration,sharpen::ByteBuffer &buf,sharpen::Size offset)
+        inline sharpen::Optional<std::size_t> ReadWithTimeout(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &duration,sharpen::ByteBuffer &buf,std::size_t offset)
         {
             assert(buf.GetSize() >= offset);
             return this->ReadWithTimeout(std::move(timer),duration,buf.Data() + offset,buf.GetSize() - offset);
         }
 
         template<typename _Rep,typename _Period>
-        inline sharpen::Optional<sharpen::Size> ReadWithTimeout(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &duration,sharpen::ByteBuffer &buf)
+        inline sharpen::Optional<std::size_t> ReadWithTimeout(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &duration,sharpen::ByteBuffer &buf)
         {
             return this->ReadWithTimeout(std::move(timer),duration,buf,0);
         }

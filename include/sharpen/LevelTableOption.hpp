@@ -12,36 +12,36 @@ namespace sharpen
     {
     private:
         using Self = sharpen::LevelTableOption;
-        using Comparator = sharpen::Int32(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
+        using Comparator = std::int32_t(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
         using FileGenerator = sharpen::FileChannelPtr(*)(const char*,sharpen::FileAccessModel,sharpen::FileOpenModel);
     
     public:
-        static constexpr sharpen::Size defaultMaxViewOfComponent_{4};
-        static constexpr sharpen::Size defaultMaxTableOfComponent_{16};
+        static constexpr std::size_t defaultMaxViewOfComponent_{4};
+        static constexpr std::size_t defaultMaxTableOfComponent_{16};
         //16MB / 4KB = 4096
-        static constexpr sharpen::Size defaultBlockCacheSize_{4096};
+        static constexpr std::size_t defaultBlockCacheSize_{4096};
         //1% - FPR
-        static constexpr sharpen::Size defaultFilterBitsOfElement_{10};
+        static constexpr std::size_t defaultFilterBitsOfElement_{10};
         //8MB
-        static constexpr sharpen::Size defaultMaxSizeOfMemoryTable_{1*1024*1024};
-        static constexpr sharpen::Size defaultMaxCountOfImmutableTable_{8};
+        static constexpr std::size_t defaultMaxSizeOfMemoryTable_{1*1024*1024};
+        static constexpr std::size_t defaultMaxCountOfImmutableTable_{8};
         //4KB
-        static constexpr sharpen::Size defaultBlockSize_{4*1024};
+        static constexpr std::size_t defaultBlockSize_{4*1024};
         //16MB * 64 = 1GB
-        static constexpr sharpen::Size defaultTableCacheSize_{64};
+        static constexpr std::size_t defaultTableCacheSize_{64};
 
     private:
 
-        sharpen::Size maxViewOfComponent_;
-        sharpen::Size maxTableOfComponent_;
-        sharpen::Size blockCacheSize_;
-        sharpen::Size filterBitsOfElement_;
-        sharpen::Size maxSizeOfMem_;
-        sharpen::Size maxSizeOfImMems_;
-        sharpen::Size blockSize_;
+        std::size_t maxViewOfComponent_;
+        std::size_t maxTableOfComponent_;
+        std::size_t blockCacheSize_;
+        std::size_t filterBitsOfElement_;
+        std::size_t maxSizeOfMem_;
+        std::size_t maxSizeOfImMems_;
+        std::size_t blockSize_;
         FileGenerator fileGenerator_;
         Comparator comp_;
-        sharpen::Size tableCacheSize_;
+        std::size_t tableCacheSize_;
     public:
 
         LevelTableOption()
@@ -52,18 +52,18 @@ namespace sharpen
             :LevelTableOption(Self::defaultBlockCacheSize_,comp)
         {}
 
-        LevelTableOption(sharpen::Size blockSize,Comparator comparator)
+        LevelTableOption(std::size_t blockSize,Comparator comparator)
             :LevelTableOption(Self::defaultMaxViewOfComponent_,Self::defaultMaxTableOfComponent_,
                               Self::defaultBlockCacheSize_,Self::defaultFilterBitsOfElement_,
                               Self::defaultMaxSizeOfMemoryTable_,Self::defaultMaxCountOfImmutableTable_,
                               blockSize,nullptr,comparator,Self::defaultTableCacheSize_)
         {}
     
-        LevelTableOption(sharpen::Size maxViewOfComponent,sharpen::Size maxTableOfComponent
-                        ,sharpen::Size blockCacheSize,sharpen::Size filterBitsOfElement
-                        ,sharpen::Size maxSizeOfMemoryTable,sharpen::Size maxCountOfImmutableTable
-                        ,sharpen::Size blockSize,FileGenerator generator,Comparator comparator
-                        ,sharpen::Size tableCacheSize);
+        LevelTableOption(std::size_t maxViewOfComponent,std::size_t maxTableOfComponent
+                        ,std::size_t blockCacheSize,std::size_t filterBitsOfElement
+                        ,std::size_t maxSizeOfMemoryTable,std::size_t maxCountOfImmutableTable
+                        ,std::size_t blockSize,FileGenerator generator,Comparator comparator
+                        ,std::size_t tableCacheSize);
     
         LevelTableOption(const Self &other) = default;
     
@@ -80,37 +80,37 @@ namespace sharpen
     
         ~LevelTableOption() noexcept = default;
 
-        inline sharpen::Size GetMaxViewOfComponent() const noexcept
+        inline std::size_t GetMaxViewOfComponent() const noexcept
         {
             return this->maxViewOfComponent_;
         }
 
-        inline sharpen::Size GetMaxTableOfComponent() const noexcept
+        inline std::size_t GetMaxTableOfComponent() const noexcept
         {
             return this->maxTableOfComponent_;
         }
 
-        inline sharpen::Size GetBlockCacheSize() const noexcept
+        inline std::size_t GetBlockCacheSize() const noexcept
         {
             return this->blockCacheSize_;
         }
 
-        inline sharpen::Size GetFilterBitsOfElement() const noexcept
+        inline std::size_t GetFilterBitsOfElement() const noexcept
         {
             return this->filterBitsOfElement_;
         }
 
-        inline sharpen::Size GetMaxSizeOfMemoryTable() const noexcept
+        inline std::size_t GetMaxSizeOfMemoryTable() const noexcept
         {
             return this->maxSizeOfMem_;
         }
 
-        inline sharpen::Size GetMaxCountOfImmutableTable() const noexcept
+        inline std::size_t GetMaxCountOfImmutableTable() const noexcept
         {
             return this->maxSizeOfImMems_;
         }
 
-        inline sharpen::Size GetBlockSize() const noexcept
+        inline std::size_t GetBlockSize() const noexcept
         {
             return this->blockSize_;
         }
@@ -125,7 +125,7 @@ namespace sharpen
             return this->comp_;
         }
 
-        inline sharpen::Size GetTableCacheSize() const noexcept
+        inline std::size_t GetTableCacheSize() const noexcept
         {
             return this->tableCacheSize_;
         }

@@ -35,7 +35,7 @@ namespace sharpen
     class SstIndexBlock
     {
     public:
-        using Comparator = sharpen::Int32(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
+        using Comparator = std::int32_t(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
     private:
         using Self = SstIndexBlock;
         using DataBlockHandles = std::vector<sharpen::SstBlockHandle>;
@@ -54,7 +54,7 @@ namespace sharpen
 
         static bool WarppedComp(Comparator comp,const sharpen::SstBlockHandle &block,const sharpen::ByteBuffer &key) noexcept;
 
-        sharpen::Int32 CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept;
+        std::int32_t CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept;
     public:
     
         SstIndexBlock();
@@ -92,24 +92,24 @@ namespace sharpen
             return this->dataBlocks_;
         }
 
-        void LoadFrom(const char *data,sharpen::Size size);
+        void LoadFrom(const char *data,std::size_t size);
 
-        void LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset);
+        void LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset);
 
         inline void LoadFrom(const sharpen::ByteBuffer &buf)
         {
             this->LoadFrom(buf,0);
         }
 
-        sharpen::Size ComputeNeedSize() const noexcept;
+        std::size_t ComputeNeedSize() const noexcept;
 
-        sharpen::Size UnsafeStoreTo(char *data) const noexcept;
+        std::size_t UnsafeStoreTo(char *data) const noexcept;
 
-        sharpen::Size StoreTo(char *data,sharpen::Size size) const;
+        std::size_t StoreTo(char *data,std::size_t size) const;
 
-        sharpen::Size StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
+        std::size_t StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const;
 
-        inline sharpen::Size StoreTo(sharpen::ByteBuffer &buf) const
+        inline std::size_t StoreTo(sharpen::ByteBuffer &buf) const
         {
             return this->StoreTo(buf,0);
         }
@@ -179,22 +179,22 @@ namespace sharpen
             return this->dataBlocks_.empty();
         }
 
-        inline sharpen::Size GetSize() const noexcept
+        inline std::size_t GetSize() const noexcept
         {
             return this->dataBlocks_.size();
         }
 
-        inline void Reserve(sharpen::Size size)
+        inline void Reserve(std::size_t size)
         {
             this->dataBlocks_.reserve(this->GetSize() + size);
         }
 
-        inline sharpen::SstBlockHandle &operator[](sharpen::Size index)
+        inline sharpen::SstBlockHandle &operator[](std::size_t index)
         {
             return this->dataBlocks_.at(index);
         }
 
-        inline const sharpen::SstBlockHandle &operator[](sharpen::Size index) const
+        inline const sharpen::SstBlockHandle &operator[](std::size_t index) const
         {
             return this->dataBlocks_.at(index);
         }

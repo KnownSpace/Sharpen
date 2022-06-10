@@ -12,11 +12,11 @@
 namespace sharpen
 {
     template <typename _T, typename _Check = sharpen::EnableIf<std::is_integral<_T>::value>>
-    sharpen::Size MinSizeof(_T val)
+    std::size_t MinSizeof(_T val)
     {
         const char *data = reinterpret_cast<const char *>(&val);
 #ifdef SHARPEN_IS_BIG_ENDIAN
-        for (sharpen::Size i = sizeof(val);i != 0; --i)
+        for (std::size_t i = sizeof(val);i != 0; --i)
         {
             if (data[sizeof(val) - i] != 0)
             {
@@ -24,7 +24,7 @@ namespace sharpen
             }
         }
 #else
-        for (sharpen::Size i = sizeof(val);i != 0; --i)
+        for (std::size_t i = sizeof(val);i != 0; --i)
         {
             if (data[i-1] != 0)
             {
@@ -46,14 +46,14 @@ namespace sharpen
         struct
         {
 #ifdef SHARPEN_IS_BIG_ENDIAN
-            sharpen::Byte height_;
-            sharpen::Byte low_;
+            unsigned char height_;
+            unsigned char low_;
 #else
-            sharpen::Byte low_;
-            sharpen::Byte height_;
+            unsigned char low_;
+            unsigned char height_;
 #endif
         } union_;
-        sharpen::Uint16 value_;  
+        std::uint16_t value_;  
     };
 
     union Uint32Union
@@ -61,14 +61,14 @@ namespace sharpen
         struct
         {
 #ifdef SHARPEN_IS_BIG_ENDIAN
-            sharpen::Uint16 height_;
-            sharpen::Uint16 low_;
+            std::uint16_t height_;
+            std::uint16_t low_;
 #else
-            sharpen::Uint16 low_;
-            sharpen::Uint16 height_;
+            std::uint16_t low_;
+            std::uint16_t height_;
 #endif
         } union_;
-        sharpen::Uint32 value_;  
+        std::uint32_t value_;  
     };
 
     union Uint64Union
@@ -76,14 +76,14 @@ namespace sharpen
         struct
         {
 #ifdef SHARPEN_IS_BIG_ENDIAN
-            sharpen::Uint32 height_;
-            sharpen::Uint32 low_;
+            std::uint32_t height_;
+            std::uint32_t low_;
 #else
-            sharpen::Uint32 low_;
-            sharpen::Uint32 height_;
+            std::uint32_t low_;
+            std::uint32_t height_;
 #endif
         } union_;
-        sharpen::Uint64 value_;  
+        std::uint64_t value_;  
     };
 
     template<typename _T1,typename _T2>

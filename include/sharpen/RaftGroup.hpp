@@ -51,7 +51,7 @@ namespace sharpen
         InternalRaftGroup(sharpen::EventEngine &engine,_Id id,_PersistentStorage storage,std::shared_ptr<_Application> app,const sharpen::RaftGroupOption &option)
             :engine_(&engine)
             ,random_(option.GetRandomSeed())
-            ,distribution_(static_cast<sharpen::Uint32>(option.GetMinElectionCycle().count()),static_cast<sharpen::Uint32>(option.GetMaxElectionCycle().count()))
+            ,distribution_(static_cast<std::uint32_t>(option.GetMinElectionCycle().count()),static_cast<std::uint32_t>(option.GetMaxElectionCycle().count()))
             ,raft_(std::move(id),std::move(storage),std::move(app))
             ,raftLock_(new RaftLock{})
             ,voteLock_(new VoteLock{})

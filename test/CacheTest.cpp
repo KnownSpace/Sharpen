@@ -6,15 +6,15 @@ int main(int argc, char const *argv[])
 {
     std::puts("circle cache test begin");
     {
-        sharpen::CircleCache<sharpen::Size> caches{8};
-        for (sharpen::Size i = 0; i != caches.GetSize(); ++i)
+        sharpen::CircleCache<std::size_t> caches{8};
+        for (std::size_t i = 0; i != caches.GetSize(); ++i)
         {
             std::string key{"key"};
             key.push_back(static_cast<char>('0' + i));
             assert(!caches.Get(key));
             caches.GetOrEmplace(key,i);   
         }
-        for (sharpen::Size i = 0; i != caches.GetSize(); ++i)
+        for (std::size_t i = 0; i != caches.GetSize(); ++i)
         {
             std::string key{"key"};
             key.push_back(static_cast<char>('0' + i));
@@ -33,15 +33,15 @@ int main(int argc, char const *argv[])
     std::puts("pass");
     std::puts("segmented cache test begin");
     {
-        sharpen::SegmentedCircleCache<sharpen::Size> caches{64};
-        for (sharpen::Size i = 0; i != caches.GetSize(); ++i)
+        sharpen::SegmentedCircleCache<std::size_t> caches{64};
+        for (std::size_t i = 0; i != caches.GetSize(); ++i)
         {
             std::string key{"key"};
             key.push_back(static_cast<char>('0' + i));
             assert(!caches.Get(key));
             caches.GetOrEmplace(key,i);
         }
-        for (sharpen::Size i = 0; i != caches.GetSize(); ++i)
+        for (std::size_t i = 0; i != caches.GetSize(); ++i)
         {
             std::string key{"key"};
             key.push_back(static_cast<char>('0' + i));

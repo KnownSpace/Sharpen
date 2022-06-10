@@ -26,15 +26,15 @@ sharpen::TimerPool &sharpen::DelayHelper::GetTimerPool(sharpen::EventEngine &eng
 }
 
 //[begin,end)
-void sharpen::ParallelFor(sharpen::Size begin,sharpen::Size end,sharpen::Size grainsSize,std::function<void(sharpen::Size)> fn)
+void sharpen::ParallelFor(std::size_t begin,std::size_t end,std::size_t grainsSize,std::function<void(std::size_t)> fn)
 {
     if (begin >= end)
     {
         return;
     }
-    sharpen::Size parallelNumber{sharpen::EventEngine::GetEngine().LoopCount()};
+    std::size_t parallelNumber{sharpen::EventEngine::GetEngine().LoopCount()};
     //compute max grainsSize
-    sharpen::Size max {end - begin};
+    std::size_t max {end - begin};
     max /= parallelNumber;
     if(max > grainsSize)
     {
@@ -46,14 +46,14 @@ void sharpen::ParallelFor(sharpen::Size begin,sharpen::Size end,sharpen::Size gr
     sharpen::AwaitableFuture<void> future;
     std::atomic_size_t comp{parallelNumber};
     //launch fiber
-    for (sharpen::Size i = 0; i < parallelNumber; i++)
+    for (std::size_t i = 0; i < parallelNumber; i++)
     {
         sharpen::Launch([&ite,max,end,parallelNumber,&fn,&comp,&future]()
         {
             while(true)
             {
-                sharpen::Size iterator = ite.load();
-                sharpen::Size size{0};
+                std::size_t iterator = ite.load();
+                std::size_t size{0};
                 //get size
                 do
                 {
@@ -66,7 +66,7 @@ void sharpen::ParallelFor(sharpen::Size begin,sharpen::Size end,sharpen::Size gr
                 } while (!ite.compare_exchange_weak(iterator,iterator + size));
                 if (!size)
                 {
-                    sharpen::Size copy = comp.fetch_sub(1);
+                    std::size_t copy = comp.fetch_sub(1);
                     copy -= 1;
                     if (copy == 0)
                     {
@@ -75,7 +75,7 @@ void sharpen::ParallelFor(sharpen::Size begin,sharpen::Size end,sharpen::Size gr
                     return;
                 }
                 //execute function
-                for (sharpen::Size i = 0; i < size; i++)
+                for (std::size_t i = 0; i < size; i++)
                 {
                     assert(fn);
                     fn(i + iterator);

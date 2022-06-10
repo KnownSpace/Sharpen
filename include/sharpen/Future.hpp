@@ -9,7 +9,8 @@
 #include <stdexcept>
 
 #include "SpinLock.hpp"
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "Optional.hpp"
 
 namespace sharpen
@@ -35,7 +36,7 @@ namespace sharpen
         Callback callback_;
         FutureState state_;
         std::exception_ptr error_;
-        mutable sharpen::Uint16 waiters_;
+        mutable std::uint16_t waiters_;
 
         void NoticeIfNeed()
         {
@@ -227,7 +228,7 @@ namespace sharpen
         Callback callback_;
         FutureState state_;
         std::exception_ptr error_;
-        mutable sharpen::Uint16 waiters_;
+        mutable std::uint16_t waiters_;
 
         void NoticeIfNeed()
         {

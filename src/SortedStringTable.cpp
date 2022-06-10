@@ -21,7 +21,7 @@ sharpen::SortedStringTable::SortedStringTable(sharpen::FileChannelPtr channel,co
 
 void sharpen::SortedStringTable::LoadRoot()
 {
-    sharpen::Uint64 size{this->channel_->GetFileSize()};
+    std::uint64_t size{this->channel_->GetFileSize()};
     if(size)
     {
         this->root_.LoadFrom(this->channel_);
@@ -33,7 +33,7 @@ bool sharpen::SortedStringTable::Empty() const
     return this->root_.IndexBlock().Empty();
 }
 
-sharpen::Int32 sharpen::SortedStringTable::CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept
+std::int32_t sharpen::SortedStringTable::CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept
 {
     if(this->comp_)
     {
@@ -47,7 +47,7 @@ sharpen::SstDataBlock sharpen::SortedStringTable::LoadBlock(sharpen::FilePointer
     return sharpen::SortedStringTableBuilder::LoadDataBlock<sharpen::SstDataBlock>(this->channel_,pointer.offset_,pointer.size_,this->comp_);
 }
 
-sharpen::SstDataBlock sharpen::SortedStringTable::LoadBlock(sharpen::Uint64 offset,sharpen::Uint64 size) const
+sharpen::SstDataBlock sharpen::SortedStringTable::LoadBlock(std::uint64_t offset,std::uint64_t size) const
 {
     return sharpen::SortedStringTableBuilder::LoadDataBlock<sharpen::SstDataBlock>(this->channel_,offset,size,this->comp_);
 }
@@ -62,7 +62,7 @@ sharpen::SstDataBlock sharpen::SortedStringTable::LoadBlock(const sharpen::ByteB
     return this->LoadBlock(ite->Block().offset_,ite->Block().size_);
 }
 
-std::shared_ptr<sharpen::SstDataBlock> sharpen::SortedStringTable::LoadBlockCache(const sharpen::ByteBuffer &cacheKey,sharpen::Uint64 offset,sharpen::Uint64 size) const
+std::shared_ptr<sharpen::SstDataBlock> sharpen::SortedStringTable::LoadBlockCache(const sharpen::ByteBuffer &cacheKey,std::uint64_t offset,std::uint64_t size) const
 {
     std::shared_ptr<sharpen::SstDataBlock> block{this->dataCache_.Get(cacheKey.Begin(),cacheKey.End())};
     if(!block)
@@ -83,14 +83,14 @@ sharpen::BloomFilter<sharpen::ByteBuffer> sharpen::SortedStringTable::LoadFilter
     return sharpen::SortedStringTableBuilder::LoadFilter(this->channel_,ite->Block().offset_,ite->Block().size_,this->filterBitsOfElement_);
 }
 
-std::shared_ptr<sharpen::BloomFilter<sharpen::ByteBuffer>> sharpen::SortedStringTable::LoadFilterCache(const sharpen::ByteBuffer &cacheKey,sharpen::Uint64 offset,sharpen::Uint64 size) const
+std::shared_ptr<sharpen::BloomFilter<sharpen::ByteBuffer>> sharpen::SortedStringTable::LoadFilterCache(const sharpen::ByteBuffer &cacheKey,std::uint64_t offset,std::uint64_t size) const
 {
     std::shared_ptr<sharpen::BloomFilter<sharpen::ByteBuffer>> filter{this->filterCache_.Get(cacheKey.Begin(),cacheKey.End())};
     if(!filter)
     {
-        sharpen::ByteBuffer buf{sharpen::IntCast<sharpen::Size>(size)};
+        sharpen::ByteBuffer buf{sharpen::IntCast<std::size_t>(size)};
         this->channel_->ReadAsync(buf,offset);
-        filter = this->filterCache_.GetOrEmplace(cacheKey.Begin(),cacheKey.End(),buf.Data(),buf.GetSize(),static_cast<sharpen::Size>(10));
+        filter = this->filterCache_.GetOrEmplace(cacheKey.Begin(),cacheKey.End(),buf.Data(),buf.GetSize(),static_cast<std::size_t>(10));
     }
     return filter;
 }

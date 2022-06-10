@@ -9,7 +9,8 @@
 #include <atomic>
 #include <stdexcept>
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "BufferOps.hpp"
 
 namespace sharpen
@@ -19,13 +20,13 @@ namespace sharpen
     private:
 
         template<typename _T,typename _Check = decltype(std::hash<_T>{}(std::declval<const _T&>()))>
-        inline static sharpen::Size InternalHash(const _T &obj,...)
+        inline static std::size_t InternalHash(const _T &obj,...)
         {
             return std::hash<_T>{}(obj);
         }
 
         template<typename _T,typename _Check = typename std::enable_if<std::is_trivial<_T>::value>::type>
-        inline static sharpen::Size InternalHash(const _T &obj,int)
+        inline static std::size_t InternalHash(const _T &obj,int)
         {
             return sharpen::BufferHash(reinterpret_cast<const char*>(&obj),sizeof(obj));
         }
@@ -45,15 +46,15 @@ namespace sharpen
         using Self = sharpen::InternalBloomFilter<_T,_Element>;
 
         std::unique_ptr<_Element[]> space_;
-        sharpen::Size size_;
-        sharpen::Size hashCount_;
+        std::size_t size_;
+        std::size_t hashCount_;
 
-        inline static sharpen::Size HashCode(const _T &obj) noexcept
+        inline static std::size_t HashCode(const _T &obj) noexcept
         {
             return sharpen::BloomFilterHasher::Hash(obj);
         }
     public:
-        InternalBloomFilter(sharpen::Size bitsOfSpace,sharpen::Size hashCount)
+        InternalBloomFilter(std::size_t bitsOfSpace,std::size_t hashCount)
             :space_(nullptr)
             ,size_(0)
             ,hashCount_(hashCount)
@@ -61,20 +62,20 @@ namespace sharpen
             bitsOfSpace = bitsOfSpace/8 + ((bitsOfSpace % 8)? 1:0);
             this->space_.reset(new _Element[bitsOfSpace]);
             this->size_ = bitsOfSpace;
-            for (sharpen::Size i = 0; i != bitsOfSpace; ++i)
+            for (std::size_t i = 0; i != bitsOfSpace; ++i)
             {
                 this->space_[i] = 0;
             }
         }
 
-        InternalBloomFilter(const char *space,sharpen::Size size,sharpen::Size hashCount)
+        InternalBloomFilter(const char *space,std::size_t size,std::size_t hashCount)
             :space_(nullptr)
             ,size_(0)
             ,hashCount_(hashCount)
         {
             this->space_.reset(new _Element[size]);
             this->size_ = size;
-            for (sharpen::Size i = 0; i != size; ++i)
+            for (std::size_t i = 0; i != size; ++i)
             {
                 this->space_[i] = *space++;
             }
@@ -89,7 +90,7 @@ namespace sharpen
             {
                 this->space_.reset(new _Element[other.GetSize()]);
                 this->size_ = other.GetSize();
-                for (sharpen::Size i = 0; i != this->GetSize(); ++i)
+                for (std::size_t i = 0; i != this->GetSize(); ++i)
                 {
                     this->space_[i] = static_cast<char>(other.space_[i]);
                 }
@@ -129,12 +130,12 @@ namespace sharpen
         {
             assert(this->hashCount_ != 0);
             assert(this->GetSize() != 0);
-            sharpen::Size hash = HashCode(obj);
+            std::size_t hash = HashCode(obj);
             //double-hashing
-            sharpen::Size delta = (hash >> 17) | (hash << 15);
-            for (sharpen::Size i = 0; i < this->hashCount_; ++i)
+            std::size_t delta = (hash >> 17) | (hash << 15);
+            for (std::size_t i = 0; i < this->hashCount_; ++i)
             {
-                sharpen::Size pos = hash % (this->GetSize()*8);
+                std::size_t pos = hash % (this->GetSize()*8);
                 this->space_[pos/8] |= (1 << (pos % 8));
                 hash += delta;
             }
@@ -144,13 +145,13 @@ namespace sharpen
         {
             assert(this->hashCount_ != 0);
             assert(this->GetSize() != 0);
-            sharpen::Size hash = HashCode(obj);
+            std::size_t hash = HashCode(obj);
             //double-hashing
-            sharpen::Size delta = (hash >> 17) | (hash << 15);
-            for (sharpen::Size i = 0; i < this->hashCount_; ++i)
+            std::size_t delta = (hash >> 17) | (hash << 15);
+            for (std::size_t i = 0; i < this->hashCount_; ++i)
             {
-                sharpen::Size pos = hash % (this->GetSize()*8);
-                sharpen::Size bit = static_cast<sharpen::Size>(1) << (pos % 8);
+                std::size_t pos = hash % (this->GetSize()*8);
+                std::size_t bit = static_cast<std::size_t>(1) << (pos % 8);
                 if(!(this->space_[pos/8] & bit))
                 {
                     return false;
@@ -160,19 +161,19 @@ namespace sharpen
             return true;
         }
 
-        void CopyTo(char *data,sharpen::Size size) const
+        void CopyTo(char *data,std::size_t size) const
         {
             if(size < this->GetSize())
             {
                 throw std::invalid_argument("buffer too small");
             }
-            for (sharpen::Size i = 0; i != this->GetSize(); ++i)
+            for (std::size_t i = 0; i != this->GetSize(); ++i)
             {
                 *data++ = static_cast<char>(this->space_[i]);
             }
         }
 
-        inline sharpen::Size GetSize() const noexcept
+        inline std::size_t GetSize() const noexcept
         {
             return this->size_;
         }

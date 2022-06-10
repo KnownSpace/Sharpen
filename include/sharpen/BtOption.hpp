@@ -4,22 +4,23 @@
 
 #include <utility>
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 
 namespace sharpen
 {
     class BtOption
     {
     public:
-        using Comparator = sharpen::Int32(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
+        using Comparator = std::int32_t(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
     private:
         using Self = sharpen::BtOption;
 
-        constexpr static sharpen::Size defaultCacheSize_{64};
-        constexpr static sharpen::Uint16 defaultMaxRecordsOfBlock{128};
+        constexpr static std::size_t defaultCacheSize_{64};
+        constexpr static std::uint16_t defaultMaxRecordsOfBlock{128};
         
-        sharpen::Uint16 maxRecordsOfBlock_;
-        sharpen::Size cacheSize_;
+        std::uint16_t maxRecordsOfBlock_;
+        std::size_t cacheSize_;
         Comparator comp_;
     public:
 
@@ -27,7 +28,7 @@ namespace sharpen
             :BtOption(Self::defaultMaxRecordsOfBlock)
         {}
 
-        explicit BtOption(sharpen::Uint16 maxRecordOfBlock) noexcept
+        explicit BtOption(std::uint16_t maxRecordOfBlock) noexcept
             :BtOption(nullptr,maxRecordOfBlock,Self::defaultCacheSize_)
         {}
 
@@ -35,7 +36,7 @@ namespace sharpen
             :BtOption(comp,Self::defaultMaxRecordsOfBlock,Self::defaultCacheSize_)
         {}
 
-        BtOption(Comparator comp,sharpen::Uint16 maxRecordOfBlock,sharpen::Size cacheSize) noexcept
+        BtOption(Comparator comp,std::uint16_t maxRecordOfBlock,std::size_t cacheSize) noexcept
             :maxRecordsOfBlock_(maxRecordOfBlock)
             ,cacheSize_(cacheSize)
             ,comp_(comp)
@@ -65,12 +66,12 @@ namespace sharpen
     
         ~BtOption() noexcept = default;
 
-        inline sharpen::Size GetCacheSize() const noexcept
+        inline std::size_t GetCacheSize() const noexcept
         {
             return this->cacheSize_;
         }
 
-        inline sharpen::Uint16 GetMaxRecordsOfBlock() const noexcept
+        inline std::uint16_t GetMaxRecordsOfBlock() const noexcept
         {
             return this->maxRecordsOfBlock_;
         }

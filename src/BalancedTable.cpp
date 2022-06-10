@@ -6,7 +6,7 @@
 #include <sharpen/IteratorOps.hpp>
 #include <sharpen/IntOps.hpp>
 
-sharpen::Int32 sharpen::BalancedTable::CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept
+std::int32_t sharpen::BalancedTable::CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept
 {
     if(this->root_.GetComparator())
     {
@@ -23,7 +23,7 @@ void sharpen::BalancedTable::InitFile()
     this->offset_ = sizeof(pointers);
 }
 
-sharpen::FilePointer sharpen::BalancedTable::AllocMemory(sharpen::Uint64 size)
+sharpen::FilePointer sharpen::BalancedTable::AllocMemory(std::uint64_t size)
 {
     std::unique_lock<sharpen::AsyncMutex> lock{*this->allocLock_};
     if(!this->freeArea_.empty())
@@ -60,7 +60,7 @@ sharpen::FilePointer sharpen::BalancedTable::AllocMemory(sharpen::Uint64 size)
             return pointer;
         }
     }
-    sharpen::Uint64 offset{this->offset_};
+    std::uint64_t offset{this->offset_};
     this->offset_ += size;
     sharpen::FilePointer pointer;
     pointer.offset_ = offset;
@@ -76,7 +76,7 @@ void sharpen::BalancedTable::FreeMemory(sharpen::FilePointer pointer)
     }
     std::unique_lock<sharpen::AsyncMutex> lock{*this->allocLock_};
     assert(pointer.size_ >= sizeof(sharpen::FilePointer));
-    sharpen::Uint64 offset{0};
+    std::uint64_t offset{0};
     if(!this->freeArea_.empty())
     {
         offset = this->freeArea_.back().offset_;
@@ -152,7 +152,7 @@ std::shared_ptr<sharpen::BtBlock> sharpen::BalancedTable::LoadCache(sharpen::Fil
 sharpen::BalancedTable::BalancedTable(sharpen::FileChannelPtr channel,const sharpen::BtOption &opt)
     :channel_(std::move(channel))
     ,freeArea_()
-    ,maxRecordsOfBlock_((std::max)(static_cast<sharpen::Uint16>(3),opt.GetMaxRecordsOfBlock()))
+    ,maxRecordsOfBlock_((std::max)(static_cast<std::uint16_t>(3),opt.GetMaxRecordsOfBlock()))
     ,root_(0,this->maxRecordsOfBlock_)
     ,offset_(0)
     ,caches_(opt.GetCacheSize())
@@ -164,7 +164,7 @@ sharpen::BalancedTable::BalancedTable(sharpen::FileChannelPtr channel,const shar
         throw std::bad_alloc();
     }
     this->freeArea_.reserve(64);
-    sharpen::Uint64 size{this->channel_->GetFileSize()};
+    std::uint64_t size{this->channel_->GetFileSize()};
     if(!size)
     {
         this->InitFile();
@@ -226,7 +226,7 @@ void sharpen::BalancedTable::WriteRootPointer(sharpen::FilePointer pointer)
 
 sharpen::FilePointer sharpen::BalancedTable::AllocMemory(const sharpen::BtBlock &block)
 {
-    sharpen::Uint64 size{this->ComputeBlockSize(block)};
+    std::uint64_t size{this->ComputeBlockSize(block)};
     return this->AllocMemory(size);
 }
 
@@ -310,10 +310,10 @@ void sharpen::BalancedTable::AllocAndWriteBlock(sharpen::BtBlock &block)
     }
 }
 
-sharpen::Uint64 sharpen::BalancedTable::ComputeBlockSize(const sharpen::BtBlock &block) noexcept
+std::uint64_t sharpen::BalancedTable::ComputeBlockSize(const sharpen::BtBlock &block) noexcept
 {
-    sharpen::Size used{block.GetUsedSize()};
-    sharpen::Size blockSize{used/Self::blockSize_};
+    std::size_t used{block.GetUsedSize()};
+    std::size_t blockSize{used/Self::blockSize_};
     if(used % Self::blockSize_)
     {
         blockSize += 1;
@@ -322,22 +322,22 @@ sharpen::Uint64 sharpen::BalancedTable::ComputeBlockSize(const sharpen::BtBlock 
     return blockSize * Self::blockSize_;
 }
 
-sharpen::BtBlock sharpen::BalancedTable::LoadBlock(sharpen::Uint64 offset,sharpen::Uint64 size,sharpen::ByteBuffer &buf) const
+sharpen::BtBlock sharpen::BalancedTable::LoadBlock(std::uint64_t offset,std::uint64_t size,sharpen::ByteBuffer &buf) const
 {
-    buf.ExtendTo(sharpen::IntCast<sharpen::Size>(size));
+    buf.ExtendTo(sharpen::IntCast<std::size_t>(size));
     this->channel_->ReadAsync(buf.Data(),size,offset);
-    sharpen::BtBlock block{sharpen::IntCast<sharpen::Size>(size)};
+    sharpen::BtBlock block{sharpen::IntCast<std::size_t>(size)};
     block.LoadFrom(buf);
     //set comparator
     block.SetComparator(this->root_.GetComparator());
     //set switzz pointer
     block.SetSwitzzPointer(offset);
     //set block size
-    block.SetBlockSize(sharpen::IntCast<sharpen::Size>(size));
+    block.SetBlockSize(sharpen::IntCast<std::size_t>(size));
     return block;
 }
 
-sharpen::BtBlock sharpen::BalancedTable::LoadBlock(sharpen::Uint64 offset,sharpen::Uint64 size) const
+sharpen::BtBlock sharpen::BalancedTable::LoadBlock(std::uint64_t offset,std::uint64_t size) const
 {
     sharpen::ByteBuffer buf;
     return this->LoadBlock(offset,size,buf);
@@ -345,7 +345,7 @@ sharpen::BtBlock sharpen::BalancedTable::LoadBlock(sharpen::Uint64 offset,sharpe
 
 sharpen::BtBlock sharpen::BalancedTable::LoadBlock(const sharpen::ByteBuffer &key) const
 {
-    sharpen::Size depth{this->GetDepth()};
+    std::size_t depth{this->GetDepth()};
     if(depth)
     {
         auto ite = this->root_.FuzzingFind(key);
@@ -354,7 +354,7 @@ sharpen::BtBlock sharpen::BalancedTable::LoadBlock(const sharpen::ByteBuffer &ke
         sharpen::FilePointer pointer;
         std::memset(&pointer,0,sizeof(pointer));
         std::shared_ptr<sharpen::BtBlock> blockRef{nullptr};
-        for (sharpen::Size i = 0,count = depth; i != count; ++i)
+        for (std::size_t i = 0,count = depth; i != count; ++i)
         {
             pointer = ite->ValueAsPointer();
             blockRef = this->LoadFromCache(pointer);
@@ -384,14 +384,14 @@ sharpen::BtBlock sharpen::BalancedTable::LoadBlock(const sharpen::ByteBuffer &ke
 
 std::vector<std::shared_ptr<sharpen::BtBlock>> sharpen::BalancedTable::GetPath(const sharpen::ByteBuffer &key,bool doCache) const
 {
-    sharpen::Size depth{this->GetDepth()};
+    std::size_t depth{this->GetDepth()};
     std::vector<std::shared_ptr<sharpen::BtBlock>> path;
     if(depth)
     {
         auto ite = this->root_.FuzzingFind(key);
         path.reserve(depth);
         sharpen::ByteBuffer buf;
-        for (sharpen::Size i = 0,count = depth; i != count; ++i)
+        for (std::size_t i = 0,count = depth; i != count; ++i)
         {
             sharpen::FilePointer pointer{ite->ValueAsPointer()};
             std::shared_ptr<sharpen::BtBlock> block{nullptr};
@@ -427,7 +427,7 @@ sharpen::AsyncReadWriteLock &sharpen::BalancedTable::GetBlockLock(const sharpen:
     return this->lockTable_.GetLock(block.GetSwitzzPointer());
 }
 
-sharpen::AsyncReadWriteLock &sharpen::BalancedTable::GetBlockLock(sharpen::Uint64 switzzPointer) const
+sharpen::AsyncReadWriteLock &sharpen::BalancedTable::GetBlockLock(std::uint64_t switzzPointer) const
 {
     assert(switzzPointer != 0);
     return this->lockTable_.GetLock(switzzPointer);
@@ -770,13 +770,13 @@ void sharpen::BalancedTable::Delete(const sharpen::ByteBuffer &key)
 
 std::shared_ptr<const sharpen::BtBlock> sharpen::BalancedTable::FindBlock(const sharpen::ByteBuffer &key,bool doCache) const
 {
-    sharpen::Size depth{this->GetDepth()};
+    std::size_t depth{this->GetDepth()};
     if(depth)
     {
         auto ite = this->root_.FuzzingFind(key);
         std::shared_ptr<sharpen::BtBlock> block{nullptr};
         sharpen::ByteBuffer buf;
-        for (sharpen::Size i = 0,count = depth; i != count; ++i)
+        for (std::size_t i = 0,count = depth; i != count; ++i)
         {
             sharpen::FilePointer pointer{ite->ValueAsPointer()};
             if(doCache)
@@ -800,12 +800,12 @@ std::shared_ptr<const sharpen::BtBlock> sharpen::BalancedTable::FindBlock(const 
 
 std::shared_ptr<const sharpen::BtBlock> sharpen::BalancedTable::FindBlockFromCache(const sharpen::ByteBuffer &key) const
 {
-    sharpen::Size depth{this->GetDepth()};
+    std::size_t depth{this->GetDepth()};
     if(depth)
     {
         auto ite = this->root_.Find(key);
         std::shared_ptr<sharpen::BtBlock> block{nullptr};
-        for (sharpen::Size i = 0,count = depth; i != count; ++i)
+        for (std::size_t i = 0,count = depth; i != count; ++i)
         {
             sharpen::FilePointer pointer{ite->ValueAsPointer()};
             block = this->LoadFromCache(pointer);
@@ -828,11 +828,11 @@ bool sharpen::BalancedTable::IsFault() const
         return true;
     }
     sharpen::BtBlock leaf{this->root_};
-    sharpen::Size depth{this->GetDepth()};
+    std::size_t depth{this->GetDepth()};
     if(depth)
     {
         sharpen::FilePointer prevPointer;
-        for (sharpen::Size i = 0; i != depth; ++i)
+        for (std::size_t i = 0; i != depth; ++i)
         {
             auto it = leaf.Begin();
             assert(it != leaf.End());

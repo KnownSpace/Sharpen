@@ -16,7 +16,7 @@ namespace sharpen
     {
         sharpen::IoEvent event_;
         void *data_;
-        sharpen::Size length_;
+        std::size_t length_;
         iovec vec_;
         sharpen::ChannelPtr channel_;
     };

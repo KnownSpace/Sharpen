@@ -4,7 +4,8 @@
 
 #include <utility>
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 
 namespace sharpen
 {
@@ -14,28 +15,28 @@ namespace sharpen
         using Self = sharpen::SstBuildOption;
 
         // 1% - fake positive rate
-        static constexpr sharpen::Size defaultBitsOfElement_{10};
+        static constexpr std::size_t defaultBitsOfElement_{10};
 
         //default block size is 4kb
-        static constexpr sharpen::Size defaultBlockSize_{4*1024};
+        static constexpr std::size_t defaultBlockSize_{4*1024};
 
         //erase elements that already deleted
         bool eraseDeleted_;
         //bloom filter config
-        sharpen::Size bitsOfElement_;
+        std::size_t bitsOfElement_;
         //size of every block
-        sharpen::Size blockSize_;
+        std::size_t blockSize_;
     public:
 
         explicit SstBuildOption(bool eraseDeleted)
             :SstBuildOption(eraseDeleted,Self::defaultBitsOfElement_)
         {}
 
-        SstBuildOption(bool eraseDeleted,sharpen::Size bitsOfElement)
+        SstBuildOption(bool eraseDeleted,std::size_t bitsOfElement)
             :SstBuildOption(eraseDeleted,bitsOfElement,Self::defaultBlockSize_)
         {}
 
-        SstBuildOption(bool eraseDeleted,sharpen::Size bitsOfElement,sharpen::Size blockSize)
+        SstBuildOption(bool eraseDeleted,std::size_t bitsOfElement,std::size_t blockSize)
             :eraseDeleted_(eraseDeleted)
             ,bitsOfElement_(bitsOfElement)
             ,blockSize_(blockSize)
@@ -70,12 +71,12 @@ namespace sharpen
             return this->eraseDeleted_;
         }
 
-        inline sharpen::Size GetFilterBitsOfElement() const noexcept
+        inline std::size_t GetFilterBitsOfElement() const noexcept
         {
             return this->bitsOfElement_;
         }
 
-        inline sharpen::Size GetBlockSize() const noexcept
+        inline std::size_t GetBlockSize() const noexcept
         {
             return this->blockSize_;
         }

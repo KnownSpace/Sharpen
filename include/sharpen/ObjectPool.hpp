@@ -6,7 +6,8 @@
 #include <functional>
 
 #include "Noncopyable.hpp"
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 
 namespace sharpen
 {
@@ -22,16 +23,16 @@ namespace sharpen
         Storage objects_;
         Creator creator_;
         Deletor deletor_;
-        sharpen::Size maxReserved_;
+        std::size_t maxReserved_;
     public:
-        ObjectPool(Creator creator,sharpen::Size maxReserved)
+        ObjectPool(Creator creator,std::size_t maxReserved)
             :objects_()
             ,creator_(std::move(creator))
             ,deletor_()
             ,maxReserved_(maxReserved)
         {}
         
-        ObjectPool(Creator creator,Deletor deletor,sharpen::Size maxReserved)
+        ObjectPool(Creator creator,Deletor deletor,std::size_t maxReserved)
             :objects_()
             ,creator_(std::move(creator))
             ,deletor_(std::move(deletor))
@@ -89,9 +90,9 @@ namespace sharpen
             return std::move(obj);
         }
         
-        void Reserve(sharpen::Size n)
+        void Reserve(std::size_t n)
         {
-            for(sharpen::Size i = 0;i < n;++i)
+            for(std::size_t i = 0;i < n;++i)
             {
                 this->objects_.push_back(std::move(this->creator()));
             }

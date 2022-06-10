@@ -43,20 +43,20 @@ namespace sharpen
         using ConstIterator = typename Pairs::const_iterator;
         using ReverseIterator = typename Pairs::reverse_iterator;
         using ConstReverseIterator = typename Pairs::const_reverse_iterator;
-        using Comparator = sharpen::Int32(*)(const sharpen::ByteBuffer &,const sharpen::ByteBuffer &);
+        using Comparator = std::int32_t(*)(const sharpen::ByteBuffer &,const sharpen::ByteBuffer &);
 
     private:
-        static constexpr sharpen::Size defaultMaxRecordCount_{32};
+        static constexpr std::size_t defaultMaxRecordCount_{32};
 
         //persisent status
-        sharpen::Size depth_;
+        std::size_t depth_;
         sharpen::FilePointer next_;
         sharpen::FilePointer prev_;
         Pairs pairs_;
         //volatile status
-        sharpen::Size blockSize_;
-        sharpen::Size usedSize_;
-        sharpen::Uint64 switzzPointer_;
+        std::size_t blockSize_;
+        std::size_t usedSize_;
+        std::uint64_t switzzPointer_;
         //comparator
         Comparator comp_;
 
@@ -64,7 +64,7 @@ namespace sharpen
 
         static bool WarppedComp(Comparator comp,const sharpen::BtKeyValuePair &pair,const sharpen::ByteBuffer &key) noexcept;
 
-        sharpen::Int32 CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept;
+        std::int32_t CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept;
     public:
 
         enum class PutTage
@@ -76,9 +76,9 @@ namespace sharpen
 
         BtBlock();
     
-        explicit BtBlock(sharpen::Size blockSize);
+        explicit BtBlock(std::size_t blockSize);
 
-        BtBlock(sharpen::Size blockSize,sharpen::Size maxRecordCount);
+        BtBlock(std::size_t blockSize,std::size_t maxRecordCount);
     
         BtBlock(const Self &other) = default;
     
@@ -95,27 +95,27 @@ namespace sharpen
     
         ~BtBlock() noexcept = default;
 
-        inline sharpen::Size GetDepth() const noexcept
+        inline std::size_t GetDepth() const noexcept
         {
             return this->depth_;
         }
 
-        inline void SetDepth(sharpen::Size depth) noexcept
+        inline void SetDepth(std::size_t depth) noexcept
         {
             this->depth_ = depth;
         }
 
-        inline sharpen::Size GetBlockSize() const noexcept
+        inline std::size_t GetBlockSize() const noexcept
         {
             return this->blockSize_;
         }
 
-        inline void SetBlockSize(sharpen::Size blockSize) noexcept
+        inline void SetBlockSize(std::size_t blockSize) noexcept
         {
             this->blockSize_ = blockSize;
         }
 
-        inline sharpen::Size GetUsedSize() const noexcept
+        inline std::size_t GetUsedSize() const noexcept
         {
             return this->usedSize_;
         }
@@ -140,22 +140,22 @@ namespace sharpen
             return this->prev_;
         }
 
-        sharpen::Size LoadFrom(const char *data,sharpen::Size size);
+        std::size_t LoadFrom(const char *data,std::size_t size);
 
-        sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset);
+        std::size_t LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset);
 
-        inline sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf)
+        inline std::size_t LoadFrom(const sharpen::ByteBuffer &buf)
         {
             return this->LoadFrom(buf,0);
         }
 
-        sharpen::Size UnsafeStoreTo(char *data) const;
+        std::size_t UnsafeStoreTo(char *data) const;
 
-        sharpen::Size StoreTo(char *data,sharpen::Size size) const;
+        std::size_t StoreTo(char *data,std::size_t size) const;
 
-        sharpen::Size StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
+        std::size_t StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const;
 
-        inline sharpen::Size StoreTo(sharpen::ByteBuffer &buf) const
+        inline std::size_t StoreTo(sharpen::ByteBuffer &buf) const
         {
             return this->StoreTo(buf,0);
         }
@@ -238,7 +238,7 @@ namespace sharpen
             return this->pairs_.rend();
         }
 
-        inline sharpen::Size GetSize() const noexcept
+        inline std::size_t GetSize() const noexcept
         {
             return this->pairs_.size();
         }
@@ -260,26 +260,26 @@ namespace sharpen
             return this->usedSize_ > this->blockSize_;
         }
 
-        inline sharpen::Size GetAppendPointer() const noexcept
+        inline std::size_t GetAppendPointer() const noexcept
         {
             return this->usedSize_;
         }
 
-        inline sharpen::Size ComputeMotifyEndPointer() const noexcept
+        inline std::size_t ComputeMotifyEndPointer() const noexcept
         {
             return this->usedSize_ - this->ReverseBegin()->ComputeSize();
         }
 
-        sharpen::Size ComputeCounterPointer() const noexcept;
+        std::size_t ComputeCounterPointer() const noexcept;
 
-        sharpen::Size ComputeNextPointer() const noexcept;
+        std::size_t ComputeNextPointer() const noexcept;
 
-        sharpen::Size ComputePrevPointer() const noexcept;
+        std::size_t ComputePrevPointer() const noexcept;
 
-        static inline constexpr sharpen::Size GetCounterSize() noexcept
+        static inline constexpr std::size_t GetCounterSize() noexcept
         {
             //we use 2 bytes
-            return sizeof(sharpen::Uint16);
+            return sizeof(std::uint16_t);
         }
 
         inline Comparator GetComparator() const noexcept
@@ -292,12 +292,12 @@ namespace sharpen
             this->comp_ = comp;
         }
 
-        inline sharpen::Uint64 GetSwitzzPointer() const noexcept
+        inline std::uint64_t GetSwitzzPointer() const noexcept
         {
             return this->switzzPointer_;
         }
 
-        void SetSwitzzPointer(sharpen::Uint64 pointer) noexcept
+        void SetSwitzzPointer(std::uint64_t pointer) noexcept
         {
             this->switzzPointer_ = pointer;
         }

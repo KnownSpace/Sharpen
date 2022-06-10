@@ -34,7 +34,7 @@ namespace sharpen
     void ConvertEndian(_T &val)
     {
         char *data = reinterpret_cast<char*>(&val);
-        for (sharpen::Size i = 0; i < sizeof(_T)/2; i++)
+        for (std::size_t i = 0; i < sizeof(_T)/2; i++)
         {
             char tmp = data[i];
             data[i] = data[sizeof(_T) - 1 - i];
@@ -42,9 +42,9 @@ namespace sharpen
         }
     }
 
-    inline void ConvertEndian(char *data,sharpen::Size size)
+    inline void ConvertEndian(char *data,std::size_t size)
     {
-        for (sharpen::Size i = 0,count = size/2; i < count; i++)
+        for (std::size_t i = 0,count = size/2; i < count; i++)
         {
             char tmp = data[i];
             data[i] = data[size - 1 - i];

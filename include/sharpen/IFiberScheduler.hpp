@@ -31,7 +31,7 @@ namespace sharpen
         }
 
         template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<void,_Fn,_Args...>::Value>>
-        void LaunchSpecial(sharpen::Size stackSize,_Fn &&fn,_Args &&...args)
+        void LaunchSpecial(std::size_t stackSize,_Fn &&fn,_Args &&...args)
         {
             sharpen::FiberPtr fiber = sharpen::Fiber::MakeFiber(stackSize,std::forward<_Fn>(fn),std::forward<_Args>(args)...);
             fiber->SetScheduler(this);

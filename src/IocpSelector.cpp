@@ -1,6 +1,9 @@
 #include <sharpen/IocpSelector.hpp>
 #include <algorithm>
-#include<sharpen/TypeDef.hpp>
+#include <cstddef>
+#include <cstdint>
+#include <cassert>
+#include <limits>
 
 #ifdef SHARPEN_HAS_IOCP
 
@@ -37,7 +40,8 @@ void sharpen::IocpSelector::Notify()
 
 void sharpen::IocpSelector::Select(EventVector &events)
 {
-    sharpen::Uint32 count = this->iocp_.Wait(this->eventBuf_.data(),static_cast<Uint32>(this->eventBuf_.size()),INFINITE);
+    assert(events.size() <= (std::numeric_limits<std::uint32_t>::max)());
+    std::uint32_t count = this->iocp_.Wait(this->eventBuf_.data(),static_cast<std::uint32_t>(this->eventBuf_.size()),INFINITE);
     for (size_t i = 0; i < count; i++)
     {
         sharpen::IoCompletionPort::Event &e = this->eventBuf_[i];

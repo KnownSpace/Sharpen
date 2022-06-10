@@ -21,15 +21,15 @@ namespace sharpen
 
         void InitOverlappedStruct(sharpen::IocpOverlappedStruct &olStruct);
     
-        void RequestWrite(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future);
+        void RequestWrite(const char *buf,std::size_t bufSize,sharpen::Future<std::size_t> *future);
     public:
         explicit WinOutputPipeChannel(sharpen::FileHandle handle);
 
         virtual ~WinOutputPipeChannel();
 
-        virtual void WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future) override;
+        virtual void WriteAsync(const char *buf,std::size_t bufSize,sharpen::Future<std::size_t> &future) override;
         
-        virtual void WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Future<sharpen::Size> &future) override;
+        virtual void WriteAsync(const sharpen::ByteBuffer &buf,std::size_t bufferOffset,sharpen::Future<std::size_t> &future) override;
 
         virtual void OnEvent(sharpen::IoEvent *event) override;
     };

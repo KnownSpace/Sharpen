@@ -110,24 +110,24 @@ namespace sharpen
             return this->actions_.clear();
         }
 
-        void LoadFrom(const char *data,sharpen::Size size);
+        void LoadFrom(const char *data,std::size_t size);
 
-        void LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset);
+        void LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset);
 
         inline void LoadFrom(const sharpen::ByteBuffer &buf)
         {
             this->LoadFrom(buf,0);
         }
 
-        sharpen::Size ComputeSize() const noexcept;
+        std::size_t ComputeSize() const noexcept;
 
-        sharpen::Size UnsafeStoreTo(char *data) const;
+        std::size_t UnsafeStoreTo(char *data) const;
 
-        sharpen::Size StoreTo(char *data,sharpen::Size size) const;
+        std::size_t StoreTo(char *data,std::size_t size) const;
 
-        sharpen::Size StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
+        std::size_t StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const;
 
-        inline sharpen::Size StoreTo(sharpen::ByteBuffer &buf) const
+        inline std::size_t StoreTo(sharpen::ByteBuffer &buf) const
         {
             return this->StoreTo(buf,0);
         }

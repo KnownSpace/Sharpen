@@ -10,7 +10,8 @@
 #include <sys/uio.h>
 #include <functional>
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "FileTypeDef.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
@@ -31,13 +32,13 @@ namespace sharpen
         Callbacks cbs_;
         Callbacks pendingCbs_;
 
-        void ConvertByteToBufferNumber(sharpen::Size byteNumber,sharpen::Size &bufferNumber,sharpen::Size &lastSize);
+        void ConvertByteToBufferNumber(std::size_t byteNumber,std::size_t &bufferNumber,std::size_t &lastSize);
 
         void FillBufferAndCallback();
 
-        void MoveMark(sharpen::Size newMark);
+        void MoveMark(std::size_t newMark);
 
-        sharpen::Size GetMark() const;
+        std::size_t GetMark() const;
 
         const IoBuffer *GetFirstBuffer() const;
 
@@ -47,20 +48,20 @@ namespace sharpen
 
         Callback *GetFirstCallback();
 
-        sharpen::Size GetRemainingSize() const;
+        std::size_t GetRemainingSize() const;
 
-        sharpen::Size ComputePendingSize() const;
+        std::size_t ComputePendingSize() const;
 
         virtual void DoExecute(sharpen::FileHandle handle,bool &executed,bool &blocking) = 0;
     private:
         
-        sharpen::Size mark_;
+        std::size_t mark_;
     public:
         IPosixIoOperator();
 
         virtual ~IPosixIoOperator() noexcept = default;
 
-        void AddPendingTask(sharpen::Char *buf,sharpen::Size size,Callback cb);
+        void AddPendingTask(char *buf,std::size_t size,Callback cb);
 
         void Execute(sharpen::FileHandle handle,bool &executed,bool &blocking);
 

@@ -3,7 +3,8 @@
 #define _SHARPEN_IENDPOINT_HPP
 
 #include "SystemMacro.hpp"
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "NetTypeDef.hpp"
 
 #ifdef SHARPEN_IS_WIN
@@ -34,7 +35,7 @@ namespace sharpen
 
         virtual const NativeAddr *GetAddrPtr() const noexcept = 0;
 
-        virtual sharpen::Uint32 GetAddrLen() const = 0;
+        virtual std::uint32_t GetAddrLen() const = 0;
     };
 }
 

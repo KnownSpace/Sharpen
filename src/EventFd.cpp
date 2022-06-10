@@ -8,7 +8,7 @@
 
 #include <sharpen/SystemError.hpp>
 
-sharpen::EventFd::EventFd(sharpen::Uint32 initVal,int flags)
+sharpen::EventFd::EventFd(std::uint32_t initVal,int flags)
     :handle_(::eventfd(initVal,flags))
 {
     if(handle_ == -1)

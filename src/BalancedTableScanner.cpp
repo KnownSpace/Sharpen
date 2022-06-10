@@ -203,7 +203,7 @@ bool sharpen::BalancedTableScanner::Seek(const sharpen::ByteBuffer &key)
 {
     if (this->IsRangeQuery())
     {
-        sharpen::Int32 r{this->table_->CompareKeys(key,this->GetRangeBegin())};
+        std::int32_t r{this->table_->CompareKeys(key,this->GetRangeBegin())};
         if(r == -1)
         {
             return false;
@@ -214,7 +214,7 @@ bool sharpen::BalancedTableScanner::Seek(const sharpen::ByteBuffer &key)
             return false;
         }
     }
-    sharpen::Size curr{0};
+    std::size_t curr{0};
     while (curr != this->pointers_.size())
     {
         sharpen::FilePointer currentPointer{this->pointers_[curr]};

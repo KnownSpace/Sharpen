@@ -22,10 +22,11 @@ sharpen::IoCompletionPort::~IoCompletionPort() noexcept
     }
 }
 
-sharpen::Uint32 sharpen::IoCompletionPort::Wait(sharpen::IoCompletionPort::Event *events,sharpen::Uint32 maxEvent,sharpen::Uint32 timeout)
+std::uint32_t sharpen::IoCompletionPort::Wait(sharpen::IoCompletionPort::Event *events,std::uint32_t maxEvent,std::uint32_t timeout)
 {
     assert(this->handle_ != NULL);
-    ULONG count = 0;
+    assert(static_cast<DWORD>(maxEvent) >= 0);
+    ULONG count{0};
     BOOL r = ::GetQueuedCompletionStatusEx(this->handle_,events,maxEvent,&count,timeout,TRUE);
     if(r == FALSE)
     {
@@ -48,7 +49,7 @@ void sharpen::IoCompletionPort::Bind(sharpen::FileHandle handle)
     }
 }
 
-void sharpen::IoCompletionPort::Post(sharpen::IoCompletionPort::Overlapped *overlapped,sharpen::Uint32 bytesTransferred,void *completionKey)
+void sharpen::IoCompletionPort::Post(sharpen::IoCompletionPort::Overlapped *overlapped,std::uint32_t bytesTransferred,void *completionKey)
 {
     assert(this->handle_ != NULL);
     BOOL r = ::PostQueuedCompletionStatus(this->handle_,bytesTransferred,(ULONG_PTR)completionKey,overlapped);

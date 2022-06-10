@@ -27,7 +27,7 @@ namespace sharpen
         private:
             using Cb = std::function<void()>;
         public:
-            sharpen::Size round_;
+            std::size_t round_;
             Cb cb_;
         };
         
@@ -45,7 +45,7 @@ namespace sharpen
         std::chrono::milliseconds waitTime_;
         sharpen::TimeWheelPtr upstream_;
         std::vector<typename Self::TickBucket> buckets_;
-        sharpen::Size pos_;
+        std::size_t pos_;
         std::atomic_bool running_;
         std::chrono::milliseconds roundTime_;
         sharpen::TimerPtr timer_;
@@ -63,7 +63,7 @@ namespace sharpen
         }
     public:
         template<typename _Rep,typename _Period>
-        TimeWheel(const std::chrono::duration<_Rep,_Period> &duration,sharpen::Size count,sharpen::TimerPtr timer)
+        TimeWheel(const std::chrono::duration<_Rep,_Period> &duration,std::size_t count,sharpen::TimerPtr timer)
             :waitTime_(duration)
             ,upstream_(nullptr)
             ,buckets_(count)
@@ -74,7 +74,7 @@ namespace sharpen
         {}
 
         template<typename _Rep,typename _Period>
-        TimeWheel(const std::chrono::duration<_Rep,_Period> &duration,sharpen::Size count)
+        TimeWheel(const std::chrono::duration<_Rep,_Period> &duration,std::size_t count)
             :TimeWheel(duration,count,nullptr)
         {}
 
@@ -84,7 +84,7 @@ namespace sharpen
             sharpen::TimeWheel::TickCallback cb;
             cb.cb_ = std::move(task);
             cb.round_ = duration / this->roundTime_;
-            sharpen::Size buck = (duration % this->roundTime_) / this->waitTime_;
+            std::size_t buck = (duration % this->roundTime_) / this->waitTime_;
             if (buck != 0)
             {
                 buck -= 1;
@@ -120,14 +120,14 @@ namespace sharpen
     };
 
     template<typename _Rep,typename _Period>
-    inline sharpen::TimeWheelPtr MakeTimeWheel(const std::chrono::duration<_Rep,_Period> &duration,sharpen::Size count,sharpen::TimerPtr timer)
+    inline sharpen::TimeWheelPtr MakeTimeWheel(const std::chrono::duration<_Rep,_Period> &duration,std::size_t count,sharpen::TimerPtr timer)
     {
         sharpen::TimeWheelPtr tw = std::make_shared<sharpen::TimeWheel>(duration,count,timer);
         return std::move(tw);
     }
 
     template<typename _Rep,typename _Period>
-    inline sharpen::TimeWheelPtr MakeUpstreamTimeWheel(const std::chrono::duration<_Rep,_Period> &duration,sharpen::Size count)
+    inline sharpen::TimeWheelPtr MakeUpstreamTimeWheel(const std::chrono::duration<_Rep,_Period> &duration,std::size_t count)
     {
         sharpen::TimeWheelPtr tw = std::make_shared<sharpen::TimeWheel>(duration,count);
         return std::move(tw);

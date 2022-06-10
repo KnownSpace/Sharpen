@@ -20,7 +20,7 @@ namespace sharpen
         using CompletionQueue = std::vector<Cqe>;
         using SubmitQueue = std::deque<Sqe>;
 
-        static constexpr sharpen::Size queueLength{64};
+        static constexpr std::size_t queueLength{64};
     
         sharpen::EventFd eventFd_;
         sharpen::IoUring ring_;
@@ -48,7 +48,7 @@ namespace sharpen
 
         void SubmitIoRequest(const Sqe &sqe);
 
-        sharpen::Size GetCompletionStatus(Cqe *cqes,sharpen::Size size);
+        std::size_t GetCompletionStatus(Cqe *cqes,std::size_t size);
     };
 
     extern bool TestIoUring() noexcept;

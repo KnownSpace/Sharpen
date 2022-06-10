@@ -35,7 +35,7 @@ namespace sharpen
         std::vector<sharpen::LevelViewItem> tables_;
         sharpen::Optional<std::pair<sharpen::ByteBuffer,sharpen::ByteBuffer>> range_;
         sharpen::ByteBuffer currentKey_;
-        sharpen::Size currentTable_;
+        std::size_t currentTable_;
         bool useCache_;
         bool isEmpty_;
     public:

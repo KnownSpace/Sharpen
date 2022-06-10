@@ -5,16 +5,16 @@ sharpen::SstDataBlock::SstDataBlock()
     ,comp_(nullptr)
 {}
 
-void sharpen::SstDataBlock::LoadFrom(const char *data, sharpen::Size size)
+void sharpen::SstDataBlock::LoadFrom(const char *data, std::size_t size)
 {
     if (size < 3)
     {
         throw std::invalid_argument("invalid buffer");
     }
-    sharpen::Uint16 crc{0};
+    std::uint16_t crc{0};
     std::memcpy(&crc, data, sizeof(crc));
     sharpen::Varuint64 groups{0};
-    sharpen::Size offset{sizeof(crc)};
+    std::size_t offset{sizeof(crc)};
     //checksum
     if (crc != sharpen::Crc16(data + offset, size - offset))
     {
@@ -24,19 +24,19 @@ void sharpen::SstDataBlock::LoadFrom(const char *data, sharpen::Size size)
     groups.Set(data + offset, size - offset);
     offset += groups.ComputeSize();
     //load key value groups index
-    sharpen::Size number{sharpen::IntCast<sharpen::Size>(groups.Get())};
-    if (number * sizeof(sharpen::Uint64) + offset > size)
+    std::size_t number{sharpen::IntCast<std::size_t>(groups.Get())};
+    if (number * sizeof(std::uint64_t) + offset > size)
     {
         throw sharpen::DataCorruptionException("data block corruption");
     }
-    std::vector<std::pair<sharpen::Size, sharpen::Size>> indexs;
+    std::vector<std::pair<std::size_t, std::size_t>> indexs;
     indexs.reserve(number);
     {
-        sharpen::Uint64 off{0};
-        for (sharpen::Size i = 1, count = number; i < count; ++i)
+        std::uint64_t off{0};
+        for (std::size_t i = 1, count = number; i < count; ++i)
         {
             std::memcpy(&off, data + offset, sizeof(off));
-            sharpen::Size begin{sharpen::IntCast<sharpen::Size>(off)};
+            std::size_t begin{sharpen::IntCast<std::size_t>(off)};
             //check error
             if (begin > size)
             {
@@ -44,7 +44,7 @@ void sharpen::SstDataBlock::LoadFrom(const char *data, sharpen::Size size)
             }
             offset += sizeof(off);
             std::memcpy(&off, data + offset, sizeof(off));
-            sharpen::Size end{off};
+            std::size_t end{off};
             //check error
             if (end > size || end < begin)
             {
@@ -53,7 +53,7 @@ void sharpen::SstDataBlock::LoadFrom(const char *data, sharpen::Size size)
             indexs.emplace_back(begin, end - begin);
         }
         std::memcpy(&off, data + offset, sizeof(off));
-        sharpen::Size begin{off};
+        std::size_t begin{off};
         offset += sizeof(off);
         if (begin > size)
         {
@@ -80,18 +80,18 @@ void sharpen::SstDataBlock::LoadFrom(const char *data, sharpen::Size size)
     }
 }
 
-void sharpen::SstDataBlock::LoadFrom(const sharpen::ByteBuffer &buf, sharpen::Size offset)
+void sharpen::SstDataBlock::LoadFrom(const sharpen::ByteBuffer &buf, std::size_t offset)
 {
     assert(buf.GetSize() >= offset);
     this->LoadFrom(buf.Data() + offset, buf.GetSize() - offset);
 }
 
-sharpen::Size sharpen::SstDataBlock::ComputeSize() const noexcept
+std::size_t sharpen::SstDataBlock::ComputeSize() const noexcept
 {
-    sharpen::Size size{sizeof(sharpen::Uint16)};
+    std::size_t size{sizeof(std::uint16_t)};
     sharpen::Varuint64 builder{this->groups_.size()};
     size += builder.ComputeSize();
-    size += builder.Get() * sizeof(sharpen::Uint64);
+    size += builder.Get() * sizeof(std::uint64_t);
     for (auto begin = this->groups_.cbegin(), end = this->groups_.cend(); begin != end; ++begin)
     {
         size += begin->ComputeSize();
@@ -99,20 +99,20 @@ sharpen::Size sharpen::SstDataBlock::ComputeSize() const noexcept
     return size;
 }
 
-sharpen::Size sharpen::SstDataBlock::UnsafeStoreTo(char *data) const noexcept
+std::size_t sharpen::SstDataBlock::UnsafeStoreTo(char *data) const noexcept
 {
-    sharpen::Uint16 crc{0};
+    std::uint16_t crc{0};
     sharpen::Varuint64 builder{this->groups_.size()};
     //store number
-    sharpen::Size offset{builder.ComputeSize()};
+    std::size_t offset{builder.ComputeSize()};
     std::memcpy(data + sizeof(crc), builder.Data(), offset);
     offset += sizeof(crc);
     //store key value offsets and groups
-    sharpen::Size last{offset + sizeof(sharpen::Uint64) * this->groups_.size()};
-    for (sharpen::Size i = 0, count = this->groups_.size(); i != count; ++i)
+    std::size_t last{offset + sizeof(std::uint64_t) * this->groups_.size()};
+    for (std::size_t i = 0, count = this->groups_.size(); i != count; ++i)
     {
-        sharpen::Size kvSize{this->groups_[i].UnsafeStoreTo(data + last)};
-        sharpen::Uint64 off{last};
+        std::size_t kvSize{this->groups_[i].UnsafeStoreTo(data + last)};
+        std::uint64_t off{last};
         std::memcpy(data + offset + i * sizeof(off), &off, sizeof(off));
         last += kvSize;
     }
@@ -122,9 +122,9 @@ sharpen::Size sharpen::SstDataBlock::UnsafeStoreTo(char *data) const noexcept
     return last;
 }
 
-sharpen::Size sharpen::SstDataBlock::StoreTo(char *data, sharpen::Size size) const
+std::size_t sharpen::SstDataBlock::StoreTo(char *data, std::size_t size) const
 {
-    sharpen::Size needSize{this->ComputeSize()};
+    std::size_t needSize{this->ComputeSize()};
     if (size < needSize)
     {
         throw std::invalid_argument("buffer too small");
@@ -132,11 +132,11 @@ sharpen::Size sharpen::SstDataBlock::StoreTo(char *data, sharpen::Size size) con
     return this->UnsafeStoreTo(data);
 }
 
-sharpen::Size sharpen::SstDataBlock::StoreTo(sharpen::ByteBuffer &buf, sharpen::Size offset) const
+std::size_t sharpen::SstDataBlock::StoreTo(sharpen::ByteBuffer &buf, std::size_t offset) const
 {
     assert(buf.GetSize() >= offset);
-    sharpen::Size needSize{this->ComputeSize()};
-    sharpen::Size size{buf.GetSize() - offset};
+    std::size_t needSize{this->ComputeSize()};
+    std::size_t size{buf.GetSize() - offset};
     if (needSize > size)
     {
         buf.Extend(needSize - size);
@@ -159,7 +159,7 @@ bool sharpen::SstDataBlock::Comp(const sharpen::SstKeyValueGroup &group, const s
     return group.Last().GetKey() < key;
 }
 
-sharpen::Int32 sharpen::SstDataBlock::CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept
+std::int32_t sharpen::SstDataBlock::CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept
 {
     if(this->comp_)
     {
@@ -305,9 +305,9 @@ void sharpen::SstDataBlock::Delete(sharpen::ByteBuffer key)
     this->Put(std::move(key),sharpen::ByteBuffer{});
 }
 
-sharpen::Size sharpen::SstDataBlock::ComputeKeyCount() const noexcept
+std::size_t sharpen::SstDataBlock::ComputeKeyCount() const noexcept
 {
-    sharpen::Size size{0};
+    std::size_t size{0};
     for (auto begin = this->Begin(), end = this->End(); begin != end; ++begin)
     {
         size += begin->GetSize();
@@ -343,8 +343,8 @@ void sharpen::SstDataBlock::MergeWith(sharpen::SstDataBlock block, bool reserveC
 sharpen::SstDataBlock sharpen::SstDataBlock::Split()
 {
     sharpen::SstDataBlock block;
-    sharpen::Size keyCount{this->ComputeKeyCount() / 2};
-    sharpen::Size movedKey{0};
+    std::size_t keyCount{this->ComputeKeyCount() / 2};
+    std::size_t movedKey{0};
     auto begin = this->ReverseBegin();
     auto end = this->ReverseEnd();
     for (; movedKey < keyCount && begin != end; ++begin)
@@ -352,14 +352,14 @@ sharpen::SstDataBlock sharpen::SstDataBlock::Split()
         block.groups_.emplace_back(std::move(*begin));
         movedKey += block.groups_.back().GetSize();
     }
-    sharpen::Size moved{sharpen::GetRangeSize(this->ReverseBegin(), begin)};
+    std::size_t moved{sharpen::GetRangeSize(this->ReverseBegin(), begin)};
     this->groups_.erase(sharpen::IteratorBackward(this->End(), moved), this->End());
     return block;
 }
 
 bool sharpen::SstDataBlock::IsAtomic() const noexcept
 {
-    sharpen::Size size{this->ComputeKeyCount()/2};
+    std::size_t size{this->ComputeKeyCount()/2};
     for (auto begin = this->Begin(), end = this->End(); begin != end; ++begin)
     {
         if (begin->GetSize() > size)

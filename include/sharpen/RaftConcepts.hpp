@@ -21,22 +21,22 @@ namespace sharpen
     template<typename _PersistentStorage,typename _Log,typename _Id>
     using InternalIsRaftPersistenceStorage = auto(*)()->decltype(std::declval<_PersistentStorage&>().AppendLog(std::declval<const _Log&>()/*log*/)
                                                                 ,std::declval<_PersistentStorage&>().SetVotedFor(std::declval<const _Id&>()/*voteforId*/)
-                                                                ,std::declval<_PersistentStorage&>().SetCurrentTerm(std::declval<sharpen::Uint64>()/*current term*/)
+                                                                ,std::declval<_PersistentStorage&>().SetCurrentTerm(std::declval<std::uint64_t>()/*current term*/)
                                                                 ,std::declval<_PersistentStorage&>().IncreaseCurrentTerm()
-                                                                ,std::declval<sharpen::Uint64&>() = std::declval<const _PersistentStorage&>().GetCurrentTerm()
+                                                                ,std::declval<std::uint64_t&>() = std::declval<const _PersistentStorage&>().GetCurrentTerm()
                                                                 ,std::declval<_Id&>() = std::declval<const _PersistentStorage&>().GetVotedFor()
                                                                 ,std::declval<bool&>() = std::declval<const _PersistentStorage&>().IsVotedFor()
-                                                                ,std::declval<_PersistentStorage>().RemoveLogsAfter(std::declval<sharpen::Uint64>()/*begin log index*/)
-                                                                ,std::declval<bool&>() = std::declval<const _PersistentStorage&>().ContainLog(std::declval<sharpen::Uint64>()/*log index*/)
-                                                                ,std::declval<_Log&>() = std::declval<const _PersistentStorage&>().GetLog(std::declval<sharpen::Uint64>()/*log index*/)
+                                                                ,std::declval<_PersistentStorage>().RemoveLogsAfter(std::declval<std::uint64_t>()/*begin log index*/)
+                                                                ,std::declval<bool&>() = std::declval<const _PersistentStorage&>().ContainLog(std::declval<std::uint64_t>()/*log index*/)
+                                                                ,std::declval<_Log&>() = std::declval<const _PersistentStorage&>().GetLog(std::declval<std::uint64_t>()/*log index*/)
                                                                 ,std::declval<_Log&>() = std::declval<const _PersistentStorage&>().GetLastLog()
-                                                                ,std::declval<sharpen::Uint64&>() = std::declval<const _PersistentStorage&>().GetLogsCount()
+                                                                ,std::declval<std::uint64_t&>() = std::declval<const _PersistentStorage&>().GetLogsCount()
                                                                 ,std::declval<bool&>() = std::declval<const _PersistentStorage&>().EmptyLogs()
                                                                 ,std::declval<_PersistentStorage>().ResetVotedFor()
-                                                                ,std::declval<bool&>() = std::declval<const _PersistentStorage&>().CheckLog(std::declval<sharpen::Uint64>()/*log index*/,std::declval<sharpen::Uint64>()/*expected log term*/)
-                                                                ,std::declval<sharpen::Uint64&>() = std::declval<const _PersistentStorage&>().GetLastLogIndex()
-                                                                ,std::declval<sharpen::Uint64&>() = std::declval<const _PersistentStorage&>().GetLastAppiledIndex()
-                                                                ,std::declval<_PersistentStorage&>().SetLastAppiledIndex(static_cast<sharpen::Uint64>(0)));
+                                                                ,std::declval<bool&>() = std::declval<const _PersistentStorage&>().CheckLog(std::declval<std::uint64_t>()/*log index*/,std::declval<std::uint64_t>()/*expected log term*/)
+                                                                ,std::declval<std::uint64_t&>() = std::declval<const _PersistentStorage&>().GetLastLogIndex()
+                                                                ,std::declval<std::uint64_t&>() = std::declval<const _PersistentStorage&>().GetLastAppiledIndex()
+                                                                ,std::declval<_PersistentStorage&>().SetLastAppiledIndex(static_cast<std::uint64_t>(0)));
 
     template<typename _PersistentStorage,typename _Log,typename _Id>
     using IsRaftPersistenceStorage = sharpen::IsMatches<sharpen::InternalIsRaftPersistenceStorage,_PersistentStorage,_Log,_Id>;

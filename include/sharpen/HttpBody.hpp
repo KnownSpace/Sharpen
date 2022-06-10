@@ -5,7 +5,8 @@
 #include <vector>
 #include <type_traits>
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 
 namespace sharpen
 {
@@ -19,7 +20,7 @@ namespace sharpen
         
         DataType data_;
 
-        void CopyToMem(char *buf,sharpen::Size offset) const;
+        void CopyToMem(char *buf,std::size_t offset) const;
     public:
         using Iterator = typename DataType::iterator;
 
@@ -31,7 +32,7 @@ namespace sharpen
 
         HttpBody();
 
-        explicit HttpBody(sharpen::Size size);
+        explicit HttpBody(std::size_t size);
 
         HttpBody(const Self &other);
 
@@ -50,22 +51,22 @@ namespace sharpen
             this->Swap(other);
         }
 
-        sharpen::Size CopyTo(char *buf,sharpen::Size size) const;
+        std::size_t CopyTo(char *buf,std::size_t size) const;
 
-        sharpen::Size CopyTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
+        std::size_t CopyTo(sharpen::ByteBuffer &buf,std::size_t offset) const;
 
-        inline sharpen::Size CopyTo(sharpen::ByteBuffer &buf) const
+        inline std::size_t CopyTo(sharpen::ByteBuffer &buf) const
         {
             return this->CopyTo(buf,0);
         }
 
-        void CopyFrom(const char *buf,sharpen::Size size);
+        void CopyFrom(const char *buf,std::size_t size);
 
-        void CopyFrom(sharpen::ByteBuffer &buf,sharpen::Size offset,sharpen::Size size);
+        void CopyFrom(sharpen::ByteBuffer &buf,std::size_t offset,std::size_t size);
 
         void CopyFrom(sharpen::ByteBuffer &buf);
 
-        sharpen::Size GetSize() const;
+        std::size_t GetSize() const;
 
         Iterator Begin();
 
@@ -83,29 +84,29 @@ namespace sharpen
 
         ConstReverseIterator ReverseEnd() const;
 
-        void Realloc(sharpen::Size size);
+        void Realloc(std::size_t size);
 
         char *Data();
         
         const char *Data() const;
 
-        char Get(sharpen::Size index) const;
+        char Get(std::size_t index) const;
 
-        char &Get(sharpen::Size index);
+        char &Get(std::size_t index);
 
-        char operator[](sharpen::Size index) const
+        char operator[](std::size_t index) const
         {
             return this->Get(index);
         }
         
-        char &operator[](sharpen::Size index)
+        char &operator[](std::size_t index)
         {
             return this->Get(index);
         }
 
         void Push(char c);
 
-        void Append(const char *buf,sharpen::Size size);
+        void Append(const char *buf,std::size_t size);
 
         template<typename _Iterator,typename _Checker = decltype(std::declval<Self>().Push(*std::declval<_Iterator>()))>
         void Append(_Iterator begin,_Iterator end)
@@ -117,9 +118,9 @@ namespace sharpen
             }
         }
 
-        void Erase(sharpen::Size pos);
+        void Erase(std::size_t pos);
 
-        void Erase(sharpen::Size begin,sharpen::Size end);
+        void Erase(std::size_t begin,std::size_t end);
 
         void Erase(ConstIterator where);
 

@@ -11,7 +11,8 @@
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "SpinLock.hpp"
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 
 namespace sharpen
 {

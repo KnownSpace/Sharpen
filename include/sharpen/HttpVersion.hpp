@@ -1,7 +1,8 @@
 #pragma once
 #ifndef _SHARPEN_HTTPVERSION_HPP
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 
 namespace sharpen
 {
@@ -16,17 +17,17 @@ namespace sharpen
         Unkown,
     };
 
-    sharpen::HttpVersion GetHttpVersion(sharpen::Uint16 major,sharpen::Uint16 minor);
+    sharpen::HttpVersion GetHttpVersion(std::uint16_t major,std::uint16_t minor);
 
     const char *GetHttpVersionName(sharpen::HttpVersion version);
 
-    void InternalCopyHttpVersionNameToMem(sharpen::HttpVersion version,char *buf,sharpen::Size offset);
+    void InternalCopyHttpVersionNameToMem(sharpen::HttpVersion version,char *buf,std::size_t offset);
 
-    sharpen::Size CopyHttpVersionNameTo(sharpen::HttpVersion version,char *buf,sharpen::Size size);
+    std::size_t CopyHttpVersionNameTo(sharpen::HttpVersion version,char *buf,std::size_t size);
 
-    sharpen::Size CopyHttpVersionNameTo(sharpen::HttpVersion version,sharpen::ByteBuffer &buf,sharpen::Size offset);
+    std::size_t CopyHttpVersionNameTo(sharpen::HttpVersion version,sharpen::ByteBuffer &buf,std::size_t offset);
 
-    inline sharpen::Size CopyHttpVersionNameTo(sharpen::HttpVersion version,sharpen::ByteBuffer &buf)
+    inline std::size_t CopyHttpVersionNameTo(sharpen::HttpVersion version,sharpen::ByteBuffer &buf)
     {
         return sharpen::CopyHttpVersionNameTo(version,buf,0);
     }

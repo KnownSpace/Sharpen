@@ -19,7 +19,8 @@
 #include <unistd.h>
 #include <linux/io_uring.h>
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "EventFd.hpp"
@@ -88,15 +89,15 @@ namespace sharpen
         int ringFd_;
         void *sringAddr_;
         sharpen::IoSring sring_;
-        sharpen::Size sringSize_;
+        std::size_t sringSize_;
         struct io_uring_sqe *sqes_;
-        sharpen::Size sqesSize_;
-        sharpen::Size sringNumber_;
+        std::size_t sqesSize_;
+        std::size_t sringNumber_;
         void *cringAddr_;
         sharpen::IoCring cring_;
-        sharpen::Size cringSize_;
-        sharpen::Size cringNumber_;
-        sharpen::Size requestNumber_;
+        std::size_t cringSize_;
+        std::size_t cringNumber_;
+        std::size_t requestNumber_;
     public:
 
         IoUring(std::uint32_t entries,std::uint32_t flags,std::uint32_t sq_thread_cpu,std::uint32_t sq_thread_idle,std::uint32_t cq_entries);

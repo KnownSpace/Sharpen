@@ -9,7 +9,7 @@ int sharpen::IInputPipeChannel::GetcharAsync()
     return buf;
 }
 
-sharpen::Size sharpen::IInputPipeChannel::GetsAsync(char *buf,sharpen::Size size)
+std::size_t sharpen::IInputPipeChannel::GetsAsync(char *buf,std::size_t size)
 {
     char *begin = buf;
     char *end = begin + size;

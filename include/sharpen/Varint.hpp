@@ -16,7 +16,7 @@ namespace sharpen
     private:
         using Self = sharpen::Varint<_T>;
 
-        constexpr static sharpen::Size bytes_ = sizeof(_T)*8/7 + ((sizeof(_T)*8 % 7)?1:0);
+        constexpr static std::size_t bytes_ = sizeof(_T)*8/7 + ((sizeof(_T)*8 % 7)?1:0);
         constexpr static unsigned char mask_ = static_cast<unsigned char>(~(1 << 7));
         constexpr static unsigned char signBit_ = static_cast<unsigned char>(~mask_);
 
@@ -41,7 +41,7 @@ namespace sharpen
             this->Set(data);
         }
 
-        Varint(const char *data,sharpen::Size size) noexcept
+        Varint(const char *data,std::size_t size) noexcept
             :cache_(sharpen::EmptyOpt)
             ,data_()
         {
@@ -96,7 +96,7 @@ namespace sharpen
             {
                 _T value{0};
                 const char *ite = this->data_;
-                sharpen::Size counter{0};
+                std::size_t counter{0};
                 while (*ite & signBit_)
                 {
                     value |= (*ite++ & mask_) << 7*counter++;
@@ -130,7 +130,7 @@ namespace sharpen
             this->Set(data.Data(),data.GetSize());
         }
 
-        void Set(const char *data,sharpen::Size size) noexcept
+        void Set(const char *data,std::size_t size) noexcept
         {
             this->cache_.Reset();
             size = (std::min)(size,sizeof(this->data_));
@@ -178,9 +178,9 @@ namespace sharpen
             return this->data_;
         }
 
-        sharpen::Size ComputeSize() const noexcept
+        std::size_t ComputeSize() const noexcept
         {
-            sharpen::Size size{1};
+            std::size_t size{1};
             const char *ite = this->data_;
             while (*ite & signBit_)
             {
@@ -190,31 +190,31 @@ namespace sharpen
             return size;
         }
 
-        static constexpr sharpen::Size GetMaxSize() noexcept
+        static constexpr std::size_t GetMaxSize() noexcept
         {
             return sizeof(_T)*8/7 + ((sizeof(_T)*8 % 7)?1:0);
         }
 
-        inline sharpen::Size LoadFrom(const char *data,sharpen::Size size)
+        inline std::size_t LoadFrom(const char *data,std::size_t size)
         {
             this->Set(data,size);
             return this->ComputeSize();
         }
 
-        inline sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset)
+        inline std::size_t LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset)
         {
             assert(buf.GetSize() >= offset);
             return this->LoadFrom(buf.Data() + offset,buf.GetSize() - offset);
         }
 
-        inline sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf)
+        inline std::size_t LoadFrom(const sharpen::ByteBuffer &buf)
         {
             return this->LoadFrom(buf,0);
         }
 
-        inline sharpen::Size UnsafeStoreTo(char *data) const noexcept
+        inline std::size_t UnsafeStoreTo(char *data) const noexcept
         {
-            sharpen::Size size{1};
+            std::size_t size{1};
             const char *ite = this->data_;
             while (*ite & signBit_)
             {
@@ -226,9 +226,9 @@ namespace sharpen
             return size;
         }
 
-        inline sharpen::Size StoreTo(char *data,sharpen::Size size) const
+        inline std::size_t StoreTo(char *data,std::size_t size) const
         {
-            sharpen::Size needSize{this->ComputeSize()};
+            std::size_t needSize{this->ComputeSize()};
             if(size < needSize)
             {
                 throw std::invalid_argument("buffer too small");
@@ -236,11 +236,11 @@ namespace sharpen
             return this->UnsafeStoreTo(data);
         }
 
-        inline sharpen::Size StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
+        inline std::size_t StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const
         {
             assert(buf.GetSize() >= offset);
-            sharpen::Size size{buf.GetSize() - offset};
-            sharpen::Size needSize{this->ComputeSize()};
+            std::size_t size{buf.GetSize() - offset};
+            std::size_t needSize{this->ComputeSize()};
             if(size < needSize)
             {
                 buf.Extend(needSize - size);
@@ -248,7 +248,7 @@ namespace sharpen
             return this->UnsafeStoreTo(buf.Data() + offset);
         }
 
-        inline sharpen::Size StoreTo(sharpen::ByteBuffer &buf) const
+        inline std::size_t StoreTo(sharpen::ByteBuffer &buf) const
         {
             return this->StoreTo(buf,0);
         }
@@ -326,13 +326,13 @@ namespace sharpen
         return obj < varint.Get();
     }
 
-    using Varint32 = sharpen::Varint<sharpen::Int32>;
-    using Varuint32 = sharpen::Varint<sharpen::Uint32>;
+    using Varint32 = sharpen::Varint<std::int32_t>;
+    using Varuint32 = sharpen::Varint<std::uint32_t>;
 
-    using Varint64 = sharpen::Varint<sharpen::Int64>;
-    using Varuint64 = sharpen::Varint<sharpen::Uint64>;
+    using Varint64 = sharpen::Varint<std::int64_t>;
+    using Varuint64 = sharpen::Varint<std::uint64_t>;
 
-    using Varsize = sharpen::Varint<sharpen::Size>;
+    using Varsize = sharpen::Varint<std::size_t>;
 }
 
 #endif

@@ -10,7 +10,7 @@ sharpen::HttpBody::HttpBody()
     :data_()
 {}
 
-sharpen::HttpBody::HttpBody(sharpen::Size size)
+sharpen::HttpBody::HttpBody(std::size_t size)
     :data_(size)
 {}
 
@@ -45,12 +45,12 @@ void sharpen::HttpBody::Swap(Self &other) noexcept
     this->data_.swap(other.data_);    
 }
 
-void sharpen::HttpBody::CopyToMem(char *buf,sharpen::Size offset) const
+void sharpen::HttpBody::CopyToMem(char *buf,std::size_t offset) const
 {
     std::memcpy(buf + offset,this->Data(),this->GetSize());
 }
 
-sharpen::Size sharpen::HttpBody::CopyTo(char *buf,sharpen::Size size) const
+std::size_t sharpen::HttpBody::CopyTo(char *buf,std::size_t size) const
 {
     if (this->data_.empty())
     {
@@ -64,7 +64,7 @@ sharpen::Size sharpen::HttpBody::CopyTo(char *buf,sharpen::Size size) const
     return this->GetSize();
 }
 
-sharpen::Size sharpen::HttpBody::CopyTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
+std::size_t sharpen::HttpBody::CopyTo(sharpen::ByteBuffer &buf,std::size_t offset) const
 {
     if (this->data_.empty())
     {
@@ -74,7 +74,7 @@ sharpen::Size sharpen::HttpBody::CopyTo(sharpen::ByteBuffer &buf,sharpen::Size o
     {
         throw std::length_error("buffer size is wrong");
     }
-    sharpen::Size left = buf.GetSize() - offset;
+    std::size_t left = buf.GetSize() - offset;
     if (this->GetSize() > left)
     {
         buf.Extend(this->GetSize() - left);
@@ -83,7 +83,7 @@ sharpen::Size sharpen::HttpBody::CopyTo(sharpen::ByteBuffer &buf,sharpen::Size o
     return buf.GetSize();
 }
 
-void sharpen::HttpBody::CopyFrom(const char *buf,sharpen::Size size)
+void sharpen::HttpBody::CopyFrom(const char *buf,std::size_t size)
 {
     if (this->GetSize() < size)
     {
@@ -92,7 +92,7 @@ void sharpen::HttpBody::CopyFrom(const char *buf,sharpen::Size size)
     std::memcpy(this->Data(),buf,size);
 }
 
-void sharpen::HttpBody::CopyFrom(sharpen::ByteBuffer &buf,sharpen::Size offset,sharpen::Size size)
+void sharpen::HttpBody::CopyFrom(sharpen::ByteBuffer &buf,std::size_t offset,std::size_t size)
 {
     if (buf.GetSize() < (size + offset))
     {
@@ -106,7 +106,7 @@ void sharpen::HttpBody::CopyFrom(sharpen::ByteBuffer &buf)
     this->CopyFrom(buf,0,buf.GetSize());
 }
 
-sharpen::Size sharpen::HttpBody::GetSize() const
+std::size_t sharpen::HttpBody::GetSize() const
 {
     return this->data_.size();
 }
@@ -151,17 +151,17 @@ sharpen::HttpBody::ConstReverseIterator sharpen::HttpBody::ReverseEnd() const
     return this->data_.crend();
 }
 
-void sharpen::HttpBody::Realloc(sharpen::Size size)
+void sharpen::HttpBody::Realloc(std::size_t size)
 {
     this->data_.resize(size,0);
 }
 
-char sharpen::HttpBody::Get(sharpen::Size index) const
+char sharpen::HttpBody::Get(std::size_t index) const
 {
     return this->data_.at(index);
 }
 
-char &sharpen::HttpBody::Get(sharpen::Size index)
+char &sharpen::HttpBody::Get(std::size_t index)
 {
     return this->data_.at(index);
 }
@@ -171,7 +171,7 @@ void sharpen::HttpBody::Push(char c)
     this->data_.push_back(c);
 }
 
-void sharpen::HttpBody::Append(const char *buf,sharpen::Size size)
+void sharpen::HttpBody::Append(const char *buf,std::size_t size)
 {
     for (size_t i = 0; i < size; i++)
     {
@@ -179,12 +179,12 @@ void sharpen::HttpBody::Append(const char *buf,sharpen::Size size)
     }
 }
 
-void sharpen::HttpBody::Erase(sharpen::Size pos)
+void sharpen::HttpBody::Erase(std::size_t pos)
 {
     this->data_.erase(this->Begin() + pos);
 }
 
-void sharpen::HttpBody::Erase(sharpen::Size begin,sharpen::Size end)
+void sharpen::HttpBody::Erase(std::size_t begin,std::size_t end)
 {
     this->data_.erase(this->Begin() + begin,this->Begin() + end);
 }

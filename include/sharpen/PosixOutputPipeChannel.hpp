@@ -30,20 +30,20 @@ namespace sharpen
 
         void HandleWrite();
 
-        void TryWrite(const char *buf,sharpen::Size bufSize,Callback cb);
+        void TryWrite(const char *buf,std::size_t bufSize,Callback cb);
 
-        void RequestWrite(const char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future);
+        void RequestWrite(const char *buf,std::size_t bufSize,sharpen::Future<std::size_t> *future);
         
-        static void CompleteWriteCallback(sharpen::EventLoop *loop,sharpen::Future<sharpen::Size> *future,ssize_t size) noexcept;
+        static void CompleteWriteCallback(sharpen::EventLoop *loop,sharpen::Future<std::size_t> *future,ssize_t size) noexcept;
     
     public:
         explicit PosixOutputPipeChannel(sharpen::FileHandle handle);
 
         virtual ~PosixOutputPipeChannel() noexcept;
 
-        virtual void WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future) override;
+        virtual void WriteAsync(const char *buf,std::size_t bufSize,sharpen::Future<std::size_t> &future) override;
         
-        virtual void WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Future<sharpen::Size> &future) override;
+        virtual void WriteAsync(const sharpen::ByteBuffer &buf,std::size_t bufferOffset,sharpen::Future<std::size_t> &future) override;
 
         virtual void OnEvent(sharpen::IoEvent *event) override;
     };

@@ -28,11 +28,11 @@ void sharpen::BinaryLogger::Clear()
 
 void sharpen::BinaryLogger::Log(const sharpen::WriteBatch &batch)
 {
-    sharpen::Uint64 size{batch.ComputeSize()};
-    sharpen::ByteBuffer buf{sharpen::IntCast<sharpen::Size>(size + sizeof(size))};
+    std::uint64_t size{batch.ComputeSize()};
+    sharpen::ByteBuffer buf{sharpen::IntCast<std::size_t>(size + sizeof(size))};
     std::memcpy(buf.Data(),&size,sizeof(size));
     batch.UnsafeStoreTo(buf.Data() + sizeof(size));
-    sharpen::Uint64 offset{this->offset_.fetch_add(buf.GetSize())};
+    std::uint64_t offset{this->offset_.fetch_add(buf.GetSize())};
     try
     {
         this->channel_->WriteAsync(buf,offset);
@@ -47,14 +47,14 @@ void sharpen::BinaryLogger::Log(const sharpen::WriteBatch &batch)
 std::vector<sharpen::WriteBatch> sharpen::BinaryLogger::GetWriteBatchs()
 {
     std::vector<sharpen::WriteBatch> batchs;
-    sharpen::Uint64 offset{0};
+    std::uint64_t offset{0};
     sharpen::ByteBuffer buf;
     while (offset != this->offset_)
     {
         sharpen::WriteBatch batch;
-        sharpen::Uint64 size{0};
+        std::uint64_t size{0};
         this->channel_->ReadAsync(reinterpret_cast<char*>(&size),sizeof(size),offset);
-        buf.ExtendTo(sharpen::IntCast<sharpen::Size>(size));
+        buf.ExtendTo(sharpen::IntCast<std::size_t>(size));
         try
         {
             this->channel_->ReadAsync(buf,offset + sizeof(size));

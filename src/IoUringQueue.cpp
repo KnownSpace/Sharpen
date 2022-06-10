@@ -34,7 +34,7 @@ void sharpen::IoUringQueue::Submit()
         return;
     }
     auto ite = this->subQueue_.begin();
-    sharpen::Size moved{0};
+    std::size_t moved{0};
     while (this->ring_.Requestable())
     {
         this->ring_.SubmitToSring(&*ite);
@@ -57,15 +57,15 @@ void sharpen::IoUringQueue::SubmitIoRequest(const Sqe &sqe)
     return;
 }
 
-sharpen::Size sharpen::IoUringQueue::GetCompletionStatus(Cqe *cqes,sharpen::Size size)
+std::size_t sharpen::IoUringQueue::GetCompletionStatus(Cqe *cqes,std::size_t size)
 {
-    sharpen::Size cqeNum{0};
+    std::size_t cqeNum{0};
     if(!this->compQueue_.empty())
     {
         cqeNum = (std::min)(this->compQueue_.size(),size);
         auto begin = this->compQueue_.rbegin();
         auto end = sharpen::IteratorForward(begin,cqeNum);
-        sharpen::Size index{0};
+        std::size_t index{0};
         while (begin != end)
         {
             std::memcpy(cqes + index,std::addressof(*begin),sizeof(*begin));

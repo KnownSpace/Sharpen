@@ -19,9 +19,9 @@ namespace sharpen
     public:
 
 #ifdef SHARPEN_IS_WIN
-        constexpr static sharpen::Size AllocationGranularity = 64*1024;
+        constexpr static std::size_t AllocationGranularity = 64*1024;
 #else
-        constexpr static sharpen::Size AllocationGranularity = 4*1024;
+        constexpr static std::size_t AllocationGranularity = 4*1024;
 #endif
         
         IFileChannel() noexcept = default;
@@ -32,22 +32,22 @@ namespace sharpen
         
         IFileChannel(Self &&other) noexcept = default;
 
-        virtual sharpen::Uint64 GetFileSize() const = 0;
+        virtual std::uint64_t GetFileSize() const = 0;
 
-        void ZeroMemoryAsync(sharpen::Future<sharpen::Size> &future,sharpen::Size size,sharpen::Uint64 offset);
+        void ZeroMemoryAsync(sharpen::Future<std::size_t> &future,std::size_t size,std::uint64_t offset);
 
-        sharpen::Size ZeroMemoryAsync(sharpen::Size size,sharpen::Uint64 offset);
+        std::size_t ZeroMemoryAsync(std::size_t size,std::uint64_t offset);
 
-        inline sharpen::Size ZeroMemoryAsync(sharpen::Size size)
+        inline std::size_t ZeroMemoryAsync(std::size_t size)
         {
             return this->ZeroMemoryAsync(size,0);
         }
 
-        virtual sharpen::FileMemory MapMemory(sharpen::Size size,sharpen::Uint64 offset) = 0;
+        virtual sharpen::FileMemory MapMemory(std::size_t size,std::uint64_t offset) = 0;
 
         virtual void Truncate() = 0;
 
-        virtual void Truncate(sharpen::Uint64 size) = 0;
+        virtual void Truncate(std::uint64_t size) = 0;
 
         virtual void Flush() = 0;
     };

@@ -9,10 +9,10 @@
 #include <sharpen/BalancedTable.hpp>
 #include <sharpen/LevelTable.hpp>
 
-static sharpen::Int32 CompAsUint32(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) noexcept
+static std::int32_t CompAsUint32(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) noexcept
 {
-    sharpen::Uint32 l{left.As<sharpen::Uint32>()};
-    sharpen::Uint32 r{right.As<sharpen::Uint32>()};
+    std::uint32_t l{left.As<std::uint32_t>()};
+    std::uint32_t r{right.As<std::uint32_t>()};
     if(l < r)
     {
         return -1;
@@ -29,7 +29,7 @@ struct MapPred
 {
     bool operator()(const sharpen::ByteBuffer &lhs, const sharpen::ByteBuffer &rhs) const 
     {
-        return lhs.As<sharpen::Uint32>() < rhs.As<sharpen::Uint32>();
+        return lhs.As<std::uint32_t>() < rhs.As<std::uint32_t>();
     }
 };
 
@@ -82,12 +82,12 @@ void Entry()
         table->Truncate();
         {
             sharpen::MemoryTable<sharpen::BinaryLogger,MapPred> mt{log};
-            for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(1e5); i != count;++i)
+            for (std::uint32_t i = 0,count = static_cast<std::uint32_t>(1e5); i != count;++i)
             {
-                sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};
-                key.As<sharpen::Uint32>() = i;
-                sharpen::ByteBuffer value{sizeof(sharpen::Uint32)};
-                value.As<sharpen::Uint32>() = i;
+                sharpen::ByteBuffer key{sizeof(std::uint32_t)};
+                key.As<std::uint32_t>() = i;
+                sharpen::ByteBuffer value{sizeof(std::uint32_t)};
+                value.As<std::uint32_t>() = i;
                 mt.Put(std::move(key),std::move(value));
             }
             sharpen::SortedStringTable pt{table,sharpen::SstOption{&CompAsUint32}};
@@ -95,16 +95,16 @@ void Entry()
         }
         {
             sharpen::SortedStringTable pt{table,sharpen::SstOption{&CompAsUint32}};
-            for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(1e5); i != count;++i)
+            for (std::uint32_t i = 0,count = static_cast<std::uint32_t>(1e5); i != count;++i)
             {
-                sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};
-                key.As<sharpen::Uint32>() = i;
-                sharpen::ByteBuffer value{sizeof(sharpen::Uint32)};
-                value.As<sharpen::Uint32>() = i;
+                sharpen::ByteBuffer key{sizeof(std::uint32_t)};
+                key.As<std::uint32_t>() = i;
+                sharpen::ByteBuffer value{sizeof(std::uint32_t)};
+                value.As<std::uint32_t>() = i;
                 assert(pt.Get(key) == value);
             }
             {
-                sharpen::Size count{0};
+                std::size_t count{0};
                 for (auto blockBegin = pt.Root().IndexBlock().Begin(),blockEnd = pt.Root().IndexBlock().End(); blockBegin != blockEnd; ++blockBegin)
                 {
                     sharpen::FilePointer pointer{blockBegin->Block()};
@@ -115,7 +115,7 @@ void Entry()
                     }
                 }
                 std::printf("sst scan %zu keys\n",count);
-                assert(count == static_cast<sharpen::Uint32>(1e5));
+                assert(count == static_cast<std::uint32_t>(1e5));
             }
         }
         table->Truncate();
@@ -316,27 +316,27 @@ void Entry()
             table->Truncate();
             {
                 sharpen::BalancedTable pt{table,sharpen::BtOption{CompAsUint32}};
-                for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(1e5); i != count;++i)
+                for (std::uint32_t i = 0,count = static_cast<std::uint32_t>(1e5); i != count;++i)
                 {
-                    sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};
-                    key.As<sharpen::Uint32>() = i;
-                    sharpen::ByteBuffer value{sizeof(sharpen::Uint32)};
-                    value.As<sharpen::Uint32>() = i;
+                    sharpen::ByteBuffer key{sizeof(std::uint32_t)};
+                    key.As<std::uint32_t>() = i;
+                    sharpen::ByteBuffer value{sizeof(std::uint32_t)};
+                    value.As<std::uint32_t>() = i;
                     pt.Put(std::move(key),std::move(value));
                 }
             }
             {
                 sharpen::BalancedTable pt{table,sharpen::BtOption{CompAsUint32}};
-                for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(1e5); i != count;++i)
+                for (std::uint32_t i = 0,count = static_cast<std::uint32_t>(1e5); i != count;++i)
                 {
-                    sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};
-                    key.As<sharpen::Uint32>() = i;
-                    sharpen::ByteBuffer value{sizeof(sharpen::Uint32)};
-                    value.As<sharpen::Uint32>() = i;
+                    sharpen::ByteBuffer key{sizeof(std::uint32_t)};
+                    key.As<std::uint32_t>() = i;
+                    sharpen::ByteBuffer value{sizeof(std::uint32_t)};
+                    value.As<std::uint32_t>() = i;
                     assert(pt.Get(key) == value);
                 }
                 {
-                    sharpen::Size count{0};
+                    std::size_t count{0};
                     std::vector<sharpen::FilePointer> blocks;
                     pt.TableScan(std::back_inserter(blocks));
                     for (auto blockBegin = blocks.begin(),blockEnd = blocks.end(); blockBegin != blockEnd; ++blockBegin)
@@ -363,25 +363,25 @@ void Entry()
         sharpen::RemoveFile(tableName3);
         {
             sharpen::LevelTable table{sharpen::EventEngine::GetEngine(),"./table","kdb",sharpen::LevelTableOption{&CompAsUint32}};
-            for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(1e5); i != count;++i)
+            for (std::uint32_t i = 0,count = static_cast<std::uint32_t>(1e5); i != count;++i)
             {
-                sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};
-                key.As<sharpen::Uint32>() = i;
-                sharpen::ByteBuffer value{sizeof(sharpen::Uint32)};
-                value.As<sharpen::Uint32>() = i;
+                sharpen::ByteBuffer key{sizeof(std::uint32_t)};
+                key.As<std::uint32_t>() = i;
+                sharpen::ByteBuffer value{sizeof(std::uint32_t)};
+                value.As<std::uint32_t>() = i;
                 table.Put(std::move(key),std::move(value));
             }
-            for (sharpen::Uint32 i = 0,count = static_cast<sharpen::Uint32>(1e5); i != count;++i)
+            for (std::uint32_t i = 0,count = static_cast<std::uint32_t>(1e5); i != count;++i)
             {
-                sharpen::ByteBuffer key{sizeof(sharpen::Uint32)};
-                key.As<sharpen::Uint32>() = i;
-                sharpen::ByteBuffer value{sizeof(sharpen::Uint32)};
-                value.As<sharpen::Uint32>() = i;
+                sharpen::ByteBuffer key{sizeof(std::uint32_t)};
+                key.As<std::uint32_t>() = i;
+                sharpen::ByteBuffer value{sizeof(std::uint32_t)};
+                value.As<std::uint32_t>() = i;
                 assert(table.Get(key) == value);
             }
-            sharpen::ByteBuffer begin{sizeof(sharpen::Uint32)},end{sizeof(sharpen::Uint32)};
-            begin.As<sharpen::Uint32>() = 0;
-            end.As<sharpen::Uint32>() = 10000;
+            sharpen::ByteBuffer begin{sizeof(std::uint32_t)},end{sizeof(std::uint32_t)};
+            begin.As<std::uint32_t>() = 0;
+            end.As<std::uint32_t>() = 10000;
             table.Destory();
         }
         std::puts("pass");

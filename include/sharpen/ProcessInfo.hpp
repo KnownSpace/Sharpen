@@ -2,12 +2,13 @@
 #ifndef _SHARPEN_PROCESSINFO_HPP
 #define _SHARPEN_PROCESSINFO_HPP
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "SystemMacro.hpp"
 
 namespace sharpen
 {
-    extern sharpen::Uint32 GetProcessId() noexcept;
+    extern std::uint32_t GetProcessId() noexcept;
 }
 
 #endif

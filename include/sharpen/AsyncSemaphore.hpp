@@ -5,7 +5,8 @@
 #include <vector>
 
 #include "AwaitableFuture.hpp"
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "IAsyncLockable.hpp"
 
 namespace sharpen
@@ -20,17 +21,17 @@ namespace sharpen
 
         Waiters waiters_;
         sharpen::SpinLock lock_;
-        sharpen::Uint32 counter_;
+        std::uint32_t counter_;
 
         bool NeedWait() const;
     public:
-        explicit AsyncSemaphore(sharpen::Uint32 count);
+        explicit AsyncSemaphore(std::uint32_t count);
 
         virtual void LockAsync() override;
 
         virtual void Unlock() noexcept override;
         
-        void Unlock(sharpen::Uint32 count) noexcept;
+        void Unlock(std::uint32_t count) noexcept;
 
         bool TryLock();
 

@@ -9,7 +9,8 @@
 #include <cassert>
 #include <string>
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "SpinLock.hpp"
 #include "TypeTraits.hpp"
 
@@ -25,7 +26,7 @@ namespace sharpen
         {
             std::vector<char> key_;
             std::shared_ptr<_T> cacheObj_;
-            sharpen::Size chances_;
+            std::size_t chances_;
         };
 
         using Self = sharpen::CircleCache<_T>;
@@ -36,7 +37,7 @@ namespace sharpen
 
         mutable Buffer buf_;
         mutable Lock lock_;
-        sharpen::Size next_;
+        std::size_t next_;
 
         template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
         Iterator Find(_Iterator keyBegin,_Iterator keyEnd) const noexcept
@@ -46,7 +47,7 @@ namespace sharpen
                 if (begin->cacheObj_)
                 {
                     bool match{true};
-                    sharpen::Size index{0};
+                    std::size_t index{0};
                     for (auto ite = keyBegin; ite != keyEnd; ++ite,++index)
                     {
                         if(*ite != begin->key_[index])
@@ -88,7 +89,7 @@ namespace sharpen
             }
         }
     public:
-        explicit CircleCache(sharpen::Size size)
+        explicit CircleCache(std::size_t size)
             :buf_(size)
             ,lock_()
             ,next_(0)
@@ -98,7 +99,7 @@ namespace sharpen
 
         ~CircleCache() noexcept = default;
 
-        inline sharpen::Size GetSize() const noexcept
+        inline std::size_t GetSize() const noexcept
         {
             return this->buf_.size();
         }
@@ -124,7 +125,7 @@ namespace sharpen
                     item.key_.assign(begin,end);
                     item.cacheObj_ = result;
                     item.chances_ = 1;
-                    sharpen::Size index = this->next_ % this->buf_.size();
+                    std::size_t index = this->next_ % this->buf_.size();
                     while (this->buf_[index].chances_)
                     {
                         this->buf_[index].chances_ -= 1;

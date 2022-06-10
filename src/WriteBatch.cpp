@@ -29,15 +29,15 @@ void sharpen::WriteBatch::Delete(sharpen::ByteBuffer key)
     this->actions_.emplace_back(std::move(action));
 }
 
-void sharpen::WriteBatch::LoadFrom(const char *data,sharpen::Size size)
+void sharpen::WriteBatch::LoadFrom(const char *data,std::size_t size)
 {
     if(size < 3)
     {
         throw std::invalid_argument("invalid buffer");
     }
-    sharpen::Size offset{0};
+    std::size_t offset{0};
     //check crc16
-    sharpen::Uint16 crc{0};
+    std::uint16_t crc{0};
     std::memcpy(&crc,data,sizeof(crc));
     offset += 2;
     if(crc != sharpen::Crc16(data + offset,size - offset))
@@ -47,9 +47,9 @@ void sharpen::WriteBatch::LoadFrom(const char *data,sharpen::Size size)
     //number of operations
     sharpen::Varuint64 builder{data + offset,size - offset};
     offset += builder.ComputeSize();
-    sharpen::Size num{sharpen::IntCast<sharpen::Size>(builder.Get())};
+    std::size_t num{sharpen::IntCast<std::size_t>(builder.Get())};
     //operations
-    for (sharpen::Size i = 0; i != num; ++i)
+    for (std::size_t i = 0; i != num; ++i)
     {
         //type
         if(size < offset)
@@ -74,7 +74,7 @@ void sharpen::WriteBatch::LoadFrom(const char *data,sharpen::Size size)
         }
         builder.Set(data + offset,size - offset);
         offset += builder.ComputeSize();
-        sharpen::Size keySize{sharpen::IntCast<sharpen::Size>(builder.Get())};
+        std::size_t keySize{sharpen::IntCast<std::size_t>(builder.Get())};
         //key
         if(size < offset + keySize)
         {
@@ -96,7 +96,7 @@ void sharpen::WriteBatch::LoadFrom(const char *data,sharpen::Size size)
                 throw sharpen::DataCorruptionException("write batch corruption");
             }
             builder.Set(data + offset,size - offset);
-            sharpen::Size valueSize{sharpen::IntCast<sharpen::Size>(builder.Get())};
+            std::size_t valueSize{sharpen::IntCast<std::size_t>(builder.Get())};
             offset += builder.ComputeSize();
             //value
             if(size < offset)
@@ -111,15 +111,15 @@ void sharpen::WriteBatch::LoadFrom(const char *data,sharpen::Size size)
     }
 }
 
-void sharpen::WriteBatch::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset)
+void sharpen::WriteBatch::LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset)
 {
     assert(buf.GetSize() >= offset);
     this->LoadFrom(buf.Data(),buf.GetSize() - offset);
 }
 
-sharpen::Size sharpen::WriteBatch::ComputeSize() const noexcept
+std::size_t sharpen::WriteBatch::ComputeSize() const noexcept
 {
-    sharpen::Size size{2};
+    std::size_t size{2};
     {
         sharpen::Varuint64 builder{this->actions_.size()};
         size += builder.ComputeSize();
@@ -140,12 +140,12 @@ sharpen::Size sharpen::WriteBatch::ComputeSize() const noexcept
     return size;
 }
 
-sharpen::Size sharpen::WriteBatch::UnsafeStoreTo(char *data) const
+std::size_t sharpen::WriteBatch::UnsafeStoreTo(char *data) const
 {
-    sharpen::Size offset{2};
+    std::size_t offset{2};
     //number
     sharpen::Varuint64 builder{this->actions_.size()};
-    sharpen::Size size{builder.ComputeSize()};
+    std::size_t size{builder.ComputeSize()};
     std::memcpy(data + offset,builder.Data(),size);
     offset += size;
     //operations
@@ -175,14 +175,14 @@ sharpen::Size sharpen::WriteBatch::UnsafeStoreTo(char *data) const
         }
     }
     //crc16
-    sharpen::Uint16 crc{sharpen::Crc16(data + sizeof(crc),offset - sizeof(crc))};
+    std::uint16_t crc{sharpen::Crc16(data + sizeof(crc),offset - sizeof(crc))};
     std::memcpy(data,&crc,sizeof(crc));
     return offset;
 }
 
-sharpen::Size sharpen::WriteBatch::StoreTo(char *data,sharpen::Size size) const
+std::size_t sharpen::WriteBatch::StoreTo(char *data,std::size_t size) const
 {
-    sharpen::Size needSize{this->ComputeSize()};
+    std::size_t needSize{this->ComputeSize()};
     if(size < needSize)
     {
         throw std::invalid_argument("buffer too small");
@@ -190,11 +190,11 @@ sharpen::Size sharpen::WriteBatch::StoreTo(char *data,sharpen::Size size) const
     return this->UnsafeStoreTo(data);
 }
 
-sharpen::Size sharpen::WriteBatch::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
+std::size_t sharpen::WriteBatch::StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const
 {
     assert(buf.GetSize() >= offset);
-    sharpen::Size needSize{this->ComputeSize()};
-    sharpen::Size size{buf.GetSize() - offset};
+    std::size_t needSize{this->ComputeSize()};
+    std::size_t size{buf.GetSize() - offset};
     if(size < needSize)
     {
         buf.Extend(needSize - size);

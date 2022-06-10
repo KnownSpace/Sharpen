@@ -4,7 +4,8 @@
 
 #include <utility>
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "TypeTraits.hpp"
 
 namespace sharpen

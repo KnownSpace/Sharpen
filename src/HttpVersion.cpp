@@ -6,7 +6,7 @@
 
 #include <sharpen/ByteBuffer.hpp>
 
-sharpen::HttpVersion sharpen::GetHttpVersion(sharpen::Uint16 major,sharpen::Uint16 minor)
+sharpen::HttpVersion sharpen::GetHttpVersion(std::uint16_t major,std::uint16_t minor)
 {
     if (major == 0 && minor == 9)
     {
@@ -44,16 +44,16 @@ const char *sharpen::GetHttpVersionName(sharpen::HttpVersion version)
     }
 }
 
-void sharpen::InternalCopyHttpVersionNameToMem(sharpen::HttpVersion version,char *buf,sharpen::Size offset)
+void sharpen::InternalCopyHttpVersionNameToMem(sharpen::HttpVersion version,char *buf,std::size_t offset)
 {
     const char *name = sharpen::GetHttpVersionName(version);
-    sharpen::Size size = std::strlen(name);
+    std::size_t size = std::strlen(name);
     std::memcpy(buf + offset,name,size);
 }
 
-sharpen::Size sharpen::CopyHttpVersionNameTo(sharpen::HttpVersion version,char *buf,sharpen::Size size)
+std::size_t sharpen::CopyHttpVersionNameTo(sharpen::HttpVersion version,char *buf,std::size_t size)
 {
-    sharpen::Size len = std::strlen(sharpen::GetHttpVersionName(version));
+    std::size_t len = std::strlen(sharpen::GetHttpVersionName(version));
     if (len > size)
     {
         throw std::length_error("buffer size less than needed");
@@ -62,14 +62,14 @@ sharpen::Size sharpen::CopyHttpVersionNameTo(sharpen::HttpVersion version,char *
     return len;
 }
 
-sharpen::Size sharpen::CopyHttpVersionNameTo(sharpen::HttpVersion version,sharpen::ByteBuffer &buf,sharpen::Size offset)
+std::size_t sharpen::CopyHttpVersionNameTo(sharpen::HttpVersion version,sharpen::ByteBuffer &buf,std::size_t offset)
 {
     if (offset > buf.GetSize())
     {
         throw std::length_error("buffer size is wrong");
     }
-    sharpen::Size len = std::strlen(sharpen::GetHttpVersionName(version));
-    sharpen::Size left = buf.GetSize() - offset;
+    std::size_t len = std::strlen(sharpen::GetHttpVersionName(version));
+    std::size_t left = buf.GetSize() - offset;
     if (left < len)
     {
         buf.Extend(len - left);

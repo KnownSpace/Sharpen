@@ -29,42 +29,42 @@ namespace sharpen
     
         ~BinarySerializable() noexcept = default;
 
-        sharpen::Size ComputeSize() const noexcept
+        std::size_t ComputeSize() const noexcept
         {
             return Serializator::ComputeSize(*static_cast<const _Object*>(this));
         }
 
-        sharpen::Size LoadFrom(const char *data,sharpen::Size size)
+        std::size_t LoadFrom(const char *data,std::size_t size)
         {
             return Serializator::LoadFrom(*static_cast<_Object*>(this),data,size);
         }
 
-        sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset)
+        std::size_t LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset)
         {
             return Serializator::LoadFrom(*static_cast<_Object*>(this),buf,offset);
         }
 
-        sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf)
+        std::size_t LoadFrom(const sharpen::ByteBuffer &buf)
         {
             return Serializator::LoadFrom(*static_cast<_Object*>(this),buf,0);
         }
 
-        sharpen::Size UnsafeStoreTo(char *data) const noexcept
+        std::size_t UnsafeStoreTo(char *data) const noexcept
         {
             return Serializator::UnsafeStoreTo(*static_cast<_Object*>(this),data);
         }
 
-        sharpen::Size StoreTo(char *data,sharpen::Size size) const
+        std::size_t StoreTo(char *data,std::size_t size) const
         {
             return Serializator::StoreTo(*static_cast<const _Object*>(this),data,size);
         }
 
-        sharpen::Size StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
+        std::size_t StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const
         {
             return Serializator::StoreTo(*static_cast<const _Object*>(this),buf,offset);
         }
 
-        sharpen::Size StoreTo(sharpen::ByteBuffer &buf) const
+        std::size_t StoreTo(sharpen::ByteBuffer &buf) const
         {
             return Serializator::StoreTo(*static_cast<const _Object*>(this),buf);
         }

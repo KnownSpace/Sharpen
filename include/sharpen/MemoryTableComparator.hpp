@@ -4,7 +4,8 @@
 
 #include <utility>
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "ByteBuffer.hpp"
 
 namespace sharpen
@@ -12,7 +13,7 @@ namespace sharpen
     class MemoryTableComparator
     {
     public:
-        using Comparator = sharpen::Int32(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
+        using Comparator = std::int32_t(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
     private:
         using Self = sharpen::MemoryTableComparator;
     

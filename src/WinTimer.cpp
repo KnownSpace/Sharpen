@@ -37,7 +37,7 @@ void WINAPI sharpen::WinTimer::CompleteFuture(void *arg,DWORD,DWORD)
     }
 }
 
-void sharpen::WinTimer::WaitAsync(sharpen::Future<bool> &future,sharpen::Uint64 waitMs)
+void sharpen::WinTimer::WaitAsync(sharpen::Future<bool> &future,std::uint64_t waitMs)
 {
     assert(this->handle_ != INVALID_HANDLE_VALUE);
     if(waitMs == 0)

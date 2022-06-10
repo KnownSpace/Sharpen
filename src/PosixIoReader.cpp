@@ -4,7 +4,7 @@
 
 void sharpen::PosixIoReader::DoExecute(sharpen::FileHandle handle,bool &executed,bool &blocking)
 {
-    sharpen::Size size = this->GetRemainingSize();
+    std::size_t size = this->GetRemainingSize();
     if (size == 0)
     {
         blocking = false;
@@ -50,8 +50,8 @@ void sharpen::PosixIoReader::DoExecute(sharpen::FileHandle handle,bool &executed
         return;
     }
     //check completed buffer number
-    sharpen::Size completed;
-    sharpen::Size lastSize;
+    std::size_t completed;
+    std::size_t lastSize;
     this->ConvertByteToBufferNumber(bytes,completed,lastSize);
     //handle callback
     for (size_t i = 0; i < completed; i++)
@@ -59,7 +59,7 @@ void sharpen::PosixIoReader::DoExecute(sharpen::FileHandle handle,bool &executed
         cbs[i](bufs[i].iov_len);
     }
     //last buffer
-    sharpen::Size lastBufSize = bufs[completed].iov_len;
+    std::size_t lastBufSize = bufs[completed].iov_len;
     cbs[completed](lastSize);
     completed += 1;
     completed += this->GetMark();

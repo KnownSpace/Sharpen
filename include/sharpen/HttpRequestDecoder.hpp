@@ -40,7 +40,7 @@ namespace sharpen
             return this->parser_.IsCompleted();
         }
 
-        sharpen::Size Decode(const char *data,sharpen::Size size)
+        std::size_t Decode(const char *data,std::size_t size)
         {
             this->parser_.Parse(data,size);
             if (this->parser_.IsError())
@@ -50,12 +50,12 @@ namespace sharpen
             return size;
         }
 
-        inline sharpen::Size Decode(const sharpen::ByteBuffer &buf,sharpen::Size offset)
+        inline std::size_t Decode(const sharpen::ByteBuffer &buf,std::size_t offset)
         {
             return this->Decode(buf.Data() + offset,buf.GetSize() - offset);
         }
 
-        inline sharpen::Size Decode(const sharpen::ByteBuffer &buf)
+        inline std::size_t Decode(const sharpen::ByteBuffer &buf)
         {
             return this->Decode(buf,0);
         }

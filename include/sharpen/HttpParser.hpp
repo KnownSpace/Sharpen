@@ -7,7 +7,8 @@
 
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "HttpMethod.hpp"
 #include "HttpStatusCode.hpp"
 #include "HttpVersion.hpp"
@@ -25,7 +26,7 @@ namespace sharpen
     private:
         using Self = sharpen::HttpParser;
         using EventCallback = std::function<int()>;
-        using DataCallback = std::function<int(const char *,sharpen::Size)>;
+        using DataCallback = std::function<int(const char *,std::size_t)>;
         using Parser = llhttp__internal_s;
         using ParserSettings = llhttp_settings_s;
 
@@ -44,17 +45,17 @@ namespace sharpen
 
         static int OnMessageBegin(Parser *parser);
 
-        static int OnUrl(Parser *parser,const char *str,sharpen::Size len);
+        static int OnUrl(Parser *parser,const char *str,std::size_t len);
 
-        static int OnStatusCode(Parser *parser,const char *str,sharpen::Size len);
+        static int OnStatusCode(Parser *parser,const char *str,std::size_t len);
 
-        static int OnHeadersField(Parser *parser,const char *str,sharpen::Size len);
+        static int OnHeadersField(Parser *parser,const char *str,std::size_t len);
 
-        static int OnHeadersValue(Parser *parser,const char *str,sharpen::Size len);
+        static int OnHeadersValue(Parser *parser,const char *str,std::size_t len);
 
         static int OnHeadersComplete(Parser *parser);
 
-        static int OnBody(Parser *parser,const char *str,sharpen::Size len);
+        static int OnBody(Parser *parser,const char *str,std::size_t len);
         
         static int OnMessageEnd(Parser *parser);
 
@@ -125,9 +126,9 @@ namespace sharpen
             this->onChunkComplete_ = std::move(cb);
         }
 
-        void Parse(const char *data,sharpen::Size size);
+        void Parse(const char *data,std::size_t size);
 
-        void Parse(const sharpen::ByteBuffer &buf,sharpen::Size offset);
+        void Parse(const sharpen::ByteBuffer &buf,std::size_t offset);
 
         inline void Parse(const sharpen::ByteBuffer &buf)
         {

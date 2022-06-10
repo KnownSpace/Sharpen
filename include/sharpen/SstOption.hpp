@@ -4,25 +4,26 @@
 
 #include <utility>
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 
 namespace sharpen
 {
     class SstOption
     {
     public:
-        using Comparator = sharpen::Int32(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
+        using Comparator = std::int32_t(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
     private:
         using Self = sharpen::SstOption;
 
-        static constexpr sharpen::Size defaultDataCacheSize_{512};
+        static constexpr std::size_t defaultDataCacheSize_{512};
 
         //1% - fake positive rate
-        static constexpr sharpen::Size defaultFilterBitsOfElement_{10};
+        static constexpr std::size_t defaultFilterBitsOfElement_{10};
 
-        sharpen::Size dataCacheSize_;
-        sharpen::Size filterBitsOfElement_;
-        sharpen::Size filtersCacheSize_;
+        std::size_t dataCacheSize_;
+        std::size_t filterBitsOfElement_;
+        std::size_t filtersCacheSize_;
         Comparator comp_;
     public:
     
@@ -30,7 +31,7 @@ namespace sharpen
             :SstOption(Self::defaultFilterBitsOfElement_)
         {}
 
-        explicit SstOption(sharpen::Size filterBitsOfElement) noexcept
+        explicit SstOption(std::size_t filterBitsOfElement) noexcept
             :SstOption(filterBitsOfElement,defaultDataCacheSize_)
         {}
 
@@ -38,15 +39,15 @@ namespace sharpen
             :SstOption(comp,Self::defaultDataCacheSize_)
         {}
 
-        SstOption(Comparator comp,sharpen::Size dataCacheSize) noexcept
+        SstOption(Comparator comp,std::size_t dataCacheSize) noexcept
             :SstOption(comp,Self::defaultFilterBitsOfElement_,dataCacheSize,dataCacheSize)
         {}
 
-        SstOption(sharpen::Size filterBitsOfElement,sharpen::Size dataCacheSize) noexcept
+        SstOption(std::size_t filterBitsOfElement,std::size_t dataCacheSize) noexcept
             :SstOption(nullptr,filterBitsOfElement,dataCacheSize,dataCacheSize)
         {}
 
-        SstOption(Comparator comp,sharpen::Size filterBitsOfElement,sharpen::Size dataCacheSize,sharpen::Size filtersCacheSize) noexcept
+        SstOption(Comparator comp,std::size_t filterBitsOfElement,std::size_t dataCacheSize,std::size_t filtersCacheSize) noexcept
             :dataCacheSize_(dataCacheSize)
             ,filterBitsOfElement_(filterBitsOfElement)
             ,filtersCacheSize_(filtersCacheSize)
@@ -83,12 +84,12 @@ namespace sharpen
             return this->filterBitsOfElement_;
         }
 
-        inline sharpen::Size GetDataCacheSize() const noexcept
+        inline std::size_t GetDataCacheSize() const noexcept
         {
             return this->dataCacheSize_;
         }
 
-        inline sharpen::Size GetFilterCacheSize() const noexcept
+        inline std::size_t GetFilterCacheSize() const noexcept
         {
             if(!this->EnableFilter())
             {
@@ -97,7 +98,7 @@ namespace sharpen
             return this->filtersCacheSize_;
         }
 
-        inline sharpen::Size GetFilterBitsOfElement() const noexcept
+        inline std::size_t GetFilterBitsOfElement() const noexcept
         {
             return this->filterBitsOfElement_;
         }

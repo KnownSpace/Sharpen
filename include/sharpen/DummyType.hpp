@@ -11,10 +11,10 @@
 
 namespace sharpen
 {
-    template<sharpen::Size _Index,template<sharpen::Size> class _TIterator>
+    template<std::size_t _Index,template<std::size_t> class _TIterator>
     struct InternalDummyTypeDtor
     {
-        static void Release(sharpen::Size typeIndex,char *p) noexcept
+        static void Release(std::size_t typeIndex,char *p) noexcept
         {
             using _T = _TIterator<_Index>;
             if (_Index == typeIndex)
@@ -27,10 +27,10 @@ namespace sharpen
         }
     };
     
-    template<template<sharpen::Size> class _TIterator>
+    template<template<std::size_t> class _TIterator>
     struct InternalDummyTypeDtor<0,_TIterator>
     {
-        static void Release(sharpen::Size typeIndex,char *p) noexcept
+        static void Release(std::size_t typeIndex,char *p) noexcept
         {
             using _T = _TIterator<0>;
             if (0 == typeIndex)
@@ -41,10 +41,10 @@ namespace sharpen
         }
     };
 
-    template<sharpen::Size _Index,template<sharpen::Size> class _TIterator>
+    template<std::size_t _Index,template<std::size_t> class _TIterator>
     struct InternalDummyTypeCopy
     {
-        static void CopyAssign(sharpen::Size typeIndex,char *dst,const char *src)
+        static void CopyAssign(std::size_t typeIndex,char *dst,const char *src)
         {
             using _T = _TIterator<_Index>;
             if (_Index == typeIndex)
@@ -57,7 +57,7 @@ namespace sharpen
             sharpen::InternalDummyTypeCopy<_Index - 1,_TIterator>::CopyAssign(typeIndex,dst,src);
         }
 
-        static void CopyConstruct(sharpen::Size typeIndex,char *dst,const char *src)
+        static void CopyConstruct(std::size_t typeIndex,char *dst,const char *src)
         {
             using _T = _TIterator<_Index>;
             if (_Index == typeIndex)
@@ -70,10 +70,10 @@ namespace sharpen
         }
     };
     
-    template<template<sharpen::Size> class _TIterator>
+    template<template<std::size_t> class _TIterator>
     struct InternalDummyTypeCopy<0,_TIterator>
     {
-        static void CopyAssign(sharpen::Size typeIndex,char *dst,const char *src)
+        static void CopyAssign(std::size_t typeIndex,char *dst,const char *src)
         {
             using _T = _TIterator<0>;
             if (0 == typeIndex)
@@ -84,7 +84,7 @@ namespace sharpen
             }
         }
 
-        static void CopyConstruct(sharpen::Size typeIndex,char *dst,const char *src)
+        static void CopyConstruct(std::size_t typeIndex,char *dst,const char *src)
         {
             using _T = _TIterator<0>;
             if (0 == typeIndex)
@@ -95,10 +95,10 @@ namespace sharpen
         }
     };
 
-    template<sharpen::Size _Index,template<sharpen::Size> class _TIterator>
+    template<std::size_t _Index,template<std::size_t> class _TIterator>
     struct InternalDummyTypeMove
     {
-        static void MoveAssign(sharpen::Size typeIndex,char *dst,char *src) noexcept
+        static void MoveAssign(std::size_t typeIndex,char *dst,char *src) noexcept
         {
             using _T = _TIterator<_Index>;
             if (_Index == typeIndex)
@@ -111,7 +111,7 @@ namespace sharpen
             sharpen::InternalDummyTypeMove<_Index - 1,_TIterator>::MoveAssign(typeIndex,dst,src);
         }
 
-        static void MoveConstruct(sharpen::Size typeIndex,char *dst,char *src) noexcept
+        static void MoveConstruct(std::size_t typeIndex,char *dst,char *src) noexcept
         {
             using _T = _TIterator<_Index>;
             if (_Index == typeIndex)
@@ -124,10 +124,10 @@ namespace sharpen
         }
     };
 
-    template<template<sharpen::Size> class _TIterator>
+    template<template<std::size_t> class _TIterator>
     struct InternalDummyTypeMove<0,_TIterator>
     {
-        static void MoveAssign(sharpen::Size typeIndex,char *dst,char *src) noexcept
+        static void MoveAssign(std::size_t typeIndex,char *dst,char *src) noexcept
         {
             using _T = _TIterator<0>;
             if (0 == typeIndex)
@@ -139,7 +139,7 @@ namespace sharpen
             }
         }
 
-        static void MoveConstruct(sharpen::Size typeIndex,char *dst,char *src) noexcept
+        static void MoveConstruct(std::size_t typeIndex,char *dst,char *src) noexcept
         {
             using _T = _TIterator<0>;
             if (0 == typeIndex)
@@ -157,18 +157,18 @@ namespace sharpen
     private:
         using Self = sharpen::DummyType<_T,_Types...>;
         using TL = sharpen::TypeList<_T,_Types...>;
-        template<sharpen::Size _Index>
+        template<std::size_t _Index>
         using At = typename sharpen::InternalTypeListAt<TL,_Index>::Type;
         template<typename _U>
         using Find = sharpen::InternalTypeListFind<TL,_U,_T>;
         template<typename _U>
         using Contain = sharpen::BoolType<Find<_U>::Index != TL::Size>;
 
-        constexpr static sharpen::Size typeSize_ = sharpen::MaxValue<sharpen::Size,sizeof(_T),sizeof(_Types)...>::Value;
-        constexpr static sharpen::Size typeListSize_ = TL::Size;
+        constexpr static std::size_t typeSize_ = sharpen::MaxValue<std::size_t,sizeof(_T),sizeof(_Types)...>::Value;
+        constexpr static std::size_t typeListSize_ = TL::Size;
 
         char dummy_[typeSize_];
-        sharpen::Size typeIndex_;
+        std::size_t typeIndex_;
 
         void Release() noexcept
         {

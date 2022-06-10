@@ -88,7 +88,7 @@ void sharpen::RemoveFile(const char *name)
 #endif
 }
 
-bool sharpen::GetCurrentWorkDirectory(char *pathBuf, sharpen::Size size) noexcept
+bool sharpen::GetCurrentWorkDirectory(char *pathBuf, std::size_t size) noexcept
 {
     if (!pathBuf || !size)
     {
@@ -117,7 +117,7 @@ void sharpen::SetCurrentWorkDirectory(const char *path)
 #endif
 }
 
-void sharpen::ResolvePath(const char *currentPath, sharpen::Size currentPathSize, const char *path, sharpen::Size pathSize, char *resolvedPath, sharpen::Size resolvedPathSize)
+void sharpen::ResolvePath(const char *currentPath, std::size_t currentPathSize, const char *path, std::size_t pathSize, char *resolvedPath, std::size_t resolvedPathSize)
 {
     if (resolvedPathSize < currentPathSize + pathSize)
     {
@@ -135,8 +135,8 @@ void sharpen::ResolvePath(const char *currentPath, sharpen::Size currentPathSize
     char *resolved = resolvedPath + currentPathSize;
     char *resolvedEnd = resolvedPath + resolvedPathSize;
     //state machine
-    sharpen::Size pointNumber{0};
-    sharpen::Size separatorNumber{1};
+    std::size_t pointNumber{0};
+    std::size_t separatorNumber{1};
     for (const char *begin = path, *end = path + pathSize; begin != end; ++begin)
     {
         assert(resolved < resolvedEnd);
@@ -186,7 +186,7 @@ void sharpen::ResolvePath(const char *currentPath, sharpen::Size currentPathSize
         else
         {
             separatorNumber = 0;
-            for (sharpen::Size i = 0; i < pointNumber; ++i)
+            for (std::size_t i = 0; i < pointNumber; ++i)
             {
                 *resolved++ = '.';
             }

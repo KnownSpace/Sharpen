@@ -16,7 +16,7 @@ namespace sharpen
         OVERLAPPED ol_;
         sharpen::IoEvent event_;
         void *data_;
-        sharpen::Size length_;
+        std::size_t length_;
         sharpen::ChannelPtr channel_;
     };
 }

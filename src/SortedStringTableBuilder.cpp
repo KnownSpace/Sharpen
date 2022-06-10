@@ -1,18 +1,18 @@
 #include <sharpen/SortedStringTableBuilder.hpp>
 
-sharpen::BloomFilter<sharpen::ByteBuffer> sharpen::SortedStringTableBuilder::LoadFilter(sharpen::FileChannelPtr channel, sharpen::Uint64 offset, sharpen::Uint64 size, sharpen::Size bitsOfElements)
+sharpen::BloomFilter<sharpen::ByteBuffer> sharpen::SortedStringTableBuilder::LoadFilter(sharpen::FileChannelPtr channel, std::uint64_t offset, std::uint64_t size, std::size_t bitsOfElements)
 {
-    sharpen::ByteBuffer buf{sharpen::IntCast<sharpen::Size>(size)};
+    sharpen::ByteBuffer buf{sharpen::IntCast<std::size_t>(size)};
     channel->ReadAsync(buf, offset);
     sharpen::BloomFilter<sharpen::ByteBuffer> filter{buf.Data(), buf.GetSize(), bitsOfElements};
     return filter;
 }
 
-void sharpen::SortedStringTableBuilder::WriteFilters(sharpen::FileChannelPtr channel,const std::vector<sharpen::BloomFilter<sharpen::ByteBuffer>> &filters,sharpen::SstRoot &root,sharpen::Uint64 &offset,sharpen::ByteBuffer &buf)
+void sharpen::SortedStringTableBuilder::WriteFilters(sharpen::FileChannelPtr channel,const std::vector<sharpen::BloomFilter<sharpen::ByteBuffer>> &filters,sharpen::SstRoot &root,std::uint64_t &offset,sharpen::ByteBuffer &buf)
 {
-    for (sharpen::Size i = 0, count = filters.size(); i != count; ++i)
+    for (std::size_t i = 0, count = filters.size(); i != count; ++i)
     {
-        sharpen::Size size{filters[i].GetSize()};
+        std::size_t size{filters[i].GetSize()};
         buf.ExtendTo(size);
         filters[i].CopyTo(buf.Data(),size);
         try

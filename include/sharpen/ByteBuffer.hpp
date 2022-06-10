@@ -33,9 +33,9 @@ namespace sharpen
 
         ByteBuffer() = default;
 
-        explicit ByteBuffer(sharpen::Size size);
+        explicit ByteBuffer(std::size_t size);
 
-        ByteBuffer(const sharpen::Char *p,sharpen::Size size);
+        ByteBuffer(const char *p,std::size_t size);
 
         ByteBuffer(const Self &other) = default;
 
@@ -62,51 +62,51 @@ namespace sharpen
             return *this;
         }
 
-        void PushBack(sharpen::Char val);
+        void PushBack(char val);
 
-        sharpen::Size GetSize() const noexcept;
+        std::size_t GetSize() const noexcept;
 
         void PopBack();
 
-        sharpen::Char Front() const;
+        char Front() const;
 
-        sharpen::Char &Front();
+        char &Front();
 
-        sharpen::Char Back() const;
+        char Back() const;
 
-        sharpen::Char &Back();
+        char &Back();
 
-        sharpen::Char &Get(sharpen::Size index);
+        char &Get(std::size_t index);
 
-        sharpen::Char Get(sharpen::Size index) const;
+        char Get(std::size_t index) const;
 
-        sharpen::Char GetOrDefault(sharpen::Size index,sharpen::Char defaultVal) const noexcept;
+        char GetOrDefault(std::size_t index,char defaultVal) const noexcept;
 
-        sharpen::Char *Data() noexcept;
+        char *Data() noexcept;
 
-        const sharpen::Char* Data() const noexcept;
+        const char* Data() const noexcept;
 
-        inline sharpen::Char &operator[](sharpen::Size index)
+        inline char &operator[](std::size_t index)
         {
             return this->Get(index);
         }
 
-        inline sharpen::Char operator[](sharpen::Size index) const
+        inline char operator[](std::size_t index) const
         {
             return this->Get(index);
         }
 
         void Reset() noexcept;
 
-        void Extend(sharpen::Size size);
+        void Extend(std::size_t size);
 
-        void Extend(sharpen::Size size,sharpen::Char defaultValue);
+        void Extend(std::size_t size,char defaultValue);
 
-        void ExtendTo(sharpen::Size size);
+        void ExtendTo(std::size_t size);
 
-        void ExtendTo(sharpen::Size size,sharpen::Char defaultValue);
+        void ExtendTo(std::size_t size,char defaultValue);
 
-        void Append(const sharpen::Char *p,sharpen::Size size);
+        void Append(const char *p,std::size_t size);
 
         void Append(const Self &other);
 
@@ -116,9 +116,9 @@ namespace sharpen
             this->vector_.Append(begin,end);
         }
 
-        void Erase(sharpen::Size pos);
+        void Erase(std::size_t pos);
 
-        void Erase(sharpen::Size begin,sharpen::Size end);
+        void Erase(std::size_t begin,std::size_t end);
 
         void Erase(ConstIterator where);
 
@@ -164,13 +164,13 @@ namespace sharpen
             return this->vector_.ReverseEnd();
         }
 
-        ConstIterator Find(sharpen::Char e) const noexcept;
+        ConstIterator Find(char e) const noexcept;
 
-        Iterator Find(sharpen::Char e) noexcept;
+        Iterator Find(char e) noexcept;
 
-        ReverseIterator ReverseFind(sharpen::Char e) noexcept;
+        ReverseIterator ReverseFind(char e) noexcept;
 
-        ConstReverseIterator ReverseFind(sharpen::Char e) const noexcept;
+        ConstReverseIterator ReverseFind(char e) const noexcept;
 
         template<typename _Iterator,typename _Check = decltype(std::declval<Self>().Get(0) == *std::declval<_Iterator>())>
         inline Iterator Search(const _Iterator begin,const _Iterator end)
@@ -189,12 +189,12 @@ namespace sharpen
             this->vector_.Clear();
         }
 
-        inline sharpen::Uint32 Adler32() const noexcept
+        inline std::uint32_t Adler32() const noexcept
         {
             return sharpen::Adler32(this->Data(),this->GetSize());
         }
 
-        inline sharpen::Uint16 Crc16() const noexcept
+        inline std::uint16_t Crc16() const noexcept
         {
             return sharpen::Crc16(this->Data(),this->GetSize());
         }
@@ -215,7 +215,7 @@ namespace sharpen
             return buf;
         }
 
-        inline sharpen::Int32 CompareWith(const Self &other) const noexcept
+        inline std::int32_t CompareWith(const Self &other) const noexcept
         {
             return sharpen::BufferCompare(this->Data(),this->GetSize(),other.Data(),other.GetSize());
         }
@@ -250,17 +250,17 @@ namespace sharpen
             return this->CompareWith(other) != 0;
         }
 
-        inline sharpen::Size Hash32() const noexcept
+        inline std::size_t Hash32() const noexcept
         {
             return sharpen::BufferHash32(this->Data(),this->GetSize());
         }
 
-        inline sharpen::Uint64 Hash64() const noexcept
+        inline std::uint64_t Hash64() const noexcept
         {
             return sharpen::BufferHash64(this->Data(),this->GetSize());
         }
 
-        inline sharpen::Size Hash() const noexcept
+        inline std::size_t Hash() const noexcept
         {
             return sharpen::BufferHash(this->Data(),this->GetSize());
         }
@@ -284,24 +284,24 @@ namespace sharpen
             return *reinterpret_cast<const _T*>(this->Data());
         }
 
-        sharpen::Size ComputeSize() const noexcept;
+        std::size_t ComputeSize() const noexcept;
 
-        sharpen::Size LoadFrom(const char *data,sharpen::Size size);
+        std::size_t LoadFrom(const char *data,std::size_t size);
 
-        sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset);
+        std::size_t LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset);
 
-        inline sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf)
+        inline std::size_t LoadFrom(const sharpen::ByteBuffer &buf)
         {
             return this->LoadFrom(buf,0);
         }
 
-        sharpen::Size UnsafeStoreTo(char *data) const noexcept;
+        std::size_t UnsafeStoreTo(char *data) const noexcept;
 
-        sharpen::Size StoreTo(char *data,sharpen::Size size) const;
+        std::size_t StoreTo(char *data,std::size_t size) const;
 
-        sharpen::Size StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
+        std::size_t StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const;
 
-        inline sharpen::Size StoreTo(sharpen::ByteBuffer &buf) const
+        inline std::size_t StoreTo(sharpen::ByteBuffer &buf) const
         {
             return this->StoreTo(buf,0);
         }

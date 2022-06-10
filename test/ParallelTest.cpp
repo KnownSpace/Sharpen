@@ -22,6 +22,6 @@ void ParallelTest(size_t n)
 int main()
 {
     sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine();
-    engine.Startup(&ParallelTest,static_cast<sharpen::Size>(1e4));
+    engine.Startup(&ParallelTest,static_cast<std::size_t>(1e4));
     return 0;
 }

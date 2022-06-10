@@ -13,25 +13,25 @@ namespace sharpen
     private:
         using Self = sharpen::SegmentedCircleCache<_T>;
     
-        sharpen::Size size_;
+        std::size_t size_;
         sharpen::CircleCache<_T> *caches_;
 
-        constexpr static sharpen::Size cacheSize_{3};
+        constexpr static std::size_t cacheSize_{3};
 
-        inline sharpen::Size HashKey(const std::string &key) const noexcept
+        inline std::size_t HashKey(const std::string &key) const noexcept
         {
             return Self::HashKey(key.begin(),key.end());
         }
 
         template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
-        inline sharpen::Size HashKey(_Iterator begin,_Iterator end) const noexcept
+        inline std::size_t HashKey(_Iterator begin,_Iterator end) const noexcept
         {
-            sharpen::Size hash{sharpen::BufferHash32(begin,end)};
+            std::size_t hash{sharpen::BufferHash32(begin,end)};
             return hash % this->size_;
         }
 
     public:
-        explicit SegmentedCircleCache(sharpen::Size cacheSize)
+        explicit SegmentedCircleCache(std::size_t cacheSize)
             :size_(0)
             ,caches_(nullptr)
         {
@@ -82,7 +82,7 @@ namespace sharpen
             return *this;
         }
 
-        inline sharpen::Size GetSize() const noexcept
+        inline std::size_t GetSize() const noexcept
         {
             return this->size_ << cacheSize_;
         }
@@ -137,7 +137,7 @@ namespace sharpen
         {
             if(this->caches_)
             {
-                for (sharpen::Size i = 0; i != this->size_; ++i)
+                for (std::size_t i = 0; i != this->size_; ++i)
                 {
                     this->caches_[i].~CircleCache<_T>();   
                 }

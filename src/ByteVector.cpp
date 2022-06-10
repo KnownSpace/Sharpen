@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-sharpen::Size sharpen::ByteVector::ComputeHeapSize(sharpen::Size size) noexcept
+std::size_t sharpen::ByteVector::ComputeHeapSize(std::size_t size) noexcept
 {
     if(size % 2)
     {
@@ -11,13 +11,13 @@ sharpen::Size sharpen::ByteVector::ComputeHeapSize(sharpen::Size size) noexcept
     return size;
 }
 
-sharpen::ByteVector::ByteVector(sharpen::Size size)
+sharpen::ByteVector::ByteVector(std::size_t size)
     :size_(0)
     ,rawVector_()
 {
     if(!this->InlineBuffer(size))
     {
-        sharpen::Size cap{this->ComputeHeapSize(size)};
+        std::size_t cap{this->ComputeHeapSize(size)};
         char *buf = reinterpret_cast<char*>(this->Alloc(cap));
         if(!buf)
         {
@@ -35,7 +35,7 @@ sharpen::ByteVector::ByteVector(const Self &other)
 {
     if(!other.InlineBuffer())
     {
-        sharpen::Size cap{other.rawVector_.external_.cap_};
+        std::size_t cap{other.rawVector_.external_.cap_};
         char *buf{reinterpret_cast<char*>(this->Alloc(cap))};
         if(!buf)
         {
@@ -111,7 +111,7 @@ const char *sharpen::ByteVector::Data() const noexcept
     return nullptr;
 }
 
-char &sharpen::ByteVector::Get(sharpen::Size index)
+char &sharpen::ByteVector::Get(std::size_t index)
 {
     if(index >= this->size_)
     {
@@ -120,7 +120,7 @@ char &sharpen::ByteVector::Get(sharpen::Size index)
     return this->Data()[index];
 }
 
-char sharpen::ByteVector::Get(sharpen::Size index) const
+char sharpen::ByteVector::Get(std::size_t index) const
 {
     if(index >= this->size_)
     {
@@ -144,7 +144,7 @@ void sharpen::ByteVector::Clear() noexcept
     this->size_ = 0;
 }
 
-void sharpen::ByteVector::Resize(sharpen::Size newSize,char defalutVal)
+void sharpen::ByteVector::Resize(std::size_t newSize,char defalutVal)
 {
     if(!this->InlineBuffer(newSize))
     {
@@ -152,10 +152,10 @@ void sharpen::ByteVector::Resize(sharpen::Size newSize,char defalutVal)
         {
             if(this->InlineBuffer() || this->rawVector_.external_.cap_ < newSize)
             {
-                sharpen::Size newCap{this->ComputeHeapSize(newSize)};
+                std::size_t newCap{this->ComputeHeapSize(newSize)};
                 if(newCap < sharpen::ByteVector::blobSize_)
                 {
-                    sharpen::Size sz{(std::max)(static_cast<sharpen::Size>(1),this->size_)};
+                    std::size_t sz{(std::max)(static_cast<std::size_t>(1),this->size_)};
                     newCap = (std::max)(sz*2,newCap);
                 }
                 char *buf{reinterpret_cast<char*>(this->Alloc(newCap))};
@@ -168,7 +168,7 @@ void sharpen::ByteVector::Resize(sharpen::Size newSize,char defalutVal)
                 {
                     this->Free(this->rawVector_.external_.data_);
                 }
-                for(sharpen::Size i = this->size_;i != newSize;++i)
+                for(std::size_t i = this->size_;i != newSize;++i)
                 {
                     buf[i] = defalutVal;
                 }
@@ -186,7 +186,7 @@ void sharpen::ByteVector::Resize(sharpen::Size newSize,char defalutVal)
     else if(this->size_ < newSize)
     {
         char *buf{this->rawVector_.inline_};
-        for(sharpen::Size i = this->size_;i != newSize;++i)
+        for(std::size_t i = this->size_;i != newSize;++i)
         {
             buf[i] = defalutVal;
         }
@@ -194,16 +194,16 @@ void sharpen::ByteVector::Resize(sharpen::Size newSize,char defalutVal)
     this->size_ = newSize;
 }
 
-void sharpen::ByteVector::Erase(sharpen::Size begin,sharpen::Size end) noexcept
+void sharpen::ByteVector::Erase(std::size_t begin,std::size_t end) noexcept
 {
     assert(begin <= end);
     assert(end <= this->size_);
     if(begin != end)
     {
-        sharpen::Size oldSize{this->size_};
-        sharpen::Size size{end - begin};
+        std::size_t oldSize{this->size_};
+        std::size_t size{end - begin};
         assert(oldSize >= size);
-        sharpen::Size newSize{oldSize - size};
+        std::size_t newSize{oldSize - size};
         if(!newSize)
         {
             return this->Clear();
@@ -215,7 +215,7 @@ void sharpen::ByteVector::Erase(sharpen::Size begin,sharpen::Size end) noexcept
             {
                 std::memcpy(this->rawVector_.inline_,p,begin);
             }
-            sharpen::Size moveSize{oldSize - end};
+            std::size_t moveSize{oldSize - end};
             if(moveSize)
             {
                 std::memcpy(this->rawVector_.inline_ + begin,p + end,moveSize);
@@ -230,7 +230,7 @@ void sharpen::ByteVector::Erase(sharpen::Size begin,sharpen::Size end) noexcept
             }
             else
             {
-                sharpen::Size moveSize{oldSize - end};
+                std::size_t moveSize{oldSize - end};
                 if(moveSize)
                 {
                     std::memcpy(this->Data() + begin,this->Data() + end,moveSize);
@@ -319,7 +319,7 @@ bool sharpen::ByteVector::CheckPointer(const char *p)
 void sharpen::ByteVector::Erase(Iterator where)
 {
     assert(CheckPointer(where.GetPointer()));
-    sharpen::Size whereInx{static_cast<sharpen::Size>(where.GetPointer() - this->Data())};
+    std::size_t whereInx{static_cast<std::size_t>(where.GetPointer() - this->Data())};
     this->Erase(whereInx);
 }
 
@@ -327,15 +327,15 @@ void sharpen::ByteVector::Erase(Iterator begin,Iterator end)
 {
     assert(CheckPointer(begin.GetPointer()) && CheckPointer(end.GetPointer()));
     char *buf{this->Data()};
-    sharpen::Size beginInx{static_cast<sharpen::Size>(begin.GetPointer() - buf)};
-    sharpen::Size endInx{static_cast<sharpen::Size>(end.GetPointer() - buf)};
+    std::size_t beginInx{static_cast<std::size_t>(begin.GetPointer() - buf)};
+    std::size_t endInx{static_cast<std::size_t>(end.GetPointer() - buf)};
     this->Erase(beginInx,endInx);
 }
 
 void sharpen::ByteVector::Erase(ConstIterator where)
 {
     assert(CheckPointer(where.GetPointer()));
-    sharpen::Size whereInx{static_cast<sharpen::Size>(where.GetPointer() - this->Data())};
+    std::size_t whereInx{static_cast<std::size_t>(where.GetPointer() - this->Data())};
     this->Erase(whereInx);
 }
 
@@ -343,7 +343,7 @@ void sharpen::ByteVector::Erase(ConstIterator begin,ConstIterator end)
 {
     assert(CheckPointer(begin.GetPointer()) && CheckPointer(end.GetPointer()));
     char *buf{this->Data()};
-    sharpen::Size beginInx{static_cast<sharpen::Size>(begin.GetPointer() - buf)};
-    sharpen::Size endInx{static_cast<sharpen::Size>(end.GetPointer() - buf)};
+    std::size_t beginInx{static_cast<std::size_t>(begin.GetPointer() - buf)};
+    std::size_t endInx{static_cast<std::size_t>(end.GetPointer() - buf)};
     this->Erase(beginInx,endInx);
 }

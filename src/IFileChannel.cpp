@@ -55,7 +55,7 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
     }
     channel = std::make_shared<sharpen::WinFileChannel>(handle);
 #else
-    sharpen::Int32 accessModel,openModel;
+    std::int32_t accessModel,openModel;
     //set access and shared
     switch (access)
     {
@@ -96,14 +96,14 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
     return channel;
 }
 
-void sharpen::IFileChannel::ZeroMemoryAsync(sharpen::Future<sharpen::Size> &future,sharpen::Size size,sharpen::Uint64 offset)
+void sharpen::IFileChannel::ZeroMemoryAsync(sharpen::Future<std::size_t> &future,std::size_t size,std::uint64_t offset)
 {
     this->WriteAsync("",1,offset + size - 1,future);
 }
 
-sharpen::Size sharpen::IFileChannel::ZeroMemoryAsync(sharpen::Size size,sharpen::Uint64 offset)
+std::size_t sharpen::IFileChannel::ZeroMemoryAsync(std::size_t size,std::uint64_t offset)
 {
-    sharpen::AwaitableFuture<sharpen::Size> future;
+    sharpen::AwaitableFuture<std::size_t> future;
     this->ZeroMemoryAsync(future,size,offset);
     return future.Await();
 }

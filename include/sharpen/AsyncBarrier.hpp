@@ -4,7 +4,8 @@
 
 #include <vector>
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "AwaitableFuture.hpp"
 
 namespace sharpen
@@ -16,12 +17,12 @@ namespace sharpen
         using MyFuturePtr = MyFuture*;
         using Waiters = std::vector<MyFuturePtr>;
 
-        sharpen::Uint64 counter_;
+        std::uint64_t counter_;
         Waiters waiters_;
-        sharpen::Uint64 beginCounter_;
+        std::uint64_t beginCounter_;
         sharpen::SpinLock lock_;
     public:
-        explicit AsyncBarrier(sharpen::Uint64 count);
+        explicit AsyncBarrier(std::uint64_t count);
 
         void WaitAsync();
         
@@ -29,7 +30,7 @@ namespace sharpen
         
         void Reset();
 
-        void AddCount(sharpen::Uint64 count);
+        void AddCount(std::uint64_t count);
 
         ~AsyncBarrier() noexcept = default;
     };

@@ -106,7 +106,7 @@ void sharpen::AsyncReadWriteLock::WriteUnlock() noexcept
     {
         sharpen::AsyncReadWriteLock::Waiters waiters;
         std::swap(waiters,this->readWaiters_);
-        this->readers_ = static_cast<sharpen::Uint32>(waiters.size());
+        this->readers_ = static_cast<std::uint32_t>(waiters.size());
         this->state_ = sharpen::ReadWriteLockState::SharedReading;
         lock.unlock();
         for (auto begin = std::begin(waiters),end = std::end(waiters);begin != end;++begin)
@@ -179,7 +179,7 @@ sharpen::ReadWriteLockState sharpen::AsyncReadWriteLock::DowngradeFromWrite()
         assert(this->state_ == sharpen::ReadWriteLockState::UniquedWriting);
         this->readers_ = 1;
         std::swap(waiters,this->readWaiters_);
-        this->readers_ += static_cast<sharpen::Uint32>(waiters.size());
+        this->readers_ += static_cast<std::uint32_t>(waiters.size());
         this->state_ = sharpen::ReadWriteLockState::SharedReading;
     }
     for (auto begin = waiters.begin(),end = waiters.end(); begin != end; ++begin)

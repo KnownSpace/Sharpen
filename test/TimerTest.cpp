@@ -48,7 +48,7 @@ void TimeWheelTest()
         future.Await();
         sw.Stop();
         assert(sw.Compute() < 3*CLOCKS_PER_SEC);
-        std::printf("cancel using %zu tu,1 second = %zu tu\n",static_cast<sharpen::Size>(sw.Compute()),static_cast<size_t>(sw.TimeUnitPerSecond()));
+        std::printf("cancel using %zu tu,1 second = %zu tu\n",static_cast<std::size_t>(sw.Compute()),static_cast<size_t>(sw.TimeUnitPerSecond()));
         {
             sharpen::TimerLoop loop{sharpen::EventEngine::GetEngine(),sharpen::MakeTimer(sharpen::EventEngine::GetEngine()),std::chrono::seconds(1),&LoopFunc};
             loop.Start();

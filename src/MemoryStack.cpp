@@ -12,7 +12,7 @@ sharpen::MemoryStack::MemoryStack()
     ,size_(0)
 {}
 
-sharpen::MemoryStack::MemoryStack(void *mem,sharpen::Size size)
+sharpen::MemoryStack::MemoryStack(void *mem,std::size_t size)
     :mem_(mem)
     ,size_(size)
 {}
@@ -55,7 +55,7 @@ void *sharpen::MemoryStack::Top() const noexcept
 {
     if (this->mem_)
     {
-        sharpen::Uintptr p = reinterpret_cast<sharpen::Uintptr>(this->mem_);
+        std::uintptr_t p = reinterpret_cast<std::uintptr_t>(this->mem_);
         p += this->size_;
         return reinterpret_cast<void*>(p);
     }
@@ -67,7 +67,7 @@ void *sharpen::MemoryStack::Bottom() const noexcept
     return this->mem_;
 }
 
-sharpen::Size sharpen::MemoryStack::Size() const noexcept
+std::size_t sharpen::MemoryStack::Size() const noexcept
 {
     return this->size_;
 }
@@ -77,7 +77,7 @@ void sharpen::MemoryStack::Swap(sharpen::MemoryStack &other) noexcept
     if(&other != this)
     {
         void *mem = this->mem_;
-        sharpen::Size size = this->size_;
+        std::size_t size = this->size_;
         this->mem_ = other.mem_;
         this->size_ = other.size_;
         other.mem_ = mem;
@@ -85,7 +85,7 @@ void sharpen::MemoryStack::Swap(sharpen::MemoryStack &other) noexcept
     }
 }
 
-sharpen::MemoryStack sharpen::MemoryStack::AllocStack(sharpen::Size size)
+sharpen::MemoryStack sharpen::MemoryStack::AllocStack(std::size_t size)
 {
     if (size == 0)
     {
@@ -100,7 +100,7 @@ sharpen::MemoryStack sharpen::MemoryStack::AllocStack(sharpen::Size size)
     return stack;
 }
 
-void sharpen::MemoryStack::Extend(sharpen::Size newSize)
+void sharpen::MemoryStack::Extend(std::size_t newSize)
 {
     if (this->size_ < newSize)
     {
@@ -116,7 +116,7 @@ void sharpen::MemoryStack::Extend(sharpen::Size newSize)
     }
 }
 
-void sharpen::MemoryStack::ExtendNoSave(sharpen::Size newSize)
+void sharpen::MemoryStack::ExtendNoSave(std::size_t newSize)
 {
     if (this->size_ < newSize)
     {

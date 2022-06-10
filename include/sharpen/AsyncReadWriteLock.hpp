@@ -28,7 +28,7 @@ namespace sharpen
         Waiters readWaiters_;
         Waiters writeWaiters_;
         sharpen::SpinLock lock_;
-        sharpen::Uint32 readers_;
+        std::uint32_t readers_;
 
         void WriteUnlock() noexcept;
 

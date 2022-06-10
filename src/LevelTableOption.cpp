@@ -2,11 +2,11 @@
 
 #include <cassert>
 
-sharpen::LevelTableOption::LevelTableOption(sharpen::Size maxViewOfComponent,sharpen::Size maxTableOfComponent
-                        ,sharpen::Size blockCacheSize,sharpen::Size filterBitsOfElement
-                        ,sharpen::Size maxSizeOfMemoryTable,sharpen::Size maxCountOfImmutableTable
-                        ,sharpen::Size blockSize,FileGenerator generator,Comparator comparator
-                        ,sharpen::Size tableCacheSize)
+sharpen::LevelTableOption::LevelTableOption(std::size_t maxViewOfComponent,std::size_t maxTableOfComponent
+                        ,std::size_t blockCacheSize,std::size_t filterBitsOfElement
+                        ,std::size_t maxSizeOfMemoryTable,std::size_t maxCountOfImmutableTable
+                        ,std::size_t blockSize,FileGenerator generator,Comparator comparator
+                        ,std::size_t tableCacheSize)
     :maxViewOfComponent_(maxViewOfComponent)
     ,maxTableOfComponent_(maxTableOfComponent)
     ,blockCacheSize_(blockCacheSize)

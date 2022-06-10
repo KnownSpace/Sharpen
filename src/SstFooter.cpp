@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <cassert>
 
-void sharpen::SstFooter::LoadFrom(const char *data,sharpen::Size size)
+void sharpen::SstFooter::LoadFrom(const char *data,std::size_t size)
 {
     if(size < sizeof(*this))
     {
@@ -13,7 +13,7 @@ void sharpen::SstFooter::LoadFrom(const char *data,sharpen::Size size)
     std::memcpy(&this->metaIndexBlock_,data + sizeof(this->indexBlock_),sizeof(this->metaIndexBlock_));
 }
 
-void sharpen::SstFooter::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset)
+void sharpen::SstFooter::LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset)
 {
     assert(buf.GetSize() >= offset);
     this->LoadFrom(buf.Data() + offset,buf.GetSize() - offset);
@@ -25,9 +25,9 @@ void sharpen::SstFooter::UnsafeStoreTo(char *data) const noexcept
     std::memcpy(data + sizeof(this->indexBlock_),&this->metaIndexBlock_,sizeof(this->metaIndexBlock_));
 }
 
-void sharpen::SstFooter::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
+void sharpen::SstFooter::StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const
 {
-    sharpen::Size size = buf.GetSize() - offset;
+    std::size_t size = buf.GetSize() - offset;
     if(size < sizeof(*this))
     {
         buf.Extend(sizeof(*this) - size);
@@ -35,7 +35,7 @@ void sharpen::SstFooter::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) 
     this->UnsafeStoreTo(buf.Data() + offset);
 }
 
-void sharpen::SstFooter::StoreTo(char *data,sharpen::Size size) const
+void sharpen::SstFooter::StoreTo(char *data,std::size_t size) const
 {
     if(size < sizeof(*this))
     {

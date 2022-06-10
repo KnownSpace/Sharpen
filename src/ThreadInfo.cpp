@@ -12,15 +12,15 @@
 
 #include <sharpen/Optional.hpp>
 
-sharpen::Uint32 sharpen::GetCurrentThreadId() noexcept
+std::uint32_t sharpen::GetCurrentThreadId() noexcept
 {
-    static thread_local sharpen::Optional<sharpen::Uint32> id;
+    static thread_local sharpen::Optional<std::uint32_t> id;
     if(!id.Exist())
     {
 #ifdef SHARPEN_IS_WIN
         id.Construct(::GetCurrentThreadId());
 #elif defined SHARPEN_IS_LINUX
-        id.Construct(static_cast<sharpen::Uint32>(syscall(__NR_gettid)));
+        id.Construct(static_cast<std::uint32_t>(syscall(__NR_gettid)));
 #else
         id.Construct(pthread_self());
 #endif

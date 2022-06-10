@@ -90,7 +90,7 @@ sharpen::NetStreamChannelPtr sharpen::INetStreamChannel::AcceptAsync()
     return future.Await();
 }
 
-void sharpen::INetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,sharpen::Uint64 size,sharpen::Uint64 offset)
+void sharpen::INetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,std::uint64_t size,std::uint64_t offset)
 {
     sharpen::AwaitableFuture<void> future;
     this->SendFileAsync(file,size,offset,future);
@@ -117,7 +117,7 @@ void sharpen::INetStreamChannel::Bind(const sharpen::IEndPoint &endpoint)
     }
 }
 
-void sharpen::INetStreamChannel::Listen(sharpen::Uint16 queueLength)
+void sharpen::INetStreamChannel::Listen(std::uint16_t queueLength)
 {
 #ifdef SHARPEN_HAS_WINSOCKET
     int r = ::listen(reinterpret_cast<SOCKET>(this->handle_),queueLength);

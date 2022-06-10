@@ -3,7 +3,8 @@
 #include <thread>
 
 #include <sharpen/CompilerInfo.hpp>
-#include <sharpen/TypeDef.hpp>
+#include <cstddef>
+#include <cstdint>
 
 #ifdef SHARPEN_COMPILER_MSVC
 #define SHARPEN_PAUSE
@@ -17,7 +18,7 @@
 
 void sharpen::SpinLock::lock() noexcept
 {
-    sharpen::Size i{0};
+    std::size_t i{0};
     while (this->flag_.test_and_set(std::memory_order::memory_order_acquire))
     {
         SHARPEN_PAUSE;

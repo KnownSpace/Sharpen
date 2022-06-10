@@ -31,10 +31,10 @@ namespace sharpen
     public:
 
         explicit TimerPool(sharpen::EventEngine &engine)
-            :TimerPool(engine,static_cast<sharpen::Size>(0))
+            :TimerPool(engine,static_cast<std::size_t>(0))
         {}
 
-        TimerPool(sharpen::EventEngine &engine,sharpen::Size reserveCount)
+        TimerPool(sharpen::EventEngine &engine,std::size_t reserveCount)
             :TimerPool(engine,nullptr,reserveCount)
         {}
 
@@ -42,7 +42,7 @@ namespace sharpen
             :TimerPool(engine,maker,0)
         {}
 
-        TimerPool(sharpen::EventEngine &engine,TimerMaker maker,sharpen::Size reserveCount);
+        TimerPool(sharpen::EventEngine &engine,TimerMaker maker,std::size_t reserveCount);
     
         ~TimerPool() noexcept = default;
     
@@ -53,7 +53,7 @@ namespace sharpen
 
         sharpen::TimerPtr GetTimer();
 
-        void Reserve(sharpen::Size size);
+        void Reserve(std::size_t size);
 
         void PutTimer(sharpen::TimerPtr &&timer);
     };   

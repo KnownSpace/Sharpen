@@ -47,17 +47,17 @@ public:
         return this->container_;
     }
 
-    sharpen::Size ComputeSize() const noexcept
+    std::size_t ComputeSize() const noexcept
     {
         return Helper::ComputeSize(this->container_);
     }
 
-    sharpen::Size LoadFrom(const char *data,sharpen::Size size)
+    std::size_t LoadFrom(const char *data,std::size_t size)
     {
         return Helper::LoadFrom(this->container_,data,size);
     }
 
-    sharpen::Size UnsafeStoreTo(char *data) const noexcept
+    std::size_t UnsafeStoreTo(char *data) const noexcept
     {
         return Helper::UnsafeStoreTo(this->container_,data);
     }
@@ -98,7 +98,7 @@ int main(int argc, char const *argv[])
     buf.Clear();
     {
         std::vector<Message> msgs;
-        for (sharpen::Size i = 0; i != 3; ++i)
+        for (std::size_t i = 0; i != 3; ++i)
         {
             Message msg;
             msg.Container().emplace("vector msg","test");
@@ -109,7 +109,7 @@ int main(int argc, char const *argv[])
     {
         std::vector<Message> msgs;
         sharpen::BinarySerializator::LoadFrom(msgs,buf);
-        for (sharpen::Size i = 0,count = msgs.size(); i != count; ++i)
+        for (std::size_t i = 0,count = msgs.size(); i != count; ++i)
         {
             for (auto begin = msgs[i].Container().begin(),end = msgs[i].Container().end(); begin != end; ++begin)
             {
@@ -124,7 +124,7 @@ int main(int argc, char const *argv[])
     {
         sharpen::Optional<std::vector<Message>> msgs;
         msgs.Construct();
-        for (sharpen::Size i = 0; i != 3; ++i)
+        for (std::size_t i = 0; i != 3; ++i)
         {
             Message msg;
             msg.Container().emplace("opt msgs","test");
@@ -135,7 +135,7 @@ int main(int argc, char const *argv[])
     {
         sharpen::Optional<std::vector<Message>> msgs;
         sharpen::BinarySerializator::LoadFrom(msgs,buf);
-        for (sharpen::Size i = 0,count = msgs.Get().size(); i != count; ++i)
+        for (std::size_t i = 0,count = msgs.Get().size(); i != count; ++i)
         {
             for (auto begin = msgs.Get()[i].Container().begin(),end = msgs.Get()[i].Container().end(); begin != end; ++begin)
             {

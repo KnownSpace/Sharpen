@@ -28,7 +28,7 @@ namespace sharpen
 
         int GetcharAsync();
 
-        sharpen::Size GetsAsync(char *buf,sharpen::Size bufSize);
+        std::size_t GetsAsync(char *buf,std::size_t bufSize);
 
         std::string GetsAsync();
     };

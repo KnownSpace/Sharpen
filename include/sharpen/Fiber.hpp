@@ -84,7 +84,7 @@ namespace sharpen
         void SetScheduler(sharpen::IFiberScheduler *scheduler) noexcept;
 
         template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<void,_Fn,_Args...>::Value>>
-        static sharpen::FiberPtr MakeFiber(sharpen::Size stackSize,_Fn &&fn,_Args &&...args)
+        static sharpen::FiberPtr MakeFiber(std::size_t stackSize,_Fn &&fn,_Args &&...args)
         {
             sharpen::FiberPtr fiber = std::make_shared<sharpen::Fiber>();
             fiber->stack_ = std::move(sharpen::MemoryStack(nullptr,stackSize));

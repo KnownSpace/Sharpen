@@ -2,7 +2,8 @@
 #ifndef _SHARPEN_HTTPSTATUSCODE_HPP
 #define _SHARPEN_HTTPSTATUSCODE_HPP
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 
 namespace sharpen
 {
@@ -73,13 +74,13 @@ namespace sharpen
 
     const char *GetHttpStatusCodeName(sharpen::HttpStatusCode code);
 
-    void InternalCopyHttpStatusCodeNameToMem(sharpen::HttpStatusCode code,char *buf,sharpen::Size size);
+    void InternalCopyHttpStatusCodeNameToMem(sharpen::HttpStatusCode code,char *buf,std::size_t size);
 
-    sharpen::Size CopyHttpStatusCodeNameTo(sharpen::HttpStatusCode code,char *buf,sharpen::Size);
+    std::size_t CopyHttpStatusCodeNameTo(sharpen::HttpStatusCode code,char *buf,std::size_t);
 
-    sharpen::Size CopyHttpStatusCodeNameTo(sharpen::HttpStatusCode code,sharpen::ByteBuffer &buf,sharpen::Size offset);
+    std::size_t CopyHttpStatusCodeNameTo(sharpen::HttpStatusCode code,sharpen::ByteBuffer &buf,std::size_t offset);
 
-    inline sharpen::Size CopyHttpStatusCodeNameTo(sharpen::HttpStatusCode code,sharpen::ByteBuffer &buf)
+    inline std::size_t CopyHttpStatusCodeNameTo(sharpen::HttpStatusCode code,sharpen::ByteBuffer &buf)
     {
         return sharpen::CopyHttpStatusCodeNameTo(code,buf,0);
     }

@@ -6,7 +6,8 @@
 #include <mutex>
 #include <cassert>
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "SpinLock.hpp"
 #include "Future.hpp"
 #include "AsyncMutex.hpp"

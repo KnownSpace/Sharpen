@@ -2,7 +2,8 @@
 #ifndef _SHARPEN_IASYNCRANDOMREADABLE_HPP
 #define _SHARPEN_IASYNCRANDOMREADABLE_HPP
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "ByteBuffer.hpp"
 #include "Future.hpp"
 
@@ -24,18 +25,18 @@ namespace sharpen
         
         virtual ~IAsyncRandomReadable() noexcept = default;
         
-        virtual void ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future) = 0;
+        virtual void ReadAsync(char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> &future) = 0;
         
-        virtual void ReadAsync(sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future) = 0;
+        virtual void ReadAsync(sharpen::ByteBuffer &buf,std::size_t bufferOffset,std::uint64_t offset,sharpen::Future<std::size_t> &future) = 0;
 
-        sharpen::Size ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset);
+        std::size_t ReadAsync(char *buf,std::size_t bufSize,std::uint64_t offset);
 
-        sharpen::Size ReadAsync(sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Uint64 offset);
+        std::size_t ReadAsync(sharpen::ByteBuffer &buf,std::size_t bufferOffset,std::uint64_t offset);
 
-        sharpen::Size ReadAsync(sharpen::ByteBuffer &buf,sharpen::Uint64 offset);
+        std::size_t ReadAsync(sharpen::ByteBuffer &buf,std::uint64_t offset);
 
         template<typename _T,typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>
-        inline sharpen::Size ReadObjectAsync(_T &obj,sharpen::Uint64 offset)
+        inline std::size_t ReadObjectAsync(_T &obj,std::uint64_t offset)
         {
             return this->ReadAsync(reinterpret_cast<char*>(&obj),sizeof(obj),offset);
         }

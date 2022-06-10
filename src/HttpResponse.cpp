@@ -76,11 +76,11 @@ void sharpen::HttpResponse::Clear()
     this->body_.Clear();
 }
 
-sharpen::Size sharpen::HttpResponse::ComputeSize() const
+std::size_t sharpen::HttpResponse::ComputeSize() const
 {
     //version
     const char *name = sharpen::GetHttpVersionName(this->version_);
-    sharpen::Size size = std::strlen(name);
+    std::size_t size = std::strlen(name);
     size += 1;
     //status code
     size += 3;
@@ -97,15 +97,15 @@ sharpen::Size sharpen::HttpResponse::ComputeSize() const
     return size;
 }
 
-sharpen::Size sharpen::HttpResponse::CopyTo(char *buf,sharpen::Size size) const
+std::size_t sharpen::HttpResponse::CopyTo(char *buf,std::size_t size) const
 {
-    sharpen::Size needSize = this->ComputeSize();
+    std::size_t needSize = this->ComputeSize();
     if (needSize > size)
     {
         throw std::length_error("buffer size less than need");
     }
     //version
-    sharpen::Size offset = sharpen::CopyHttpVersionNameTo(this->version_,buf,size);
+    std::size_t offset = sharpen::CopyHttpVersionNameTo(this->version_,buf,size);
     buf[offset] = ' ';
     offset += 1;
     //status code
@@ -133,10 +133,10 @@ sharpen::Size sharpen::HttpResponse::CopyTo(char *buf,sharpen::Size size) const
     return needSize;
 }
 
-sharpen::Size sharpen::HttpResponse::CopyTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
+std::size_t sharpen::HttpResponse::CopyTo(sharpen::ByteBuffer &buf,std::size_t offset) const
 {
-    sharpen::Size size = this->ComputeSize();
-    sharpen::Size left = buf.GetSize() - offset;
+    std::size_t size = this->ComputeSize();
+    std::size_t left = buf.GetSize() - offset;
     if (size > left)
     {
         buf.Extend(size - left);
@@ -175,18 +175,18 @@ void sharpen::HttpResponse::ConfigParser(sharpen::HttpParser &parser)
     using Pair = std::pair<std::string,std::string>;
     using PairPtr = std::shared_ptr<Pair>;
     PairPtr headerBuffer = std::make_shared<Pair>(std::string(),std::string());
-    parser.SetHeadersFieldCallback([headerBuffer](const char *data,sharpen::Size size) mutable
+    parser.SetHeadersFieldCallback([headerBuffer](const char *data,std::size_t size) mutable
     {
         headerBuffer->first.assign(data,size);
         return 0;
     });
-    parser.SetHeadersValueCallback([headerBuffer,this](const char *data,sharpen::Size size) mutable
+    parser.SetHeadersValueCallback([headerBuffer,this](const char *data,std::size_t size) mutable
     {
         headerBuffer->second.assign(data,size);
         this->Header().AddHeader(headerBuffer->first,headerBuffer->second);
         return 0;
     });
-    parser.SetBodyCallback([this](const char *data,sharpen::Size size) mutable
+    parser.SetBodyCallback([this](const char *data,std::size_t size) mutable
     {
         this->Body().CopyFrom(data,size);
         return 0;

@@ -7,7 +7,7 @@ int main(int argc, char const *argv[])
     std::puts("buffer compare test begin");
     char buf1[] = "1234";
     char buf2[] = "12345";
-    sharpen::Int32 r = sharpen::BufferCompare(buf1, sizeof(buf1), buf2, sizeof(buf2));
+    std::int32_t r = sharpen::BufferCompare(buf1, sizeof(buf1), buf2, sizeof(buf2));
     std::printf("is buf1 < buf2 ? %d\n", r == -1);
     assert(r == -1);
 

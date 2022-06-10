@@ -34,7 +34,7 @@ void sharpen::WinOutputPipeChannel::InitOverlappedStruct(sharpen::IocpOverlapped
     olStruct.channel_ = this->shared_from_this();
 }
 
-void sharpen::WinOutputPipeChannel::RequestWrite(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future)
+void sharpen::WinOutputPipeChannel::RequestWrite(const char *buf,std::size_t bufSize,sharpen::Future<std::size_t> *future)
 {
     sharpen::IocpOverlappedStruct *olStruct = new (std::nothrow) sharpen::IocpOverlappedStruct();
     if (!olStruct)
@@ -60,7 +60,7 @@ void sharpen::WinOutputPipeChannel::RequestWrite(const sharpen::Char *buf,sharpe
     }
 }
 
-void sharpen::WinOutputPipeChannel::WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future)
+void sharpen::WinOutputPipeChannel::WriteAsync(const char *buf,std::size_t bufSize,sharpen::Future<std::size_t> &future)
 {
     if (!this->IsRegistered())
     {
@@ -69,7 +69,7 @@ void sharpen::WinOutputPipeChannel::WriteAsync(const sharpen::Char *buf,sharpen:
     this->loop_->RunInLoop(std::bind(&Self::RequestWrite,this,buf,bufSize,&future));
 }
 
-void sharpen::WinOutputPipeChannel::WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Size bufOffset,sharpen::Future<sharpen::Size> &future)
+void sharpen::WinOutputPipeChannel::WriteAsync(const sharpen::ByteBuffer &buf,std::size_t bufOffset,sharpen::Future<std::size_t> &future)
 {
     if (bufOffset > buf.GetSize())
     {
@@ -81,7 +81,7 @@ void sharpen::WinOutputPipeChannel::WriteAsync(const sharpen::ByteBuffer &buf,sh
 void sharpen::WinOutputPipeChannel::OnEvent(sharpen::IoEvent *event)
 {
     std::unique_ptr<sharpen::IocpOverlappedStruct> ev(reinterpret_cast<sharpen::IocpOverlappedStruct*>(event->GetData()));
-    sharpen::Future<sharpen::Size> *future = reinterpret_cast<sharpen::Future<sharpen::Size>*>(ev->data_);
+    sharpen::Future<std::size_t> *future = reinterpret_cast<sharpen::Future<std::size_t>*>(ev->data_);
     if (event->IsErrorEvent())
     {
         future->Fail(sharpen::MakeSystemErrorPtr(event->GetErrorCode()));

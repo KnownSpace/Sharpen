@@ -12,7 +12,8 @@
 #endif
 
 #include "IEndPoint.hpp"
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "SystemError.hpp"
@@ -37,7 +38,7 @@ namespace sharpen
 
         IpEndPoint(Self &&other) noexcept = default;
 
-        IpEndPoint(sharpen::UintIpAddr addr,sharpen::UintPort port);
+        IpEndPoint(std::uint32_t addr,std::uint16_t port);
 
         ~IpEndPoint() noexcept = default;
 
@@ -52,7 +53,7 @@ namespace sharpen
             return !(*this == other);
         }
 
-        sharpen::Int64 CompareWith(const Self &other) const noexcept;
+        std::int64_t CompareWith(const Self &other) const noexcept;
 
         inline bool operator>(const Self &other) const noexcept
         {
@@ -78,44 +79,44 @@ namespace sharpen
 
         virtual const NativeAddr *GetAddrPtr() const noexcept override;
 
-        sharpen::UintPort GetPort() const noexcept;
+        std::uint16_t GetPort() const noexcept;
 
-        void SetPort(sharpen::UintPort port) noexcept;
+        void SetPort(std::uint16_t port) noexcept;
 
-        sharpen::UintIpAddr GetAddr() const noexcept;
+        std::uint32_t GetAddr() const noexcept;
 
-        void SetAddr(sharpen::UintIpAddr addr) noexcept;
+        void SetAddr(std::uint32_t addr) noexcept;
 
-        void GetAddrString(char *addrStr,sharpen::Size size) const;
+        void GetAddrString(char *addrStr,std::size_t size) const;
 
         void SetAddrByString(const char *addrStr);
 
-        virtual sharpen::Uint32 GetAddrLen() const override
+        virtual std::uint32_t GetAddrLen() const override
         {
             return sizeof(this->addr_);
         }
 
-        constexpr static sharpen::Size ComputeSize() noexcept
+        constexpr static std::size_t ComputeSize() noexcept
         {
-            return sizeof(sharpen::Uint32) + sizeof(sharpen::Uint16);
+            return sizeof(std::uint32_t) + sizeof(std::uint16_t);
         }
 
-        sharpen::Size LoadFrom(const char *data,sharpen::Size size);
+        std::size_t LoadFrom(const char *data,std::size_t size);
 
-        sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset);
+        std::size_t LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset);
 
-        inline sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf)
+        inline std::size_t LoadFrom(const sharpen::ByteBuffer &buf)
         {
             return this->LoadFrom(buf,0);
         }
 
-        sharpen::Size UnsafeStoreTo(char *data) const noexcept;
+        std::size_t UnsafeStoreTo(char *data) const noexcept;
 
-        sharpen::Size StoreTo(char *data,sharpen::Size size) const;
+        std::size_t StoreTo(char *data,std::size_t size) const;
 
-        sharpen::Size StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
+        std::size_t StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const;
 
-        inline sharpen::Size StoreTo(sharpen::ByteBuffer &buf) const
+        inline std::size_t StoreTo(sharpen::ByteBuffer &buf) const
         {
             return this->StoreTo(buf,0);
         }

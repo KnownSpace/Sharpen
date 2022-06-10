@@ -16,7 +16,8 @@
 #endif
 
 #include "IEndPoint.hpp"
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "SystemError.hpp"
@@ -41,7 +42,7 @@ namespace sharpen
     public:
         Ipv6EndPoint() noexcept;
 
-        Ipv6EndPoint(const in6_addr &ip,sharpen::UintPort port);
+        Ipv6EndPoint(const in6_addr &ip,std::uint16_t port);
 
         Ipv6EndPoint(const Self &other) = default;
 
@@ -60,7 +61,7 @@ namespace sharpen
             return !(*this == other);
         }
 
-        sharpen::Int64 CompareWith(const Self &other) const noexcept;
+        std::int64_t CompareWith(const Self &other) const noexcept;
 
         inline bool operator>(const Self &other) const noexcept
         {
@@ -86,44 +87,44 @@ namespace sharpen
 
         virtual const NativeAddr *GetAddrPtr() const noexcept override;
 
-        sharpen::UintPort GetPort() const noexcept;
+        std::uint16_t GetPort() const noexcept;
 
-        void SetPort(sharpen::UintPort port) noexcept;
+        void SetPort(std::uint16_t port) noexcept;
 
         void GetAddr(in6_addr &addr) const noexcept;
 
         void SetAddr(const in6_addr &addr) noexcept;
 
-        void GetAddrString(char *addrStr,sharpen::Size size) const;
+        void GetAddrString(char *addrStr,std::size_t size) const;
 
         void SetAddrByString(const char *addrStr);
 
-        virtual sharpen::Uint32 GetAddrLen() const override
+        virtual std::uint32_t GetAddrLen() const override
         {
             return sizeof(this->addr_);
         }
 
-        constexpr static sharpen::Size ComputeSize() noexcept
+        constexpr static std::size_t ComputeSize() noexcept
         {
-            return sizeof(in6_addr) + sizeof(sharpen::Uint16);
+            return sizeof(in6_addr) + sizeof(std::uint16_t);
         }
 
-        sharpen::Size LoadFrom(const char *data,sharpen::Size size);
+        std::size_t LoadFrom(const char *data,std::size_t size);
 
-        sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset);
+        std::size_t LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset);
 
-        inline sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf)
+        inline std::size_t LoadFrom(const sharpen::ByteBuffer &buf)
         {
             return this->LoadFrom(buf,0);
         }
 
-        sharpen::Size UnsafeStoreTo(char *data) const noexcept;
+        std::size_t UnsafeStoreTo(char *data) const noexcept;
 
-        sharpen::Size StoreTo(char *data,sharpen::Size size) const;
+        std::size_t StoreTo(char *data,std::size_t size) const;
 
-        sharpen::Size StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
+        std::size_t StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const;
 
-        inline sharpen::Size StoreTo(sharpen::ByteBuffer &buf) const
+        inline std::size_t StoreTo(sharpen::ByteBuffer &buf) const
         {
             return this->StoreTo(buf,0);
         }
@@ -138,9 +139,9 @@ namespace std
     {
         std::size_t operator()(const sharpen::Ipv6EndPoint &endpoint) const noexcept
         {
-            char buffer[sizeof(in6_addr) + sizeof(sharpen::Uint16)] = {};
+            char buffer[sizeof(in6_addr) + sizeof(std::uint16_t)] = {};
             endpoint.GetAddr(*reinterpret_cast<in6_addr*>(buffer));
-            *reinterpret_cast<sharpen::Uint16*>(buffer + sizeof(in6_addr)) = endpoint.GetPort();
+            *reinterpret_cast<std::uint16_t*>(buffer + sizeof(in6_addr)) = endpoint.GetPort();
             return sharpen::BufferHash(buffer,sizeof(buffer));
         }
     };

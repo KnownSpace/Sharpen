@@ -1,6 +1,6 @@
 #include <sharpen/TimerPool.hpp>
 
-sharpen::TimerPool::TimerPool(sharpen::EventEngine &engine,TimerMaker maker,sharpen::Size reserveCount)
+sharpen::TimerPool::TimerPool(sharpen::EventEngine &engine,TimerMaker maker,std::size_t reserveCount)
     :lock_()
     ,timers_()
     ,maker_(maker)
@@ -9,14 +9,14 @@ sharpen::TimerPool::TimerPool(sharpen::EventEngine &engine,TimerMaker maker,shar
     this->Reserve(reserveCount);
 }
 
-void sharpen::TimerPool::Reserve(sharpen::Size size)
+void sharpen::TimerPool::Reserve(std::size_t size)
 {
     if(size)
     {
         {
             std::unique_lock<sharpen::SpinLock> lock{this->lock_};
             this->timers_.reserve(size);
-            for (sharpen::Size i = 0; i != size; ++i)
+            for (std::size_t i = 0; i != size; ++i)
             {
                 this->timers_.emplace_back(this->MakeTimer());   
             }

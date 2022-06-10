@@ -1,21 +1,21 @@
 #include <sharpen/IAsyncRandomWritable.hpp>
 #include <sharpen/AwaitableFuture.hpp>
 
-sharpen::Size sharpen::IAsyncRandomWritable::WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset)
+std::size_t sharpen::IAsyncRandomWritable::WriteAsync(const char *buf,std::size_t bufSize,std::uint64_t offset)
 {
-    sharpen::AwaitableFuture<sharpen::Size> future;
+    sharpen::AwaitableFuture<std::size_t> future;
     this->WriteAsync(buf,bufSize,offset,future);
     return future.Await();
 }
 
-sharpen::Size sharpen::IAsyncRandomWritable::WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Uint64 offset)
+std::size_t sharpen::IAsyncRandomWritable::WriteAsync(const sharpen::ByteBuffer &buf,std::size_t bufferOffset,std::uint64_t offset)
 {
-    sharpen::AwaitableFuture<sharpen::Size> future;
+    sharpen::AwaitableFuture<std::size_t> future;
     this->WriteAsync(buf,bufferOffset,offset,future);
     return future.Await();
 }
 
-sharpen::Size sharpen::IAsyncRandomWritable::WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Uint64 offset)
+std::size_t sharpen::IAsyncRandomWritable::WriteAsync(const sharpen::ByteBuffer &buf,std::uint64_t offset)
 {
     return this->WriteAsync(buf,0,offset);
 }

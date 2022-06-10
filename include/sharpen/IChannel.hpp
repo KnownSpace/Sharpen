@@ -5,7 +5,8 @@
 #include <memory>
 #include <functional>
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "FileTypeDef.hpp"
 
 namespace sharpen

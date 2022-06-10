@@ -11,9 +11,9 @@ sharpen::BtKeyValuePair::BtKeyValuePair(sharpen::ByteBuffer key,sharpen::ByteBuf
     ,value_(std::move(value))
 {}
 
-sharpen::Size sharpen::BtKeyValuePair::ComputeSize(const sharpen::ByteBuffer &key,const sharpen::ByteBuffer &value) noexcept
+std::size_t sharpen::BtKeyValuePair::ComputeSize(const sharpen::ByteBuffer &key,const sharpen::ByteBuffer &value) noexcept
 {
-    sharpen::Size size{0};
+    std::size_t size{0};
     //key size
     sharpen::Varuint64 builder{key.GetSize()};
     size += builder.ComputeSize();
@@ -27,17 +27,17 @@ sharpen::Size sharpen::BtKeyValuePair::ComputeSize(const sharpen::ByteBuffer &ke
     return size;
 }
 
-sharpen::Size sharpen::BtKeyValuePair::ComputeSize() const noexcept
+std::size_t sharpen::BtKeyValuePair::ComputeSize() const noexcept
 {
     return Self::ComputeSize(this->key_,this->value_);
 }
 
-sharpen::Size sharpen::BtKeyValuePair::UnsafeStoreTo(char *data) const
+std::size_t sharpen::BtKeyValuePair::UnsafeStoreTo(char *data) const
 {
-    sharpen::Size offset{0};
+    std::size_t offset{0};
     //store key size
     sharpen::Varuint64 builder{this->key_.GetSize()};
-    sharpen::Size size{builder.ComputeSize()};
+    std::size_t size{builder.ComputeSize()};
     std::memcpy(data,builder.Data(),size);
     offset += size;
     //store value size
@@ -56,23 +56,23 @@ sharpen::Size sharpen::BtKeyValuePair::UnsafeStoreTo(char *data) const
     return offset;
 }
 
-sharpen::Size sharpen::BtKeyValuePair::LoadFrom(const char *data,sharpen::Size size)
+std::size_t sharpen::BtKeyValuePair::LoadFrom(const char *data,std::size_t size)
 {
     if(size < 2)
     {
         throw std::invalid_argument("invalid buffer");
     }
     //load key size
-    sharpen::Size keySize{0};
-    sharpen::Size valueSize{0};
-    sharpen::Size offset{0};
+    std::size_t keySize{0};
+    std::size_t valueSize{0};
+    std::size_t offset{0};
     sharpen::Varuint64 builder{data,size};
     offset += builder.ComputeSize();
     if (offset == size)
     {
         throw std::invalid_argument("invalid buffer");
     }
-    keySize = sharpen::IntCast<sharpen::Size>(builder.Get());
+    keySize = sharpen::IntCast<std::size_t>(builder.Get());
     //load value size
     builder.Set(data + offset,size - offset);
     offset += builder.ComputeSize();
@@ -80,7 +80,7 @@ sharpen::Size sharpen::BtKeyValuePair::LoadFrom(const char *data,sharpen::Size s
     {
         throw std::invalid_argument("invalid buffer");
     }
-    valueSize = sharpen::IntCast<sharpen::Size>(builder.Get());
+    valueSize = sharpen::IntCast<std::size_t>(builder.Get());
     //load key
     sharpen::ByteBuffer buf{keySize};
     if(size < offset + keySize)
@@ -105,15 +105,15 @@ sharpen::Size sharpen::BtKeyValuePair::LoadFrom(const char *data,sharpen::Size s
     return offset;
 }
 
-sharpen::Size sharpen::BtKeyValuePair::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset)
+std::size_t sharpen::BtKeyValuePair::LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset)
 {
     assert(buf.GetSize() >= offset);
     return this->LoadFrom(buf.Data() + offset,buf.GetSize() - offset);
 }
 
-sharpen::Size sharpen::BtKeyValuePair::StoreTo(char *data,sharpen::Size size) const
+std::size_t sharpen::BtKeyValuePair::StoreTo(char *data,std::size_t size) const
 {
-    sharpen::Size needSize{this->ComputeSize()};
+    std::size_t needSize{this->ComputeSize()};
     if(size < needSize)
     {
         throw std::invalid_argument("buffer too small");
@@ -122,11 +122,11 @@ sharpen::Size sharpen::BtKeyValuePair::StoreTo(char *data,sharpen::Size size) co
     return needSize;
 }
 
-sharpen::Size sharpen::BtKeyValuePair::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
+std::size_t sharpen::BtKeyValuePair::StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const
 {
     assert(buf.GetSize() >= offset);
-    sharpen::Size needSize{this->ComputeSize()};
-    sharpen::Size size{buf.GetSize() - offset};
+    std::size_t needSize{this->ComputeSize()};
+    std::size_t size{buf.GetSize() - offset};
     if(needSize > size)
     {
         buf.Extend(needSize - size);

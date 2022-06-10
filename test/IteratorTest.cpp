@@ -23,7 +23,7 @@ int main(int argc, char const *argv[])
     {
         TwoWayIterator begin{vec.begin(),vec.end(),vec.begin()->begin()};
         TwoWayIterator end{vec.end(),vec.end(),SubIterator{}};
-        sharpen::Size index{0};
+        std::size_t index{0};
         while (begin != end)
         {
             std::printf("inc %d\n",*begin);
@@ -32,7 +32,7 @@ int main(int argc, char const *argv[])
         }
     }
     {
-        sharpen::Size index{8};
+        std::size_t index{8};
         TwoWayIterator begin{--vec.end(),vec.begin(),--(--vec.end())->end()};
         TwoWayIterator end{vec.begin(),vec.begin(),SubIterator{}};
         while (begin != end)
@@ -45,7 +45,7 @@ int main(int argc, char const *argv[])
     {
         TwoWayIterator begin{vec.begin(),vec.end(),vec.begin()->begin()};
         TwoWayIterator end{vec.end(),vec.end(),SubIterator{}};
-        sharpen::Size size{sharpen::GetRangeSize(begin,end)};
+        std::size_t size{sharpen::GetRangeSize(begin,end)};
         std::printf("size is %zu\n",size);
         assert(size == 9);
     }

@@ -9,7 +9,8 @@
 #include <cassert>
 
 #include "RaftRole.hpp"
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "Future.hpp"
@@ -53,9 +54,9 @@ namespace sharpen
         //current role
         sharpen::RaftRole role_;
         //commit index
-        sharpen::Uint64 commitIndex_;
+        std::uint64_t commitIndex_;
         //applied index
-        sharpen::Uint64 lastApplied_;
+        std::uint64_t lastApplied_;
         //application
         std::shared_ptr<_Application> application_;
 
@@ -64,14 +65,14 @@ namespace sharpen
         MemberMap members_;
 
         //candidate voltile status
-        sharpen::Uint64 votes_;
+        std::uint64_t votes_;
 
         void SetRole(sharpen::RaftRole role) noexcept
         {
             this->role_ = role;
         }
 
-        void SetCurrentTerm(sharpen::Uint64 term)
+        void SetCurrentTerm(std::uint64_t term)
         {
             this->PersistenceStorage().SetCurrentTerm(term);
         }
@@ -87,14 +88,14 @@ namespace sharpen
             this->SetRole(sharpen::RaftRole::Follower);
         }
 
-        void BiggerTerm(sharpen::Uint64 term)
+        void BiggerTerm(std::uint64_t term)
         {
             this->ConvertFollower();
             this->ResetLeader();
             this->SetCurrentTerm(term);
         }
     public:
-        static constexpr sharpen::Uint64 sentinelLogIndex_{0};
+        static constexpr std::uint64_t sentinelLogIndex_{0};
 
         using LostPolicy = sharpen::RaftApplyPolicy;
 
@@ -141,7 +142,7 @@ namespace sharpen
 
         ~InternalRaftWrapper() noexcept = default;
 
-        sharpen::Uint64 GetLastIndex() const noexcept
+        std::uint64_t GetLastIndex() const noexcept
         {
             if(this->PersistenceStorage().EmptyLogs())
             {
@@ -150,7 +151,7 @@ namespace sharpen
             return this->PersistenceStorage().GetLastLog().GetIndex();
         }
 
-        sharpen::Uint64 GetLastTerm() const noexcept
+        std::uint64_t GetLastTerm() const noexcept
         {
             if(this->PersistenceStorage().EmptyLogs())
             {
@@ -184,12 +185,12 @@ namespace sharpen
             return *this->application_;
         }
 
-        sharpen::Size MemberMajority() const noexcept
+        std::size_t MemberMajority() const noexcept
         {
             return (this->Members().size())/2;
         }
 
-        void ReactNewTerm(sharpen::Uint64 term)
+        void ReactNewTerm(std::uint64_t term)
         {
             if(term > this->GetCurrentTerm())
             {
@@ -217,7 +218,7 @@ namespace sharpen
 
         //append entires
         template<typename _LogIterator,typename _Check = sharpen::EnableIf<sharpen::IsRaftLogIterator<_LogIterator>::Value>>
-        sharpen::RaftAppendResult AppendEntries(_LogIterator begin,_LogIterator end,const _Id &leaderId,sharpen::Uint64 leaderTerm,sharpen::Uint64 prevLogIndex,sharpen::Uint64 prevLogTerm,sharpen::Uint64 leaderCommit)
+        sharpen::RaftAppendResult AppendEntries(_LogIterator begin,_LogIterator end,const _Id &leaderId,std::uint64_t leaderTerm,std::uint64_t prevLogIndex,std::uint64_t prevLogTerm,std::uint64_t leaderCommit)
         {
             //if is old leader
             if(leaderTerm < this->GetCurrentTerm())
@@ -316,7 +317,7 @@ namespace sharpen
             this->PersistenceStorage().SetVotedFor(this->selfId_);
         }
 
-        void ReactVote(sharpen::Uint64 vote)
+        void ReactVote(std::uint64_t vote)
         {
             this->votes_ += vote;
         }
@@ -334,7 +335,7 @@ namespace sharpen
             return false;
         }
 
-        bool RequestVote(sharpen::Uint64 candidateTerm,const _Id &candidateId,sharpen::Uint64 lastLogIndex,sharpen::Uint64 lastLogTerm)
+        bool RequestVote(std::uint64_t candidateTerm,const _Id &candidateId,std::uint64_t lastLogIndex,std::uint64_t lastLogTerm)
         {
             //check role
             if(this->GetRole() == sharpen::RaftRole::Leader)
@@ -362,7 +363,7 @@ namespace sharpen
             return false;
         }
 
-        sharpen::Uint64 GetCurrentTerm() const noexcept
+        std::uint64_t GetCurrentTerm() const noexcept
         {
             return this->PersistenceStorage().GetCurrentTerm();
         }
@@ -375,7 +376,7 @@ namespace sharpen
         //return true if we continue
         //this impl is optional
         template<typename _UCommiter = _Application,typename _Check = decltype(std::declval<_UCommiter&>().InstallSnapshot(std::declval<_PersistentStorage&>(),std::declval<MemberMap&>(),0,0,0,0,nullptr,false)),typename _Assert = sharpen::EnableIf<std::is_same<_Application,_UCommiter>::value>>
-        sharpen::RaftAppendResult InstallSnapshot(const _Id &leaderId,sharpen::Uint64 leaderTerm,sharpen::Uint64 lastIncludedIndex,sharpen::Uint64 lastIncludedTerm,sharpen::Uint64 offset,const char *data,bool done)
+        sharpen::RaftAppendResult InstallSnapshot(const _Id &leaderId,std::uint64_t leaderTerm,std::uint64_t lastIncludedIndex,std::uint64_t lastIncludedTerm,std::uint64_t offset,const char *data,bool done)
         {
             //check term
             if (this->GetCurrentTerm() > leaderTerm)
@@ -430,7 +431,7 @@ namespace sharpen
             this->PersistenceStorage().AppendLog(std::move(log));
         }
 
-        void SetCommitIndex(sharpen::Uint64 index) noexcept
+        void SetCommitIndex(std::uint64_t index) noexcept
         {
             if(this->commitIndex_ < index)
             {
@@ -438,12 +439,12 @@ namespace sharpen
             }
         }
 
-        sharpen::Uint64 GetCommitIndex() const noexcept
+        std::uint64_t GetCommitIndex() const noexcept
         {
             return this->commitIndex_;
         }
 
-        sharpen::Uint64 GetLastApplied() const noexcept
+        std::uint64_t GetLastApplied() const noexcept
         {
             return this->lastApplied_;
         }
@@ -477,7 +478,7 @@ namespace sharpen
             }
         }
 
-        static constexpr bool IsValidIndex(sharpen::Uint64 index) noexcept
+        static constexpr bool IsValidIndex(std::uint64_t index) noexcept
         {
             return index == sentinelLogIndex_;
         }

@@ -85,7 +85,8 @@ Data Block
 
 #include <vector>
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "SstFooter.hpp"
 #include "SstIndexBlock.hpp"
 #include "DataCorruptionException.hpp"
@@ -160,7 +161,7 @@ namespace sharpen
 
         void LoadFrom(sharpen::FileChannelPtr channel);
 
-        void StoreTo(sharpen::FileChannelPtr channel,sharpen::Uint64 offset) const;
+        void StoreTo(sharpen::FileChannelPtr channel,std::uint64_t offset) const;
     };
 }
 

@@ -46,7 +46,7 @@ int sharpen::HttpParser::OnMessageBegin(Parser *parser)
     return 0;
 }
 
-int sharpen::HttpParser::OnUrl(Parser *parser,const char *str,sharpen::Size len)
+int sharpen::HttpParser::OnUrl(Parser *parser,const char *str,std::size_t len)
 {
     sharpen::HttpParser *thiz = reinterpret_cast<sharpen::HttpParser*>(parser->data);
     if (thiz->onUrl_)
@@ -56,7 +56,7 @@ int sharpen::HttpParser::OnUrl(Parser *parser,const char *str,sharpen::Size len)
     return 0;
 }
 
-int sharpen::HttpParser::OnStatusCode(Parser *parser,const char *str,sharpen::Size len)
+int sharpen::HttpParser::OnStatusCode(Parser *parser,const char *str,std::size_t len)
 {
     sharpen::HttpParser *thiz = reinterpret_cast<sharpen::HttpParser*>(parser->data);
     if (thiz->onStatusCode_)
@@ -66,7 +66,7 @@ int sharpen::HttpParser::OnStatusCode(Parser *parser,const char *str,sharpen::Si
     return 0;
 }
 
-int sharpen::HttpParser::OnHeadersField(Parser *parser,const char *str,sharpen::Size len)
+int sharpen::HttpParser::OnHeadersField(Parser *parser,const char *str,std::size_t len)
 {
     if (len == 0)
     {
@@ -80,7 +80,7 @@ int sharpen::HttpParser::OnHeadersField(Parser *parser,const char *str,sharpen::
     return 0;
 }
 
-int sharpen::HttpParser::OnHeadersValue(Parser *parser,const char *str,sharpen::Size len)
+int sharpen::HttpParser::OnHeadersValue(Parser *parser,const char *str,std::size_t len)
 {
     sharpen::HttpParser *thiz = reinterpret_cast<sharpen::HttpParser*>(parser->data);
     if (thiz->onHeadersValue_)
@@ -100,7 +100,7 @@ int sharpen::HttpParser::OnHeadersComplete(Parser *parser)
     return 0;
 }
 
-int sharpen::HttpParser::OnBody(Parser *parser,const char *str,sharpen::Size len)
+int sharpen::HttpParser::OnBody(Parser *parser,const char *str,std::size_t len)
 {
     sharpen::HttpParser *thiz = reinterpret_cast<sharpen::HttpParser*>(parser->data);
     if (thiz->onBody_)
@@ -161,7 +161,7 @@ sharpen::HttpParser::ParserSettings *sharpen::HttpParser::GetSettings()
     return &settings;
 }
 
-void sharpen::HttpParser::Parse(const char *data,sharpen::Size size)
+void sharpen::HttpParser::Parse(const char *data,std::size_t size)
 {
     ::llhttp_execute(this->parser_,data,size);
 }
@@ -213,7 +213,7 @@ void sharpen::HttpParser::SetCompleted(bool completed)
     this->completed_ = completed;
 }
 
-void sharpen::HttpParser::Parse(const sharpen::ByteBuffer &buf,sharpen::Size offset)
+void sharpen::HttpParser::Parse(const sharpen::ByteBuffer &buf,std::size_t offset)
 {
     this->Parse(buf.Data() + offset,buf.GetSize() - offset);
 }

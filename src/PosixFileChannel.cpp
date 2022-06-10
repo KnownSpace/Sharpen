@@ -29,7 +29,7 @@ sharpen::PosixFileChannel::PosixFileChannel(sharpen::FileHandle handle)
     this->handle_ = handle;
 }
 
-void sharpen::PosixFileChannel::NormalWrite(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> *future)
+void sharpen::PosixFileChannel::NormalWrite(const char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> *future)
 {
     ssize_t r;
     do
@@ -41,12 +41,12 @@ void sharpen::PosixFileChannel::NormalWrite(const sharpen::Char *buf,sharpen::Si
         future->Fail(sharpen::MakeLastErrorPtr());
         return;
     }
-    future->Complete(static_cast<sharpen::Size>(r));
+    future->Complete(static_cast<std::size_t>(r));
 }
 
 #ifdef SHARPEN_HAS_IOURING
 
-sharpen::IoUringStruct *sharpen::PosixFileChannel::InitStruct(void *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future)
+sharpen::IoUringStruct *sharpen::PosixFileChannel::InitStruct(void *buf,std::size_t bufSize,sharpen::Future<std::size_t> *future)
 {
     sharpen::IoUringStruct *st = new (std::nothrow) sharpen::IoUringStruct();
     if(!st)
@@ -65,7 +65,7 @@ sharpen::IoUringStruct *sharpen::PosixFileChannel::InitStruct(void *buf,sharpen:
 }
 #endif
 
-void sharpen::PosixFileChannel::DoWrite(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> *future)
+void sharpen::PosixFileChannel::DoWrite(const char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> *future)
 {
 #ifdef SHARPEN_HAS_IOURING
     if(!this->queue_)
@@ -83,8 +83,8 @@ void sharpen::PosixFileChannel::DoWrite(const sharpen::Char *buf,sharpen::Size b
     std::memset(&sqe,0,sizeof(sqe));
     sqe.opcode = IORING_OP_WRITEV;
     st->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Write);
-    sqe.user_data = reinterpret_cast<sharpen::Uint64>(st);
-    sqe.addr = reinterpret_cast<sharpen::Uint64>(&st->vec_);
+    sqe.user_data = reinterpret_cast<std::uint64_t>(st);
+    sqe.addr = reinterpret_cast<std::uint64_t>(&st->vec_);
     sqe.len = 1;
     sqe.off = offset;
     sqe.fd = this->handle_;
@@ -94,7 +94,7 @@ void sharpen::PosixFileChannel::DoWrite(const sharpen::Char *buf,sharpen::Size b
 #endif
 }
 
-void sharpen::PosixFileChannel::NormalRead(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> *future)
+void sharpen::PosixFileChannel::NormalRead(char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> *future)
 {
     ssize_t r;
     do
@@ -106,10 +106,10 @@ void sharpen::PosixFileChannel::NormalRead(sharpen::Char *buf,sharpen::Size bufS
         future->Fail(sharpen::MakeLastErrorPtr());
         return;
     }
-    future->Complete(static_cast<sharpen::Size>(r));
+    future->Complete(static_cast<std::size_t>(r));
 }
 
-void sharpen::PosixFileChannel::DoRead(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> *future)
+void sharpen::PosixFileChannel::DoRead(char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> *future)
 {
 #ifdef SHARPEN_HAS_IOURING
     if(!this->queue_)
@@ -127,8 +127,8 @@ void sharpen::PosixFileChannel::DoRead(sharpen::Char *buf,sharpen::Size bufSize,
     std::memset(&sqe,0,sizeof(sqe));
     sqe.opcode = IORING_OP_READV;
     st->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Read);
-    sqe.user_data = reinterpret_cast<sharpen::Uint64>(st);
-    sqe.addr = reinterpret_cast<sharpen::Uint64>(&st->vec_);
+    sqe.user_data = reinterpret_cast<std::uint64_t>(st);
+    sqe.addr = reinterpret_cast<std::uint64_t>(&st->vec_);
     sqe.len = 1;
     sqe.off = offset;
     sqe.fd = this->handle_;
@@ -138,7 +138,7 @@ void sharpen::PosixFileChannel::DoRead(sharpen::Char *buf,sharpen::Size bufSize,
 #endif
 }
 
-void sharpen::PosixFileChannel::WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)
+void sharpen::PosixFileChannel::WriteAsync(const char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> &future)
 {
     if (!this->IsRegistered())
     {
@@ -147,7 +147,7 @@ void sharpen::PosixFileChannel::WriteAsync(const sharpen::Char *buf,sharpen::Siz
     this->loop_->RunInLoopSoon(std::bind(&Self::DoWrite,this,buf,bufSize,offset,&future));
 }
         
-void sharpen::PosixFileChannel::WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)
+void sharpen::PosixFileChannel::WriteAsync(const sharpen::ByteBuffer &buf,std::size_t bufferOffset,std::uint64_t offset,sharpen::Future<std::size_t> &future)
 {
     if (buf.GetSize() < bufferOffset)
     {
@@ -156,7 +156,7 @@ void sharpen::PosixFileChannel::WriteAsync(const sharpen::ByteBuffer &buf,sharpe
     this->WriteAsync(buf.Data() + bufferOffset,buf.GetSize() - bufferOffset,offset,future);
 }
 
-void sharpen::PosixFileChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)
+void sharpen::PosixFileChannel::ReadAsync(char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> &future)
 {
     if (!this->IsRegistered())
     {
@@ -165,7 +165,7 @@ void sharpen::PosixFileChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSi
     this->loop_->RunInLoop(std::bind(&Self::DoRead,this,buf,bufSize,offset,&future));
 }
         
-void sharpen::PosixFileChannel::ReadAsync(sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)
+void sharpen::PosixFileChannel::ReadAsync(sharpen::ByteBuffer &buf,std::size_t bufferOffset,std::uint64_t offset,sharpen::Future<std::size_t> &future)
 {
     if (buf.GetSize() < bufferOffset)
     {
@@ -179,7 +179,7 @@ void sharpen::PosixFileChannel::OnEvent(sharpen::IoEvent *event)
 #ifdef SHARPEN_HAS_IOURING
     assert(this->queue_);
     std::unique_ptr<sharpen::IoUringStruct> st{reinterpret_cast<sharpen::IoUringStruct*>(event->GetData())};
-    sharpen::Future<sharpen::Size> *future = reinterpret_cast<sharpen::Future<sharpen::Size>*>(st->data_);
+    sharpen::Future<std::size_t> *future = reinterpret_cast<sharpen::Future<std::size_t>*>(st->data_);
     if(event->IsErrorEvent())
     {
         future->Fail(sharpen::MakeSystemErrorPtr(event->GetErrorCode()));
@@ -192,7 +192,7 @@ void sharpen::PosixFileChannel::OnEvent(sharpen::IoEvent *event)
 #endif
 }
 
-sharpen::Uint64 sharpen::PosixFileChannel::GetFileSize() const
+std::uint64_t sharpen::PosixFileChannel::GetFileSize() const
 {
     struct stat buf;
     int r = ::fstat(this->handle_,&buf);
@@ -212,7 +212,7 @@ void sharpen::PosixFileChannel::Register(sharpen::EventLoop *loop)
 #endif
 }
 
-sharpen::FileMemory sharpen::PosixFileChannel::MapMemory(sharpen::Size size,sharpen::Uint64 offset)
+sharpen::FileMemory sharpen::PosixFileChannel::MapMemory(std::size_t size,std::uint64_t offset)
 {
     void *addr = ::mmap64(nullptr,size,PROT_READ|PROT_WRITE,MAP_SHARED,this->handle_,offset);
     if(addr == MAP_FAILED)
@@ -230,7 +230,7 @@ void sharpen::PosixFileChannel::Truncate()
     }
 }
 
-void sharpen::PosixFileChannel::Truncate(sharpen::Uint64 size)
+void sharpen::PosixFileChannel::Truncate(std::uint64_t size)
 {
     if(::ftruncate64(this->handle_,size) == -1)
     {

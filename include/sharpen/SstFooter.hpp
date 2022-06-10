@@ -81,9 +81,9 @@ namespace sharpen
             return this->metaIndexBlock_;
         }
 
-        void LoadFrom(const char *data,sharpen::Size size);
+        void LoadFrom(const char *data,std::size_t size);
 
-        void LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset);
+        void LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset);
 
         inline void LoadFrom(const sharpen::ByteBuffer &buf)
         {
@@ -92,9 +92,9 @@ namespace sharpen
 
         void UnsafeStoreTo(char *data) const noexcept;
 
-        void StoreTo(char *data,sharpen::Size size) const;
+        void StoreTo(char *data,std::size_t size) const;
 
-        void StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
+        void StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const;
 
         inline void StoreTo(sharpen::ByteBuffer &buf) const
         {

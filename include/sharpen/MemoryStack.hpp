@@ -2,7 +2,8 @@
 #ifndef _SHARPEN_MEMORYSTACK_HPP
 #define _SHARPEN_MEMORYSTACK_HPP
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "Noncopyable.hpp"
 
 namespace sharpen
@@ -13,12 +14,12 @@ namespace sharpen
         using Self = MemoryStack;
 
         void *mem_;
-        sharpen::Size size_;
+        std::size_t size_;
 
     public:
         MemoryStack();
 
-        MemoryStack(void *mem,sharpen::Size size);
+        MemoryStack(void *mem,std::size_t size);
 
         MemoryStack(Self &&other) noexcept;
 
@@ -28,7 +29,7 @@ namespace sharpen
 
         void *Bottom() const noexcept;
 
-        sharpen::Size Size() const noexcept;
+        std::size_t Size() const noexcept;
 
         void Release() noexcept;
 
@@ -41,11 +42,11 @@ namespace sharpen
             return this->Swap(other);
         }
 
-        static sharpen::MemoryStack AllocStack(sharpen::Size size);
+        static sharpen::MemoryStack AllocStack(std::size_t size);
 
-        void Extend(sharpen::Size newSize);
+        void Extend(std::size_t newSize);
 
-        void ExtendNoSave(sharpen::Size newSize);
+        void ExtendNoSave(std::size_t newSize);
 
         void Clean() noexcept;
 

@@ -27,7 +27,7 @@ namespace sharpen
 
           virtual ~WinTimer() noexcept;
 
-          virtual void WaitAsync(sharpen::Future<bool> &future, sharpen::Uint64 waitMs) override;
+          virtual void WaitAsync(sharpen::Future<bool> &future, std::uint64_t waitMs) override;
 
           virtual void Cancel() override;
      };

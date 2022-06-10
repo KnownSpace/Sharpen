@@ -6,11 +6,11 @@
 #include <sharpen/Varint.hpp>
 #include <sharpen/DataCorruptionException.hpp>
 
-sharpen::ByteBuffer::ByteBuffer(sharpen::Size size)
+sharpen::ByteBuffer::ByteBuffer(std::size_t size)
     :vector_(size)
 {}
 
-sharpen::ByteBuffer::ByteBuffer(const sharpen::Char *p,sharpen::Size size)
+sharpen::ByteBuffer::ByteBuffer(const char *p,std::size_t size)
     :vector_(size)
 {
     for (size_t i = 0; i < size; i++)
@@ -19,12 +19,12 @@ sharpen::ByteBuffer::ByteBuffer(const sharpen::Char *p,sharpen::Size size)
     }
 }
 
-void sharpen::ByteBuffer::PushBack(sharpen::Char val)
+void sharpen::ByteBuffer::PushBack(char val)
 {
     this->vector_.PushBack(val);
 }
 
-sharpen::Size sharpen::ByteBuffer::GetSize() const noexcept
+std::size_t sharpen::ByteBuffer::GetSize() const noexcept
 {
     return this->vector_.GetSize();
 }
@@ -34,62 +34,62 @@ void sharpen::ByteBuffer::PopBack()
     this->vector_.PopBack();
 }
 
-sharpen::Char sharpen::ByteBuffer::Back() const
+char sharpen::ByteBuffer::Back() const
 {
     return this->vector_.Back();
 }
 
-sharpen::Char &sharpen::ByteBuffer::Back()
+char &sharpen::ByteBuffer::Back()
 {
     return this->vector_.Back();
 }
 
-sharpen::Char sharpen::ByteBuffer::Front() const
+char sharpen::ByteBuffer::Front() const
 {
     return this->vector_.Front();
 }
 
-sharpen::Char &sharpen::ByteBuffer::Front()
+char &sharpen::ByteBuffer::Front()
 {
     return this->vector_.Front();
 }
 
-sharpen::Char sharpen::ByteBuffer::Get(sharpen::Size index) const
+char sharpen::ByteBuffer::Get(std::size_t index) const
 {
     return this->vector_.Get(index);
 }
 
-sharpen::Char &sharpen::ByteBuffer::Get(sharpen::Size index)
+char &sharpen::ByteBuffer::Get(std::size_t index)
 {
     return this->vector_.Get(index);
 }
 
-const sharpen::Char *sharpen::ByteBuffer::Data() const noexcept
+const char *sharpen::ByteBuffer::Data() const noexcept
 {
     return this->vector_.Data();
 }
 
-sharpen::Char *sharpen::ByteBuffer::Data() noexcept
+char *sharpen::ByteBuffer::Data() noexcept
 {
-    return reinterpret_cast<sharpen::Char*>(this->vector_.Data());
+    return reinterpret_cast<char*>(this->vector_.Data());
 }
 
-void sharpen::ByteBuffer::Extend(sharpen::Size size,sharpen::Char defaultValue)
+void sharpen::ByteBuffer::Extend(std::size_t size,char defaultValue)
 {
     this->vector_.Resize(this->GetSize() + size,defaultValue);
 }
 
-void sharpen::ByteBuffer::Extend(sharpen::Size size)
+void sharpen::ByteBuffer::Extend(std::size_t size)
 {
     this->Extend(size,0);
 }
 
-void sharpen::ByteBuffer::ExtendTo(sharpen::Size size,sharpen::Char defaultValue)
+void sharpen::ByteBuffer::ExtendTo(std::size_t size,char defaultValue)
 {
     this->vector_.Resize(size,defaultValue);
 }
 
-void sharpen::ByteBuffer::ExtendTo(sharpen::Size size)
+void sharpen::ByteBuffer::ExtendTo(std::size_t size)
 {
     this->ExtendTo(size,0);
 }
@@ -103,15 +103,15 @@ void sharpen::ByteBuffer::Reset() noexcept
     std::memset(this->Data(),0,this->GetSize());
 }
 
-void sharpen::ByteBuffer::Append(const sharpen::Char *p,sharpen::Size size)
+void sharpen::ByteBuffer::Append(const char *p,std::size_t size)
 {
     if (!size)
     {
         return;
     }
-    sharpen::Size oldSize{this->GetSize()};
+    std::size_t oldSize{this->GetSize()};
     this->Extend(size);
-    for (sharpen::Size i = oldSize,newSize = this->GetSize(); i != newSize; ++i)
+    for (std::size_t i = oldSize,newSize = this->GetSize(); i != newSize; ++i)
     {
         this->Get(i) = *p++;
     }
@@ -122,12 +122,12 @@ void sharpen::ByteBuffer::Append(const sharpen::ByteBuffer &other)
     this->Append(other.Data(),other.GetSize());
 }
 
-void sharpen::ByteBuffer::Erase(sharpen::Size pos)
+void sharpen::ByteBuffer::Erase(std::size_t pos)
 {
     this->vector_.Erase(pos);
 }
 
-void sharpen::ByteBuffer::Erase(sharpen::Size begin,sharpen::Size end)
+void sharpen::ByteBuffer::Erase(std::size_t begin,std::size_t end)
 {
     this->vector_.Erase(begin,end);
 }
@@ -202,7 +202,7 @@ void sharpen::ByteBuffer::Erase(ConstIterator begin,ConstIterator end)
     this->vector_.Erase(begin,end);
 }
 
-sharpen::Char sharpen::ByteBuffer::GetOrDefault(sharpen::Size index,sharpen::Char defaultVal) const noexcept
+char sharpen::ByteBuffer::GetOrDefault(std::size_t index,char defaultVal) const noexcept
 {
     if(index >= this->GetSize())
     {
@@ -211,20 +211,20 @@ sharpen::Char sharpen::ByteBuffer::GetOrDefault(sharpen::Size index,sharpen::Cha
     return this->Get(index);
 }
 
-sharpen::Size sharpen::ByteBuffer::ComputeSize() const noexcept
+std::size_t sharpen::ByteBuffer::ComputeSize() const noexcept
 {
-    sharpen::Size offset{0};
+    std::size_t offset{0};
     sharpen::Varuint64 builder{this->GetSize()};
     offset += builder.ComputeSize();
     offset += this->GetSize();
     return offset;
 }
 
-sharpen::Size sharpen::ByteBuffer::LoadFrom(const char *data,sharpen::Size size)
+std::size_t sharpen::ByteBuffer::LoadFrom(const char *data,std::size_t size)
 {
-    sharpen::Size offset{0};
+    std::size_t offset{0};
     sharpen::Varuint64 builder{data,size};
-    sharpen::Size sz{builder.ComputeSize()};
+    std::size_t sz{builder.ComputeSize()};
     offset += sz;
     sz = builder.Get();
     if(sz)
@@ -241,17 +241,17 @@ sharpen::Size sharpen::ByteBuffer::LoadFrom(const char *data,sharpen::Size size)
     return offset;
 }
 
-sharpen::Size sharpen::ByteBuffer::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset)
+std::size_t sharpen::ByteBuffer::LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset)
 {
     assert(buf.GetSize() >= offset);
     return this->LoadFrom(buf.Data() + offset,buf.GetSize() - offset);
 }
 
-sharpen::Size sharpen::ByteBuffer::UnsafeStoreTo(char *data) const noexcept
+std::size_t sharpen::ByteBuffer::UnsafeStoreTo(char *data) const noexcept
 {
-    sharpen::Size offset{0};
+    std::size_t offset{0};
     sharpen::Varuint64 builder{this->GetSize()};
-    sharpen::Size size{builder.ComputeSize()};
+    std::size_t size{builder.ComputeSize()};
     std::memcpy(data,builder.Data(),size);
     offset += size;
     std::memcpy(data + offset,this->Data(),this->GetSize());
@@ -259,9 +259,9 @@ sharpen::Size sharpen::ByteBuffer::UnsafeStoreTo(char *data) const noexcept
     return offset;
 }
 
-sharpen::Size sharpen::ByteBuffer::StoreTo(char *data,sharpen::Size size) const
+std::size_t sharpen::ByteBuffer::StoreTo(char *data,std::size_t size) const
 {
-    sharpen::Size needSize{this->ComputeSize()};
+    std::size_t needSize{this->ComputeSize()};
     if(needSize > size)
     {
         throw std::invalid_argument("buffer too small");
@@ -269,11 +269,11 @@ sharpen::Size sharpen::ByteBuffer::StoreTo(char *data,sharpen::Size size) const
     return this->UnsafeStoreTo(data);
 }
 
-sharpen::Size sharpen::ByteBuffer::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
+std::size_t sharpen::ByteBuffer::StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const
 {
     assert(buf.GetSize() >= offset);
-    sharpen::Size size{buf.GetSize() - offset};
-    sharpen::Size needSize{this->ComputeSize()};
+    std::size_t size{buf.GetSize() - offset};
+    std::size_t needSize{this->ComputeSize()};
     if(needSize > size)
     {
         buf.ExtendTo(needSize - size);

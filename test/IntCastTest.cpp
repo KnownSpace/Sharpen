@@ -6,27 +6,27 @@ int main(int argc, char const *argv[])
 {
     std::puts("int cast test begin");
 
-    int r = sharpen::CheckIntCast<sharpen::Int32>(std::numeric_limits<sharpen::Uint32>::max());
+    int r = sharpen::CheckIntCast<std::int32_t>(std::numeric_limits<std::uint32_t>::max());
     std::printf("uint32 max cannot cast to int32 ? %d\n",r == 0);
     assert(r == 0);
 
-    r = sharpen::CheckIntCast<sharpen::Int32>(std::numeric_limits<sharpen::Int32>::max());
+    r = sharpen::CheckIntCast<std::int32_t>(std::numeric_limits<std::int32_t>::max());
     std::printf("int32 max can cast to int32 ? %d\n",r == 1);
     assert(r == 1);
 
-    r = sharpen::CheckIntCast<sharpen::Uint64>(std::numeric_limits<sharpen::Size>::max());
+    r = sharpen::CheckIntCast<std::uint64_t>(std::numeric_limits<std::size_t>::max());
     std::printf("size max can cast to uint64 ? %d\n",r == 1);
     assert(r == 1);
 
-    r = sharpen::CheckIntCast<sharpen::Uint32>(std::numeric_limits<sharpen::Size>::max());
+    r = sharpen::CheckIntCast<std::uint32_t>(std::numeric_limits<std::size_t>::max());
     std::printf("size max can cast to uint32 ? %d\n",r);
-    assert(r == (sizeof(sharpen::Size) <= sizeof(sharpen::Uint32)));
+    assert(r == (sizeof(std::size_t) <= sizeof(std::uint32_t)));
 
-    r = sharpen::CheckIntCast<sharpen::Uint32>(std::numeric_limits<sharpen::Int32>::min());
+    r = sharpen::CheckIntCast<std::uint32_t>(std::numeric_limits<std::int32_t>::min());
     std::printf("int32 min can cast to uint32 ? %d\n",r);
     assert(r == 0);
 
-    r = sharpen::CheckIntCast<sharpen::Uint32>(std::numeric_limits<sharpen::Int64>::min());
+    r = sharpen::CheckIntCast<std::uint32_t>(std::numeric_limits<std::int64_t>::min());
     std::printf("int64 min can cast to uint32 ? %d\n",r);
     assert(r == 0);
 

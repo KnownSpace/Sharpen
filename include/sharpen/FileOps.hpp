@@ -3,7 +3,8 @@
 #define _SHARPEN_FILEOPS_HPP
 
 #include "FileTypeDef.hpp"
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "SystemMacro.hpp"
 
 namespace sharpen
@@ -16,11 +17,11 @@ namespace sharpen
 
     void RemoveFile(const char *name);
 
-    bool GetCurrentWorkDirectory(char *pathBuf,sharpen::Size size) noexcept;
+    bool GetCurrentWorkDirectory(char *pathBuf,std::size_t size) noexcept;
 
     void SetCurrentWorkDirectory(const char *path);
 
-    constexpr inline sharpen::Size GetMaxPath() noexcept
+    constexpr inline std::size_t GetMaxPath() noexcept
     {
 #ifdef SHARPEN_IS_WIN
         return 260; // MAX_PATH
@@ -29,7 +30,7 @@ namespace sharpen
 #endif
     }
 
-    void ResolvePath(const char *currentPath,sharpen::Size currentPathSize,const char *path,sharpen::Size pathSize,char *resolvedPath,sharpen::Size resolvedPathSize);
+    void ResolvePath(const char *currentPath,std::size_t currentPathSize,const char *path,std::size_t pathSize,char *resolvedPath,std::size_t resolvedPathSize);
 
     constexpr inline bool IsPathSeparator(char c) noexcept
     {

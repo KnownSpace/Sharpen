@@ -4,7 +4,8 @@
 
 #include <ctime>
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 

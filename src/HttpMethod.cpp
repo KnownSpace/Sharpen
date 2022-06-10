@@ -13,16 +13,16 @@ const char *sharpen::GetHttpMethodName(sharpen::HttpMethod method)
     return ::llhttp_method_name(static_cast<llhttp_method>(method));
 }
 
-void sharpen::InternalCopyHttpMethodNameToMem(sharpen::HttpMethod method,char *buf,sharpen::Size offset)
+void sharpen::InternalCopyHttpMethodNameToMem(sharpen::HttpMethod method,char *buf,std::size_t offset)
 {
     const char *name = sharpen::GetHttpMethodName(method);
-    sharpen::Size size = std::strlen(name);
+    std::size_t size = std::strlen(name);
     std::memcpy(buf + offset,name,size);
 }
 
-sharpen::Size sharpen::CopyHttpMethodNameTo(sharpen::HttpMethod method,char *buf,sharpen::Size size)
+std::size_t sharpen::CopyHttpMethodNameTo(sharpen::HttpMethod method,char *buf,std::size_t size)
 {
-    sharpen::Size len = std::strlen(sharpen::GetHttpMethodName(method));
+    std::size_t len = std::strlen(sharpen::GetHttpMethodName(method));
     if (len > size)
     {
         throw std::length_error("buffer size less than needed");
@@ -31,14 +31,14 @@ sharpen::Size sharpen::CopyHttpMethodNameTo(sharpen::HttpMethod method,char *buf
     return len;
 }
 
-sharpen::Size sharpen::CopyHttpMethodNameTo(sharpen::HttpMethod method,sharpen::ByteBuffer &buf,sharpen::Size offset)
+std::size_t sharpen::CopyHttpMethodNameTo(sharpen::HttpMethod method,sharpen::ByteBuffer &buf,std::size_t offset)
 {
     if (offset > buf.GetSize())
     {
         throw std::length_error("buffer size is wrong");
     }
-    sharpen::Size len = std::strlen(sharpen::GetHttpMethodName(method));
-    sharpen::Size left = buf.GetSize() - offset;
+    std::size_t len = std::strlen(sharpen::GetHttpMethodName(method));
+    std::size_t left = buf.GetSize() - offset;
     if (len > left)
     {
         buf.Extend(len - left);

@@ -118,7 +118,7 @@ void Entry()
                 assert(group[0].GetKey() == sharpen::ByteBuffer("myke",4));
                 assert(group[1].GetKey() == sharpen::ByteBuffer("mykey",5));
                 assert(group[2].GetKey() == sharpen::ByteBuffer("mykey1",6));
-                for (sharpen::Size i = 0; i < group.GetSize(); ++i)
+                for (std::size_t i = 0; i < group.GetSize(); ++i)
                 {
                     assert(group[i].Value() == sharpen::ByteBuffer("myval",5));
                 }

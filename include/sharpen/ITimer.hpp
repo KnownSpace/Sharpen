@@ -29,7 +29,7 @@ namespace sharpen
 
         virtual ~ITimer() noexcept = default;
 
-        virtual void WaitAsync(WaitFuture &future,sharpen::Uint64 waitMs) = 0;
+        virtual void WaitAsync(WaitFuture &future,std::uint64_t waitMs) = 0;
 
         virtual void Cancel() = 0;
 

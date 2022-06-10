@@ -5,7 +5,7 @@ sharpen::SstKeyValueGroup::SstKeyValueGroup()
     ,comp_(nullptr)
 {}
 
-void sharpen::SstKeyValueGroup::LoadFrom(const char *data,sharpen::Size size)
+void sharpen::SstKeyValueGroup::LoadFrom(const char *data,std::size_t size)
 {
     this->pairs_.clear();
     if(size < 3)
@@ -14,7 +14,7 @@ void sharpen::SstKeyValueGroup::LoadFrom(const char *data,sharpen::Size size)
         return;
     }
     sharpen::SstKeyValuePair pair;
-    sharpen::Size offset{pair.LoadFrom(data,size)};
+    std::size_t offset{pair.LoadFrom(data,size)};
     this->pairs_.emplace_back(std::move(pair));
     while (offset != size)
     {
@@ -32,15 +32,15 @@ void sharpen::SstKeyValueGroup::LoadFrom(const char *data,sharpen::Size size)
     }
 }
 
-void sharpen::SstKeyValueGroup::LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset)
+void sharpen::SstKeyValueGroup::LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset)
 {
     assert(buf.GetSize() >= offset);
     this->LoadFrom(buf.Data() + offset,buf.GetSize() - offset);
 }
 
-sharpen::Size sharpen::SstKeyValueGroup::ComputeSize() const noexcept
+std::size_t sharpen::SstKeyValueGroup::ComputeSize() const noexcept
 {
-    sharpen::Size size{0};
+    std::size_t size{0};
     for (auto begin = this->Begin(),end = this->End(); begin != end; ++begin)
     {
         size += begin->ComputeSize();   
@@ -48,9 +48,9 @@ sharpen::Size sharpen::SstKeyValueGroup::ComputeSize() const noexcept
     return size;
 }
 
-sharpen::Size sharpen::SstKeyValueGroup::UnsafeStoreTo(char *data) const
+std::size_t sharpen::SstKeyValueGroup::UnsafeStoreTo(char *data) const
 {
-    sharpen::Size offset{0};
+    std::size_t offset{0};
     for (auto begin = this->Begin(),end = this->End(); begin != end; ++begin)
     {
         offset += begin->UnsafeStoreTo(data + offset);
@@ -58,9 +58,9 @@ sharpen::Size sharpen::SstKeyValueGroup::UnsafeStoreTo(char *data) const
     return offset;
 }
 
-sharpen::Size sharpen::SstKeyValueGroup::StoreTo(char *data,sharpen::Size size) const
+std::size_t sharpen::SstKeyValueGroup::StoreTo(char *data,std::size_t size) const
 {
-    sharpen::Size needSize{this->ComputeSize()};
+    std::size_t needSize{this->ComputeSize()};
     if(size < needSize)
     {
         throw std::invalid_argument("buffer too small");
@@ -68,11 +68,11 @@ sharpen::Size sharpen::SstKeyValueGroup::StoreTo(char *data,sharpen::Size size) 
     return this->UnsafeStoreTo(data);
 }
 
-sharpen::Size sharpen::SstKeyValueGroup::StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const
+std::size_t sharpen::SstKeyValueGroup::StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const
 {
     assert(buf.GetSize() >= offset);
-    sharpen::Size needSize{this->ComputeSize()};
-    sharpen::Size size{buf.GetSize() - offset};
+    std::size_t needSize{this->ComputeSize()};
+    std::size_t size{buf.GetSize() - offset};
     if(size < needSize)
     {
         buf.Extend(needSize - size);
@@ -94,7 +94,7 @@ bool sharpen::SstKeyValueGroup::Comp(const sharpen::SstKeyValuePair &pair,const 
     return pair.GetKey() < key;
 }
 
-sharpen::Int32 sharpen::SstKeyValueGroup::CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept
+std::int32_t sharpen::SstKeyValueGroup::CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept
 {
     if (!this->comp_)
     {
@@ -160,12 +160,12 @@ void sharpen::SstKeyValueGroup::Delete(const sharpen::ByteBuffer &key)
     }
 }
 
-std::pair<sharpen::Uint64,sharpen::Uint64> sharpen::SstKeyValueGroup::ComputeKeySizes(const sharpen::ByteBuffer &key) const noexcept
+std::pair<std::uint64_t,std::uint64_t> sharpen::SstKeyValueGroup::ComputeKeySizes(const sharpen::ByteBuffer &key) const noexcept
 {
-    sharpen::Size sharedSize{0};
-    for (sharpen::Size count = (std::min)(this->First().GetKey().GetSize(),key.GetSize()); sharedSize != count && this->First().GetKey()[sharedSize] == key[sharedSize]; ++sharedSize)
+    std::size_t sharedSize{0};
+    for (std::size_t count = (std::min)(this->First().GetKey().GetSize(),key.GetSize()); sharedSize != count && this->First().GetKey()[sharedSize] == key[sharedSize]; ++sharedSize)
     {}
-    sharpen::Uint64 uniquedSize = key.GetSize() - sharedSize;
+    std::uint64_t uniquedSize = key.GetSize() - sharedSize;
     return {sharedSize,uniquedSize};
 }
 
@@ -213,7 +213,7 @@ bool sharpen::SstKeyValueGroup::TryPut(sharpen::ByteBuffer key,sharpen::ByteBuff
     //last key
     if(this->Empty())
     {
-        sharpen::Size keySize{key.GetSize()};
+        std::size_t keySize{key.GetSize()};
         this->pairs_.emplace_back(0,keySize,std::move(key),std::move(value));
         return true;
     }

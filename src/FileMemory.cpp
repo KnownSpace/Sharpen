@@ -11,13 +11,13 @@
 #include <sharpen/SystemError.hpp>
 
 #ifdef SHARPEN_IS_WIN
-sharpen::FileMemory::FileMemory(sharpen::FileHandle file,void *address,sharpen::Size size) noexcept
+sharpen::FileMemory::FileMemory(sharpen::FileHandle file,void *address,std::size_t size) noexcept
     :file_(file)
     ,address_(address)
     ,size_(size)
 {}
 #else
-sharpen::FileMemory::FileMemory(void *address,sharpen::Size size) noexcept
+sharpen::FileMemory::FileMemory(void *address,std::size_t size) noexcept
     :address_(address)
     ,size_(size)
 {}

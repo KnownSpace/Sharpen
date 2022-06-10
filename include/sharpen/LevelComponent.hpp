@@ -17,7 +17,8 @@
 #include <utility>
 #include <vector>
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "ByteBuffer.hpp"
 
 namespace sharpen
@@ -27,7 +28,7 @@ namespace sharpen
     {
     private:
         using Self = sharpen::LevelComponent;
-        using Views = std::vector<sharpen::Uint64>;
+        using Views = std::vector<std::uint64_t>;
     public:
 
         using Iterator = typename Views::iterator;
@@ -36,14 +37,14 @@ namespace sharpen
         using ConstReverseIterator = typename Views::const_reverse_iterator;
     private:
 
-        static constexpr sharpen::Size defaultReserveSize{16};
+        static constexpr std::size_t defaultReserveSize{16};
     
         Views views_;
     public:
     
         LevelComponent();
 
-        explicit LevelComponent(sharpen::Size reserveSize);
+        explicit LevelComponent(std::size_t reserveSize);
     
         LevelComponent(const Self &other) = default;
     
@@ -67,38 +68,38 @@ namespace sharpen
     
         ~LevelComponent() noexcept = default;
 
-        sharpen::Size LoadFrom(const char *data,sharpen::Size size);
+        std::size_t LoadFrom(const char *data,std::size_t size);
 
-        sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset);
+        std::size_t LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset);
 
-        inline sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf)
+        inline std::size_t LoadFrom(const sharpen::ByteBuffer &buf)
         {
             return this->LoadFrom(buf,0);
         }
 
-        sharpen::Size UnsafeStoreTo(char *data) const noexcept;
+        std::size_t UnsafeStoreTo(char *data) const noexcept;
 
-        sharpen::Size ComputeSize() const noexcept;
+        std::size_t ComputeSize() const noexcept;
 
-        sharpen::Size StoreTo(char *data,sharpen::Size size) const;
+        std::size_t StoreTo(char *data,std::size_t size) const;
 
-        sharpen::Size StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
+        std::size_t StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const;
 
-        inline sharpen::Size StoreTo(sharpen::ByteBuffer &buf) const
+        inline std::size_t StoreTo(sharpen::ByteBuffer &buf) const
         {
             return this->StoreTo(buf,0);
         }
 
-        void Put(sharpen::Uint64 id);
+        void Put(std::uint64_t id);
 
-        void Delete(sharpen::Uint64 id);
+        void Delete(std::uint64_t id);
 
         inline void Clear() noexcept
         {
             this->views_.clear();
         }
 
-        inline sharpen::Size GetSize() const noexcept
+        inline std::size_t GetSize() const noexcept
         {
             return this->views_.size();
         }

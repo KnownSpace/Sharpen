@@ -2,7 +2,8 @@
 #ifndef _SHARPEN_EVENTFD_HPP
 #define _SHARPEN_EVENTFD_HPP
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "Noncopyable.hpp"
 #include "FileTypeDef.hpp"
 
@@ -16,12 +17,12 @@ namespace sharpen
     class EventFd:public sharpen::Noncopyable
     {
     private:
-        using EventFdValue = sharpen::Uint64;
+        using EventFdValue = std::uint64_t;
         using Self = sharpen::EventFd;
 
         sharpen::FileHandle handle_;
     public:
-        EventFd(sharpen::Uint32 initVal,int flags);
+        EventFd(std::uint32_t initVal,int flags);
         
         EventFd(Self &&other) noexcept;
         

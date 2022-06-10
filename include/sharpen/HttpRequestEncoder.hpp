@@ -21,17 +21,17 @@ namespace sharpen
             return std::move(buf);
         }
 
-        inline static sharpen::Size EncodeTo(const sharpen::HttpRequest &req,sharpen::ByteBuffer &buf,sharpen::Size offset)
+        inline static std::size_t EncodeTo(const sharpen::HttpRequest &req,sharpen::ByteBuffer &buf,std::size_t offset)
         {
             return req.CopyTo(buf,offset);
         }
 
-        inline static sharpen::Size EncodeTo(const sharpen::HttpRequest &req,sharpen::ByteBuffer &buf)
+        inline static std::size_t EncodeTo(const sharpen::HttpRequest &req,sharpen::ByteBuffer &buf)
         {
             return req.CopyTo(buf);
         }
 
-        inline static sharpen::Size EncodeTo(const sharpen::HttpRequest &req,char *data,sharpen::Size size)
+        inline static std::size_t EncodeTo(const sharpen::HttpRequest &req,char *data,std::size_t size)
         {
             return req.CopyTo(data,size);
         }

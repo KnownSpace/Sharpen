@@ -25,7 +25,7 @@ namespace sharpen
     {
     private:
         using Self = sharpen::LevelView;
-        using Comparator = sharpen::Int32(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
+        using Comparator = std::int32_t(*)(const sharpen::ByteBuffer&,const sharpen::ByteBuffer&);
         using Items = std::vector<sharpen::LevelViewItem>;
     public:
         using Iterator = typename Items::iterator;
@@ -34,7 +34,7 @@ namespace sharpen
         using ConstReverseIterator = typename Items::const_reverse_iterator;
     private:
     
-        sharpen::Uint64 id_;
+        std::uint64_t id_;
         Items items_;
         Comparator comp_;
 
@@ -42,7 +42,7 @@ namespace sharpen
 
         static bool WarpComp(Comparator comp,const sharpen::LevelViewItem &item,const sharpen::ByteBuffer &key) noexcept;
 
-        sharpen::Int32 CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept;
+        std::int32_t CompKey(const sharpen::ByteBuffer &left,const sharpen::ByteBuffer &right) const noexcept;
 
         Iterator Find(const sharpen::ByteBuffer &key) noexcept;
 
@@ -53,7 +53,7 @@ namespace sharpen
             :LevelView(0)
         {}
 
-        explicit LevelView(sharpen::Uint64 id);
+        explicit LevelView(std::uint64_t id);
     
         LevelView(const Self &other) = default;
     
@@ -81,44 +81,44 @@ namespace sharpen
     
         ~LevelView() noexcept = default;
 
-        sharpen::Size LoadFrom(const char *data,sharpen::Size size);
+        std::size_t LoadFrom(const char *data,std::size_t size);
 
-        sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf,sharpen::Size offset);
+        std::size_t LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset);
 
-        inline sharpen::Size LoadFrom(const sharpen::ByteBuffer &buf)
+        inline std::size_t LoadFrom(const sharpen::ByteBuffer &buf)
         {
             return this->LoadFrom(buf,0);
         }
 
-        sharpen::Size UnsafeStoreTo(char *data) const noexcept;
+        std::size_t UnsafeStoreTo(char *data) const noexcept;
 
-        sharpen::Size ComputeSize() const noexcept;
+        std::size_t ComputeSize() const noexcept;
 
-        sharpen::Size StoreTo(char *data,sharpen::Size size) const;
+        std::size_t StoreTo(char *data,std::size_t size) const;
 
-        sharpen::Size StoreTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
+        std::size_t StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const;
 
-        inline sharpen::Size StoreTo(sharpen::ByteBuffer &buf) const
+        inline std::size_t StoreTo(sharpen::ByteBuffer &buf) const
         {
             return this->StoreTo(buf,0);
         }
 
-        sharpen::Optional<sharpen::Uint64> FindId(const sharpen::ByteBuffer &key) const;
+        sharpen::Optional<std::uint64_t> FindId(const sharpen::ByteBuffer &key) const;
 
         bool IsNotOverlapped(const sharpen::ByteBuffer &beginKey,const sharpen::ByteBuffer &endKey) const noexcept;
 
-        bool TryPut(sharpen::ByteBuffer beginKey,sharpen::ByteBuffer endKey,sharpen::Uint64 id);
+        bool TryPut(sharpen::ByteBuffer beginKey,sharpen::ByteBuffer endKey,std::uint64_t id);
 
-        void Put(sharpen::ByteBuffer beginKey,sharpen::ByteBuffer endKey,sharpen::Uint64 id);
+        void Put(sharpen::ByteBuffer beginKey,sharpen::ByteBuffer endKey,std::uint64_t id);
 
-        void Delete(sharpen::Uint64 id);
+        void Delete(std::uint64_t id);
 
         inline void Clear() noexcept
         {
             this->items_.clear();
         }
 
-        inline sharpen::Size GetSize() const noexcept
+        inline std::size_t GetSize() const noexcept
         {
             return this->items_.size();
         }
@@ -168,12 +168,12 @@ namespace sharpen
             return this->items_.rend();
         }
 
-        inline sharpen::Uint64 GetId() const noexcept
+        inline std::uint64_t GetId() const noexcept
         {
             return this->id_;
         }
 
-        inline void SetId(sharpen::Uint64 id) noexcept
+        inline void SetId(std::uint64_t id) noexcept
         {
             this->id_ = id;
         }

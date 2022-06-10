@@ -5,7 +5,8 @@
 #include <utility>
 #include <iterator>
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "IteratorTemplate.hpp"
 
 namespace sharpen
@@ -92,7 +93,7 @@ namespace sharpen
         }
 
         template<typename _NewT,typename _Check = decltype(std::declval<_T*&>() == std::declval<_NewT*&>())>
-        inline sharpen::Int32 CompareWith(const sharpen::ReversePointerIterator<_NewT> &other) const noexcept
+        inline std::int32_t CompareWith(const sharpen::ReversePointerIterator<_NewT> &other) const noexcept
         {
             if(this->ptr_ > other.GetPointer())
             {

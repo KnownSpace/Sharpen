@@ -26,7 +26,7 @@ void Entry()
         iovec vec;
         vec.iov_base = buf;
         vec.iov_len = sizeof(buf) - 1;
-        sqe.addr = reinterpret_cast<sharpen::Uintptr>(&vec);
+        sqe.addr = reinterpret_cast<std::uintptr_t>(&vec);
         sqe.len = 1;
         sqe.off = 0;
         queue.SubmitIoRequest(sqe);
@@ -44,7 +44,7 @@ void Entry()
         iovec vec;
         vec.iov_base = buf;
         vec.iov_len = sizeof(buf);
-        sqe.addr = reinterpret_cast<sharpen::Uintptr>(&vec);
+        sqe.addr = reinterpret_cast<std::uintptr_t>(&vec);
         sqe.len = 1;
         sqe.off = 0;
         queue.SubmitIoRequest(sqe);

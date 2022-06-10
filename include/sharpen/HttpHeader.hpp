@@ -5,7 +5,8 @@
 #include <unordered_map>
 #include <string>
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 
 namespace sharpen
 {
@@ -21,7 +22,7 @@ namespace sharpen
 
         Headers headers_;
 
-        void CopyToMem(char *buf,sharpen::Size offset) const;
+        void CopyToMem(char *buf,std::size_t offset) const;
     public:
         HttpHeader();
 
@@ -55,16 +56,16 @@ namespace sharpen
 
         bool ExistHeader(const std::string &field) const;
 
-        sharpen::Size CopyTo(char *buf,sharpen::Size size) const;
+        std::size_t CopyTo(char *buf,std::size_t size) const;
 
-        sharpen::Size CopyTo(sharpen::ByteBuffer &buf,sharpen::Size offset) const;
+        std::size_t CopyTo(sharpen::ByteBuffer &buf,std::size_t offset) const;
 
-        inline sharpen::Size CopyTo(sharpen::ByteBuffer &buf) const
+        inline std::size_t CopyTo(sharpen::ByteBuffer &buf) const
         {
             return this->CopyTo(buf,0);
         }
 
-        sharpen::Size ComputeSize() const;
+        std::size_t ComputeSize() const;
 
         void Swap(Self &other) noexcept;
 

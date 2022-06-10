@@ -49,7 +49,7 @@ sharpen::WinNetStreamChannel::WinNetStreamChannel(sharpen::FileHandle handle,int
     this->closer_  = std::bind(static_cast<FnPtr>(&sharpen::WinNetStreamChannel::Closer),std::placeholders::_1);
 }
 
-void sharpen::WinNetStreamChannel::RequestWrite(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future)
+void sharpen::WinNetStreamChannel::RequestWrite(const char *buf,std::size_t bufSize,sharpen::Future<std::size_t> *future)
 {
     sharpen::WSAOverlappedStruct *olStruct = new (std::nothrow) sharpen::WSAOverlappedStruct();
     if (!olStruct)
@@ -80,7 +80,7 @@ void sharpen::WinNetStreamChannel::RequestWrite(const sharpen::Char *buf,sharpen
     }
 }
         
-void sharpen::WinNetStreamChannel::WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Future<sharpen::Size> &future) 
+void sharpen::WinNetStreamChannel::WriteAsync(const sharpen::ByteBuffer &buf,std::size_t bufferOffset,sharpen::Future<std::size_t> &future) 
 {
     if (buf.GetSize() < bufferOffset)
     {
@@ -89,7 +89,7 @@ void sharpen::WinNetStreamChannel::WriteAsync(const sharpen::ByteBuffer &buf,sha
     this->WriteAsync(buf.Data() + bufferOffset,buf.GetSize() - bufferOffset,future);
 }
 
-void sharpen::WinNetStreamChannel::RequestRead(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> *future) 
+void sharpen::WinNetStreamChannel::RequestRead(char *buf,std::size_t bufSize,sharpen::Future<std::size_t> *future) 
 {
     if (!this->IsRegistered())
     {
@@ -125,7 +125,7 @@ void sharpen::WinNetStreamChannel::RequestRead(sharpen::Char *buf,sharpen::Size 
     }
 }
 
-void sharpen::WinNetStreamChannel::ReadAsync(sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Future<sharpen::Size> &future) 
+void sharpen::WinNetStreamChannel::ReadAsync(sharpen::ByteBuffer &buf,std::size_t bufferOffset,sharpen::Future<std::size_t> &future) 
 {
     if (buf.GetSize() < bufferOffset)
     {
@@ -161,7 +161,7 @@ void sharpen::WinNetStreamChannel::OnEvent(sharpen::IoEvent *event)
      
 }
 
-void sharpen::WinNetStreamChannel::RequestSendFile(sharpen::FileChannelPtr file,sharpen::Uint64 size,sharpen::Uint64 offset,sharpen::Future<void> *future)
+void sharpen::WinNetStreamChannel::RequestSendFile(sharpen::FileChannelPtr file,std::uint64_t size,std::uint64_t offset,sharpen::Future<void> *future)
 {
     sharpen::WSAOverlappedStruct *olStruct = new (std::nothrow) sharpen::WSAOverlappedStruct();
     if (!olStruct)
@@ -370,7 +370,7 @@ void sharpen::WinNetStreamChannel::RequestPollWrite(sharpen::Future<void> *futur
 
 void sharpen::WinNetStreamChannel::HandleReadAndWrite(sharpen::WSAOverlappedStruct &olStruct)
 {
-    sharpen::Future<sharpen::Size> *future = reinterpret_cast<sharpen::Future<sharpen::Size>*>(olStruct.data_);
+    sharpen::Future<std::size_t> *future = reinterpret_cast<sharpen::Future<std::size_t>*>(olStruct.data_);
     if (olStruct.event_.IsErrorEvent())
     {
         future->Fail(sharpen::MakeLastErrorPtr());
@@ -427,7 +427,7 @@ void sharpen::WinNetStreamChannel::HandlePoll(sharpen::WSAOverlappedStruct &olSt
     future->Complete();
 }
 
-void sharpen::WinNetStreamChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future)
+void sharpen::WinNetStreamChannel::ReadAsync(char *buf,std::size_t bufSize,sharpen::Future<std::size_t> &future)
 {
     if (!this->IsRegistered())
     {
@@ -436,7 +436,7 @@ void sharpen::WinNetStreamChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bu
     this->loop_->RunInLoop(std::bind(&sharpen::WinNetStreamChannel::RequestRead,this,buf,bufSize,&future));
 }
 
-void sharpen::WinNetStreamChannel::WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Future<sharpen::Size> &future)
+void sharpen::WinNetStreamChannel::WriteAsync(const char *buf,std::size_t bufSize,sharpen::Future<std::size_t> &future)
 {
     if (!this->IsRegistered())
     {
@@ -445,7 +445,7 @@ void sharpen::WinNetStreamChannel::WriteAsync(const sharpen::Char *buf,sharpen::
     this->loop_->RunInLoop(std::bind(&sharpen::WinNetStreamChannel::RequestWrite,this,buf,bufSize,&future));
 }
 
-void sharpen::WinNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,sharpen::Uint64 size,sharpen::Uint64 offset,sharpen::Future<void> &future)
+void sharpen::WinNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,std::uint64_t size,std::uint64_t offset,sharpen::Future<void> &future)
 {
     if (!this->IsRegistered())
     {

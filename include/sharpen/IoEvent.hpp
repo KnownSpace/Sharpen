@@ -2,7 +2,8 @@
 #ifndef _SHARPEN_IOEVENT_HPP
 #define _SHARPEN_IOEVENT_HPP
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "SystemError.hpp"
@@ -46,7 +47,7 @@ namespace sharpen
             };
         };
         
-        using EventType = sharpen::Uint32;
+        using EventType = std::uint32_t;
     private:
         using Self = sharpen::IoEvent;
         using WeakChannel = std::weak_ptr<sharpen::IChannel>;

@@ -2,14 +2,15 @@
 #ifndef _SHARPEN_FILEPOINTER_HPP
 #define _SHARPEN_FILEPOINTER_HPP
 
-#include "TypeDef.hpp"
+#include <cstdint>
+#include <cstddef>
 
 namespace sharpen
 {
     struct FilePointer
     {
-        sharpen::Uint64 offset_;
-        sharpen::Uint64 size_;
+        std::uint64_t offset_;
+        std::uint64_t size_;
     };
 }
 

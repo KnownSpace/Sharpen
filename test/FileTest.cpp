@@ -13,7 +13,7 @@ void Test()
     sharpen::FileChannelPtr channel = sharpen::MakeFileChannel("./hello.txt", sharpen::FileAccessModel::Write, sharpen::FileOpenModel::CreateOrOpen);
     channel->Register(engine);
     char str[] = "hello";
-    sharpen::Size size = channel->WriteAsync(str, sizeof(str) - 1, 0);
+    std::size_t size = channel->WriteAsync(str, sizeof(str) - 1, 0);
     std::printf("write size is %zu\n", size);
     assert(size == sizeof(str) - 1);
     std::printf("pass\n");

@@ -23,7 +23,7 @@ namespace sharpen
         std::vector<sharpen::FilePointer> pointers_;
         sharpen::Optional<std::pair<sharpen::ByteBuffer,sharpen::ByteBuffer>> range_;
         sharpen::ByteBuffer currentKey_;
-        sharpen::Size currentPointer_;
+        std::size_t currentPointer_;
         bool useCache_;
     public:
     

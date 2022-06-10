@@ -22,7 +22,7 @@ sharpen::Epoll::~Epoll() noexcept
     }
 }
 
-sharpen::Uint32 sharpen::Epoll::Wait(sharpen::Epoll::Event *events,sharpen::Int32 maxEvent,int timeout)
+std::uint32_t sharpen::Epoll::Wait(sharpen::Epoll::Event *events,std::int32_t maxEvent,int timeout)
 {
     assert(this->handle_ != -1);
     int r = ::epoll_wait(this->handle_,events,maxEvent,timeout);
@@ -34,7 +34,7 @@ sharpen::Uint32 sharpen::Epoll::Wait(sharpen::Epoll::Event *events,sharpen::Int3
         }
         sharpen::ThrowLastError();
     }
-    return static_cast<sharpen::Uint32>(r);
+    return static_cast<std::uint32_t>(r);
 }
 
 void sharpen::Epoll::Add(sharpen::FileHandle handle,sharpen::Epoll::Event *event)

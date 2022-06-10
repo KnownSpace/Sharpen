@@ -15,7 +15,7 @@ sharpen::WinFileChannel::WinFileChannel(sharpen::FileHandle handle)
     this->handle_ = handle;
 }
 
-void sharpen::WinFileChannel::InitOverlapped(OVERLAPPED &ol,sharpen::Uint64 offset)
+void sharpen::WinFileChannel::InitOverlapped(OVERLAPPED &ol,std::uint64_t offset)
 {
     std::memset(&ol,0,sizeof(ol));
     LARGE_INTEGER off;
@@ -24,7 +24,7 @@ void sharpen::WinFileChannel::InitOverlapped(OVERLAPPED &ol,sharpen::Uint64 offs
     ol.OffsetHigh = off.HighPart;
 }
 
-void sharpen::WinFileChannel::InitOverlappedStruct(IocpOverlappedStruct &olStruct,sharpen::Uint64 offset)
+void sharpen::WinFileChannel::InitOverlappedStruct(IocpOverlappedStruct &olStruct,std::uint64_t offset)
 {
     //init overlapped
     sharpen::WinFileChannel::InitOverlapped(olStruct.ol_,offset);
@@ -37,7 +37,7 @@ void sharpen::WinFileChannel::InitOverlappedStruct(IocpOverlappedStruct &olStruc
     olStruct.channel_ = this->shared_from_this();
 }
 
-void sharpen::WinFileChannel::RequestWrite(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> *future)
+void sharpen::WinFileChannel::RequestWrite(const char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> *future)
 {
     IocpOverlappedStruct *olStruct = new (std::nothrow) IocpOverlappedStruct();
     if (!olStruct)
@@ -63,7 +63,7 @@ void sharpen::WinFileChannel::RequestWrite(const sharpen::Char *buf,sharpen::Siz
     }
 }
 
-void sharpen::WinFileChannel::WriteAsync(const sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)
+void sharpen::WinFileChannel::WriteAsync(const char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> &future)
 {
     if (!this->IsRegistered())
     {
@@ -72,7 +72,7 @@ void sharpen::WinFileChannel::WriteAsync(const sharpen::Char *buf,sharpen::Size 
     this->loop_->RunInLoopSoon(std::bind(&Self::RequestWrite,this,buf,bufSize,offset,&future));
 }
         
-void sharpen::WinFileChannel::WriteAsync(const sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)
+void sharpen::WinFileChannel::WriteAsync(const sharpen::ByteBuffer &buf,std::size_t bufferOffset,std::uint64_t offset,sharpen::Future<std::size_t> &future)
 {
     if (buf.GetSize() < bufferOffset)
     {
@@ -81,7 +81,7 @@ void sharpen::WinFileChannel::WriteAsync(const sharpen::ByteBuffer &buf,sharpen:
     this->WriteAsync(buf.Data() + bufferOffset,buf.GetSize() - bufferOffset,offset,future);
 }
 
-void sharpen::WinFileChannel::RequestRead(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> *future)
+void sharpen::WinFileChannel::RequestRead(char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> *future)
 {
     sharpen::IocpOverlappedStruct *olStruct = new (std::nothrow) sharpen::IocpOverlappedStruct();
     if (!olStruct)
@@ -107,7 +107,7 @@ void sharpen::WinFileChannel::RequestRead(sharpen::Char *buf,sharpen::Size bufSi
     }
 }
 
-void sharpen::WinFileChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSize,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)
+void sharpen::WinFileChannel::ReadAsync(char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> &future)
 {
     if (!this->IsRegistered())
     {
@@ -116,7 +116,7 @@ void sharpen::WinFileChannel::ReadAsync(sharpen::Char *buf,sharpen::Size bufSize
     this->loop_->RunInLoop(std::bind(&Self::RequestRead,this,buf,bufSize,offset,&future));
 }
         
-void sharpen::WinFileChannel::ReadAsync(sharpen::ByteBuffer &buf,sharpen::Size bufferOffset,sharpen::Uint64 offset,sharpen::Future<sharpen::Size> &future)
+void sharpen::WinFileChannel::ReadAsync(sharpen::ByteBuffer &buf,std::size_t bufferOffset,std::uint64_t offset,sharpen::Future<std::size_t> &future)
 {
     if (buf.GetSize() < bufferOffset)
     {
@@ -137,7 +137,7 @@ void sharpen::WinFileChannel::OnEvent(sharpen::IoEvent *olStruct)
     future->Complete(ev->length_);
 }
 
-sharpen::Uint64 sharpen::WinFileChannel::GetFileSize() const
+std::uint64_t sharpen::WinFileChannel::GetFileSize() const
 {
     LARGE_INTEGER li;
     BOOL r = ::GetFileSizeEx(this->handle_,&li);
@@ -148,7 +148,7 @@ sharpen::Uint64 sharpen::WinFileChannel::GetFileSize() const
     return li.QuadPart;
 }
 
-sharpen::FileMemory sharpen::WinFileChannel::MapMemory(sharpen::Size size,sharpen::Uint64 offset)
+sharpen::FileMemory sharpen::WinFileChannel::MapMemory(std::size_t size,std::uint64_t offset)
 {
     LARGE_INTEGER li;
     li.QuadPart = offset + size;
@@ -179,7 +179,7 @@ void sharpen::WinFileChannel::Truncate()
     }
 }
 
-void sharpen::WinFileChannel::Truncate(sharpen::Uint64 size)
+void sharpen::WinFileChannel::Truncate(std::uint64_t size)
 {
     LARGE_INTEGER li,old;
     li.QuadPart = size;
