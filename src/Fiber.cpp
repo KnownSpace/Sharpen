@@ -105,8 +105,8 @@ void sharpen::Fiber::FiberEntry(transfer_t from)
 
 void sharpen::Fiber::InitFiber()
 {
-    sharpen::MemoryStack stack = sharpen::MemoryStack::AllocStack(this->stack_.Size());
-    this->handle_ = ::make_fcontext(stack.Top(),stack.Size(),&sharpen::Fiber::FiberEntry);
+    sharpen::MemoryStack stack = sharpen::MemoryStack::AllocStack(this->stack_.GetSize());
+    this->handle_ = ::make_fcontext(stack.Top(),stack.GetSize(),&sharpen::Fiber::FiberEntry);
     this->handle_ = ::jump_fcontext(this->handle_,nullptr).fctx;
     this->stack_ = std::move(stack);
 }
