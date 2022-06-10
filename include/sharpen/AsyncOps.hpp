@@ -104,7 +104,7 @@ namespace sharpen
             max = grainsSize;
         }
         sharpen::AwaitableFuture<void> future;
-        for (size_t i = 0; i < parallelNumber; i++)
+        for (std::size_t i = 0; i != parallelNumber; ++i)
         {
             sharpen::Launch([parallelNumber,&ite,&end,count,max,&begin,&fn,&future,&comp]()
             {

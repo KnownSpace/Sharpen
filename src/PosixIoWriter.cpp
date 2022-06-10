@@ -28,7 +28,7 @@ void sharpen::PosixIoWriter::DoExecute(sharpen::FileHandle handle,bool &executed
             blocking = true;
             return;
         }
-        for (size_t i = 0; i < size; i++)
+        for (std::size_t i = 0; i != size; ++i)
         {
             cbs[i](-1);
         }
@@ -38,7 +38,7 @@ void sharpen::PosixIoWriter::DoExecute(sharpen::FileHandle handle,bool &executed
     }
     else if(bytes == 0)
     {
-        for (size_t i = 0; i < size; i++)
+        for (std::size_t i = 0; i != size; ++i)
         {
             cbs[i](0);
         }
@@ -49,7 +49,7 @@ void sharpen::PosixIoWriter::DoExecute(sharpen::FileHandle handle,bool &executed
     std::size_t completed;
     std::size_t lastSize;
     this->ConvertByteToBufferNumber(bytes,completed,lastSize);
-    for (size_t i = 0; i < completed; i++)
+    for (std::size_t i = 0; i != completed; ++i)
     {
         cbs[i](bufs[i].iov_len);
     }

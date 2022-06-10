@@ -124,7 +124,7 @@ namespace sharpen
                     _Iterator begin = this->waiter_->iterator_;
                     _Iterator end = sharpen::IteratorForward(begin,this->waiter_->futures_.size());
                     _Iterator ite = end;
-                    for (std::size_t i = 0; i < this->waiter_->futures_.size(); i++)
+                    for (std::size_t i = 0; i != this->waiter_->futures_.size(); ++i)
                     {
                         if(this->waiter_->futures_[i].IsPending())
                         {

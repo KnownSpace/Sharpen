@@ -131,7 +131,7 @@ std::size_t sharpen::IPosixIoOperator::ComputePendingSize() const
 {
     std::size_t size{0};
     const IoBuffer *buf = this->GetFirstBuffer();
-    for (size_t i = 0,count = this->GetRemainingSize(); i < count; i++)
+    for (size_t i = 0,count = this->GetRemainingSize(); i != count; ++i)
     {
         size += buf->iov_len;
     }
@@ -144,7 +144,7 @@ void sharpen::IPosixIoOperator::CancelAllIo(sharpen::ErrorCode err) noexcept
     Callback *cbs = this->GetFirstCallback();
     std::size_t size = this->GetRemainingSize();
     errno = err;
-    for (size_t i = 0; i < size; i++)
+    for (size_t i = 0; i != size; ++i)
     {
         cbs[i](-1);
     }
@@ -153,7 +153,7 @@ void sharpen::IPosixIoOperator::CancelAllIo(sharpen::ErrorCode err) noexcept
     this->FillBufferAndCallback();
     cbs = this->GetFirstCallback();
     size = this->GetRemainingSize();
-    for (size_t i = 0; i < size; i++)
+    for (std::size_t i = 0; i != size; ++i)
     {
         cbs[i](-1);
     }

@@ -23,7 +23,7 @@ void Test()
     channel->Register(engine);
     size = channel->ReadAsync(buf, sizeof(buf) - 1, 0);
     std::printf("read size is %zu\n", size);
-    for (size_t i = 0; i < sizeof(str) - 1; i++)
+    for (std::size_t i = 0; i != sizeof(str) - 1; ++i)
     {
         assert(buf[i] == str[i]);
     }

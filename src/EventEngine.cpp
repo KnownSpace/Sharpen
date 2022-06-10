@@ -21,7 +21,7 @@ sharpen::EventEngine::EventEngine(std::size_t workerCount)
     assert(workerCount != 0);
     this->mainLoop_.reset(new sharpen::EventLoop(sharpen::MakeDefaultSelector()));
     this->loops_.push_back(this->mainLoop_.get());
-    for (size_t i = 0,count = workerCount - 1; i < count; i++)
+    for (std::size_t i = 0,count = workerCount - 1; i != count; ++i)
     {
         //one selector per thread
         std::unique_ptr<sharpen::EventLoopThread> thread(new sharpen::EventLoopThread(sharpen::MakeDefaultSelector()));

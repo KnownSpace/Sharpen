@@ -20,6 +20,10 @@ namespace sharpen
     {
     private:
         using EventBuf = std::vector<sharpen::IoCompletionPort::Event>;
+        using Self = sharpen::IocpSelector;
+
+        static constexpr std::size_t minEventBufLength_{8};
+        static constexpr std::size_t maxEventBufLength_{512};
 
         sharpen::IoCompletionPort iocp_;
 

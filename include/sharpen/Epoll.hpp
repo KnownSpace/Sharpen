@@ -31,7 +31,7 @@ namespace sharpen
         
         ~Epoll() noexcept;
     
-        std::uint32_t Wait(Event *events,std::int32_t maxEvents,std::int32_t timeout);
+        std::uint32_t Wait(Event *events,std::uint32_t maxEvents,std::int32_t timeout);
         
         void Add(sharpen::FileHandle handle,Event *event);
         

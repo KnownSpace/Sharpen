@@ -173,7 +173,7 @@ void sharpen::HttpBody::Push(char c)
 
 void sharpen::HttpBody::Append(const char *buf,std::size_t size)
 {
-    for (size_t i = 0; i < size; i++)
+    for (std::size_t i = 0; i != size; ++i)
     {
         this->Push(buf[i]);
     }

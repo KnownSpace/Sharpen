@@ -22,11 +22,12 @@ sharpen::Epoll::~Epoll() noexcept
     }
 }
 
-std::uint32_t sharpen::Epoll::Wait(sharpen::Epoll::Event *events,std::int32_t maxEvent,int timeout)
+std::uint32_t sharpen::Epoll::Wait(sharpen::Epoll::Event *events,std::uint32_t maxEvent,std::int32_t timeout)
 {
     assert(this->handle_ != -1);
-    int r = ::epoll_wait(this->handle_,events,maxEvent,timeout);
-    if(r < 0)
+    assert(static_cast<std::int32_t>(maxEvent) >= 0);
+    int r = ::epoll_wait(this->handle_,events,static_cast<std::int32_t>(maxEvent),timeout);
+    if(r == -1)
     {
         if (sharpen::GetLastError() == EINTR)
         {
@@ -40,6 +41,7 @@ std::uint32_t sharpen::Epoll::Wait(sharpen::Epoll::Event *events,std::int32_t ma
 void sharpen::Epoll::Add(sharpen::FileHandle handle,sharpen::Epoll::Event *event)
 {
     assert(this->handle_ != -1);
+    assert(event != nullptr);
     int r = ::epoll_ctl(this->handle_,EPOLL_CTL_ADD,handle,event);
     if(r == -1)
     {
@@ -61,6 +63,7 @@ void sharpen::Epoll::Remove(sharpen::FileHandle handle)
 void sharpen::Epoll::Update(sharpen::FileHandle handle,sharpen::Epoll::Event *event)
 {
     assert(this->handle_ != -1);
+    assert(event != nullptr);
     int r = ::epoll_ctl(this->handle_,EPOLL_CTL_MOD,handle,event);
     if(r == -1)
     {

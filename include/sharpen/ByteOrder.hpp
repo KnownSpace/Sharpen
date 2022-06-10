@@ -44,7 +44,7 @@ namespace sharpen
 
     inline void ConvertEndian(char *data,std::size_t size)
     {
-        for (std::size_t i = 0,count = size/2; i < count; i++)
+        for (std::size_t i = 0,count = size/2; i != count; ++i)
         {
             char tmp = data[i];
             data[i] = data[size - 1 - i];

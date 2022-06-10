@@ -46,7 +46,7 @@ void sharpen::ParallelFor(std::size_t begin,std::size_t end,std::size_t grainsSi
     sharpen::AwaitableFuture<void> future;
     std::atomic_size_t comp{parallelNumber};
     //launch fiber
-    for (std::size_t i = 0; i < parallelNumber; i++)
+    for (std::size_t i = 0; i != parallelNumber; ++i)
     {
         sharpen::Launch([&ite,max,end,parallelNumber,&fn,&comp,&future]()
         {

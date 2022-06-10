@@ -1,17 +1,17 @@
 #include <sharpen/IocpSelector.hpp>
+
+#ifdef SHARPEN_HAS_IOCP
+
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <cassert>
 #include <limits>
-
-#ifdef SHARPEN_HAS_IOCP
-
 #include <mutex>
 
 sharpen::IocpSelector::IocpSelector()
     :iocp_()
-    ,eventBuf_(8)
+    ,eventBuf_(Self::minEventBufLength_)
 {}
 
 bool sharpen::IocpSelector::CheckChannel(sharpen::ChannelPtr &channel) noexcept
@@ -42,7 +42,7 @@ void sharpen::IocpSelector::Select(EventVector &events)
 {
     assert(events.size() <= (std::numeric_limits<std::uint32_t>::max)());
     std::uint32_t count = this->iocp_.Wait(this->eventBuf_.data(),static_cast<std::uint32_t>(this->eventBuf_.size()),INFINITE);
-    for (size_t i = 0; i < count; i++)
+    for (std::size_t i = 0; i != count; ++i)
     {
         sharpen::IoCompletionPort::Event &e = this->eventBuf_[i];
         if (e.lpOverlapped != nullptr && e.lpCompletionKey != NULL)
@@ -78,9 +78,8 @@ void sharpen::IocpSelector::Select(EventVector &events)
             }
         }
     }
-    if (count == this->eventBuf_.size())
+    if (count == this->eventBuf_.size() && count != Self::maxEventBufLength_)
     {
-        this->eventBuf_.clear();
         this->eventBuf_.resize(count * 2);
     }
     else

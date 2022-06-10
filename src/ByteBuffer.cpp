@@ -13,10 +13,7 @@ sharpen::ByteBuffer::ByteBuffer(std::size_t size)
 sharpen::ByteBuffer::ByteBuffer(const char *p,std::size_t size)
     :vector_(size)
 {
-    for (size_t i = 0; i < size; i++)
-    {
-        this->vector_[i] = p[i];
-    }
+    std::memcpy(this->vector_.Data(),p,size);
 }
 
 void sharpen::ByteBuffer::PushBack(char val)

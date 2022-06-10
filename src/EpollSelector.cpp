@@ -4,6 +4,7 @@
 
 #include <mutex>
 #include <cassert>
+#include <limits>
 
 #include <fcntl.h>
 
@@ -11,11 +12,11 @@ sharpen::EpollSelector::EpollSelector()
     :epoll_()
     ,eventfd_(0,O_CLOEXEC | O_NONBLOCK)
     ,map_()
-    ,eventBuf_(8)
+    ,eventBuf_(Self::MinEventBufLength_)
     ,lock_()
 #ifdef SHARPEN_HAS_IOURING
     ,ring_(nullptr)
-    ,cqes_(8)
+    ,cqes_(Self::MinCqesLength_)
 #endif
 {
     //register event fd
@@ -46,6 +47,7 @@ bool sharpen::EpollSelector::CheckChannel(sharpen::ChannelPtr channel) noexcept
 
 void sharpen::EpollSelector::Select(EventVector &events)
 {
+    assert(events.size() <= (std::numeric_limits<std::uint32_t>::max)());
     std::uint32_t count = this->epoll_.Wait(this->eventBuf_.data(),this->eventBuf_.size(),-1);
 #ifdef SHARPEN_HAS_IOURING
     bool ringNotify{false};
@@ -53,7 +55,7 @@ void sharpen::EpollSelector::Select(EventVector &events)
     for (std::size_t i = 0; i != count;++i)
     {
         auto &e = this->eventBuf_[i];
-        auto *event = reinterpret_cast<Event*>(e.data.ptr);
+        auto *event = reinterpret_cast<Self::Event*>(e.data.ptr);
         if (!event->internalEventfd_)
         {
             std::uint32_t eventMask = e.events;
@@ -84,7 +86,7 @@ void sharpen::EpollSelector::Select(EventVector &events)
         }
 #endif
     }
-    if(count == this->eventBuf_.size())
+    if(count == this->eventBuf_.size() && count != Self::MaxEventBufLength_)
     {
         this->eventBuf_.resize(count * 2);
     }
@@ -108,7 +110,7 @@ void sharpen::EpollSelector::Select(EventVector &events)
             }
             events.push_back(&(st->event_));
         }
-        if(size == this->cqes_.size())
+        if(size == this->cqes_.size() && size != Self::MaxEventBufLength_)
         {
             this->cqes_.resize(size * 2);
         }
@@ -131,8 +133,8 @@ void sharpen::EpollSelector::Resister(WeakChannelPtr channel)
     epoll_event *eventStruct{nullptr};
     {
         std::unique_lock<sharpen::SpinLock> lock{this->lock_};
-        auto ite = this->map_.emplace(ch->GetHandle(),Event{}).first;
-        Event &event = ite->second;
+        auto ite = this->map_.emplace(ch->GetHandle(),Self::Event{}).first;
+        Self::Event &event = ite->second;
         event.ioEvent_.SetChannel(ch);
         event.epollEvent_.data.ptr = &event;
         event.epollEvent_.events = EPOLLIN | EPOLLOUT | EPOLLET | EPOLLHUP | EPOLLERR;
