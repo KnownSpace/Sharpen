@@ -4,6 +4,8 @@
 
 #include <cstdint>
 #include <cstddef>
+#include <cstdlib>
+
 #include "Noncopyable.hpp"
 
 namespace sharpen
@@ -11,48 +13,66 @@ namespace sharpen
     class MemoryStack:public sharpen::Noncopyable
     {
     private:
-        using Self = MemoryStack;
+        using Self = sharpen::MemoryStack;
 
         void *mem_;
         std::size_t size_;
 
-    public:
-        MemoryStack();
+        inline static void *Alloc(std::size_t size) noexcept
+        {
+            return std::calloc(size,sizeof(char));
+        }
 
-        MemoryStack(void *mem,std::size_t size);
+        inline static void Free(void *mem) noexcept
+        {
+            return std::free(mem);
+        }
+
+    public:
+        MemoryStack() noexcept;
+
+        MemoryStack(void *mem,std::size_t size) noexcept;
 
         MemoryStack(Self &&other) noexcept;
 
         ~MemoryStack() noexcept;
 
+        static sharpen::MemoryStack AllocStack(std::size_t size);
+
         void *Top() const noexcept;
 
-        void *Bottom() const noexcept;
+        inline void *Bottom() const noexcept
+        {
+            return this->mem_;
+        }
 
-        std::size_t Size() const noexcept;
+        inline std::size_t GetSize() const noexcept
+        {
+            return this->size_;
+        }
 
         void Release() noexcept;
 
         Self &operator=(Self &&other) noexcept;
 
-        void Swap(Self &other) noexcept;
-
-        inline void swap(Self &other) noexcept
-        {
-            return this->Swap(other);
-        }
-
-        static sharpen::MemoryStack AllocStack(std::size_t size);
-
         void Extend(std::size_t newSize);
 
         void ExtendNoSave(std::size_t newSize);
 
-        void Clean() noexcept;
+        inline void Clean() noexcept
+        {
+            if(this->mem_)
+            {
+                std::memset(this->mem_,0,this->size_);
+            }
+        }
 
-        bool Validate() const noexcept;
+        inline bool Validate() const noexcept
+        {
+            return this->mem_;
+        }
 
-        operator bool() const noexcept
+        inline operator bool() const noexcept
         {
             return this->Validate();
         }

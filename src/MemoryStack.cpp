@@ -7,12 +7,12 @@
 
 #include <sharpen/SystemMacro.hpp>
 
-sharpen::MemoryStack::MemoryStack()
+sharpen::MemoryStack::MemoryStack() noexcept
     :mem_(nullptr)
     ,size_(0)
 {}
 
-sharpen::MemoryStack::MemoryStack(void *mem,std::size_t size)
+sharpen::MemoryStack::MemoryStack(void *mem,std::size_t size) noexcept
     :mem_(mem)
     ,size_(size)
 {}
@@ -21,7 +21,7 @@ sharpen::MemoryStack::MemoryStack(sharpen::MemoryStack &&other) noexcept
     :mem_(nullptr)
     ,size_(0)
 {
-    this->Swap(other);
+    std::swap(other,*this);
 }
 
 sharpen::MemoryStack::~MemoryStack() noexcept
@@ -31,13 +31,12 @@ sharpen::MemoryStack::~MemoryStack() noexcept
 
 sharpen::MemoryStack &sharpen::MemoryStack::operator=(sharpen::MemoryStack &&other) noexcept
 {
-    if(this == std::addressof(other))
+    if(this != std::addressof(other))
     {
-        return *this;
+        this->size_ = 0;
+        this->mem_ = nullptr;
+        std::swap(*this,other);
     }
-    this->size_ = 0;
-    this->mem_ = nullptr;
-    this->Swap(other);
     return *this;
 }
 
@@ -45,7 +44,7 @@ void sharpen::MemoryStack::Release() noexcept
 {
     if (this->mem_)
     {
-        std::free(this->mem_);
+        this->Free(this->mem_);
         this->mem_ = nullptr;
         this->size_ = 0;
     }
@@ -62,36 +61,13 @@ void *sharpen::MemoryStack::Top() const noexcept
     return nullptr;
 }
 
-void *sharpen::MemoryStack::Bottom() const noexcept
-{
-    return this->mem_;
-}
-
-std::size_t sharpen::MemoryStack::Size() const noexcept
-{
-    return this->size_;
-}
-
-void sharpen::MemoryStack::Swap(sharpen::MemoryStack &other) noexcept
-{
-    if(&other != this)
-    {
-        void *mem = this->mem_;
-        std::size_t size = this->size_;
-        this->mem_ = other.mem_;
-        this->size_ = other.size_;
-        other.mem_ = mem;
-        other.size_ = size;
-    }
-}
-
 sharpen::MemoryStack sharpen::MemoryStack::AllocStack(std::size_t size)
 {
     if (size == 0)
     {
         return std::move(sharpen::MemoryStack());
     }
-    void *mem = ::calloc(size,1);
+    void *mem = Self::Alloc(size);
     if (!mem)
     {
         throw std::bad_alloc();
@@ -104,14 +80,14 @@ void sharpen::MemoryStack::Extend(std::size_t newSize)
 {
     if (this->size_ < newSize)
     {
-        void *mem = std::calloc(newSize,1);
+        void *mem = this->Alloc(newSize);
         if (mem == nullptr)
         {
             throw std::bad_alloc();
         }
         std::memcpy(mem,this->mem_,this->size_);
-        this->size_ = newSize;
         this->Release();
+        this->size_ = newSize;
         this->mem_ = mem;
     }
 }
@@ -125,18 +101,8 @@ void sharpen::MemoryStack::ExtendNoSave(std::size_t newSize)
         {
             throw std::bad_alloc();
         }
-        this->size_ = newSize;
         this->Release();
+        this->size_ = newSize;
         this->mem_ = mem;
     }
-}
-
-void sharpen::MemoryStack::Clean() noexcept
-{
-    std::memset(this->mem_,0,this->size_);
-}
-
-bool sharpen::MemoryStack::Validate() const noexcept
-{
-    return this->mem_;
 }
