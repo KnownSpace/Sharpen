@@ -1,11 +1,6 @@
 #include <sharpen/MemoryStack.hpp>
 
-#include <cstdlib>
-#include <type_traits>
 #include <stdexcept>
-#include <cstring>
-
-#include <sharpen/SystemMacro.hpp>
 
 sharpen::MemoryStack::MemoryStack() noexcept
     :mem_(nullptr)
