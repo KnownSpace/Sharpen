@@ -36,6 +36,72 @@ namespace sharpen
 
     using FalseType = sharpen::BoolType<false>;
 
+    template<std::size_t _Size>
+    struct InternalIntType
+    {
+        using Type = std::int32_t;
+    };
+
+    template<>
+    struct InternalIntType<8>
+    {
+        using Type = std::int8_t;
+    };
+
+    template<>
+    struct InternalIntType<16>
+    {
+        using Type = std::int16_t;
+    };
+
+    template<>
+    struct InternalIntType<32>
+    {
+        using Type = std::int32_t;
+    };
+
+    template<>
+    struct InternalIntType<64>
+    {
+        using Type = std::int64_t;
+    };
+
+    template<std::size_t _Size>
+    using IntType = typename sharpen::InternalIntType<_Size>::Type;
+
+    template<std::size_t _Size>
+    struct InternalUintType
+    {
+        using Type = std::uint32_t;
+    };
+
+    template<>
+    struct InternalUintType<8>
+    {
+        using Type = std::uint8_t;
+    };
+
+    template<>
+    struct InternalUintType<16>
+    {
+        using Type = std::uint16_t;
+    };
+
+    template<>
+    struct InternalUintType<32>
+    {
+        using Type = std::uint32_t;
+    };
+
+    template<>
+    struct InternalUintType<64>
+    {
+        using Type = std::uint64_t;
+    };
+
+    template<std::size_t _Size>
+    using UintType = typename sharpen::InternalUintType<_Size>::Type;
+
     template<typename _Fn,typename ..._Args>
     struct InternalIsCallable
     {

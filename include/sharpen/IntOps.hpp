@@ -41,49 +41,62 @@ namespace sharpen
         return a>b?a:b;
     }
 
-    union Uint16Union
+    template<std::size_t _Size>
+    union UintUnion
     {
+    private:
+        using Self = sharpen::UintUnion<_Size>;
+
+        static constexpr std::size_t halfSize_{_Size/2};    
+    public:
+
         struct
         {
 #ifdef SHARPEN_IS_BIG_ENDIAN
-            unsigned char height_;
-            unsigned char low_;
+            sharpen::UintType<_halfSize> height_;
+            sharpen::UintType<_halfSize> low_;
 #else
-            unsigned char low_;
-            unsigned char height_;
+            sharpen::UintType<Self::halfSize_> low_;
+            sharpen::UintType<Self::halfSize_> height_;
 #endif
         } union_;
-        std::uint16_t value_;  
+
+        sharpen::UintType<_Size> value_;
     };
 
-    union Uint32Union
+    template<>
+    union UintUnion<8>
     {
-        struct
-        {
-#ifdef SHARPEN_IS_BIG_ENDIAN
-            std::uint16_t height_;
-            std::uint16_t low_;
-#else
-            std::uint16_t low_;
-            std::uint16_t height_;
-#endif
-        } union_;
-        std::uint32_t value_;  
+        std::uint8_t value_;
     };
 
-    union Uint64Union
+    template<std::size_t _Size>
+    union IntUnion
     {
+    private:
+        using Self = sharpen::IntUnion<_Size>;
+
+        static constexpr std::size_t halfSize_{_Size/2};
+    public:
+
         struct
         {
 #ifdef SHARPEN_IS_BIG_ENDIAN
-            std::uint32_t height_;
-            std::uint32_t low_;
+            sharpen::IntType<_halfSize> height_;
+            sharpen::UintType<_halfSize> low_;
 #else
-            std::uint32_t low_;
-            std::uint32_t height_;
+            sharpen::UintType<Self::halfSize_> low_;
+            sharpen::IntType<Self::halfSize_> height_;
 #endif
         } union_;
-        std::uint64_t value_;  
+
+        sharpen::IntType<_Size> value_;
+    };
+
+    template<>
+    union IntUnion<8>
+    {
+        std::int8_t value_;
     };
 
     template<typename _T1,typename _T2>
