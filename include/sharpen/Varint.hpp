@@ -99,7 +99,9 @@ namespace sharpen
                 std::size_t counter{0};
                 while (*ite & signBit_)
                 {
-                    value |= (*ite++ & mask_) << 7*counter++;
+                    value |= (*ite & mask_) << 7*counter;
+                    ite += 1;
+                    counter += 1;
                 }
                 value  |= (*ite & mask_) << 7*counter;
                 this->cache_.Construct(value);

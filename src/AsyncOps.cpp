@@ -32,7 +32,7 @@ void sharpen::ParallelFor(std::size_t begin,std::size_t end,std::size_t grainsSi
     {
         return;
     }
-    std::size_t parallelNumber{sharpen::EventEngine::GetEngine().LoopCount()};
+    std::size_t parallelNumber{sharpen::EventEngine::GetEngine().GetLoopCount()};
     //compute max grainsSize
     std::size_t max {end - begin};
     max /= parallelNumber;

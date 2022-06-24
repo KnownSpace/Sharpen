@@ -88,9 +88,14 @@ namespace sharpen
             return code;
         }
 
-        std::size_t LoopCount() const noexcept
+        inline std::size_t GetLoopCount() const noexcept
         {
             return this->loops_.size();
+        }
+
+        inline std::size_t GetParallelCount() const noexcept
+        {
+            return this->GetLoopCount();
         }
     };
 }
