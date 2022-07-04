@@ -175,7 +175,7 @@ namespace sharpen
     private:
         using Self = sharpen::InternalOptional<_T,false>;
 
-        bool hasValue_;
+        _T *launderPtr_;
         union 
         {
             _T value_;
@@ -183,43 +183,41 @@ namespace sharpen
         };
     public:
         InternalOptional() noexcept
-            :hasValue_(false)
+            :launderPtr_(nullptr)
             ,dummy_()
         {}
 
         InternalOptional(const Self &other)
-            :hasValue_(false)
+            :launderPtr_(nullptr)
             ,dummy_()
         {
-            if (other.hasValue_)
+            if (other.launderPtr_)
             {
-                ::new(&this->value_) _T(other.value_);
-                this->hasValue_ = true;
+                this->launderPtr_ = ::new(&this->value_) _T{other.Get()};
             }
         }
 
         InternalOptional(Self &&other) noexcept
-            :hasValue_(other.hasValue_)
+            :launderPtr_(nullptr)
             ,dummy_()
         {
-            if (this->hasValue_)
+            if (other.launderPtr_)
             {
-                ::new(&this->value_) _T(std::move(other.value_));
+                this->launderPtr_ = ::new(&this->value_) _T{std::move(other.Get())};
             }
             other.Reset();
         }
 
         template<typename ..._Args,typename _Check = decltype(_T{std::declval<_Args>()...})>
         InternalOptional(_Args &&...args) SHARPEN_NOEXCEPT_IF(_T {std::declval<_Args>()...})
-            :hasValue_(false)
+            :launderPtr_(nullptr)
             ,dummy_()
         {
-            ::new (&this->value_) _T{std::forward<_Args>(args)...};
-            this->hasValue_ = true;
+            this->launderPtr_ = ::new (&this->value_) _T{std::forward<_Args>(args)...};
         }
 
         InternalOptional(sharpen::EmptyOptional)
-            :hasValue_(false)
+            :launderPtr_(nullptr)
             ,dummy_()
         {}
 
@@ -234,14 +232,13 @@ namespace sharpen
         {
             if (this != std::addressof(other))
             {
-                if (this->hasValue_)
+                if (this->launderPtr_)
                 {
                     this->Reset();
                 }
-                if(other.hasValue_)
+                if(other.launderPtr_)
                 {
-                    ::new(&this->value_) _T(std::move(other.value_));
-                    this->hasValue_ = true;
+                    this->launderPtr_ = ::new(&this->value_) _T{std::move(other.Get())};
                     other.Reset();
                 }
             }
@@ -256,34 +253,34 @@ namespace sharpen
 
         _T &Get()
         {
-            if (this->hasValue_)
+            if (this->launderPtr_)
             {
-                return this->value_;
+                return *this->launderPtr_;
             }
             throw sharpen::BadOptionException("this option is null");
         }
 
         const _T &Get() const
         {
-            if (this->hasValue_)
+            if (this->launderPtr_)
             {
-                return this->value_;
+                return *this->launderPtr_;
             }
             throw sharpen::BadOptionException("this option is null");
         }
 
         bool Exist() const noexcept
         {
-            return this->hasValue_;
+            return this->launderPtr_;
         }
 
         void Reset() noexcept
         {
-            bool has = false;
-            std::swap(has,this->hasValue_);
-            if (has)
+            _T *ptr{nullptr};
+            std::swap(ptr,this->launderPtr_);
+            if (ptr)
             {
-                this->value_.~_T();
+                ptr->~_T();
             }
         }
 
@@ -291,8 +288,7 @@ namespace sharpen
         void Construct(_Args &&...args) SHARPEN_NOEXCEPT_IF(_T {std::declval<_Args>()...})
         {
             this->Reset();
-            this->hasValue_ = true;
-            ::new (&this->value_) _T{std::forward<_Args>(args)...};
+            this->launderPtr_ = ::new (&this->value_) _T{std::forward<_Args>(args)...};
         }
 
         ~InternalOptional() noexcept
