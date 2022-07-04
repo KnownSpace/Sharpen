@@ -3,17 +3,18 @@
 
 #include <sharpen/AsyncOps.hpp>
 #include <sharpen/AwaitOps.hpp>
+#include <sharpen/WorkerGroup.hpp>
 
 void AwaitTest()
 {
-    std::printf("await test\n");
+    std::puts("await test");
     auto f1 = sharpen::Async([]()
     {
-        std::printf("hello ");
+        std::fputs("hello ",stdout);
         return 1;
     });
     auto f2 = sharpen::Async([](){
-        std::printf("world\n");
+        std::puts("world");
     });
     auto f3 = sharpen::Async([](){
         return "hello world";
@@ -25,17 +26,17 @@ void AwaitTest()
     auto f4 = sharpen::Async([]()
     {
         sharpen::Delay(std::chrono::seconds(3));
-        std::printf("ok1\n");
+        std::puts("ok1");
     });
     auto f5 = sharpen::Async([](){
         sharpen::Delay(std::chrono::seconds(1));
-        std::printf("ok2\n");
+        std::puts("ok2");
     });
     sharpen::AwaitAny(*f5,*f4);
     f4->Await();
     f5->Await();
-    std::printf("await test pass\n");
-    std::printf("reset test begin\n");
+    std::puts("await test pass");
+    std::puts("reset test begin");
     sharpen::AwaitableFuture<int> future;
     sharpen::Launch([&future](){
         future.Complete(2);
@@ -48,7 +49,17 @@ void AwaitTest()
     });
     r = future.Await();
     assert(r == 3);
-    std::printf("reset test pass\n");
+    std::puts("reset test pass");
+    std::puts("worker group test begin");
+    sharpen::WorkerGroup workers{sharpen::EventEngine::GetEngine()};
+    auto workerFuture = workers.Invoke([]()
+    {
+        std::puts("work");
+        return 0;
+    });
+    r = workerFuture->Await();
+    assert(r == 0);
+    std::puts("worker group test pass");
 }
 
 int main()

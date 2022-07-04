@@ -6,10 +6,10 @@
 #include <cassert>
 
 #include "AwaitableFuture.hpp"
-#include "AsyncHelper.hpp"
 #include "TimerPool.hpp"
 #include "IteratorOps.hpp"
 #include "TypeTraits.hpp"
+#include "FutureCompletor.hpp"
 
 namespace sharpen
 {
@@ -31,11 +31,8 @@ namespace sharpen
     inline sharpen::AwaitableFuturePtr<_Result> Async(_Fn &&fn,_Args &&...args)
     {
         auto future = sharpen::MakeAwaitableFuture<_Result>();
-        std::function<_Result()> func = std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...);
-        sharpen::Launch([func,future]() mutable
-        {
-            sharpen::AsyncHelper<std::function<_Result()>,_Result>::RunAndSetFuture(func,*future);
-        });
+        sharpen::EventEngine &engine = sharpen::EventEngine::GetEngine();
+        engine.Invoke(*future,std::forward<_Fn>(fn),std::forward<_Args>(args)...);
         return future;
     }
 
@@ -43,11 +40,8 @@ namespace sharpen
     inline sharpen::AwaitableFuturePtr<_Result> AsyncSpecial(std::size_t stackSize,_Fn &&fn,_Args &&...args)
     {
         auto future = sharpen::MakeAwaitableFuture<_Result>();
-        std::function<_Result()> func = std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...);
-        sharpen::LaunchSpecial(stackSize,[func,future]() mutable
-        {
-            sharpen::AsyncHelper<std::function<_Result()>,_Result>::RunAndSetFuture(func,*future);
-        });
+        sharpen::EventEngine &engine = sharpen::EventEngine::GetEngine();
+        engine.InvokeSpecial(stackSize,*future,std::forward<_Fn>(fn),std::forward<_Args>(args)...);
         return future;
     }
 

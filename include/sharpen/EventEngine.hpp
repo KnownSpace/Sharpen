@@ -10,6 +10,7 @@
 #include "Nonmovable.hpp"
 #include "IFiberScheduler.hpp"
 #include "TypeTraits.hpp"
+#include "FutureCompletor.hpp"
 
 namespace sharpen
 {
@@ -86,6 +87,24 @@ namespace sharpen
             this->Launch(&Self::ProcessStartupWithCode,this,task,&code);
             this->Run();
             return code;
+        }
+
+        template<typename _Fn,typename ..._Args,typename _R,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<_R,_Fn,_Args...>::Value>>
+        inline void Invoke(sharpen::Future<_R> &future,_Fn &&fn,_Args &&...args)
+        {
+            using FnPtr = void(*)(sharpen::Future<_R>*,std::function<_R()>);
+            FnPtr fnPtr{static_cast<FnPtr>(&sharpen::FutureCompletor<_R>::CompleteForBind)};
+            std::function<_R()> task{std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...)};
+            this->Launch(fnPtr,&future,std::move(task));
+        }
+
+        template<typename _Fn,typename ..._Args,typename _R,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<_R,_Fn,_Args...>::Value>>
+        inline void InvokeSpecial(std::size_t stackSize,sharpen::Future<_R> &future,_Fn &&fn,_Args &&...args)
+        {
+            using FnPtr = void(*)(sharpen::Future<_R>*,std::function<_R()>);
+            FnPtr fnPtr{static_cast<FnPtr>(&sharpen::FutureCompletor<_R>::CompleteForBind)};
+            std::function<_R()> task{std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...)};
+            this->LaunchSpecial(stackSize,fnPtr,&future,std::move(task));
         }
 
         inline std::size_t GetLoopCount() const noexcept

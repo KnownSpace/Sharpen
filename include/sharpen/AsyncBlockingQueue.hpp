@@ -19,7 +19,7 @@ namespace sharpen
         Storage list_;
     public:
         AsyncBlockingQueue()
-            :sign_()
+            :sign_(0)
             ,lock_()
             ,list_()
         {}
@@ -51,7 +51,7 @@ namespace sharpen
         {
             {
                 std::unique_lock<sharpen::SpinLock> lock(this->lock_);
-                this->list_.emplace(std::forward<_Args>(args)...);
+                this->list_.emplace_back(std::forward<_Args>(args)...);
             }
             this->sign_.Unlock();
         }
