@@ -19,8 +19,8 @@ namespace sharpen
         Storage list_;
     public:
         AsyncBlockingQueue()
-            :sign_(0)
-            ,lock_()
+            :lock_()
+            ,sign_(0)
             ,list_()
         {}
 
