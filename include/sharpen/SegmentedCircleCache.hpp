@@ -89,33 +89,56 @@ namespace sharpen
 
         inline std::shared_ptr<_T> Get(const std::string &key) const noexcept
         {
-            assert(!key.empty());
-            assert(this->caches_);
-            return this->caches_[this->HashKey(key)].Get(key);
+            return this->Get(false,key);
         }
 
         template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
         inline std::shared_ptr<_T> Get(_Iterator begin,_Iterator end) const noexcept
         {
+            return this->Get(false,begin,end);
+        }
+
+        inline std::shared_ptr<_T> Get(bool pin,const std::string &key) const noexcept
+        {
+            assert(!key.empty());
+            assert(this->caches_);
+            return this->caches_[this->HashKey(key)].Get(pin,key);
+        }
+
+        template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
+        inline std::shared_ptr<_T> Get(bool pin,_Iterator begin,_Iterator end) const noexcept
+        {
             assert(begin != end);
             assert(this->caches_);
-            return this->caches_[this->HashKey(begin,end)].Get(begin,end);
+            return this->caches_[this->HashKey(begin,end)].Get(pin,begin,end);
         }
 
         template <typename... _Args,typename _Check = decltype(new _T{std::declval<_Args>()...})>
         inline std::shared_ptr<_T> GetOrEmplace(const std::string &key, _Args &&...args)
         {
-            assert(!key.empty());
-            assert(this->caches_);
-            return this->caches_[this->HashKey(key)].GetOrEmplace(key,std::forward<_Args>(args)...);
+            return this->GetOrEmplace(false,key,std::forward<_Args>(args)...);
         }
 
         template <typename _Iterator,typename... _Args,typename _Check = decltype(new _T{std::declval<_Args>()...},static_cast<char>(0) == *std::declval<_Iterator>())>
         inline std::shared_ptr<_T> GetOrEmplace(_Iterator begin,_Iterator end, _Args &&...args)
         {
+            return this->GetOrEmplace(false,begin,end,std::forward<_Args>(args)...);
+        }
+
+        template <typename... _Args,typename _Check = decltype(new _T{std::declval<_Args>()...})>
+        inline std::shared_ptr<_T> GetOrEmplace(bool pin,const std::string &key, _Args &&...args)
+        {
+            assert(!key.empty());
+            assert(this->caches_);
+            return this->caches_[this->HashKey(key)].GetOrEmplace(pin,key,std::forward<_Args>(args)...);
+        }
+
+        template <typename _Iterator,typename... _Args,typename _Check = decltype(new _T{std::declval<_Args>()...},static_cast<char>(0) == *std::declval<_Iterator>())>
+        inline std::shared_ptr<_T> GetOrEmplace(bool pin,_Iterator begin,_Iterator end, _Args &&...args)
+        {
             assert(begin != end);
             assert(this->caches_);
-            return this->caches_[this->HashKey(begin,end)].GetOrEmplace(begin,end,std::forward<_Args>(args)...);
+            return this->caches_[this->HashKey(begin,end)].GetOrEmplace(pin,begin,end,std::forward<_Args>(args)...);
         }
 
         template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>

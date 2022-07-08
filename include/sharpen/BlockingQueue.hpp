@@ -16,6 +16,8 @@
 
 namespace sharpen
 {
+    //LIFO
+    //reduce the number of memory allocations
     template<typename _T>
     class BlockingQueue:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
@@ -26,20 +28,18 @@ namespace sharpen
 
         Lock lock_;
         CondVar cond_;
-        Storage list_;
+        Storage storage_;
         
     public:
-        BlockingQueue()
-        :lock_()
-        ,cond_()
-        ,list_()
-        {}
+        BlockingQueue() = default;
+
+        ~BlockingQueue() noexcept = default;
 
         void Push(_T object)
         {
             {
                 std::unique_lock<Lock> lock(this->lock_);
-                this->list_.push_back(std::move(object));
+                this->storage_.push_back(std::move(object));
             }
             this->cond_.notify_one();
         }
@@ -49,7 +49,7 @@ namespace sharpen
         {
             {
                 std::unique_lock<Lock> lock(this->lock_);
-                this->list_.emplace_back(std::forward<_Args>(args)...);
+                this->storage_.emplace_back(std::forward<_Args>(args)...);
             }
             this->cond_.notify_one();
         }
@@ -57,12 +57,12 @@ namespace sharpen
         _T Pop() noexcept
         {
             std::unique_lock<Lock> lock(this->lock_);
-            while(this->list_.empty())
+            while(this->storage_.empty())
             {
                 this->cond_.wait(lock);
             }
-            _T obj(std::move(this->list_.back()));
-            this->list_.pop_back();
+            _T obj(std::move(this->storage_.back()));
+            this->storage_.pop_back();
             return std::move(obj); 
         }
 
@@ -70,7 +70,7 @@ namespace sharpen
         bool Pop(_T &obj,const std::chrono::duration<_Rep, _Period> &timeout) noexcept
         {
             std::unique_lock<Lock> lock(this->lock_);
-            while(this->list_.empty())
+            while(this->storage_.empty())
             {
                 std::cv_status status = this->cond_.wait_for(lock,timeout);
                 if (status == std::cv_status::timeout)
@@ -78,8 +78,8 @@ namespace sharpen
                     return false;
                 }
             }
-            obj = std::move(this->list_.back());
-            this->list_.pop_back();
+            obj = std::move(this->storage_.back());
+            this->storage_.pop_back();
             return true;
         }
     };

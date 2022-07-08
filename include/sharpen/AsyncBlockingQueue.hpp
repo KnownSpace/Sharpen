@@ -8,6 +8,8 @@
 
 namespace sharpen
 {
+    //LIFO
+    //reduce the number of memory allocations
     template<typename _T>
     class AsyncBlockingQueue:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
@@ -16,12 +18,12 @@ namespace sharpen
 
         sharpen::SpinLock lock_;
         sharpen::AsyncSemaphore sign_;
-        Storage list_;
+        Storage storage_;
     public:
         AsyncBlockingQueue()
             :lock_()
             ,sign_(0)
-            ,list_()
+            ,storage_()
         {}
 
         ~AsyncBlockingQueue() noexcept = default;
@@ -31,8 +33,8 @@ namespace sharpen
             this->sign_.LockAsync();
             {
                 std::unique_lock<sharpen::SpinLock> lock(this->lock_);
-                _T obj = std::move(this->list_.back());
-                this->list_.pop_back();
+                _T obj = std::move(this->storage_.back());
+                this->storage_.pop_back();
                 return obj;
             }
         }
@@ -41,7 +43,7 @@ namespace sharpen
         {
             {
                 std::unique_lock<sharpen::SpinLock> lock(this->lock_);
-                this->list_.push_back(std::move(obj));
+                this->storage_.push_back(std::move(obj));
             }
             this->sign_.Unlock();
         }
@@ -51,7 +53,7 @@ namespace sharpen
         {
             {
                 std::unique_lock<sharpen::SpinLock> lock(this->lock_);
-                this->list_.emplace_back(std::forward<_Args>(args)...);
+                this->storage_.emplace_back(std::forward<_Args>(args)...);
             }
             this->sign_.Unlock();
         }

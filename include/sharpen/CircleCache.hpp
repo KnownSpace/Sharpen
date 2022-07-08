@@ -27,6 +27,7 @@ namespace sharpen
             std::vector<char> key_;
             std::shared_ptr<_T> cacheObj_;
             std::size_t chances_;
+            bool pined_;
         };
 
         using Self = sharpen::CircleCache<_T>;
@@ -40,7 +41,7 @@ namespace sharpen
         std::size_t next_;
 
         template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
-        Iterator Find(_Iterator keyBegin,_Iterator keyEnd) const noexcept
+        inline Iterator Find(_Iterator keyBegin,_Iterator keyEnd) const noexcept
         {
             for (auto begin = this->buf_.begin(), end = this->buf_.end(); begin != end; ++begin)
             {
@@ -66,24 +67,30 @@ namespace sharpen
         }
 
         template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
-        std::shared_ptr<_T> UnlockedGet(_Iterator keyBegin,_Iterator keyEnd) const noexcept
+        inline std::shared_ptr<_T> UnlockedGet(bool pin,_Iterator keyBegin,_Iterator keyEnd) const noexcept
         {
             std::shared_ptr<_T> result{nullptr};
             auto ite = this->Find(keyBegin,keyEnd);
             if(ite != this->buf_.end())
             {
                 ite->chances_ = 1;
+                ite->pined_ = pin;
                 result = ite->cacheObj_;
             }
             return result;
         }
 
         template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
-        void UnlockedDelete(_Iterator keyBegin,_Iterator keyEnd) noexcept
+        inline void UnlockedDelete(_Iterator keyBegin,_Iterator keyEnd) noexcept
         {
             auto ite = this->Find(keyBegin,keyEnd);
             if(ite != this->buf_.end())
             {
+                assert(!ite->pined_);
+                if(ite->pined_)
+                {
+                    throw std::invalid_argument("cannot delete pined key");
+                }
                 ite->chances_ = 0;
                 ite->cacheObj_.reset();
             }
@@ -104,29 +111,24 @@ namespace sharpen
             return this->buf_.size();
         }
 
-        template <typename... _Args,typename _Check = decltype(new _T{std::declval<_Args>()...})>
-        inline std::shared_ptr<_T> GetOrEmplace(const std::string &key, _Args &&...args)
-        {
-            return this->GetOrEmplace(key.begin(),key.end(),std::forward<_Args>(args)...);
-        }
-
         template <typename _Iterator,typename... _Args,typename _Check = decltype(new _T{std::declval<_Args>()...},static_cast<char>(0) == *std::declval<_Iterator>())>
-        inline std::shared_ptr<_T> GetOrEmplace(_Iterator begin,_Iterator end, _Args &&...args)
+        inline std::shared_ptr<_T> GetOrEmplace(bool pin,_Iterator begin,_Iterator end, _Args &&...args)
         {
             assert(begin != end);
             std::shared_ptr<_T> result{nullptr};
             {
                 std::unique_lock<Lock> lock(this->lock_);
-                result = this->UnlockedGet(begin,end);
+                result = this->UnlockedGet(pin,begin,end);
                 if(!result)
                 {
                     result = std::make_shared<_T>(std::forward<_Args>(args)...);
                     CacheItem item;
+                    item.pined_ = pin;
                     item.key_.assign(begin,end);
                     item.cacheObj_ = result;
                     item.chances_ = 1;
                     std::size_t index = this->next_ % this->buf_.size();
-                    while (this->buf_[index].chances_)
+                    while (this->buf_[index].chances_ || this->buf_[index].pined_)
                     {
                         this->buf_[index].chances_ -= 1;
                         ++this->next_;
@@ -139,37 +141,76 @@ namespace sharpen
             return result;
         }
 
-
-        std::shared_ptr<_T> Get(const std::string &key) const noexcept
+        template <typename... _Args,typename _Check = decltype(new _T{std::declval<_Args>()...})>
+        inline std::shared_ptr<_T> GetOrEmplace(bool pin,const std::string &key, _Args &&...args)
         {
-            return this->Get(key.begin(),key.end());
+            return this->GetOrEmplace(pin,key.begin(),key.end(),std::forward<_Args>(args)...);
+        }
+
+        template <typename... _Args,typename _Check = decltype(new _T{std::declval<_Args>()...})>
+        inline std::shared_ptr<_T> GetOrEmplace(const std::string &key, _Args &&...args)
+        {
+            return this->GetOrEmplace(false,key,std::forward<_Args>(args)...);
+        }
+
+        template <typename _Iterator,typename... _Args,typename _Check = decltype(new _T{std::declval<_Args>()...},static_cast<char>(0) == *std::declval<_Iterator>())>
+        inline std::shared_ptr<_T> GetOrEmplace(_Iterator begin,_Iterator end, _Args &&...args)
+        {
+            return this->GetOrEmplace(false,begin,end,std::forward<_Args>(args)...);
+        }
+
+        inline std::shared_ptr<_T> Get(const std::string &key) const noexcept
+        {
+            return this->Get(false,key);
+        }
+
+        inline std::shared_ptr<_T> Get(bool pin,const std::string &key) const noexcept
+        {
+            return this->Get(false,key.begin(),key.end());
         }
 
         template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
-        std::shared_ptr<_T> Get(_Iterator begin,_Iterator end) const noexcept
+        inline std::shared_ptr<_T> Get(_Iterator begin,_Iterator end) const noexcept
+        {
+            return this->Get(false,begin,end);
+        }
+
+        template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
+        inline std::shared_ptr<_T> Get(bool pin,_Iterator begin,_Iterator end) const noexcept
         {
             assert(begin != end);
             std::unique_lock<Lock> lock(this->lock_);
-            return this->UnlockedGet(begin,end);
+            return this->UnlockedGet(pin,begin,end);
         }
 
         template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
-        void Delete(_Iterator begin,_Iterator end) noexcept
+        inline void Delete(_Iterator begin,_Iterator end) noexcept
         {
             assert(begin != end);
             std::unique_lock<Lock> lock(this->lock_);
             return this->UnlockedDelete(begin,end);
         }
 
-        void Delete(const std::string &key) noexcept
+        inline void Delete(const std::string &key) noexcept
         {
             return this->Delete(key.begin(),key.end());
         }
 
-        void Clear() noexcept
+        inline void Clear() noexcept
         {
             std::unique_lock<Lock> lock(this->lock_);
             this->buf_.clear();
+        }
+
+        template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
+        inline void Unpin(_Iterator begin,_Iterator end) const noexcept
+        {
+            auto ite = this->Find(begin,end);
+            if(ite != this->buf_.end())
+            {
+                ite->chances_ = 1;
+                ite->pined_ = false;
+            }
         }
     };
 }
