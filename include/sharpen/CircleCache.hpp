@@ -8,6 +8,7 @@
 #include <mutex>
 #include <cassert>
 #include <string>
+#include <stdexcept>
 
 #include <cstdint>
 #include <cstddef>
@@ -81,7 +82,7 @@ namespace sharpen
         }
 
         template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
-        inline void UnlockedDelete(_Iterator keyBegin,_Iterator keyEnd) noexcept
+        inline void UnlockedDelete(_Iterator keyBegin,_Iterator keyEnd)
         {
             auto ite = this->Find(keyBegin,keyEnd);
             if(ite != this->buf_.end())
@@ -191,7 +192,7 @@ namespace sharpen
             return this->UnlockedDelete(begin,end);
         }
 
-        inline void Delete(const std::string &key) noexcept
+        inline void Delete(const std::string &key)
         {
             return this->Delete(key.begin(),key.end());
         }
