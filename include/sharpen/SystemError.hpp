@@ -21,40 +21,6 @@ namespace sharpen
     using ErrorCode = std::remove_reference<decltype(errno)>::type;
 #endif
 
-    inline sharpen::ErrorCode GetLastError() noexcept
-    {
-#ifdef SHARPEN_IS_WIN
-        return ::GetLastError();
-#else
-        return errno;
-#endif
-    }
-
-    inline void ThrowSystemError(sharpen::ErrorCode err)
-    {
-        throw std::system_error(err,std::system_category());
-    }
-
-    inline void ThrowLastError()
-    {
-        sharpen::ThrowSystemError(sharpen::GetLastError());
-    }
-    
-    inline std::exception_ptr MakeSystemErrorPtr(sharpen::ErrorCode err)
-    {
-        return std::make_exception_ptr(std::system_error(err,std::system_category()));
-    }
-
-    inline std::exception_ptr MakeLastErrorPtr()
-    {
-       return sharpen::MakeSystemErrorPtr(sharpen::GetLastError());
-    }
-
-    inline sharpen::ErrorCode GetErrorCode(const std::system_error &exception) noexcept
-    {
-        return static_cast<sharpen::ErrorCode>(exception.code().value());
-    }
-
 #ifdef SHARPEN_IS_WIN
     constexpr sharpen::ErrorCode ErrorCancel = ERROR_OPERATION_ABORTED;
     constexpr sharpen::ErrorCode ErrorConnectionAborted = ERROR_CONNECTION_ABORTED;
@@ -108,6 +74,40 @@ namespace sharpen
         return code == sharpen::ErrorIo 
                 || code == sharpen::ErrorNotEnoughMemory
                 || code == sharpen::ErrorNoSpace;
+    }
+
+    inline sharpen::ErrorCode GetLastError() noexcept
+    {
+#ifdef SHARPEN_IS_WIN
+        return ::GetLastError();
+#else
+        return errno;
+#endif
+    }
+
+    inline void ThrowSystemError(sharpen::ErrorCode err)
+    {
+        throw std::system_error(err,std::system_category());
+    }
+
+    inline void ThrowLastError()
+    {
+        sharpen::ThrowSystemError(sharpen::GetLastError());
+    }
+    
+    inline std::exception_ptr MakeSystemErrorPtr(sharpen::ErrorCode err)
+    {
+        return std::make_exception_ptr(std::system_error(err,std::system_category()));
+    }
+
+    inline std::exception_ptr MakeLastErrorPtr()
+    {
+       return sharpen::MakeSystemErrorPtr(sharpen::GetLastError());
+    }
+
+    inline sharpen::ErrorCode GetErrorCode(const std::system_error &exception) noexcept
+    {
+        return static_cast<sharpen::ErrorCode>(exception.code().value());
     }
 }
 
