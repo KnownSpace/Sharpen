@@ -5,17 +5,17 @@
 #include <chrono>
 #include <cassert>
 #include <random>
-
 #include <cstdint>
 #include <cstddef>
+
 #include "ITimer.hpp"
 
 namespace sharpen
 {
-    class RaftGroupOption
+    class RaftLoopOption
     {
     private:
-        using Self = sharpen::RaftGroupOption;
+        using Self = sharpen::RaftLoopOption;
         using TimerMaker = sharpen::TimerPtr(*)(sharpen::EventEngine&);
     
         static constexpr std::uint32_t defaultAppendEntriesCycle_{1*1000};
@@ -30,11 +30,11 @@ namespace sharpen
         std::uint32_t randomSeed_;
         TimerMaker timerMaker_;
     public:
-        RaftGroupOption()
-            :RaftGroupOption(std::random_device{}())
+        RaftLoopOption()
+            :RaftLoopOption(std::random_device{}())
         {}
 
-        explicit RaftGroupOption(std::uint32_t seed) noexcept
+        explicit RaftLoopOption(std::uint32_t seed) noexcept
             :appendEntriesCycle_(static_cast<std::int64_t>(Self::defaultAppendEntriesCycle_))
             ,minElectionCycle_(static_cast<std::int64_t>(Self::defaultMinElectionCycle_))
             ,maxElectionCycle_(static_cast<std::int64_t>(Self::defaultMaxElectionCycle_))
@@ -42,9 +42,9 @@ namespace sharpen
             ,timerMaker_(nullptr)
         {}
     
-        RaftGroupOption(const Self &other) = default;
+        RaftLoopOption(const Self &other) = default;
     
-        RaftGroupOption(Self &&other) noexcept = default;
+        RaftLoopOption(Self &&other) noexcept = default;
     
         inline Self &operator=(const Self &other)
         {
@@ -58,7 +58,7 @@ namespace sharpen
             return *this;
         }
     
-        ~RaftGroupOption() noexcept = default;
+        ~RaftLoopOption() noexcept = default;
     
         inline const Self &Const() const noexcept
         {

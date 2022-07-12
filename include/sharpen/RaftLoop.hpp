@@ -7,18 +7,18 @@
 #include "RaftWrapper.hpp"
 #include "TimerLoop.hpp"
 #include "AsyncMutex.hpp"
-#include "RaftGroupOption.hpp"
+#include "RaftLoopOption.hpp"
 
 namespace sharpen
 {
     template<typename _Id,typename _Member,typename  _Log,typename _Application,typename _PersistentStorage,typename _Check = void>
-    class InternalRaftGroup;
+    class InternalRaftLoop;
 
     template<typename _Id,typename _Member,typename  _Log,typename _Application,typename _PersistentStorage>
-    class InternalRaftGroup<_Id,_Member,_Log,_Application,_PersistentStorage,sharpen::EnableIf<sharpen::RaftWrapperRequires<_Id,_Member,_Log,_Application,_PersistentStorage>::Value>>:public sharpen::Noncopyable
+    class InternalRaftLoop<_Id,_Member,_Log,_Application,_PersistentStorage,sharpen::EnableIf<sharpen::RaftWrapperRequires<_Id,_Member,_Log,_Application,_PersistentStorage>::Value>>:public sharpen::Noncopyable
     {
     private:
-        using Self = sharpen::InternalRaftGroup<_Id,_Member,_Log,_Application,_PersistentStorage,sharpen::EnableIf<sharpen::RaftWrapperRequires<_Id,_Member,_Log,_Application,_PersistentStorage>::Value>>;
+        using Self = sharpen::InternalRaftLoop<_Id,_Member,_Log,_Application,_PersistentStorage,sharpen::EnableIf<sharpen::RaftWrapperRequires<_Id,_Member,_Log,_Application,_PersistentStorage>::Value>>;
         using RaftType = sharpen::RaftWrapper<_Id,_Member,_Log,_Application,_PersistentStorage>;
         using RaftLock = sharpen::AsyncMutex;
         using VoteLock = sharpen::SpinLock;
@@ -48,7 +48,7 @@ namespace sharpen
         sharpen::TimerLoop followerLoop_;
     public:
     
-        InternalRaftGroup(sharpen::EventEngine &engine,_Id id,_PersistentStorage storage,std::shared_ptr<_Application> app,const sharpen::RaftGroupOption &option)
+        InternalRaftLoop(sharpen::EventEngine &engine,_Id id,_PersistentStorage storage,std::shared_ptr<_Application> app,const sharpen::RaftLoopOption &option)
             :engine_(&engine)
             ,random_(option.GetRandomSeed())
             ,distribution_(static_cast<std::uint32_t>(option.GetMinElectionCycle().count()),static_cast<std::uint32_t>(option.GetMaxElectionCycle().count()))
@@ -66,7 +66,7 @@ namespace sharpen
             }
         }
     
-        InternalRaftGroup(Self &&other) noexcept
+        InternalRaftLoop(Self &&other) noexcept
             :engine_(other.engine_)
             ,random_(std::move(other.random_))
             ,distribution_(std::move(other.distribution_))
@@ -95,7 +95,7 @@ namespace sharpen
             return *this;
         }
     
-        virtual ~InternalRaftGroup() noexcept
+        virtual ~InternalRaftLoop() noexcept
         {
             this->Stop();
         }
@@ -148,7 +148,7 @@ namespace sharpen
     };
 
     template<typename _Id,typename _Member,typename  _Log,typename _Application,typename _PersistentStorage>
-    using RaftGroup = sharpen::InternalRaftGroup<_Id,_Member,_Log,_Application,_PersistentStorage>;
+    using RaftLoop = sharpen::InternalRaftLoop<_Id,_Member,_Log,_Application,_PersistentStorage>;
 }
 
 #endif
