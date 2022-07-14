@@ -129,6 +129,65 @@ namespace sharpen
     {
         return sharpen::InternalEnd(container,0);
     }
+
+    template<typename _Iterator>
+    class IteratorRanage
+    {
+    private:
+        using Self = sharpen::IteratorRanage<_Iterator>;
+
+        _Iterator begin_;
+        _Iterator end_;
+    public:
+
+        IteratorRanage(_Iterator begin,_Iterator end)
+            :begin_(begin)
+            ,end_(end)
+        {}
+
+        IteratorRanage(const Self &other) = default;
+
+        IteratorRanage(Self &&other) noexcept = default;
+
+        ~IteratorRanage() noexcept = default;
+
+        inline Self &operator=(const Self &other)
+        {
+            Self tmp{other};
+            std::swap(*this,tmp);
+            return *this;
+        }
+
+        inline Self &operator=(Self &&other) noexcept
+        {
+            if(this != std::addressof(other))
+            {
+                this->begin_ = std::move(other.begin_);
+                this->end_ = std::move(other.end_);
+            }
+            return *this;
+        }
+
+        inline _Iterator GetBegin() const noexcept
+        {
+            return this->begin_;
+        }
+
+        inline _Iterator GetEnd() const noexcept
+        {
+            return this->end_;
+        }
+
+        inline std::size_t GetSize() const noexcept
+        {
+            return sharpen::GetRangeSize(this->begin_,this->end_);
+        }
+
+        inline bool Empty() const noexcept
+        {
+            return !this->GetSize();
+        }
+    };
 }
 
 #endif
