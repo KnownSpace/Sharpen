@@ -9,11 +9,12 @@
 #include <cassert>
 #include <string>
 #include <stdexcept>
-
 #include <cstdint>
 #include <cstddef>
+
 #include "SpinLock.hpp"
 #include "TypeTraits.hpp"
+#include "BufferOps.hpp"
 
 namespace sharpen
 {
