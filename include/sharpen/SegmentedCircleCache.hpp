@@ -16,7 +16,7 @@ namespace sharpen
         std::size_t size_;
         sharpen::CircleCache<_T> *caches_;
 
-        constexpr static std::size_t cacheSize_{4};
+        constexpr static std::size_t cacheSize_{8};
 
         inline std::size_t HashKey(const std::string &key) const noexcept
         {
