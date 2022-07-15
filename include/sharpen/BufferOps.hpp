@@ -73,24 +73,34 @@ namespace sharpen
     //FNV-1a hash 64bits
     std::uint64_t BufferHash64(const char *data, std::size_t size) noexcept;
 
-    template <typename _U, typename _Check = sharpen::EnableIf<std::is_same<std::size_t, std::uint64_t>::value>>
-    inline _U InternalBetterBufferHash(const char *data,std::size_t size,int) noexcept
+    template <typename _U,typename _Iterator,typename _Check = sharpen::EnableIf<std::is_same<std::size_t, std::uint64_t>::value>,typename _CheckIterator = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
+    inline _U InternalBetterBufferHash(_Iterator begin,_Iterator end,int) noexcept
     {
-        return BufferHash64(data,size);
+        return BufferHash64(begin,end);
     }
 
-    template <typename _U>
-    inline _U InternalBetterBufferHash(const char *data,std::size_t size,...) noexcept
+    template<typename _U,typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
+    inline _U InternalBetterBufferHash(_Iterator begin,_Iterator end,...) noexcept
     {
-        return BufferHash32(data,size);
+        return BufferHash32(begin,end);
     }
 
     inline std::size_t BufferHash(const char *data,std::size_t size) noexcept
     {
 #ifndef SHARPEN_FORCE_HASH32
-        return sharpen::InternalBetterBufferHash<std::size_t>(data,size,0);
+        return sharpen::InternalBetterBufferHash<std::size_t>(data,data + size,0);
 #else
         return sharpen::BufferHash32(data,size);
+#endif
+    }
+
+    template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
+    inline std::size_t BufferHash(_Iterator begin,_Iterator end)
+    {
+#ifndef SHARPEN_FORCE_HASH32
+        return sharpen::InternalBetterBufferHash<std::size_t>(begin,end,0);
+#else
+        return sharpen::BufferHash32(begin,end);
 #endif
     }
 

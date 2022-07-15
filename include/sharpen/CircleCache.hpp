@@ -17,7 +17,6 @@
 
 namespace sharpen
 {
-    //LRU Cache
     //second chances 
     template <typename _T>
     class CircleCache : public sharpen::Noncopyable, public sharpen::Nonmovable
@@ -29,6 +28,7 @@ namespace sharpen
             std::shared_ptr<_T> cacheObj_;
             std::size_t chances_;
             bool pined_;
+            std::size_t hash_;
         };
 
         using Self = sharpen::CircleCache<_T>;
@@ -44,9 +44,10 @@ namespace sharpen
         template<typename _Iterator,typename _Check = decltype(static_cast<char>(0) == *std::declval<_Iterator>())>
         inline Iterator Find(_Iterator keyBegin,_Iterator keyEnd) const noexcept
         {
+            std::size_t hash{sharpen::BufferHash(keyBegin,keyEnd)};
             for (auto begin = this->buf_.begin(), end = this->buf_.end(); begin != end; ++begin)
             {
-                if (begin->cacheObj_)
+                if (begin->cacheObj_ && begin->hash_ == hash)
                 {
                     bool match{true};
                     std::size_t index{0};
@@ -125,6 +126,7 @@ namespace sharpen
                     result = std::make_shared<_T>(std::forward<_Args>(args)...);
                     CacheItem item;
                     item.pined_ = pin;
+                    item.hash_ = sharpen::BufferHash(begin,end);
                     item.key_.assign(begin,end);
                     item.cacheObj_ = result;
                     item.chances_ = 1;
