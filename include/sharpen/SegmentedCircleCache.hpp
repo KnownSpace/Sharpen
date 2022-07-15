@@ -16,7 +16,7 @@ namespace sharpen
         std::size_t size_;
         sharpen::CircleCache<_T> *caches_;
 
-        constexpr static std::size_t cacheSize_{3};
+        constexpr static std::size_t cacheSize_{4};
 
         inline std::size_t HashKey(const std::string &key) const noexcept
         {
@@ -35,10 +35,10 @@ namespace sharpen
             :size_(0)
             ,caches_(nullptr)
         {
-            cacheSize >>= cacheSize_;
-            if(!cacheSize)
+            cacheSize /= cacheSize_;
+            if(cacheSize % cacheSize_)
             {
-                cacheSize = 1;
+                cacheSize += 1;
             }
             this->caches_ = reinterpret_cast<sharpen::CircleCache<_T>*>(std::calloc(cacheSize,sizeof(*this->caches_)));
             if(!this->caches_)
@@ -49,7 +49,7 @@ namespace sharpen
             {
                 try
                 {
-                    new (this->caches_ + this->size_) sharpen::CircleCache<_T>{1 << cacheSize_};
+                    new (this->caches_ + this->size_) sharpen::CircleCache<_T>{cacheSize_};
                 }
                 catch(const std::exception&)
                 {
@@ -64,6 +64,7 @@ namespace sharpen
             ,caches_(other.caches_)
         {
             other.caches_ = nullptr;
+            other.size_ = 0;
         }
     
         ~SegmentedCircleCache() noexcept
@@ -78,6 +79,8 @@ namespace sharpen
                 this->Release();
                 this->caches_ = other.caches_;
                 this->size_ = other.size_;
+                other.caches_ = nullptr;
+                other.size_ = 0;
             }
             return *this;
         }
@@ -165,6 +168,7 @@ namespace sharpen
                     this->caches_[i].~CircleCache<_T>();   
                 }
                 this->size_ = 0;
+                std::free(this->caches_);
                 this->caches_ = nullptr;
             }
         }
