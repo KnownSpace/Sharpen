@@ -45,7 +45,7 @@ namespace sharpen
             {
                 throw std::bad_alloc();
             }
-            for (;this->size_ != cacheSize; this->size_++)
+            for (;this->size_ != cacheSize; ++this->size_)
             {
                 try
                 {
@@ -87,7 +87,7 @@ namespace sharpen
 
         inline std::size_t GetSize() const noexcept
         {
-            return this->size_ << cacheSize_;
+            return this->size_*cacheSize_;
         }
 
         inline std::shared_ptr<_T> Get(const std::string &key) const noexcept
