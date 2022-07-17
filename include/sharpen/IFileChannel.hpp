@@ -50,6 +50,10 @@ namespace sharpen
         virtual void Truncate(std::uint64_t size) = 0;
 
         virtual void Flush() = 0;
+
+        virtual void Allocate(std::uint64_t offset,std::size_t size) = 0;
+
+        virtual void Deallocate(std::uint64_t offset,std::size_t size) = 0;
     };
 
     using FileChannelPtr = std::shared_ptr<sharpen::IFileChannel>;

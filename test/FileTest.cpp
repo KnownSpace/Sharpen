@@ -95,6 +95,20 @@ void Test()
                     "resolved is %s\n",path,resolved);
         assert(!std::strcmp(resolved,"abc/a.txt/.a"));
     }
+    {
+        const char *sparesFileName = "./sparesTestFile";
+        channel = sharpen::MakeFileChannel(sparesFileName,sharpen::FileAccessModel::All,sharpen::FileOpenModel::CreateNew);
+        channel->Register(sharpen::EventEngine::GetEngine());
+        channel->Allocate(0,1*1024*1024);
+        std::uint64_t offset{0};
+        for(std::size_t i = 0;i != 10;++i)
+        {
+            offset += channel->WriteAsync(str,sizeof(str),offset);
+        }
+        channel->Deallocate(0,offset - 5*sizeof(str));
+        channel->Close();
+        sharpen::RemoveFile(sparesFileName);
+    }
     std::puts("pass");
     std::printf("file test pass\n");
 }

@@ -7,9 +7,13 @@
 
 #include <Windows.h>
 #include <io.h>
+#include <winioctl.h>
+
+sharpen::Optional<bool> sharpen::WinFileChannel::supportSparseFile_{sharpen::EmptyOpt};
 
 sharpen::WinFileChannel::WinFileChannel(sharpen::FileHandle handle)
     :Mybase()
+    ,sparesFile_(false)
 {
     assert(handle != INVALID_HANDLE_VALUE);
     this->handle_ = handle;
@@ -200,6 +204,96 @@ void sharpen::WinFileChannel::Flush()
     {
         sharpen::ThrowLastError();
     }
+}
+
+bool sharpen::WinFileChannel::SupportSparseFile(const char *rootName) noexcept
+{
+    DWORD flag{0};
+    if(::GetVolumeInformationA(rootName,nullptr,0,nullptr,nullptr,&flag,nullptr,0) == FALSE)
+    {
+        return false;
+    }
+    return flag|FILE_SUPPORTS_SPARSE_FILES;
+}
+
+void sharpen::WinFileChannel::EnableSparesFile()
+{
+    if(!Self::supportSparseFile_.Exist())
+    {
+        //FIXME:use this file's root
+        Self::supportSparseFile_.Construct(Self::SupportSparseFile(nullptr));
+    }
+    if(!Self::supportSparseFile_.Get())
+    {
+        sharpen::ThrowSystemError(sharpen::ErrorOperationNotSupport);
+    }
+    sharpen::IocpOverlappedStruct *olStruct = new (std::nothrow) sharpen::IocpOverlappedStruct{};
+    if(!olStruct)
+    {
+        throw std::bad_alloc{};
+    }
+    //init iocp olStruct
+    this->InitOverlappedStruct(*olStruct,0);
+    olStruct->event_.SetData(olStruct);
+    //record future
+    sharpen::AwaitableFuture<std::size_t> future;
+    olStruct->data_ = &future;
+    if(::DeviceIoControl(this->handle_,FSCTL_SET_SPARSE,nullptr,0,nullptr,0,nullptr,&olStruct->ol_) == FALSE)
+    {
+        sharpen::ErrorCode err = sharpen::GetLastError();
+        if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
+        {
+            delete olStruct;
+            sharpen::ThrowLastError();
+        }
+    }
+    //blocking
+    future.Await();
+}
+
+void sharpen::WinFileChannel::Allocate(std::uint64_t offset,std::size_t size)
+{
+    (void)offset;
+    FILE_ALLOCATION_INFO alloc;
+    alloc.AllocationSize.QuadPart = this->GetFileSize() + size;
+    if(::SetFileInformationByHandle(this->handle_,FILE_INFO_BY_HANDLE_CLASS::FileAllocationInfo,&alloc,sizeof(alloc)) == FALSE)
+    {
+        sharpen::ThrowLastError();
+    }
+}
+
+void sharpen::WinFileChannel::Deallocate(std::uint64_t offset,std::size_t size)
+{
+    if(!this->sparesFile_)
+    {
+        this->EnableSparesFile();
+        this->sparesFile_ = true;
+    }
+    FILE_ZERO_DATA_INFORMATION zero;
+    zero.FileOffset.QuadPart = offset;
+    zero.BeyondFinalZero.QuadPart = offset + size;
+    sharpen::IocpOverlappedStruct *olStruct = new (std::nothrow) sharpen::IocpOverlappedStruct{};
+    if(!olStruct)
+    {
+        throw std::bad_alloc{};
+    }
+    //init iocp olStruct
+    this->InitOverlappedStruct(*olStruct,0);
+    olStruct->event_.SetData(olStruct);
+    //record future
+    sharpen::AwaitableFuture<std::size_t> future;
+    olStruct->data_ = &future;
+    if(::DeviceIoControl(this->handle_,FSCTL_SET_ZERO_DATA,&zero,sizeof(zero),nullptr,0,nullptr,&olStruct->ol_) == FALSE)
+    {
+        sharpen::ErrorCode err = sharpen::GetLastError();
+        if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
+        {
+            delete olStruct;
+            sharpen::ThrowLastError();
+        }
+    }
+    //blocking
+    future.Await();
 }
 
 #endif

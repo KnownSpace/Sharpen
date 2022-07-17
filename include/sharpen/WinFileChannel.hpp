@@ -13,6 +13,7 @@
 #include "IFileChannel.hpp"
 #include "AwaitableFuture.hpp"
 #include "IocpSelector.hpp"
+#include "Optional.hpp"
 
 namespace sharpen
 {
@@ -26,6 +27,10 @@ namespace sharpen
         
         static void InitOverlapped(OVERLAPPED &ol,std::uint64_t offset);
 
+        static sharpen::Optional<bool> supportSparseFile_;
+
+        bool sparesFile_;
+
         void InitOverlappedStruct(sharpen::IocpOverlappedStruct &event,std::uint64_t offset);
 
         void RequestWrite(const char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> *future);
@@ -37,6 +42,8 @@ namespace sharpen
         explicit WinFileChannel(sharpen::FileHandle handle);
 
         ~WinFileChannel() noexcept = default;
+
+        static bool SupportSparseFile(const char *rootName) noexcept;
 
         virtual void WriteAsync(const char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> &future) override;
         
@@ -57,6 +64,12 @@ namespace sharpen
         virtual void Truncate(std::uint64_t size) override;
         
         virtual void Flush() override;
+
+        void EnableSparesFile();
+
+        virtual void Allocate(std::uint64_t offset,std::size_t size) override;
+
+        virtual void Deallocate(std::uint64_t offset,std::size_t size) override;
     };
 }
 

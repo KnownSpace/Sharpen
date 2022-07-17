@@ -246,4 +246,20 @@ void sharpen::PosixFileChannel::Flush()
     }
 }
 
+void sharpen::PosixFileChannel::Allocate(std::uint64_t offset,std::size_t size)
+{
+    if(::fallocate64(this->handle_,FALLOC_FL_KEEP_SIZE,offset,size) == -1)
+    {
+        sharpen::ThrowLastError();
+    }
+}
+
+void sharpen::PosixFileChannel::Deallocate(std::uint64_t offset,std::size_t size)
+{
+    if(::fallocate64(this->handle_,FALLOC_FL_PUNCH_HOLE|FALLOC_FL_KEEP_SIZE,offset,size) == -1)
+    {
+        sharpen::ThrowLastError();
+    }
+}
+
 #endif
