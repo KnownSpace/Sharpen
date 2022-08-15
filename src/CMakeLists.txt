@@ -61,12 +61,8 @@ set(fcontext_src "${PROJECT_SOURCE_DIR}/lib/boost.context/asm/make_${CPU_ARCH}_$
                 "${PROJECT_SOURCE_DIR}/lib/boost.context/asm/jump_${CPU_ARCH}_${ASM_EXT}"
                 "${PROJECT_SOURCE_DIR}/lib/boost.context/asm/ontop_${CPU_ARCH}_${ASM_EXT}")
 
-#build llhttp
-aux_source_directory("${PROJECT_SOURCE_DIR}/lib/llhttp/src" llhttp_src)
-
 #build src
 aux_source_directory("${PROJECT_SOURCE_DIR}/src" src)
-add_library(llhttp ${llhttp_src})
 add_library(sharpen ${src} ${fcontext_src})
 add_library(sharpen::sharpen ALIAS sharpen)
 
@@ -83,5 +79,3 @@ target_link_libraries(sharpen PUBLIC Threads::Threads)
 if(WIN32)
     target_link_libraries(sharpen PRIVATE Ws2_32 Mswsock)
 endif()
-
-target_link_libraries(sharpen PRIVATE llhttp)
