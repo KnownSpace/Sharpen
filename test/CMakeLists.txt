@@ -25,26 +25,16 @@ add_executable(dummytypetest "${PROJECT_SOURCE_DIR}/test/DummyTypeTest.cpp")
 add_executable(quorumtest "${PROJECT_SOURCE_DIR}/test/QuorumTest.cpp")
 #checksum test
 add_executable(checksumtest "${PROJECT_SOURCE_DIR}/test/ChecksumTest.cpp")
-#bloom filter test
-add_executable(bloomfiltertest "${PROJECT_SOURCE_DIR}/test/BloomFilterTest.cpp")
 #base64 test
 add_executable(base64test "${PROJECT_SOURCE_DIR}/test/Base64Test.cpp")
-#memory table test
-add_executable(memorytabletest "${PROJECT_SOURCE_DIR}/test/MemoryTableTest.cpp")
 #varint test
 add_executable(varinttest "${PROJECT_SOURCE_DIR}/test/VarintTest.cpp")
 #buffer compare test
 add_executable(buffercomparetest "${PROJECT_SOURCE_DIR}/test/BufferCompareTest.cpp")
 #int cast test
 add_executable(intcasttest "${PROJECT_SOURCE_DIR}/test/IntCastTest.cpp")
-#sst test
-add_executable(ssttest "${PROJECT_SOURCE_DIR}/test/SstTest.cpp")
 #dns test
 add_executable(dnstest "${PROJECT_SOURCE_DIR}/test/DnsTest.cpp")
-#cache test
-add_executable(cachetest "${PROJECT_SOURCE_DIR}/test/CacheTest.cpp")
-#persistence test
-add_executable(persistencetest "${PROJECT_SOURCE_DIR}/test/PersistenceTest.cpp")
 #io_uring test
 if(UNIX)
     add_executable(iouringtest "${PROJECT_SOURCE_DIR}/test/IoUringTest.cpp")
@@ -67,16 +57,11 @@ target_link_libraries(optiontest sharpen)
 target_link_libraries(dummytypetest sharpen)
 target_link_libraries(quorumtest sharpen)
 target_link_libraries(checksumtest sharpen)
-target_link_libraries(bloomfiltertest sharpen)
 target_link_libraries(base64test sharpen)
-target_link_libraries(memorytabletest sharpen)
 target_link_libraries(varinttest sharpen)
 target_link_libraries(buffercomparetest sharpen)
 target_link_libraries(intcasttest sharpen)
-target_link_libraries(ssttest sharpen)
 target_link_libraries(dnstest sharpen)
-target_link_libraries(cachetest sharpen)
-target_link_libraries(persistencetest sharpen)
 if(UNIX)
     target_link_libraries(iouringtest sharpen)
 endif()
@@ -102,16 +87,11 @@ add_test(NAME option_test COMMAND "./optiontest${extname}")
 add_test(NAME dummy_type_test COMMAND "./dummytypetest${extname}")
 add_test(NAME quorum_test COMMAND "./quorumtest${extname}")
 add_test(NAME checksum_test COMMAND "./checksumtest${extname}")
-add_test(NAME bloomfilter_test COMMAND "./bloomfiltertest${extname}")
 add_test(NAME base64_test COMMAND "./base64test${extname}")
-add_test(NAME memorytable_test COMMAND "./memorytabletest${extname}")
 add_test(NAME varint_test COMMAND "./varinttest${extname}")
 add_test(NAME buffercompare_test COMMAND "./buffercomparetest${extname}")
 add_test(NAME intcast_test COMMAND "./intcasttest${extname}")
-add_test(NAME sst_test COMMAND "./ssttest${extname}")
 add_test(NAME dns_test COMMAND "./dnstest${extname}")
-add_test(NAME cache_test COMMAND "./cachetest${extname}")
-add_test(NAME persistence_test COMMAND "./persistencetest${extname}")
 if(UNIX)
     add_test(NAME iouring_test COMMAND "./iouringtest${extname}")
 endif()
