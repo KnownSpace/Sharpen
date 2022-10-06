@@ -19,8 +19,7 @@ void sharpen::SuspendProcess(std::uint32_t processId)
     }
     THREADENTRY32 te;
     te.dwSize = static_cast<DWORD>(sizeof(te));
-    BOOL result = Thread32First(snapshot,&te);
-    if(result)
+    if(::Thread32First(snapshot,&te) == TRUE)
     {
         do
         {
@@ -55,8 +54,7 @@ void sharpen::ResumeProcess(std::uint32_t processId)
     }
     THREADENTRY32 te;
     te.dwSize = static_cast<DWORD>(sizeof(te));
-    BOOL result = Thread32First(snapshot,&te);
-    if(result)
+    if(::Thread32First(snapshot,&te) == TRUE)
     {
         do
         {
