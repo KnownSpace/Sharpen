@@ -193,7 +193,7 @@ char sharpen::Base64DecodeMapping(unsigned char c) noexcept
     }
     else if(c >= 'a' && c <= 'z')
     {
-        return c - 'a' + 24;
+        return c - 'a' + 26;
     }
     else if(c == '+')
     {
@@ -202,6 +202,10 @@ char sharpen::Base64DecodeMapping(unsigned char c) noexcept
     else if(c == '=')
     {
         return 0;
+    }
+    else if(c >= '0' && c <= '9')
+    {
+        return c - '0' + 52;
     }
     return 63;
 }

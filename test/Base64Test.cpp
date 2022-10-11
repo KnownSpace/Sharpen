@@ -3,7 +3,7 @@
 #include <cassert>
 #include <sharpen/BufferOps.hpp>
 
-int main(int argc, char const *argv[])
+int main(int argc,char const *argv[])
 {
     std::puts("base64 test begin");
     {
