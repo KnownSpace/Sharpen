@@ -153,7 +153,7 @@ bool sharpen::Base64Encode(char *dst,std::size_t dstSize,const char *src,std::si
     {
         return true;
     }
-    static const char *base64Hex = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-";
+    static const char *base64Hex = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     unsigned char srcBuf[3] = {};
     const char *srcEnd = src + srcSize;
     std::size_t i{0};
