@@ -173,7 +173,7 @@ bool sharpen::Base64Encode(char *dst,std::size_t dstSize,const char *src,std::si
     }
     if(i != 0)
     {
-        for (std::size_t j = i; j < 3; j++)
+        for (std::size_t j = i; j != 3; ++j)
         {
             srcBuf[j] = 0;
         }
