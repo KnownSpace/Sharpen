@@ -12,19 +12,19 @@
 namespace sharpen
 {
     template<typename _T,typename _RawType = typename std::remove_const<typename std::remove_reference<_T>::type>::type,typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value || std::is_floating_point<_RawType>::value>::type,typename _IsUnsig = typename std::enable_if<std::is_unsigned<_RawType>::value>::type>
-    auto InternalGetAbs(_T &&v,int) -> decltype(std::forward<_T>(v))
+    inline auto InternalGetAbs(_T &&v,int) -> decltype(std::forward<_T>(v))
     {
         return std::forward<_T>(v);
     }
 
     template<typename _T,typename _RawType = typename std::remove_const<typename std::remove_reference<_T>::type>::type,typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value || std::is_floating_point<_RawType>::value>::type>
-    auto InternalGetAbs(_T &&v,...) ->decltype(v < 0 ? -v:v)
+    inline auto InternalGetAbs(_T &&v,...) ->decltype(v < 0 ? -v:v)
     {
         return v < 0 ? -v:v;
     }
 
     template<typename _T>
-    auto GetAbs(_T &&v) ->decltype(sharpen::InternalGetAbs(v,0))
+    inline auto GetAbs(_T &&v) ->decltype(sharpen::InternalGetAbs(v,0))
     {
         return sharpen::InternalGetAbs(v,0);
     }
@@ -50,7 +50,7 @@ namespace sharpen
     //unsafe
     //bufSize must be checked by user
     template<typename _T,typename _RawType = typename std::remove_const<typename std::remove_reference<_T>::type>::type,typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value>::type>
-    std::size_t Itoa(_T &&val,unsigned char radix,char *buf)
+    inline std::size_t Itoa(_T &&val,unsigned char radix,char *buf)
     {
         if (!buf)
         {
@@ -93,7 +93,7 @@ namespace sharpen
     }
 
     template<typename _T,typename _RawType = typename std::remove_const<typename std::remove_reference<_T>::type>::type,typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value && !std::is_unsigned<_RawType>::value>::type>
-    _T InternalAtoi(const char *str,std::size_t size,std::size_t radix,int)
+    inline _T InternalAtoi(const char *str,std::size_t size,std::size_t radix,int)
     {
         _T data{0};
         bool n{false};
@@ -131,7 +131,7 @@ namespace sharpen
     }
 
     template<typename _T,typename _RawType = typename std::remove_const<typename std::remove_reference<_T>::type>::type,typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value>::type>
-    _T InternalAtoi(const char *str,std::size_t size,std::size_t radix,...)
+    inline _T InternalAtoi(const char *str,std::size_t size,std::size_t radix,...)
     {
         _T data{0};
         const char *end = str + size;
@@ -164,7 +164,7 @@ namespace sharpen
     }
 
     template<typename _T,typename _RawType = typename std::remove_const<typename std::remove_reference<_T>::type>::type,typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value>::type>
-    _T Atoi(const char *str,std::size_t size,std::size_t radix = 10)
+    inline _T Atoi(const char *str,std::size_t size,std::size_t radix = 10)
     {
         return sharpen::InternalAtoi<_T>(str,size,radix,0);
     }
