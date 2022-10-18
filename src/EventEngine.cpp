@@ -1,6 +1,7 @@
 #include <sharpen/EventEngine.hpp>
 #include <sharpen/ISelector.hpp>
 #include <sharpen/SystemMacro.hpp>
+#include <sharpen/SelectorOps.hpp>
 #include <cassert>
 
 sharpen::EventEngine::SelfPtr sharpen::EventEngine::engine_;

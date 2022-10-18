@@ -43,8 +43,6 @@ namespace sharpen
     };
 
     using SelectorPtr = std::shared_ptr<sharpen::ISelector>;
-
-    sharpen::SelectorPtr MakeDefaultSelector();
 }
 
 #endif

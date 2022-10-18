@@ -1,8 +1,9 @@
-#include <sharpen/IocpSelector.hpp>
-#include <sharpen/EpollSelector.hpp>
-
 #include <stdexcept>
 #include <memory>
+
+#include <sharpen/SelectorOps.hpp>
+#include <sharpen/IocpSelector.hpp>
+#include <sharpen/EpollSelector.hpp>
 
 sharpen::SelectorPtr sharpen::MakeDefaultSelector()
 {
