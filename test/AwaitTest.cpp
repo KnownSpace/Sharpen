@@ -4,6 +4,7 @@
 #include <sharpen/AsyncOps.hpp>
 #include <sharpen/AwaitOps.hpp>
 #include <sharpen/WorkerGroup.hpp>
+#include <sharpen/TimerOps.hpp>
 
 void AwaitTest()
 {

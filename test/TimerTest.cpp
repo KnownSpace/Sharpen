@@ -1,8 +1,8 @@
 #include <cstdio>
-#include <sharpen/TimeWheel.hpp>
+#include <cassert>
 #include <sharpen/StopWatcher.hpp>
 #include <sharpen/TimerLoop.hpp>
-#include <cassert>
+#include <sharpen/TimerOps.hpp>
 
 sharpen::TimerLoop::LoopStatus LoopFunc()
 {
@@ -17,28 +17,13 @@ sharpen::TimerLoop::LoopStatus StopLoopFunc()
     return sharpen::TimerLoop::LoopStatus::Terminate;
 }
 
-void TimeWheelTest()
+void TimerTest()
 {
     sharpen::EventEngine &engine = sharpen::EventEngine::SetupSingleThreadEngine();
-    engine.Startup([]()
+    engine.Startup([&engine]()
     {
         std::printf("timer test begin\n");
         sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::EventEngine::GetEngine());
-        sharpen::TimeWheel wheel(std::chrono::seconds(1),10,timer);
-        sharpen::TimeWheelPtr upstream = std::make_shared<sharpen::TimeWheel>(std::chrono::seconds(10),6);
-        bool token = false;
-        upstream->Put(std::chrono::seconds(10),[&wheel,&token]() mutable
-        {
-            assert(token);
-            wheel.Stop();
-        });
-        wheel.SetUpstream(upstream);
-        wheel.Put(std::chrono::seconds(9),[&wheel,&token]() mutable
-        {
-            std::printf("set token true\n");
-            token = true;
-        });
-        wheel.RunAsync();
         std::printf("test cancel\n");
         sharpen::AwaitableFuture<bool> future;
         sharpen::StopWatcher sw;
@@ -69,12 +54,27 @@ void TimeWheelTest()
             timer->Await(std::chrono::seconds(1));
             loop.Terminate();
         }
+        {
+            sharpen::AwaitableFuture<void> future;
+            sharpen::AwaitForResult result{sharpen::AwaitFor(future,timer,std::chrono::seconds(1))};
+            assert(result == sharpen::AwaitForResult::Timeout);
+        }
+        {
+            sharpen::AwaitableFuture<void> future;
+            engine.Launch([&future]()
+            {
+                sharpen::Delay(std::chrono::milliseconds(500));
+                future.Complete();
+            });
+            sharpen::AwaitForResult result{sharpen::AwaitFor(future,timer,std::chrono::seconds(1))};
+            assert(result == sharpen::AwaitForResult::CompletedOrError);
+        }
         std::printf("timer test pass\n");
     });
 }
 
 int main(int argc, char const *argv[])
 {
-    TimeWheelTest();
+    TimerTest();
     return 0;
 }
