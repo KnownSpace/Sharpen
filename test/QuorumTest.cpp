@@ -5,6 +5,7 @@
 #include <sharpen/EventEngine.hpp>
 #include <sharpen/AwaitableFuture.hpp>
 #include <sharpen/AsyncOps.hpp>
+#include <sharpen/TimerOps.hpp>
 
 struct StatelessProposer
 {
