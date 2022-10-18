@@ -11,12 +11,12 @@
 #include "Nonmovable.hpp"
 #include "SpinLock.hpp"
 #include "ISelector.hpp"
-#include "IChannel.hpp"
 #include "IoEvent.hpp"
 #include "Fiber.hpp"
 
 namespace sharpen
 {
+    class IChannel;
     
     class EventLoop:public sharpen::Noncopyable,public sharpen::Nonmovable
     {

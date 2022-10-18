@@ -3,9 +3,9 @@
 #include <cassert>
 #include <thread>
 
-thread_local sharpen::EventLoop *sharpen::EventLoop::localLoop_(nullptr);
+thread_local sharpen::EventLoop *sharpen::EventLoop::localLoop_{nullptr};
 
-thread_local sharpen::FiberPtr sharpen::EventLoop::localFiber_(nullptr);
+thread_local sharpen::FiberPtr sharpen::EventLoop::localFiber_{nullptr};
 
 sharpen::EventLoop::EventLoop(SelectorPtr selector)
     :selector_(selector)

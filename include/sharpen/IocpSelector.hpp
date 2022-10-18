@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "IChannel.hpp"
 #include "ISelector.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"

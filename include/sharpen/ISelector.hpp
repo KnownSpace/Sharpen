@@ -7,10 +7,11 @@
 
 #include "IoEvent.hpp"
 #include "FileTypeDef.hpp"
-#include "IChannel.hpp"
 
 namespace sharpen
 {
+    class IChannel;
+
     class ISelector
     {
     private:

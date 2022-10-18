@@ -9,6 +9,7 @@
 #include <map>
 #include <vector>
 
+#include "IChannel.hpp"
 #include "ISelector.hpp"
 #include "EventFd.hpp"
 #include "Nonmovable.hpp"
