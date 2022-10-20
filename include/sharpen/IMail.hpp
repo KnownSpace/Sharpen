@@ -27,6 +27,11 @@ namespace sharpen
         Self &operator=(Self &&other) noexcept = default;
     
         virtual ~IMail() noexcept = default;
+
+        inline const Self &Const() const noexcept
+        {
+            return *this;
+        }
     
         virtual std::uint64_t GetSourceHash() const noexcept = 0;
 
