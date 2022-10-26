@@ -49,7 +49,7 @@ namespace sharpen
         }
 
         template<typename _T>
-        inline bool Overflow(const sharpen::BinarySerializable<_T> &object,std::size_t offset) const noexcept
+        inline bool Overflow(const sharpen::BinarySerializable<_T> &object) const noexcept
         {
             return this->Overflow(object,0);
         }
