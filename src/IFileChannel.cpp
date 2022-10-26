@@ -11,7 +11,7 @@
 #include <fcntl.h>
 #endif
 
-sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::FileAccessModel access,sharpen::FileOpenModel open)
+sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::FileAccessModel access,sharpen::FileOpenModel open,bool direct)
 {
     sharpen::FileChannelPtr channel;
 #ifdef SHARPEN_HAS_WINFILE
@@ -47,15 +47,23 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
     default:
         std::logic_error("unknow open model");
     }
+    DWORD flag{FILE_FLAG_OVERLAPPED};
+    if(direct)
+    {
+        flag |= FILE_FLAG_NO_BUFFERING;
+        flag |= FILE_FLAG_WRITE_THROUGH;
+    }
     //create file
-    sharpen::FileHandle handle = ::CreateFileA(filename,accessModel,FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE,nullptr,openModel,FILE_FLAG_OVERLAPPED,INVALID_HANDLE_VALUE);
+    sharpen::FileHandle handle = ::CreateFileA(filename,accessModel,FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE,nullptr,openModel,flag,INVALID_HANDLE_VALUE);
     if (handle == INVALID_HANDLE_VALUE)
     {
         sharpen::ThrowLastError();
     }
     channel = std::make_shared<sharpen::WinFileChannel>(handle);
 #else
-    std::int32_t accessModel,openModel;
+    std::int32_t accessModel{0};
+    std::int32_t openModel{0};
+    std::int32_t flag{0};
     //set access and shared
     switch (access)
     {
@@ -86,7 +94,11 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
     default:
         throw std::logic_error("unknow open model");
     }
-    sharpen::FileHandle handle = ::open(filename,accessModel | openModel | O_CLOEXEC,S_IRUSR|S_IWUSR);
+    if(direct)
+    {
+        flag = O_DIRECT;
+    }
+    sharpen::FileHandle handle = ::open(filename,accessModel | openModel | O_CLOEXEC | flag,S_IRUSR|S_IWUSR);
     if (handle == -1)
     {
         sharpen::ThrowLastError();
@@ -94,6 +106,11 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
     channel = std::make_shared<sharpen::PosixFileChannel>(handle);
 #endif
     return channel;
+}
+
+sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::FileAccessModel access,sharpen::FileOpenModel open)
+{
+    return sharpen::MakeFileChannel(filename,access,open,false);
 }
 
 void sharpen::IFileChannel::ZeroMemoryAsync(sharpen::Future<std::size_t> &future,std::size_t size,std::uint64_t offset)
