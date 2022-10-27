@@ -5,9 +5,9 @@
 #include <cstring>
 #include <cassert>
 #include <limits>
-
 #include <cstdint>
 #include <cstddef>
+#include <stdexcept>
 
 namespace sharpen
 {
@@ -32,6 +32,78 @@ namespace sharpen
         constexpr std::size_t pageSize{4096};
         return sharpen::AlignedCalloc(pageCount*pageSize,sizeof(char),pageSize);
     }
+
+    class AlignedPages
+    {
+    private:
+        using Self = AlignedPages;
+    
+        char *mem_;
+    public:
+    
+        explicit AlignedPages(std::size_t pageCount)
+            :mem_(reinterpret_cast<char*>(sharpen::AlignedAlocPages(pageCount)))
+        {
+            if(!mem_)
+            {
+                throw std::bad_alloc{};
+            }
+        }
+    
+        AlignedPages(Self &&other) noexcept
+            :mem_(other.mem_)
+        {
+            other.mem_ = nullptr;
+        }
+    
+        inline Self &operator=(Self &&other) noexcept
+        {
+            if(this != std::addressof(other))
+            {
+                this->mem_ = other.mem_;
+                other.mem_ = nullptr;
+            }
+            return *this;
+        }
+    
+        ~AlignedPages() noexcept
+        {
+            if(this->mem_)
+            {
+                sharpen::AlignedFree(this->mem_);
+            }
+        }
+    
+        inline const Self &Const() const noexcept
+        {
+            return *this;
+        }
+
+        inline char *Data() const noexcept
+        {
+            return this->mem_;
+        }
+
+        inline char &Get(std::size_t index) const noexcept
+        {
+            return this->mem_[index];
+        }
+
+        operator char*() const noexcept
+        {
+            return this->Data();
+        }
+
+        inline char &operator*() const noexcept
+        {
+            return this->Get(0);
+        }
+
+        inline char &operator[](std::size_t index) const noexcept
+        {
+            return this->Get(index);
+        }
+    };
 }
 
 #endif
