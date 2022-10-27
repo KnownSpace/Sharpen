@@ -81,11 +81,13 @@ namespace sharpen
 
         inline char *Data() const noexcept
         {
+            assert(this->mem_);
             return this->mem_;
         }
 
         inline char &Get(std::size_t index) const noexcept
         {
+            assert(this->mem_);
             return this->mem_[index];
         }
 
