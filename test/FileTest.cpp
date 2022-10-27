@@ -5,6 +5,7 @@
 #include <sharpen/IFileChannel.hpp>
 #include <sharpen/EventEngine.hpp>
 #include <sharpen/FileOps.hpp>
+#include <sharpen/AlignedAlloc.hpp>
 
 void Test()
 {
@@ -124,6 +125,16 @@ void Test()
         channel->Close();
         sharpen::RemoveFile(sparesFileName);
     } while(0);
+    {
+        channel = sharpen::MakeFileChannel("./raw_file.tmp",sharpen::FileAccessModel::Write,sharpen::FileOpenModel::CreateNew,true);
+        channel->Register(engine);
+        char *content{reinterpret_cast<char*>(sharpen::AlignedCalloc(4096,sizeof(char),4096))};
+        std::memcpy(content,"1234",4);
+        channel->WriteAsync(content,4096,0);
+        sharpen::AlignedFree(content);
+        channel->Close();
+        sharpen::RemoveFile("./raw_file.tmp");
+    }
     std::puts("pass");
     std::printf("file test pass\n");
 }

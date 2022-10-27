@@ -18,7 +18,7 @@ namespace sharpen
     inline void *AlignedCalloc(std::size_t count,std::size_t size,std::size_t alignment) noexcept
     {
         assert(count != 0 && size != 0);
-        assert(std::numeric_limits<std::size_t>::max()/size >= count);
+        assert((std::numeric_limits<std::size_t>::max)()/size >= count);
         void *mem = sharpen::AlignedAlloc(size*count,alignment);
         if(mem != nullptr)
         {

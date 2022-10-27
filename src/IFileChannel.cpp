@@ -21,13 +21,13 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
     switch (access)
     {
     case sharpen::FileAccessModel::Write:
-        accessModel = FILE_GENERIC_WRITE;
+        accessModel = GENERIC_WRITE;
         break;
     case sharpen::FileAccessModel::Read:
-        accessModel = FILE_GENERIC_READ;
+        accessModel = GENERIC_READ;
         break;
     case sharpen::FileAccessModel::All:
-        accessModel = FILE_GENERIC_READ | FILE_GENERIC_WRITE;
+        accessModel = GENERIC_READ | GENERIC_WRITE;
         break;
     default:
         throw std::logic_error("unkonw access model");
@@ -50,11 +50,10 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
     DWORD flag{FILE_FLAG_OVERLAPPED};
     if(direct)
     {
-        flag |= FILE_FLAG_NO_BUFFERING;
-        flag |= FILE_FLAG_WRITE_THROUGH;
+        flag |= FILE_FLAG_NO_BUFFERING | FILE_FLAG_WRITE_THROUGH;
     }
     //create file
-    sharpen::FileHandle handle = ::CreateFileA(filename,accessModel,FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE,nullptr,openModel,flag,INVALID_HANDLE_VALUE);
+    sharpen::FileHandle handle = ::CreateFileA(filename,accessModel,FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE,nullptr,openModel,flag,nullptr);
     if (handle == INVALID_HANDLE_VALUE)
     {
         sharpen::ThrowLastError();
@@ -96,7 +95,7 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
     }
     if(direct)
     {
-        flag = O_DIRECT;
+        flag = O_DIRECT | O_SYNC;
     }
     sharpen::FileHandle handle = ::open(filename,accessModel | openModel | O_CLOEXEC | flag,S_IRUSR|S_IWUSR);
     if (handle == -1)
