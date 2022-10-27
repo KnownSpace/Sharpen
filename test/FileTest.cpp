@@ -128,7 +128,7 @@ void Test()
     {
         channel = sharpen::MakeFileChannel("./raw_file.tmp",sharpen::FileAccessModel::Write,sharpen::FileOpenModel::CreateNew,true);
         channel->Register(engine);
-        char *content{reinterpret_cast<char*>(sharpen::AlignedCalloc(4096,sizeof(char),4096))};
+        char *content{reinterpret_cast<char*>(sharpen::AlignedAlocPages(1))};
         std::memcpy(content,"1234",4);
         channel->WriteAsync(content,4096,0);
         sharpen::AlignedFree(content);

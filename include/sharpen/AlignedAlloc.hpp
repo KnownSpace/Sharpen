@@ -26,6 +26,12 @@ namespace sharpen
         }
         return mem;
     }
+
+    inline void *AlignedAlocPages(std::size_t pageCount) noexcept
+    {
+        constexpr std::size_t pageSize{4096};
+        return sharpen::AlignedCalloc(pageCount*pageSize,sizeof(char),pageSize);
+    }
 }
 
 #endif
