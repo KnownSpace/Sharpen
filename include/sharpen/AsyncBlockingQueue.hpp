@@ -2,19 +2,17 @@
 #ifndef _SHARPEN_ASYNCBLOCKINGQUEUE_HPP
 #define _SHARPEN_ASYNCBLOCKINGQUEUE_HPP
 
-#include <vector>
+#include <deque>
 
 #include "AsyncSemaphore.hpp"
 
 namespace sharpen
 {
-    //LIFO
-    //reduce the number of memory allocations
     template<typename _T>
     class AsyncBlockingQueue:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
-        using Storage = std::vector<_T>;
+        using Storage = std::deque<_T>;
 
         sharpen::SpinLock lock_;
         sharpen::AsyncSemaphore sign_;
@@ -33,8 +31,8 @@ namespace sharpen
             this->sign_.LockAsync();
             {
                 std::unique_lock<sharpen::SpinLock> lock(this->lock_);
-                _T obj = std::move(this->storage_.back());
-                this->storage_.pop_back();
+                _T obj{std::move(this->storage_.front())};
+                this->storage_.pop_front();
                 return obj;
             }
         }

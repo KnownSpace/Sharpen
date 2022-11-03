@@ -4,7 +4,7 @@
 
 #include <mutex>
 #include <condition_variable>
-#include <vector>
+#include <deque>
 #include <memory>
 #include <thread>
 
@@ -16,13 +16,11 @@
 
 namespace sharpen
 {
-    //LIFO
-    //reduce the number of memory allocations
     template<typename _T>
     class BlockingQueue:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
-        using Storage = std::vector<_T>;
+        using Storage = std::deque<_T>;
         using Lock = std::mutex;
         using CondVar = std::condition_variable;
 
@@ -61,9 +59,9 @@ namespace sharpen
             {
                 this->cond_.wait(lock);
             }
-            _T obj(std::move(this->storage_.back()));
-            this->storage_.pop_back();
-            return std::move(obj); 
+            _T obj{std::move(this->storage_.front())};
+            this->storage_.pop_front();
+            return bj; 
         }
 
         template <class _Rep, class _Period>
@@ -78,8 +76,8 @@ namespace sharpen
                     return false;
                 }
             }
-            obj = std::move(this->storage_.back());
-            this->storage_.pop_back();
+            obj = std::move(this->storage_.front());
+            this->storage_.pop_front();
             return true;
         }
     };
