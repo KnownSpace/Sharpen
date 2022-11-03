@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ByteVector.hpp"
+#include "ByteSlice.hpp"
 #include "BufferOps.hpp"
 #include "TypeTraits.hpp"
 #include "PointerIterator.hpp"
@@ -305,6 +306,10 @@ namespace sharpen
         {
             return this->StoreTo(buf,0);
         }
+
+        sharpen::ByteSlice GetSlice(std::size_t index,std::size_t size) const;
+
+        sharpen::ByteSlice GetSlice(ConstIterator begin,ConstIterator end) const;
     };
 } 
 

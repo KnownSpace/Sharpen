@@ -277,3 +277,19 @@ std::size_t sharpen::ByteBuffer::StoreTo(sharpen::ByteBuffer &buf,std::size_t of
     }
     return this->UnsafeStoreTo(buf.Data() + offset);
 }
+
+sharpen::ByteSlice sharpen::ByteBuffer::GetSlice(std::size_t index,std::size_t size) const
+{
+    if(index + size > this->GetSize())
+    {
+        throw std::out_of_range{"index out of range"};
+    }
+    return {this->Data() + index,size};
+}
+
+sharpen::ByteSlice sharpen::ByteBuffer::GetSlice(ConstIterator begin,ConstIterator end) const
+{
+    std::size_t index{sharpen::GetRangeSize(this->Begin(),begin)};
+    std::size_t size{sharpen::GetRangeSize(begin,end)};
+    return this->GetSlice(index,size);
+}
