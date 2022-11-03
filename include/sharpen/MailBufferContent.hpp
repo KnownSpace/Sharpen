@@ -56,6 +56,11 @@ namespace sharpen
         {
             return *this;
         }
+
+        inline virtual bool Extensible() const noexcept override
+        {
+            return true;
+        }
     };
 }
 

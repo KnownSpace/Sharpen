@@ -20,6 +20,12 @@ namespace sharpen
 
         virtual void DoResize(std::size_t newSize) = 0;
     public:
+
+        inline virtual bool Extensible() const noexcept
+        {
+            return false;
+        }
+    public:
     
         IMailContent() noexcept = default;
     

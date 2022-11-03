@@ -16,10 +16,10 @@ namespace sharpen
         using Self = sharpen::BufferReader;
     
         std::size_t offset_;
-        sharpen::ByteBuffer *target_;
+        const sharpen::ByteBuffer *target_;
     public:
     
-        explicit BufferReader(sharpen::ByteBuffer *target)
+        explicit BufferReader(const sharpen::ByteBuffer *target)
             :offset_(0)
             ,target_(target)
         {
@@ -56,12 +56,6 @@ namespace sharpen
         inline bool Readable() const noexcept
         {
             return this->target_;
-        }
-
-        inline sharpen::ByteBuffer &Target() noexcept
-        {
-            assert(this->target_);
-            return *this->target_;
         }
 
         inline const sharpen::ByteBuffer &Target() const noexcept
