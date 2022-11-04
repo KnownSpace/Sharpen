@@ -78,7 +78,7 @@ void AwaitTest()
             sharpen::Launch([&barrier]()
             {
                 sharpen::Delay(std::chrono::seconds(1));
-                barrier.Notice();
+                barrier.NotifyOnce();
             });   
         }
         std::size_t count{barrier.WaitAsync()};
@@ -93,7 +93,7 @@ void AwaitTest()
             sharpen::Launch([&barrier]()
             {
                 sharpen::Delay(std::chrono::seconds(1));
-                barrier.Notice();
+                barrier.NotifyOnce();
             });   
         }
         std::size_t count{barrier.WaitAsync()};

@@ -4,14 +4,16 @@
 
 #include <utility>
 #include <chrono>
+#include <cassert>
 
 #include "ITimer.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
+#include "IAsyncBarrier.hpp"
 
 namespace sharpen
 {
-    class AsyncNagleBarrier:public sharpen::Noncopyable,public sharpen::Nonmovable
+    class AsyncNagleBarrier:public sharpen::IAsyncBarrier,public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
         using Self = sharpen::AsyncNagleBarrier;
@@ -47,7 +49,9 @@ namespace sharpen
             ,timeoutFuture_()
             ,waiters_()
             ,lock_()
-        {}
+        {
+            assert(this->count_);
+        }
     
         ~AsyncNagleBarrier() noexcept = default;
     
@@ -56,11 +60,11 @@ namespace sharpen
             return *this;
         }
 
-        std::size_t WaitAsync();
+        virtual std::size_t WaitAsync() override;
 
-        void Notice();
+        virtual void Notify(std::size_t count) noexcept override;
 
-        void Reset();
+        virtual void Reset() noexcept override;
     };   
 }
 

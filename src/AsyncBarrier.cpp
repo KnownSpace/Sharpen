@@ -2,51 +2,53 @@
 #include <cassert>
 
 sharpen::AsyncBarrier::AsyncBarrier(std::uint64_t counter)
-    :counter_(counter)
+    :count_(counter)
     ,waiters_()
-    ,beginCounter_(counter)
+    ,currentCount_(0)
 {}
 
-void sharpen::AsyncBarrier::WaitAsync()
+std::size_t sharpen::AsyncBarrier::WaitAsync()
 {
     sharpen::AsyncBarrier::MyFuture future;
     {
         std::unique_lock<sharpen::SpinLock> lock(this->lock_);
-        if (this->counter_ == 0)
+        if (this->currentCount_ >= this->count_)
         {
+            std::size_t currentCount{this->currentCount_};
             this->ResetWithoutLock();
-            return;
+            return currentCount;
         }
         this->waiters_.push_back(&future);
     }
-    future.Await();
+    return future.Await();
 }
 
 void sharpen::AsyncBarrier::ResetWithoutLock() noexcept
 {
-    this->counter_ = this->beginCounter_;
+    this->currentCount_ = 0;
 }
 
-void sharpen::AsyncBarrier::Reset()
+void sharpen::AsyncBarrier::Reset() noexcept
 {
     std::unique_lock<sharpen::SpinLock> lock(this->lock_);
     this->ResetWithoutLock();
 }
 
-void sharpen::AsyncBarrier::Notice() noexcept
+void sharpen::AsyncBarrier::Notify(std::size_t count) noexcept
 {
+    assert(count);
     MyFuturePtr futurePtr{nullptr};
+    std::size_t currentCount{0};
     {
         std::unique_lock<sharpen::SpinLock> lock(this->lock_);
-        assert(this->counter_ != 0);
-        this->counter_ -= 1;
-        if(this->counter_ != 0 || this->waiters_.empty())
+        this->currentCount_ += count;
+        if(this->currentCount_ >= this->count_)
         {
-            return;
+            currentCount = this->currentCount_;
+            futurePtr = this->waiters_.back();
+            this->waiters_.pop_back();
+            this->ResetWithoutLock();
         }
-        futurePtr = this->waiters_.back();
-        this->waiters_.pop_back();
-        this->ResetWithoutLock();
     }
-    futurePtr->Complete();
+    futurePtr->Complete(currentCount);
 }

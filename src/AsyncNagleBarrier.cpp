@@ -1,5 +1,7 @@
 #include <sharpen/AsyncNagleBarrier.hpp>
 
+#include <cassert>
+
 void sharpen::AsyncNagleBarrier::ResetWithoutLock() noexcept
 {
     this->currentCount_ = 0;
@@ -15,7 +17,7 @@ void sharpen::AsyncNagleBarrier::TimeoutNotice(sharpen::Future<bool> &future) no
         {
             std::unique_lock<sharpen::SpinLock> lock{this->lock_};
             this->timerStarted_ = false;
-            if (this->waiters_.empty())
+            if(this->waiters_.empty())
             {
                 return;
             }
@@ -41,7 +43,11 @@ void sharpen::AsyncNagleBarrier::StartTimer()
 
 void sharpen::AsyncNagleBarrier::StopTimer()
 {
-    this->timer_->Cancel();
+    if(this->timerStarted_)
+    {
+        this->timer_->Cancel();
+        this->timerStarted_ = false;
+    }
 }
 
 std::size_t sharpen::AsyncNagleBarrier::WaitAsync()
@@ -49,10 +55,11 @@ std::size_t sharpen::AsyncNagleBarrier::WaitAsync()
     MyFuture future;
     {
         std::unique_lock<sharpen::SpinLock> lock{this->lock_};
-        if(this->count_ == this->currentCount_)
+        if(this->currentCount_ >= this->count_)
         {
+            std::size_t currentCount{this->currentCount_};
             this->ResetWithoutLock();
-            return this->count_;
+            return currentCount;
         }
         this->waiters_.emplace_back(&future);
         this->StartTimer();
@@ -60,28 +67,35 @@ std::size_t sharpen::AsyncNagleBarrier::WaitAsync()
     return future.Await();
 }
 
-void sharpen::AsyncNagleBarrier::Notice()
+void sharpen::AsyncNagleBarrier::Notify(std::size_t count) noexcept
 {
+    assert(count != 0);
     MyFuturePtr future{nullptr};
+    std::size_t currentCount{0};
     {
         std::unique_lock<sharpen::SpinLock> lock{this->lock_};
-        assert(this->currentCount_ < this->count_);
-        this->currentCount_ += 1;
-        if(this->currentCount_ == this->count_)
+        this->currentCount_ += count;
+        if(this->currentCount_ >= this->count_)
         {
             //notice
             if(!this->waiters_.empty())
             {
                 future = this->waiters_.back();
                 this->waiters_.pop_back();
+                currentCount = this->currentCount_;
             }
             //close timer
             this->StopTimer();
-            this->timerStarted_ = false;
         }
     }
     if(future)
     {
-        future->Complete(this->count_);
+        future->Complete(currentCount);
     }
+}
+
+void sharpen::AsyncNagleBarrier::Reset() noexcept
+{
+    std::unique_lock<sharpen::SpinLock> lock{this->lock_};
+    this->ResetWithoutLock();
 }
