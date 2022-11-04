@@ -5,6 +5,7 @@
 #include <sharpen/AwaitOps.hpp>
 #include <sharpen/WorkerGroup.hpp>
 #include <sharpen/TimerOps.hpp>
+#include <sharpen/AsyncNagleBarrier.hpp>
 
 void AwaitTest()
 {
@@ -61,6 +62,45 @@ void AwaitTest()
     r = workerFuture->Await();
     assert(r == 0);
     std::puts("worker group test pass");
+    std::puts("nagle test begin");
+    {
+        sharpen::AsyncNagleBarrier barrier{sharpen::GetGobalTimerPool().GetTimer(),std::chrono::seconds(3),10};
+        std::puts("nagle wait");
+        std::size_t count{barrier.WaitAsync()};
+        std::printf("nagle wait done %zu\n",count);
+        assert(count == 0);
+    }
+    {
+        sharpen::AsyncNagleBarrier barrier{sharpen::GetGobalTimerPool().GetTimer(),std::chrono::seconds(3),10};
+        std::puts("nagle wait");
+        for (size_t i = 0; i != 7; ++i)
+        {
+            sharpen::Launch([&barrier]()
+            {
+                sharpen::Delay(std::chrono::seconds(1));
+                barrier.Notice();
+            });   
+        }
+        std::size_t count{barrier.WaitAsync()};
+        std::printf("nagle wait done %zu\n",count);
+        assert(count == 7);
+    }
+    {
+        sharpen::AsyncNagleBarrier barrier{sharpen::GetGobalTimerPool().GetTimer(),std::chrono::seconds(3),10};
+        std::puts("nagle wait");
+        for (size_t i = 0; i != 10; ++i)
+        {
+            sharpen::Launch([&barrier]()
+            {
+                sharpen::Delay(std::chrono::seconds(1));
+                barrier.Notice();
+            });   
+        }
+        std::size_t count{barrier.WaitAsync()};
+        std::printf("nagle wait done %zu\n",count);
+        assert(count == 10);
+    }
+    std::puts("nagle test pass");
 }
 
 int main()

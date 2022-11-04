@@ -21,6 +21,8 @@ namespace sharpen
         Waiters waiters_;
         std::uint64_t beginCounter_;
         sharpen::SpinLock lock_;
+
+        void ResetWithoutLock() noexcept;
     public:
         explicit AsyncBarrier(std::uint64_t count);
 
@@ -29,8 +31,6 @@ namespace sharpen
         void Notice() noexcept;
         
         void Reset();
-
-        void AddCount(std::uint64_t count);
 
         ~AsyncBarrier() noexcept = default;
     };

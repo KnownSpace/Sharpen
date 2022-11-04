@@ -14,6 +14,7 @@ void sharpen::AsyncBarrier::WaitAsync()
         std::unique_lock<sharpen::SpinLock> lock(this->lock_);
         if (this->counter_ == 0)
         {
+            this->ResetWithoutLock();
             return;
         }
         this->waiters_.push_back(&future);
@@ -21,15 +22,20 @@ void sharpen::AsyncBarrier::WaitAsync()
     future.Await();
 }
 
+void sharpen::AsyncBarrier::ResetWithoutLock() noexcept
+{
+    this->counter_ = this->beginCounter_;
+}
+
 void sharpen::AsyncBarrier::Reset()
 {
     std::unique_lock<sharpen::SpinLock> lock(this->lock_);
-    this->counter_ = this->beginCounter_;
+    this->ResetWithoutLock();
 }
 
 void sharpen::AsyncBarrier::Notice() noexcept
 {
-    sharpen::AsyncBarrier::MyFuturePtr futurePtr;
+    MyFuturePtr futurePtr{nullptr};
     {
         std::unique_lock<sharpen::SpinLock> lock(this->lock_);
         assert(this->counter_ != 0);
@@ -40,12 +46,7 @@ void sharpen::AsyncBarrier::Notice() noexcept
         }
         futurePtr = this->waiters_.back();
         this->waiters_.pop_back();
+        this->ResetWithoutLock();
     }
     futurePtr->Complete();
-}
-
-void sharpen::AsyncBarrier::AddCount(std::uint64_t count)
-{
-    std::unique_lock<sharpen::SpinLock> lock(this->lock_);
-    this->counter_ += count;
 }

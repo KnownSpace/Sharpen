@@ -59,7 +59,7 @@ namespace sharpen
         inline void Submit(_Fn &&fn,_Args &&...args)
         {
             assert(this->token_.load());
-            std::function<void()> task{std::forward<_Fn>(fn),std::forward<_Args>(args)...};
+            std::function<void()> task{std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...)};
             this->queue_.Emplace(std::move(task));
         }
 
