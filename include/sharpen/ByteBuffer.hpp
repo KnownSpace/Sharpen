@@ -2,16 +2,8 @@
 #ifndef _SHARPEN_BYTEBUFFER_HPP
 #define _SHARPEN_BYTEBUFFER_HPP
 
-#include <functional>
-#include <cassert>
-#include <algorithm>
-
 #include "ByteVector.hpp"
 #include "ByteSlice.hpp"
-#include "BufferOps.hpp"
-#include "TypeTraits.hpp"
-#include "PointerIterator.hpp"
-#include "ReversePointerIterator.hpp"
 
 namespace sharpen
 {
@@ -25,11 +17,8 @@ namespace sharpen
         Vector vector_;
     public:
         using Iterator = typename Vector::Iterator;
-
         using ConstIterator = typename Vector::ConstIterator;
-
         using ReverseIterator = typename Vector::ReverseIterator;
-
         using ConstReverseIterator = typename Vector::ConstReverseIterator;
 
         ByteBuffer() = default;
@@ -48,7 +37,7 @@ namespace sharpen
         {
             if(this != std::addressof(other))
             {
-                sharpen::ByteBuffer tmp{other};
+                Self tmp{other};
                 std::swap(tmp,*this);
             }
             return *this;
@@ -173,13 +162,13 @@ namespace sharpen
 
         ConstReverseIterator ReverseFind(char e) const noexcept;
 
-        template<typename _Iterator,typename _Check = decltype(std::declval<Self>().Get(0) == *std::declval<_Iterator>())>
+        template<typename _Iterator,typename _Check = decltype(std::declval<Self>().Get(0) == *std::declval<_Iterator&>()++)>
         inline Iterator Search(const _Iterator begin,const _Iterator end)
         {
             return std::search(this->Begin(),this->End(),begin,end);
         }
 
-        template<typename _Iterator,typename _Check = decltype(std::declval<Self>().Get(0) == *std::declval<_Iterator>())>
+        template<typename _Iterator,typename _Check = decltype(std::declval<Self>().Get(0) == *std::declval<_Iterator&>()++)>
         inline ConstIterator Search(const _Iterator begin,const _Iterator end) const
         {
             return std::search(this->Begin(),this->End(),begin,end);
@@ -272,14 +261,14 @@ namespace sharpen
         }
 
         template<typename _T,typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>
-        _T &As() noexcept
+        inline _T &As() noexcept
         {
             assert(this->GetSize() == sizeof(_T));
             return *reinterpret_cast<_T*>(this->Data());
         }
 
         template<typename _T,typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>
-        const _T &As() const noexcept
+        inline const _T &As() const noexcept
         {
             assert(this->GetSize() == sizeof(_T));
             return *reinterpret_cast<const _T*>(this->Data());

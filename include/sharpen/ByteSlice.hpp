@@ -6,6 +6,14 @@
 #include <cstddef>
 #include <cstdint>
 #include <stdexcept>
+#include <functional>
+#include <cassert>
+#include <algorithm>
+
+#include "TypeTraits.hpp"
+#include "BufferOps.hpp"
+#include "PointerIterator.hpp"
+#include "ReversePointerIterator.hpp"
 
 namespace sharpen
 {
@@ -17,7 +25,9 @@ namespace sharpen
         const char *data_;
         std::size_t size_;
     public:
-    
+        using ConstIterator = sharpen::PointerIterator<const char>;
+        using ConstReverseIterator = sharpen::ReversePointerIterator<const char>;
+
         ByteSlice()
             :data_(nullptr)
             ,size_(0)
@@ -38,7 +48,7 @@ namespace sharpen
             other.size_ = 0;
         }
     
-        inline Self &operator=(const Self &other)
+        inline Self &operator=(const Self &other) noexcept
         {
             if(this != std::addressof(other))
             {
@@ -48,17 +58,7 @@ namespace sharpen
             return *this;
         }
     
-        inline Self &operator=(Self &&other) noexcept
-        {
-            if(this != std::addressof(other))
-            {
-                this->data_ = other.data_;
-                this->size_ = other.size_;
-                other.data_ = nullptr;
-                other.size_ = 0;
-            }
-            return *this;
-        }
+        Self &operator=(Self &&other) noexcept;
     
         ~ByteSlice() noexcept = default;
     
@@ -67,14 +67,7 @@ namespace sharpen
             return *this;
         }
 
-        inline char Get(std::size_t index) const
-        {
-            if(index > this->size_)
-            {
-                throw std::out_of_range{"index out of range"};
-            }
-            return this->data_[index];
-        }
+        char Get(std::size_t index) const;
 
         inline const char *Data() const noexcept
         {
@@ -100,7 +93,126 @@ namespace sharpen
         {
             return this->Get(index);
         }
+
+        inline std::int32_t CompareWith(const Self &other) const noexcept;
+        
+        inline bool operator==(const Self &other) const noexcept
+        {
+            return this->CompareWith(other) == 0;
+        }
+        
+        inline bool operator!=(const Self &other) const noexcept
+        {
+            return this->CompareWith(other) != 0;
+        }
+        
+        inline bool operator<(const Self &other) const noexcept
+        {
+            return this->CompareWith(other) < 0;
+        }
+        
+        inline bool operator>(const Self &other) const noexcept
+        {
+            return this->CompareWith(other) > 0;
+        }
+        
+        inline bool operator>=(const Self &other) const noexcept
+        {
+            return this->CompareWith(other) >= 0;
+        }
+        
+        inline bool operator<=(const Self &other) const noexcept
+        {
+            return this->CompareWith(other) <= 0;
+        }
+
+        inline std::size_t Hash32() const noexcept
+        {
+            return sharpen::BufferHash32(this->Data(),this->GetSize());
+        }
+
+        inline std::uint64_t Hash64() const noexcept
+        {
+            return sharpen::BufferHash64(this->Data(),this->GetSize());
+        }
+
+        inline std::size_t Hash() const noexcept
+        {
+            return sharpen::BufferHash(this->Data(),this->GetSize());
+        }
+
+        inline std::uint32_t Adler32() const noexcept
+        {
+            return sharpen::Adler32(this->Data(),this->GetSize());
+        }
+
+        inline std::uint16_t Crc16() const noexcept
+        {
+            return sharpen::Crc16(this->Data(),this->GetSize());
+        }
+        
+        inline ConstIterator Begin() const noexcept
+        {
+            return ConstIterator{this->Data()};
+        }
+        
+        inline ConstIterator End() const noexcept
+        {
+            return ConstIterator{this->Data() + this->GetSize()};
+        }
+
+        inline ConstReverseIterator ReverseBegin() const noexcept
+        {
+            const char *p = this->Data();
+            if(p)
+            {
+                assert(this->GetSize());
+                p += this->GetSize() - 1;
+            }
+            return ConstReverseIterator{p};
+        }
+        
+        inline ConstReverseIterator ReverseEnd() const noexcept
+        {
+            return ConstReverseIterator{this->Data()};
+        }
+
+        template<typename _Iterator,typename _Check = decltype(std::declval<Self>().Get(0) == *std::declval<_Iterator&>()++)>
+        inline ConstIterator Search(const _Iterator begin,const _Iterator end) const
+        {
+            return std::search(this->Begin(),this->End(),begin,end);
+        }
+
+        ConstIterator Find(char e) const noexcept;
+
+        ConstReverseIterator ReverseFind(char e) const noexcept;
+
+        template<typename _T,typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>
+        inline _T &As() noexcept
+        {
+            assert(this->GetSize() == sizeof(_T));
+            return *reinterpret_cast<_T*>(this->Data());
+        }
+
+        template<typename _T,typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>
+        inline const _T &As() const noexcept
+        {
+            assert(this->GetSize() == sizeof(_T));
+            return *reinterpret_cast<const _T*>(this->Data());
+        }
     };   
+}
+
+namespace std
+{
+    template<>
+    struct hash<sharpen::ByteSlice>
+    {
+        inline std::size_t operator()(const sharpen::ByteSlice &slice) const noexcept
+        {
+            return slice.Hash();
+        }
+    };
 }
 
 #endif
