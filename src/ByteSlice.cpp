@@ -23,18 +23,26 @@ char sharpen::ByteSlice::Get(std::size_t index) const
 
 std::int32_t sharpen::ByteSlice::CompareWith(const Self &other) const noexcept
 {
-    std::int32_t r{std::memcmp(this->data_,other.Data(),(std::min)(this->size_,other.GetSize()))};
+    const char *lhs{this->Data()};
+    const char *rhs{other.Data()};
+    std::size_t leftSz{this->GetSize()};
+    std::size_t rightSz{other.GetSize()};
+    std::int32_t r{0};
+    if(lhs && rhs)
+    {
+        r = std::memcmp(lhs,rhs,(std::min)(leftSz,rightSz));
+    }
     if(r)
     {
-        return r;
+        return r > 0 ? 1:-1;
     }
-    if(this->size_ > other.GetSize())
-    {
-        return 1;
-    }
-    else if(this->size_ < other.GetSize())
+    if(leftSz < rightSz)
     {
         return -1;
+    }
+    else if(leftSz > rightSz)
+    {
+        return 1;
     }
     return 0;
 }

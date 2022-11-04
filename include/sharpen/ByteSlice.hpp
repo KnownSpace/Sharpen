@@ -126,7 +126,7 @@ namespace sharpen
             return this->CompareWith(other) <= 0;
         }
 
-        inline std::size_t Hash32() const noexcept
+        inline std::uint32_t Hash32() const noexcept
         {
             return sharpen::BufferHash32(this->Data(),this->GetSize());
         }

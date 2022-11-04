@@ -246,7 +246,7 @@ bool sharpen::Base64Decode(char *dst,std::size_t dstSize,const char *src,std::si
     return true;
 }
 
-std::size_t sharpen::BufferHash32(const char *data,std::size_t size) noexcept
+std::uint32_t sharpen::BufferHash32(const char *data,std::size_t size) noexcept
 {
     return sharpen::BufferHash32(data,data + size);
 } 
