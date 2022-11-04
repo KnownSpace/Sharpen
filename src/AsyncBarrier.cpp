@@ -1,4 +1,5 @@
 #include <sharpen/AsyncBarrier.hpp>
+
 #include <cassert>
 
 sharpen::AsyncBarrier::AsyncBarrier(std::uint64_t counter)
