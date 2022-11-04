@@ -33,8 +33,8 @@ namespace sharpen
         TaskVector pendingTasks_;
         bool exectingTask_;
         Lock lock_;
-        bool running_;
-        bool waiting_;
+        std::atomic_bool running_;
+        std::atomic_bool waiting_;
 
         //one loop per thread
         thread_local static EventLoop *localLoop_;
