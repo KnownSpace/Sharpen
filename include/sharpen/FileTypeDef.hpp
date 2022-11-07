@@ -12,18 +12,26 @@ namespace sharpen
     using FileHandle = int;
 #endif
 
-    enum class FileOpenModel
+    enum class FileOpenMethod
     {
         Open,
         CreateNew,
         CreateOrOpen
     };
 
-    enum class FileAccessModel
+    enum class FileAccessMethod
     {
         Read,
         Write,
         All
+    };
+
+    enum class FileIoMethod
+    {
+        Normal,
+        Direct,
+        Sync,
+        DirectAndSync
     };
 }
 

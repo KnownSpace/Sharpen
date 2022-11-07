@@ -9,7 +9,7 @@
 
 namespace sharpen
 {
-    bool AccessFile(const char *name,sharpen::FileAccessModel model);
+    bool AccessFile(const char *name,sharpen::FileAccessMethod model);
 
     bool ExistFile(const char *name);
 

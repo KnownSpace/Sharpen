@@ -11,7 +11,7 @@ void Test()
 {
     sharpen::EventEngine &engine = sharpen::EventEngine::SetupSingleThreadEngine();
     std::printf("file test begin\n");
-    sharpen::FileChannelPtr channel = sharpen::MakeFileChannel("./hello.txt", sharpen::FileAccessModel::Write, sharpen::FileOpenModel::CreateOrOpen);
+    sharpen::FileChannelPtr channel = sharpen::MakeFileChannel("./hello.txt", sharpen::FileAccessMethod::Write, sharpen::FileOpenMethod::CreateOrOpen);
     channel->Register(engine);
     char str[] = "hello";
     std::size_t size = channel->WriteAsync(str, sizeof(str) - 1, 0);
@@ -20,7 +20,7 @@ void Test()
     std::printf("pass\n");
     char buf[sizeof(str)] = {0};
     channel->Close();
-    channel = sharpen::MakeFileChannel("./hello.txt", sharpen::FileAccessModel::Read, sharpen::FileOpenModel::Open);
+    channel = sharpen::MakeFileChannel("./hello.txt", sharpen::FileAccessMethod::Read, sharpen::FileOpenMethod::Open);
     channel->Register(engine);
     size = channel->ReadAsync(buf, sizeof(buf) - 1, 0);
     std::printf("read size is %zu\n", size);
@@ -30,7 +30,7 @@ void Test()
     }
     std::printf("pass\n");
     std::printf("zero memory test\n");
-    channel = sharpen::MakeFileChannel("./buf.log", sharpen::FileAccessModel::Write, sharpen::FileOpenModel::CreateNew);
+    channel = sharpen::MakeFileChannel("./buf.log", sharpen::FileAccessMethod::Write, sharpen::FileOpenMethod::CreateNew);
     channel->Register(engine);
     channel->ZeroMemoryAsync(64 * 1024, 0);
     assert(channel->GetFileSize() == 64 * 1024);
@@ -40,7 +40,7 @@ void Test()
     assert(sharpen::ExistFile("./buf.log"));
     std::printf("pass\n");
     std::printf("access test\n");
-    assert(sharpen::AccessFile("./buf.log", sharpen::FileAccessModel::Read));
+    assert(sharpen::AccessFile("./buf.log", sharpen::FileAccessMethod::Read));
     std::printf("pass\n");
     std::printf("rename test\n");
     sharpen::RenameFile("./buf.log", "./buf1.log");
@@ -52,7 +52,7 @@ void Test()
     assert(!sharpen::ExistFile("./buf1.log"));
     std::printf("pass\n");
     std::printf("map file test\n");
-    channel = sharpen::MakeFileChannel("./buf.log", sharpen::FileAccessModel::All, sharpen::FileOpenModel::CreateNew);
+    channel = sharpen::MakeFileChannel("./buf.log", sharpen::FileAccessMethod::All, sharpen::FileOpenMethod::CreateNew);
     channel->Register(engine);
     channel->ZeroMemoryAsync(64*1024, 0);
     {
@@ -99,7 +99,7 @@ void Test()
     do
     {
         const char *sparesFileName = "./sparesTestFile";
-        channel = sharpen::MakeFileChannel(sparesFileName,sharpen::FileAccessModel::All,sharpen::FileOpenModel::CreateNew);
+        channel = sharpen::MakeFileChannel(sparesFileName,sharpen::FileAccessMethod::All,sharpen::FileOpenMethod::CreateNew);
         channel->Register(sharpen::EventEngine::GetEngine());
         try
         {
@@ -126,7 +126,7 @@ void Test()
         sharpen::RemoveFile(sparesFileName);
     } while(0);
     {
-        channel = sharpen::MakeFileChannel("./raw_file.tmp",sharpen::FileAccessModel::Write,sharpen::FileOpenModel::CreateNew,true);
+        channel = sharpen::MakeFileChannel("./raw_file.tmp",sharpen::FileAccessMethod::Write,sharpen::FileOpenMethod::CreateNew,sharpen::FileIoMethod::DirectAndSync);
         channel->Register(engine);
         sharpen::AlignedPages content{1};
         std::memcpy(content,"1234",4);

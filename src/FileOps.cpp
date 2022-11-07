@@ -13,19 +13,19 @@
 
 #include <sharpen/SystemError.hpp>
 
-bool sharpen::AccessFile(const char *name, sharpen::FileAccessModel model)
+bool sharpen::AccessFile(const char *name, sharpen::FileAccessMethod model)
 {
     int mod = 0;
 #ifdef SHARPEN_IS_WIN
     switch (model)
     {
-    case sharpen::FileAccessModel::Read:
+    case sharpen::FileAccessMethod::Read:
         mod = 4;
         break;
-    case sharpen::FileAccessModel::Write:
+    case sharpen::FileAccessMethod::Write:
         mod = 2;
         break;
-    case sharpen::FileAccessModel::All:
+    case sharpen::FileAccessMethod::All:
         mod = 6;
     default:
         break;

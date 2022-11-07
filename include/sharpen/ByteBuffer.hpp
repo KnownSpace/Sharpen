@@ -299,7 +299,72 @@ namespace sharpen
         sharpen::ByteSlice GetSlice(std::size_t index,std::size_t size) const;
 
         sharpen::ByteSlice GetSlice(ConstIterator begin,ConstIterator end) const;
+
+        inline sharpen::ByteSlice GetSlice() const noexcept
+        {
+            return sharpen::ByteSlice{this->Data(),this->GetSize()};
+        }
     };
+
+    inline bool operator==(const sharpen::ByteBuffer &buffer,const sharpen::ByteSlice &slice) noexcept
+    {
+        return buffer.GetSlice() == slice;
+    }
+
+    inline bool operator!=(const sharpen::ByteBuffer &buffer,const sharpen::ByteSlice &slice) noexcept
+    {
+        return buffer.GetSlice() != slice;
+    }
+
+    inline bool operator<(const sharpen::ByteBuffer &buffer,const sharpen::ByteSlice &slice) noexcept
+    {
+        return buffer.GetSlice() < slice;
+    }
+
+    inline bool operator>(const sharpen::ByteBuffer &buffer,const sharpen::ByteSlice &slice) noexcept
+    {
+        return buffer.GetSlice() > slice;
+    }
+
+    inline bool operator<=(const sharpen::ByteBuffer &buffer,const sharpen::ByteSlice &slice) noexcept
+    {
+        return buffer.GetSlice() < slice;
+    }
+
+    inline bool operator>=(const sharpen::ByteBuffer &buffer,const sharpen::ByteSlice &slice) noexcept
+    {
+        return buffer.GetSlice() > slice;
+    }
+
+    inline bool operator==(const sharpen::ByteSlice &slice,const sharpen::ByteBuffer &buffer) noexcept
+    {
+        return buffer.GetSlice() == slice;
+    }
+
+    inline bool operator!=(const sharpen::ByteSlice &slice,const sharpen::ByteBuffer &buffer) noexcept
+    {
+        return buffer.GetSlice() != slice;
+    }
+
+    inline bool operator<(const sharpen::ByteSlice &slice,const sharpen::ByteBuffer &buffer) noexcept
+    {
+        return buffer.GetSlice() < slice;
+    }
+
+    inline bool operator>(const sharpen::ByteSlice &slice,const sharpen::ByteBuffer &buffer) noexcept
+    {
+        return buffer.GetSlice() > slice;
+    }
+
+    inline bool operator<=(const sharpen::ByteSlice &slice,const sharpen::ByteBuffer &buffer) noexcept
+    {
+        return buffer.GetSlice() < slice;
+    }
+
+    inline bool operator>=(const sharpen::ByteSlice &slice,const sharpen::ByteBuffer &buffer) noexcept
+    {
+        return buffer.GetSlice() > slice;
+    }
 } 
 
 namespace std

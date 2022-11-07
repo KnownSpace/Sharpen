@@ -11,49 +11,62 @@
 #include <fcntl.h>
 #endif
 
-sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::FileAccessModel access,sharpen::FileOpenModel open,bool direct)
+sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::FileAccessMethod access,sharpen::FileOpenMethod open,sharpen::FileIoMethod io)
 {
     sharpen::FileChannelPtr channel;
 #ifdef SHARPEN_HAS_WINFILE
-    DWORD accessModel = FILE_GENERIC_READ;
+    DWORD accessModel = GENERIC_READ;
     DWORD openModel = OPEN_EXISTING;
     //set access and shared
     switch (access)
     {
-    case sharpen::FileAccessModel::Write:
+    case sharpen::FileAccessMethod::Write:
         accessModel = GENERIC_WRITE;
         break;
-    case sharpen::FileAccessModel::Read:
+    case sharpen::FileAccessMethod::Read:
         accessModel = GENERIC_READ;
         break;
-    case sharpen::FileAccessModel::All:
+    case sharpen::FileAccessMethod::All:
         accessModel = GENERIC_READ | GENERIC_WRITE;
         break;
     default:
-        throw std::logic_error("unkonw access model");
+        throw std::logic_error("unkonw access method");
     }
     //set open
     switch (open)
     {
-    case sharpen::FileOpenModel::Open:
+    case sharpen::FileOpenMethod::Open:
         openModel = OPEN_EXISTING;
         break;
-    case sharpen::FileOpenModel::CreateNew:
+    case sharpen::FileOpenMethod::CreateNew:
         openModel = CREATE_ALWAYS;
         break;
-    case sharpen::FileOpenModel::CreateOrOpen:
+    case sharpen::FileOpenMethod::CreateOrOpen:
         openModel = OPEN_ALWAYS;
         break;
     default:
-        std::logic_error("unknow open model");
+        std::logic_error("unknow open method");
     }
-    DWORD flag{FILE_FLAG_OVERLAPPED};
-    if(direct)
+    DWORD ioFlag{FILE_FLAG_OVERLAPPED};
+    switch (io)
     {
-        flag |= FILE_FLAG_NO_BUFFERING | FILE_FLAG_WRITE_THROUGH;
+    case sharpen::FileIoMethod::Normal:
+        break;
+    case sharpen::FileIoMethod::Direct:
+        ioFlag |= FILE_FLAG_NO_BUFFERING;
+        break;
+    case sharpen::FileIoMethod::Sync:
+        ioFlag |= FILE_FLAG_WRITE_THROUGH;
+        break;
+    case sharpen::FileIoMethod::DirectAndSync:
+        ioFlag |= FILE_FLAG_NO_BUFFERING | FILE_FLAG_WRITE_THROUGH;
+        break;
+    default:
+        throw std::logic_error("unknow open method");
+        break;
     }
     //create file
-    sharpen::FileHandle handle = ::CreateFileA(filename,accessModel,FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE,nullptr,openModel,flag,nullptr);
+    sharpen::FileHandle handle = ::CreateFileA(filename,accessModel,FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE,nullptr,openModel,ioFlag,nullptr);
     if (handle == INVALID_HANDLE_VALUE)
     {
         sharpen::ThrowLastError();
@@ -62,7 +75,7 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
 #else
     std::int32_t accessModel{0};
     std::int32_t openModel{0};
-    std::int32_t flag{0};
+    std::int32_t ioFlag{0};
     //set access and shared
     switch (access)
     {
@@ -76,7 +89,7 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
         accessModel = O_RDWR;
         break;
     default:
-        throw std::logic_error("unknow access model");
+        throw std::logic_error("unknow access method");
     }
     //set open
     switch (open)
@@ -91,13 +104,26 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
         openModel = O_CREAT;
         break;
     default:
-        throw std::logic_error("unknow open model");
+        throw std::logic_error("unknow open method");
     }
-    if(direct)
+    switch (io)
     {
-        flag = O_DIRECT | O_SYNC;
+    case sharpen::FileIoMethod::Normal:
+        break;
+    case sharpen::FileIoMethod::Direct:
+        ioFlag = O_DIRECT;
+        break;
+    case sharpen::FileIoMethod::Sync:
+        ioFlag = O_SYNC;
+        break;
+    case sharpen::FileIoMethod::DirestAndSync:
+        ioFlag = O_DIRECT | O_SYNC;
+        break;
+    default:
+        throw std::logic_error("unknow io method");
+        break;
     }
-    sharpen::FileHandle handle = ::open(filename,accessModel | openModel | O_CLOEXEC | flag,S_IRUSR|S_IWUSR);
+    sharpen::FileHandle handle = ::open(filename,accessModel | openModel | O_CLOEXEC | ioFlag,S_IRUSR|S_IWUSR);
     if (handle == -1)
     {
         sharpen::ThrowLastError();
@@ -107,9 +133,9 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
     return channel;
 }
 
-sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::FileAccessModel access,sharpen::FileOpenModel open)
+sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::FileAccessMethod access,sharpen::FileOpenMethod open)
 {
-    return sharpen::MakeFileChannel(filename,access,open,false);
+    return sharpen::MakeFileChannel(filename,access,open,sharpen::FileIoMethod::Normal);
 }
 
 void sharpen::IFileChannel::ZeroMemoryAsync(sharpen::Future<std::size_t> &future,std::size_t size,std::uint64_t offset)
