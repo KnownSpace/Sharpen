@@ -34,13 +34,13 @@ bool sharpen::AccessFile(const char *name, sharpen::FileAccessMethod model)
 #else
     switch (model)
     {
-    case sharpen::FileAccessModel::Read:
+    case sharpen::FileAccessMethod::Read:
         mod = R_OK;
         break;
-    case sharpen::FileAccessModel::Write:
+    case sharpen::FileAccessMethod::Write:
         mod = W_OK;
         break;
-    case sharpen::FileAccessModel::All:
+    case sharpen::FileAccessMethod::All:
         mod = R_OK | W_OK;
     default:
         break;

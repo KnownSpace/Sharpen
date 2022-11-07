@@ -15,7 +15,7 @@ void Entry()
         std::puts("pass");
         return;
     }
-    sharpen::FileChannelPtr channel = sharpen::MakeFileChannel("./iouring.test",sharpen::FileAccessModel::All,sharpen::FileOpenModel::CreateNew);
+    sharpen::FileChannelPtr channel = sharpen::MakeFileChannel("./iouring.test",sharpen::FileAccessMethod::All,sharpen::FileOpenMethod::CreateNew);
     sharpen::IoUringQueue queue{true};
     std::puts("write test");
     {
