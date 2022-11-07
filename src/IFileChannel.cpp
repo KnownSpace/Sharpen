@@ -79,13 +79,13 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
     //set access and shared
     switch (access)
     {
-    case sharpen::FileAccessModel::Read:
+    case sharpen::FileAccessMethod::Read:
         accessModel = O_RDONLY;
         break;
-    case sharpen::FileAccessModel::Write:
+    case sharpen::FileAccessMethod::Write:
         accessModel = O_WRONLY;
         break;
-    case sharpen::FileAccessModel::All:
+    case sharpen::FileAccessMethod::All:
         accessModel = O_RDWR;
         break;
     default:
@@ -94,13 +94,13 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
     //set open
     switch (open)
     {
-    case sharpen::FileOpenModel::Open:
+    case sharpen::FileOpenMethod::Open:
         openModel = 0;
         break;
-    case sharpen::FileOpenModel::CreateNew:
+    case sharpen::FileOpenMethod::CreateNew:
         openModel = O_CREAT | O_TRUNC;
         break;
-    case sharpen::FileOpenModel::CreateOrOpen:
+    case sharpen::FileOpenMethod::CreateOrOpen:
         openModel = O_CREAT;
         break;
     default:
@@ -116,7 +116,7 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
     case sharpen::FileIoMethod::Sync:
         ioFlag = O_SYNC;
         break;
-    case sharpen::FileIoMethod::DirestAndSync:
+    case sharpen::FileIoMethod::DirectAndSync:
         ioFlag = O_DIRECT | O_SYNC;
         break;
     default:
