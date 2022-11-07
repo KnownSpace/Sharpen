@@ -94,7 +94,7 @@ namespace sharpen
             return this->Get(index);
         }
 
-        inline std::int32_t CompareWith(const Self &other) const noexcept;
+        std::int32_t CompareWith(const Self &other) const noexcept;
         
         inline bool operator==(const Self &other) const noexcept
         {

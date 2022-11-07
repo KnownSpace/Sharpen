@@ -2,6 +2,8 @@
 #ifndef _SHARPEN_IREMOTEACTOR_HPP
 #define _SHARPEN_IREMOTEACTOR_HPP
 
+#include <memory>
+
 #include "IMail.hpp"
 #include "Future.hpp"
 
@@ -15,7 +17,7 @@ namespace sharpen
 
         virtual std::uint64_t DoGetAddressHash() const noexcept = 0;
 
-        virtual bool DoPost(const sharpen::IMail &mail) = 0;
+        virtual std::unique_ptr<sharpen::IMail> DoPost(const sharpen::IMail &mail) = 0;
 
         virtual void DoClose() noexcept = 0;
 
@@ -49,7 +51,7 @@ namespace sharpen
             return this->DoClose();
         }
 
-        inline bool Post(const sharpen::IMail &mail)
+        inline std::unique_ptr<sharpen::IMail> Post(const sharpen::IMail &mail)
         {
             return this->DoPost(mail);
         }

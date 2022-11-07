@@ -4,13 +4,13 @@ void sharpen::RemoteActorOperator::DoPost(sharpen::Future<bool> *future,const sh
 {
     try
     {
-        if(!this->isOpened_)
-        {
-            this->actor_->Open();
-            this->isOpened_ = true;
-        }
-        bool result{this->actor_->Post(*mail)};
-        future->Complete(result);
+        // if(!this->isOpened_)
+        // {
+        //     this->actor_->Open();
+        //     this->isOpened_ = true;
+        // }
+        // bool result{this->actor_->Post(*mail)};
+        // future->Complete(result);
     }
     catch(const std::exception &)
     {

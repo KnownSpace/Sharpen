@@ -49,11 +49,6 @@ namespace sharpen
         }
 
         void PostAsync(sharpen::Future<bool> &future,const sharpen::IMail &mail);
-
-        inline void ProposeAsync(sharpen::Future<bool> &future,const sharpen::IMail &mail)
-        {
-            this->PostAsync(future,mail);
-        }
     };   
 }
 
