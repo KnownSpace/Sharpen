@@ -6,9 +6,9 @@
 #include <cstring>
 #include <cstdlib>
 #include <stdexcept>
-
 #include <cstdint>
 #include <cstddef>
+
 #include "IteratorOps.hpp"
 #include "PointerIterator.hpp"
 #include "ReversePointerIterator.hpp"
@@ -55,15 +55,9 @@ namespace sharpen
 
         bool CheckPointer(const char *p);
 
-        inline static void *Alloc(std::size_t size) noexcept
-        {
-            return std::malloc(size);
-        }
+        static void *Alloc(std::size_t size) noexcept;
 
-        static void Free(void *p) noexcept
-        {
-            std::free(p);
-        }
+        static void Free(void *p,std::size_t size) noexcept;
     public:
         using Iterator = sharpen::PointerIterator<char>;
         using ConstIterator = sharpen::PointerIterator<const char>;

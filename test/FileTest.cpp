@@ -128,9 +128,9 @@ void Test()
     {
         channel = sharpen::MakeFileChannel("./raw_file.tmp",sharpen::FileAccessMethod::Write,sharpen::FileOpenMethod::CreateNew,sharpen::FileIoMethod::DirectAndSync);
         channel->Register(engine);
-        sharpen::AlignedPages content{1};
-        std::memcpy(content,"1234",4);
-        channel->WriteAsync(content,4096,0);
+        sharpen::ByteBuffer content{4096};
+        std::memcpy(content.Data(),"1234",4);
+        channel->WriteAsync(content,0);
         channel->Close();
         sharpen::RemoveFile("./raw_file.tmp");
     }

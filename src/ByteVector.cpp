@@ -2,6 +2,36 @@
 
 #include <cassert>
 
+#ifndef SHARPEN_NOT_AUTO_ALIGNED_PAGE
+#include <sharpen/AlignedAlloc.hpp>
+#endif
+
+void *sharpen::ByteVector::Alloc(std::size_t size) noexcept
+{
+    assert(size);
+    constexpr std::size_t pageSize{4096};
+#ifndef SHARPEN_NOT_AUTO_ALIGNED_PAGE
+    if(size % pageSize == 0)
+    {
+       return sharpen::AlignedAlloc(size,pageSize); 
+    }
+#endif
+    return std::malloc(size);
+}
+
+void sharpen::ByteVector::Free(void *p,std::size_t size) noexcept
+{
+    assert(size);
+    constexpr std::size_t pageSize{4096};
+#ifndef SHARPEN_NOT_AUTO_ALIGNED_PAGE
+    if(size % pageSize == 0)
+    {
+        return sharpen::AlignedFree(p);
+    }
+#endif
+    return std::free(p);
+}
+
 std::size_t sharpen::ByteVector::ComputeHeapSize(std::size_t size) noexcept
 {
     if(size % 2)
@@ -135,10 +165,11 @@ void sharpen::ByteVector::Clear() noexcept
     {
         char *p{nullptr};
         std::swap(p,this->rawVector_.external_.data_);
-        this->rawVector_.external_.cap_ = 0;
         if(p)
         {
-            this->Free(p);
+            std::size_t cap{this->rawVector_.external_.cap_};
+            this->Free(p,cap);
+            this->rawVector_.external_.cap_ = 0;
         }
     }
     this->size_ = 0;
@@ -166,7 +197,7 @@ void sharpen::ByteVector::Resize(std::size_t newSize,char defalutVal)
                 std::memcpy(buf,this->Data(),this->size_);
                 if(!this->InlineBuffer())
                 {
-                    this->Free(this->rawVector_.external_.data_);
+                    this->Free(this->rawVector_.external_.data_,this->rawVector_.external_.cap_);
                 }
                 for(std::size_t i = this->size_;i != newSize;++i)
                 {
@@ -180,8 +211,9 @@ void sharpen::ByteVector::Resize(std::size_t newSize,char defalutVal)
     else if(!this->InlineBuffer())
     {
         char *p = this->rawVector_.external_.data_;
+        std::size_t cap{this->rawVector_.external_.cap_};
         std::memcpy(this->rawVector_.inline_,p,newSize);
-        this->Free(p);
+        this->Free(p,cap);
     }
     else if(this->size_ < newSize)
     {
@@ -211,6 +243,7 @@ void sharpen::ByteVector::Erase(std::size_t begin,std::size_t end) noexcept
         if(!this->InlineBuffer() && this->InlineBuffer(newSize))
         {
             char *p{this->rawVector_.external_.data_};
+            std::size_t cap{this->rawVector_.external_.cap_};
             if(begin)
             {
                 std::memcpy(this->rawVector_.inline_,p,begin);
@@ -220,7 +253,7 @@ void sharpen::ByteVector::Erase(std::size_t begin,std::size_t end) noexcept
             {
                 std::memcpy(this->rawVector_.inline_ + begin,p + end,moveSize);
             }
-            this->Free(p);
+            this->Free(p,cap);
         }
         else
         {
