@@ -4,9 +4,9 @@
 
 #include <memory>
 #include <functional>
-
 #include <cstdint>
 #include <cstddef>
+
 #include "FileTypeDef.hpp"
 
 namespace sharpen
@@ -16,6 +16,8 @@ namespace sharpen
     class IoEvent;
 
     class EventEngine;
+
+    void CloseFileHandle(sharpen::FileHandle handle) noexcept;
     
     class IChannel:public std::enable_shared_from_this<sharpen::IChannel>
     {
