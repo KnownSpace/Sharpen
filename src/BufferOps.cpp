@@ -140,6 +140,7 @@ std::size_t sharpen::ComputeBase64EncodeSize(std::size_t size) noexcept
 
 std::size_t sharpen::ComputeBase64DecodeSize(std::size_t size) noexcept
 {
+    assert(size % 4 == 0);
     return size/4*3;
 }
 
