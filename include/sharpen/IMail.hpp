@@ -35,9 +35,11 @@ namespace sharpen
     
         virtual std::uint64_t GetSourceHash() const noexcept = 0;
 
-        virtual sharpen::IMailContent &Content() noexcept;
+        virtual sharpen::IMailContent &Content() noexcept = 0;
 
-        virtual const sharpen::IMailContent &Content() const noexcept;
+        virtual const sharpen::IMailContent &Content() const noexcept = 0;
+
+        virtual sharpen::ByteBuffer GenerateHeader() const = 0;
     };
 }
 
