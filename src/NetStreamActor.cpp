@@ -1,12 +1,14 @@
 #include <sharpen/NetStreamActor.hpp>
 
+#include <new>
 #include <cassert>
 
 void sharpen::NetStreamActor::DoClose() noexcept
 {
     sharpen::NetStreamChannelPtr channel{nullptr};
     {
-        std::unique_lock<sharpen::SpinLock> lock{this->lock_};
+        assert(this->lock_);
+        std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
         std::swap(channel,this->channel_);
     }
     if(channel)
@@ -19,7 +21,8 @@ void sharpen::NetStreamActor::DoOpen()
 {
     sharpen::NetStreamChannelPtr channel{nullptr};
     {
-        std::unique_lock<sharpen::SpinLock> lock{this->lock_};
+        assert(this->lock_);
+        std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
         if(!this->channel_)
         {
             assert(this->factory_);
@@ -35,7 +38,8 @@ std::unique_ptr<sharpen::IMail> sharpen::NetStreamActor::DoPost(const sharpen::I
 {
     sharpen::NetStreamChannelPtr channel{nullptr};
     {
-        std::unique_lock<sharpen::SpinLock> lock{this->lock_};
+        assert(this->lock_);
+        std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
         channel = this->channel_;
     }
     if(!channel)
@@ -55,20 +59,63 @@ std::unique_ptr<sharpen::IMail> sharpen::NetStreamActor::DoPost(const sharpen::I
         channel->WriteAsync(content.Content(),content.GetSize());
     }
     //receive mail
-    auto response{this->ReceiveMail(this->channel_.get())};
+    sharpen::ByteBuffer buffer{4096};
+    std::unique_ptr<sharpen::IMail> response{nullptr};
+    do
+    {
+        std::size_t sz{channel->ReadAsync(buffer)};
+        if(!sz)
+        {
+            throw sharpen::ActorClosedError{"actor already closed"};
+        }
+        sharpen::ByteSlice slice{buffer.Data(),sz};
+        response = this->parser_->Parse(slice);
+    } while (!response);
     return response;
 }
 
 std::uint64_t sharpen::NetStreamActor::DoGetAddressHash() const noexcept
 {
-    
+    return this->remoteEndpoint_->GetHashCode64();
 }
 
-sharpen::NetStreamActor::NetStreamActor(std::unique_ptr<sharpen::IEndPoint> endpoint,sharpen::INetSteamFactory *factory)
-    :lock_()
+sharpen::NetStreamActor::NetStreamActor(std::unique_ptr<sharpen::IEndPoint> endpoint,std::unique_ptr<sharpen::IMailParser> parser,sharpen::INetSteamFactory *factory)
+    :lock_(nullptr)
     ,channel_(nullptr)
     ,remoteEndpoint_(std::move(endpoint))
+    ,parser_(std::move(parser))
     ,factory_(factory)
 {
     assert(this->remoteEndpoint_);
+    assert(this->parser_);
+    assert(this->factory_);
+    this->lock_.reset(new (std::nothrow) sharpen::SpinLock{});
+    if(!this->lock_)
+    {
+        throw std::bad_alloc{};
+    }
+}
+
+sharpen::NetStreamActor::NetStreamActor(Self &&other) noexcept
+    :lock_(std::move(other.lock_))
+    ,channel_(std::move(other.channel_))
+    ,remoteEndpoint_(std::move(other.remoteEndpoint_))
+    ,parser_(std::move(other.parser_))
+    ,factory_(other.factory_)
+{
+    other.factory_ = nullptr;
+}
+
+sharpen::NetStreamActor &sharpen::NetStreamActor::operator=(Self &&other) noexcept
+{
+    if(this != std::addressof(other))
+    {
+        this->lock_ = std::move(other.lock_);
+        this->channel_ = std::move(other.channel_);
+        this->remoteEndpoint_ = std::move(other.remoteEndpoint_);
+        this->parser_ = std::move(other.parser_);
+        this->factory_ = other.factory_;
+        other.factory_ = nullptr;
+    }
+    return *this;
 }

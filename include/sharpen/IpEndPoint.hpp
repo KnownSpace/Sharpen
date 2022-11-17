@@ -138,7 +138,7 @@ namespace sharpen
             return this->StoreTo(buf,0);
         }
 
-        inline std::uint64_t GetHashCode64() const noexcept
+        inline virtual std::uint64_t GetHashCode64() const noexcept override
         {
             std::uint64_t value{this->GetPort()};
             std::uint32_t *p{reinterpret_cast<std::uint32_t*>(&value) + 1};
@@ -146,30 +146,15 @@ namespace sharpen
             return value;
         }
 
-        inline std::uint32_t GetHashCode32() const noexcept
+        inline virtual std::uint32_t GetHashCode32() const noexcept override
         {
             std::uint64_t hash{this->GetHashCode64()};
             return sharpen::BufferHash32(reinterpret_cast<const char*>(&hash),sizeof(hash));
         }
 
-        inline std::size_t GetHashCode() const noexcept
+        inline virtual std::size_t GetHashCode() const noexcept override
         {
             return sharpen::IpEndPointHash::GetHashCode(*this,0);
-        }
-
-        inline virtual std::uint32_t VirtualGetHashCode32() const noexcept override
-        {
-            return this->GetHashCode32();
-        }
-
-        inline virtual std::uint64_t VirtualGetHashCode64() const noexcept override
-        {
-            return this->GetHashCode64();
-        }
-
-        inline virtual std::size_t VirtualGetHashCode() const noexcept override
-        {
-            return this->GetHashCode();
         }
     };
 }

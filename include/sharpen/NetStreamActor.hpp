@@ -6,17 +6,19 @@
 #include "IEndPoint.hpp"
 #include "INetSteamFactory.hpp"
 #include "ActorClosedError.hpp"
+#include "IMailParser.hpp"
 
 namespace sharpen
 {
-    class NetStreamActor:public sharpen::IRemoteActor,public sharpen::Noncopyable,public sharpen::Nonmovable
+    class NetStreamActor:public sharpen::IRemoteActor,public sharpen::Noncopyable
     {
     private:
         using Self = sharpen::NetStreamActor;
     
-        sharpen::SpinLock lock_;
+        std::unique_ptr<sharpen::SpinLock> lock_;
         sharpen::NetStreamChannelPtr channel_;
         std::unique_ptr<sharpen::IEndPoint> remoteEndpoint_;
+        std::unique_ptr<sharpen::IMailParser> parser_;
         sharpen::INetSteamFactory *factory_;
 
         virtual std::uint64_t DoGetAddressHash() const noexcept override;
@@ -26,20 +28,20 @@ namespace sharpen
         virtual void DoClose() noexcept override;
 
         virtual void DoOpen() override;
-
-    protected:
-
-        virtual std::unique_ptr<sharpen::IMail> ReceiveMail(sharpen::INetStreamChannel *channel) = 0;
     public:
     
-        NetStreamActor(std::unique_ptr<sharpen::IEndPoint> endpoint,sharpen::INetSteamFactory *factory);
+        NetStreamActor(std::unique_ptr<sharpen::IEndPoint> endpoint,std::unique_ptr<sharpen::IMailParser> parser,sharpen::INetSteamFactory *factory);
         
+        NetStreamActor(Self &&other) noexcept;
+
         virtual ~NetStreamActor() noexcept = default;
     
         inline const Self &Const() const noexcept
         {
             return *this;
         }
+
+        Self &operator=(Self &&other) noexcept;
     };
 }
 

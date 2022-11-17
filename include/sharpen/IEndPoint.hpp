@@ -37,11 +37,11 @@ namespace sharpen
 
         virtual std::uint32_t GetAddrLen() const = 0;
 
-        virtual std::uint32_t VirtualGetHashCode32() const noexcept = 0;
+        virtual std::uint32_t GetHashCode32() const noexcept = 0;
 
-        virtual std::uint64_t VirtualGetHashCode64() const noexcept = 0;
+        virtual std::uint64_t GetHashCode64() const noexcept = 0;
 
-        virtual std::size_t VirtualGetHashCode() const noexcept = 0;
+        virtual std::size_t GetHashCode() const noexcept = 0;
     };
 }
 
