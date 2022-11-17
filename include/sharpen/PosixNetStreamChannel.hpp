@@ -49,6 +49,8 @@ namespace sharpen
         ConnectCallback connectCb_;
         Callbacks pollReadCbs_;
         Callbacks pollWriteCbs_;
+        //close waiter
+        sharpen::Future<void> closeWaiter_;
 
         sharpen::FileHandle DoAccept();
 

@@ -22,13 +22,42 @@ sharpen::PosixNetStreamChannel::PosixNetStreamChannel(sharpen::FileHandle handle
     ,connectCb_()
     ,pollReadCbs_()
     ,pollWriteCbs_()
+    ,closeWaiter_()
 {
     this->handle_ = handle;
+    //reset closer before ~IChannel() to be invoked
+    //because SafeClose use this pointer
+    this->closer_ = std::bind(&sharpen::PosixNetStreamChannel::SafeClose,this,std::placeholders::_1);
+    this->closeWaiter_.Complete();
 }
 
 sharpen::PosixNetStreamChannel::~PosixNetStreamChannel() noexcept
 {
     this->DoCancel(ECONNABORTED);
+    //reset closer
+    {
+        std::function<void(sharpen::FileHandle)> tmp;
+        std::swap(tmp,this->closer_);
+    }
+    this->closeWaiter_.Wait();
+}
+
+void sharpen::PosixNetStreamChannel::DoSafeClose(sharpen::FileHandle handle) noexcept
+{
+    this->DoCancel(ECONNABORTED);
+    sharpen::CloseFileHandle(handle);
+    this->closeWaiter_.Complete();
+}
+
+void sharpen::PosixNetStreamChannel::SafeClose(sharpen::FileHandle handle) noexcept
+{
+    if(this->loop_)
+    {
+        this->closeWaiter_.Reset();
+        //FIXME:throw bad alloc
+        return this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixNetStreamChannel::DoSafeClose,this,handle));
+    }
+    sharpen::CloseFileHandle(handle);
 }
 
 bool sharpen::PosixNetStreamChannel::IsAcceptBlock(sharpen::ErrorCode err) noexcept
@@ -123,7 +152,7 @@ void sharpen::PosixNetStreamChannel::HandleAccept()
             cb(accept);
             return;
         }
-        ::close(accept);
+        sharpen::CloseFileHandle(accept);
     }
 }
 
