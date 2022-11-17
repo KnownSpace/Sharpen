@@ -126,17 +126,17 @@ namespace sharpen
             return this->CompareWith(other) <= 0;
         }
 
-        inline std::uint32_t Hash32() const noexcept
+        inline std::uint32_t GetHashCode32() const noexcept
         {
             return sharpen::BufferHash32(this->Data(),this->GetSize());
         }
 
-        inline std::uint64_t Hash64() const noexcept
+        inline std::uint64_t GetHashCode64() const noexcept
         {
             return sharpen::BufferHash64(this->Data(),this->GetSize());
         }
 
-        inline std::size_t Hash() const noexcept
+        inline std::size_t GetHashCode() const noexcept
         {
             return sharpen::BufferHash(this->Data(),this->GetSize());
         }
@@ -210,7 +210,7 @@ namespace std
     {
         inline std::size_t operator()(const sharpen::ByteSlice &slice) const noexcept
         {
-            return slice.Hash();
+            return slice.GetHashCode();
         }
     };
 }

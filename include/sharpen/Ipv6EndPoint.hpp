@@ -128,6 +128,45 @@ namespace sharpen
         {
             return this->StoreTo(buf,0);
         }
+
+        inline std::uint64_t GetHashCode64() const noexcept
+        {
+            char buffer[sizeof(in6_addr) + sizeof(std::uint16_t)] = {};
+            this->GetAddr(*reinterpret_cast<in6_addr*>(buffer));
+            *reinterpret_cast<std::uint16_t*>(buffer + sizeof(in6_addr)) = this->GetPort();
+            return sharpen::BufferHash64(buffer,sizeof(buffer));
+        }
+
+        inline std::uint32_t GetHashCode32() const noexcept
+        {
+            char buffer[sizeof(in6_addr) + sizeof(std::uint16_t)] = {};
+            this->GetAddr(*reinterpret_cast<in6_addr*>(buffer));
+            *reinterpret_cast<std::uint16_t*>(buffer + sizeof(in6_addr)) = this->GetPort();
+            return sharpen::BufferHash32(buffer,sizeof(buffer));
+        }
+
+        inline std::size_t GetHashCode() const noexcept
+        {
+            char buffer[sizeof(in6_addr) + sizeof(std::uint16_t)] = {};
+            this->GetAddr(*reinterpret_cast<in6_addr*>(buffer));
+            *reinterpret_cast<std::uint16_t*>(buffer + sizeof(in6_addr)) = this->GetPort();
+            return sharpen::BufferHash(buffer,sizeof(buffer));
+        }
+
+        inline virtual std::uint32_t VirtualGetHashCode32() const noexcept override
+        {
+            return this->GetHashCode32();
+        }
+
+        inline virtual std::uint64_t VirtualGetHashCode64() const noexcept override
+        {
+            return this->GetHashCode64();
+        }
+
+        inline virtual std::size_t VirtualGetHashCode() const noexcept override
+        {
+            return this->GetHashCode();
+        }
     };
     
 }
@@ -137,12 +176,9 @@ namespace std
     template<>
     struct hash<sharpen::Ipv6EndPoint>
     {
-        std::size_t operator()(const sharpen::Ipv6EndPoint &endpoint) const noexcept
+        inline std::size_t operator()(const sharpen::Ipv6EndPoint &endpoint) const noexcept
         {
-            char buffer[sizeof(in6_addr) + sizeof(std::uint16_t)] = {};
-            endpoint.GetAddr(*reinterpret_cast<in6_addr*>(buffer));
-            *reinterpret_cast<std::uint16_t*>(buffer + sizeof(in6_addr)) = endpoint.GetPort();
-            return sharpen::BufferHash(buffer,sizeof(buffer));
+            return endpoint.GetHashCode();
         }
     };
 }

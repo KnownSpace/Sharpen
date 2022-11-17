@@ -4,6 +4,8 @@
 
 #include <functional>
 #include <stdexcept>
+#include <cstdint>
+#include <cstddef>
 
 #include "SystemMacro.hpp"
 
@@ -12,16 +14,31 @@
 #endif
 
 #include "IEndPoint.hpp"
-#include <cstdint>
-#include <cstddef>
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "SystemError.hpp"
+#include "TypeTraits.hpp"
+#include "BufferOps.hpp"
 
 
 namespace sharpen
 {
     class ByteBuffer;
+
+    struct IpEndPointHash
+    {
+        template<typename _U,typename _Check = sharpen::EnableIf<std::is_same<std::size_t,std::uint64_t>::value>>
+        inline static std::uint64_t GetHashCode(const _U &ep,int) noexcept
+        {
+            return ep.GetHashCode64();
+        }
+
+        template<typename _U>
+        inline static std::uint32_t GetHashCode(const _U &ep,...) noexcept
+        {
+            return ep.GetHashCode32();
+        }
+    };
 
     class IpEndPoint:public sharpen::IEndPoint
     {
@@ -120,6 +137,40 @@ namespace sharpen
         {
             return this->StoreTo(buf,0);
         }
+
+        inline std::uint64_t GetHashCode64() const noexcept
+        {
+            std::uint64_t value{this->GetPort()};
+            std::uint32_t *p{reinterpret_cast<std::uint32_t*>(&value) + 1};
+            *p = this->GetAddr();
+            return value;
+        }
+
+        inline std::uint32_t GetHashCode32() const noexcept
+        {
+            std::uint64_t hash{this->GetHashCode64()};
+            return sharpen::BufferHash32(reinterpret_cast<const char*>(&hash),sizeof(hash));
+        }
+
+        inline std::size_t GetHashCode() const noexcept
+        {
+            return sharpen::IpEndPointHash::GetHashCode(*this,0);
+        }
+
+        inline virtual std::uint32_t VirtualGetHashCode32() const noexcept override
+        {
+            return this->GetHashCode32();
+        }
+
+        inline virtual std::uint64_t VirtualGetHashCode64() const noexcept override
+        {
+            return this->GetHashCode64();
+        }
+
+        inline virtual std::size_t VirtualGetHashCode() const noexcept override
+        {
+            return this->GetHashCode();
+        }
     };
 }
 
@@ -128,26 +179,10 @@ namespace std
     template<>
     struct hash<sharpen::IpEndPoint>
     {
-    private:
-        template<typename _U>
-        static std::size_t MapToSize(_U &&ep,int) noexcept
-        {
-            std::uint64_t value{ep.GetPort()};
-            std::uint32_t *p{reinterpret_cast<std::uint32_t*>(&value)};
-            p += 1;
-            *p = ep.GetAddr();
-            return value;
-        }
-
-        template<typename _U>
-        static std::size_t MapToSize(_U &&ep,...) noexcept
-        {
-            return ep.GetAddr() ^ ep.GetPort();   
-        }
     public:
-        std::size_t operator()(const sharpen::IpEndPoint &endpoint) const noexcept
+        inline std::size_t operator()(const sharpen::IpEndPoint &endpoint) const noexcept
         {
-            return this->MapToSize(endpoint,0);
+            return endpoint.GetHashCode();
         }
     };
 }

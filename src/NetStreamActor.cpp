@@ -1,5 +1,7 @@
 #include <sharpen/NetStreamActor.hpp>
 
+#include <cassert>
+
 void sharpen::NetStreamActor::DoClose() noexcept
 {
     sharpen::NetStreamChannelPtr channel{nullptr};
@@ -55,4 +57,18 @@ std::unique_ptr<sharpen::IMail> sharpen::NetStreamActor::DoPost(const sharpen::I
     //receive mail
     auto response{this->ReceiveMail(this->channel_.get())};
     return response;
+}
+
+std::uint64_t sharpen::NetStreamActor::DoGetAddressHash() const noexcept
+{
+    
+}
+
+sharpen::NetStreamActor::NetStreamActor(std::unique_ptr<sharpen::IEndPoint> endpoint,sharpen::INetSteamFactory *factory)
+    :lock_()
+    ,channel_(nullptr)
+    ,remoteEndpoint_(std::move(endpoint))
+    ,factory_(factory)
+{
+    assert(this->remoteEndpoint_);
 }

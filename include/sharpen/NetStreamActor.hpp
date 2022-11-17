@@ -9,7 +9,7 @@
 
 namespace sharpen
 {
-    class NetStreamActor:public sharpen::IRemoteActor
+    class NetStreamActor:public sharpen::IRemoteActor,public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
         using Self = sharpen::NetStreamActor;
@@ -33,24 +33,8 @@ namespace sharpen
     public:
     
         NetStreamActor(std::unique_ptr<sharpen::IEndPoint> endpoint,sharpen::INetSteamFactory *factory);
-    
-        NetStreamActor(const Self &other);
-    
-        NetStreamActor(Self &&other) noexcept;
-    
-        inline Self &operator=(const Self &other)
-        {
-            if(this != std::addressof(other))
-            {
-                Self tmp{other};
-                std::swap(tmp,*this);
-            }
-            return *this;
-        }
-    
-        Self &operator=(Self &&other) noexcept;
-    
-        ~NetStreamActor() noexcept = default;
+        
+        virtual ~NetStreamActor() noexcept = default;
     
         inline const Self &Const() const noexcept
         {
