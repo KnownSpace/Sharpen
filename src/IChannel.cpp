@@ -36,7 +36,7 @@ void sharpen::CloseFileHandle(sharpen::FileHandle handle) noexcept
 void sharpen::IChannel::Close() noexcept
 {
 #ifdef SHARPEN_IS_WIN
-    constexpr sharpen::FileHandle invalidHandle{INVALID_HANDLE_VALUE};
+    const sharpen::FileHandle invalidHandle{static_cast<sharpen::FileHandle>(INVALID_HANDLE_VALUE)};
 #else
     constexpr sharpen::FileHandle invalidHandle{-1};
 #endif

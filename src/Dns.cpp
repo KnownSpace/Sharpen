@@ -1,6 +1,7 @@
 #include <sharpen/Dns.hpp>
 
 #include <cstring>
+#include <new>
 
 #include <sharpen/IpEndPoint.hpp>
 #include <sharpen/Ipv6EndPoint.hpp>
@@ -40,12 +41,20 @@ sharpen::Dns::ResolveResult sharpen::Dns::ConvertAddrInfoToResolveResult(addrinf
 #else
         addr = paddr->sin_addr.s_addr;
 #endif
-        r.endPoint_.reset(new sharpen::IpEndPoint{addr,::ntohs(paddr->sin_port)});
+        r.endPoint_.reset(new (std::nothrow) sharpen::IpEndPoint{addr,::ntohs(paddr->sin_port)});
+        if(!r.endPoint_)
+        {
+            throw std::bad_alloc{};
+        }
     }
     else
     {
         sockaddr_in6 *paddr = reinterpret_cast<sockaddr_in6*>(addrInfo->ai_addr);
-        r.endPoint_.reset(new sharpen::Ipv6EndPoint{paddr->sin6_addr,::ntohs(paddr->sin6_port)});
+        r.endPoint_.reset(new (std::nothrow) sharpen::Ipv6EndPoint{paddr->sin6_addr,::ntohs(paddr->sin6_port)});
+        if(!r.endPoint_)
+        {
+            throw std::bad_alloc{};
+        }
     }
     return r;
 }

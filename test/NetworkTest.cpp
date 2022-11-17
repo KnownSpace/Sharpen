@@ -37,6 +37,7 @@ void ServerTest()
     }
     client->WriteObjectAsync(0);
     std::printf("server test pass\n");
+    server->Close();
 }
 
 void ClientTest()
@@ -74,6 +75,7 @@ void ClientTest()
         std::printf("read obj %d\n",val);
     }
     std::printf("client test pass\n");
+    client->Close();
 }
 
 void CancelTest()
@@ -118,6 +120,8 @@ void CancelTest()
     }
     std::printf("cancel test end\n");
     assert(flag == 10);
+    server->Close();
+    client->Close();
 }
 
 void TimeoutTest()
@@ -147,6 +151,47 @@ void TimeoutTest()
     {
         std::puts("timeout");
     }
+    client->Close();
+    server->Close();
+}
+
+void CloseTest()
+{
+    sharpen::NetStreamChannelPtr server = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
+    sharpen::NetStreamChannelPtr client = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
+    sharpen::IpEndPoint ep{0,0};
+    ep.SetAddrByString("127.0.0.1");
+    client->Bind(ep);
+    ep.SetPort(8080);
+#ifdef SHARPEN_IS_LINUX
+    server->SetReuseAddress(true);
+#endif
+    server->Bind(ep);
+    server->Register(sharpen::EventEngine::GetEngine());
+    client->Register(sharpen::EventEngine::GetEngine());
+    server->Listen(65535);
+    sharpen::AwaitableFuture<void> future;
+    client->ConnectAsync(ep,future);
+    sharpen::NetStreamChannelPtr chd = server->AcceptAsync();
+    future.Await();
+    chd->Register(sharpen::EventEngine::GetEngine());
+    char buf[6] = {};
+    sharpen::Launch([chd](){
+        sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::EventEngine::GetEngine());
+        timer->Await(std::chrono::seconds(3));
+        chd->Close();
+    });
+    try
+    {
+        chd->ReadAsync(buf,sizeof(buf));
+    }
+    catch(const std::system_error &e)
+    {
+        assert(e.code().value() == sharpen::ErrorConnectionAborted);
+        std::printf("%s %d\n",e.code().message().c_str(),e.code().value());   
+    }
+    server->Close();
+    client->Close();
 }
 
 void NetworkTest()
@@ -158,6 +203,7 @@ void NetworkTest()
         ServerTest();
         CancelTest();
         TimeoutTest();
+        CloseTest();
         sharpen::CleanupNetSupport();
     });
 }

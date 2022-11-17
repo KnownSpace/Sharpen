@@ -27,7 +27,7 @@ namespace sharpen
             :lock_(nullptr)
             ,map_()
         {
-            this->lock_.reset(new sharpen::SpinLock{});
+            this->lock_.reset(new (std::nothrow) sharpen::SpinLock{});
             if(!this->lock_)
             {
                 throw std::bad_alloc();

@@ -1,8 +1,11 @@
 #include <sharpen/EventEngine.hpp>
+
+#include <cassert>
+#include <new>
+
 #include <sharpen/ISelector.hpp>
 #include <sharpen/SystemMacro.hpp>
 #include <sharpen/SelectorOps.hpp>
-#include <cassert>
 
 sharpen::EventEngine::SelfPtr sharpen::EventEngine::engine_;
 
@@ -20,12 +23,20 @@ sharpen::EventEngine::EventEngine(std::size_t workerCount)
     ,mainLoop_(nullptr)
 {
     assert(workerCount != 0);
-    this->mainLoop_.reset(new sharpen::EventLoop(sharpen::MakeDefaultSelector()));
+    this->mainLoop_.reset(new (std::nothrow) sharpen::EventLoop(sharpen::MakeDefaultSelector()));
+    if(!this->mainLoop_)
+    {
+        throw std::bad_alloc{};
+    }
     this->loops_.push_back(this->mainLoop_.get());
     for (std::size_t i = 0,count = workerCount - 1; i != count; ++i)
     {
         //one selector per thread
-        std::unique_ptr<sharpen::EventLoopThread> thread(new sharpen::EventLoopThread(sharpen::MakeDefaultSelector()));
+        std::unique_ptr<sharpen::EventLoopThread> thread(new (std::nothrow) sharpen::EventLoopThread(sharpen::MakeDefaultSelector()));
+        if(!thread)
+        {
+            throw std::bad_alloc{};
+        }
         this->loops_.push_back(thread->GetLoop());
         this->workers_.push_back(std::move(thread));
     }
@@ -116,7 +127,11 @@ sharpen::EventEngine &sharpen::EventEngine::SetupEngine(std::size_t workerCount)
 {
     std::call_once(sharpen::EventEngine::flag_,[workerCount]()
     {
-        sharpen::EventEngine *engine = new sharpen::EventEngine(workerCount);
+        sharpen::EventEngine *engine = new (std::nothrow) sharpen::EventEngine(workerCount);
+        if(!engine)
+        {
+            throw std::bad_alloc{};
+        }
         sharpen::EventEngine::engine_.reset(engine);
     });
     return *sharpen::EventEngine::engine_;
@@ -124,7 +139,7 @@ sharpen::EventEngine &sharpen::EventEngine::SetupEngine(std::size_t workerCount)
 
 void sharpen::EventEngine::InitEngine()
 {
-    sharpen::EventEngine *engine = new sharpen::EventEngine();
+    sharpen::EventEngine *engine = new (std::nothrow) sharpen::EventEngine();
     if(!engine)
     {
         throw std::bad_alloc();

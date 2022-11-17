@@ -28,33 +28,45 @@ sharpen::PosixNetStreamChannel::PosixNetStreamChannel(sharpen::FileHandle handle
     //reset closer before ~IChannel() to be invoked
     //because SafeClose use this pointer
     this->closer_ = std::bind(&sharpen::PosixNetStreamChannel::SafeClose,this,std::placeholders::_1);
-    this->closeWaiter_.Complete();
 }
 
 sharpen::PosixNetStreamChannel::~PosixNetStreamChannel() noexcept
 {
-    this->DoCancel(ECONNABORTED);
+    this->DoCancel(sharpen::ErrorConnectionAborted);
     //reset closer
     {
         std::function<void(sharpen::FileHandle)> tmp;
         std::swap(tmp,this->closer_);
     }
-    this->closeWaiter_.Wait();
+    if(this->closeWaiter_)
+    {
+        this->closeWaiter_->WaitAsync();
+    }
 }
 
 void sharpen::PosixNetStreamChannel::DoSafeClose(sharpen::FileHandle handle) noexcept
 {
-    this->DoCancel(ECONNABORTED);
+    this->DoCancel(sharpen::ErrorConnectionAborted);
     sharpen::CloseFileHandle(handle);
-    this->closeWaiter_.Complete();
+    this->closeWaiter_->Complete();
 }
 
 void sharpen::PosixNetStreamChannel::SafeClose(sharpen::FileHandle handle) noexcept
 {
     if(this->loop_)
     {
-        this->closeWaiter_.Reset();
         //FIXME:throw bad alloc
+        if(!this->closeWaiter_)
+        {
+            auto *p{new (std::nothrow) sharpen::AwaitableFuture<void>{}};
+            if(!p)
+            {
+                //bad alloc
+                std::terminate();
+            }
+            this->closeWaiter_.reset(p);
+        }
+        this->closeWaiter_->Reset();
         return this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixNetStreamChannel::DoSafeClose,this,handle));
     }
     sharpen::CloseFileHandle(handle);
@@ -62,12 +74,7 @@ void sharpen::PosixNetStreamChannel::SafeClose(sharpen::FileHandle handle) noexc
 
 bool sharpen::PosixNetStreamChannel::IsAcceptBlock(sharpen::ErrorCode err) noexcept
 {
-#ifdef EAGAIN
-    sharpen::ErrorCode blocking = EAGAIN;
-#else
-    sharpen::ErrorCode blocking = EWOULDBLOCK;
-#endif
-    return err == blocking || err == EINTR || err == EPROTO || err == ECONNABORTED;
+    return err == sharpen::ErrorBlocking || err == EINTR || err == EPROTO || err == sharpen::ErrorConnectionAborted;
 }
 
 sharpen::FileHandle sharpen::PosixNetStreamChannel::DoAccept()
@@ -535,7 +542,7 @@ void sharpen::PosixNetStreamChannel::DoCancel(sharpen::ErrorCode err) noexcept
 
 void sharpen::PosixNetStreamChannel::Cancel() noexcept
 {
-    this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixNetStreamChannel::DoCancel,this,ECANCELED));
+    this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixNetStreamChannel::DoCancel,this,sharpen::ErrorCancel));
 }
 
 #endif

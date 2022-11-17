@@ -1,5 +1,7 @@
 #include <sharpen/TimerOps.hpp>
 
+#include <new>
+
 std::unique_ptr<sharpen::TimerPool> sharpen::TimerHelper::gobalTimerPool_{nullptr};
 
 std::once_flag sharpen::TimerHelper::flag_;
@@ -7,7 +9,7 @@ std::once_flag sharpen::TimerHelper::flag_;
 void sharpen::TimerHelper::InitTimerPool(sharpen::EventEngine *engine,Maker maker)
 {
     assert(engine != nullptr);
-    auto *p = new sharpen::TimerPool{*engine,maker};
+    auto *p = new (std::nothrow) sharpen::TimerPool{*engine,maker};
     if(!p)
     {
         throw std::bad_alloc();

@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cstring>
 #include <stdexcept>
+#include <new>
 
 sharpen::WinOutputPipeChannel::WinOutputPipeChannel(sharpen::FileHandle handle)
     :Mybase()

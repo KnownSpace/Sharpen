@@ -8,6 +8,7 @@
 
 #include <WinSock2.h>
 #include <MSWSock.h>
+#include <new>
 
 #include <sharpen/EventLoop.hpp>
 

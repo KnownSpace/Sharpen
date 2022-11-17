@@ -50,7 +50,7 @@ namespace sharpen
         Callbacks pollReadCbs_;
         Callbacks pollWriteCbs_;
         //close waiter
-        sharpen::Future<void> closeWaiter_;
+        std::unique_ptr<sharpen::AwaitableFuture<void>> closeWaiter_;
 
         sharpen::FileHandle DoAccept();
 

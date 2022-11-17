@@ -7,10 +7,11 @@
 #include <functional>
 #include <exception>
 #include <stdexcept>
-
-#include "SpinLock.hpp"
+#include <new>
 #include <cstdint>
 #include <cstddef>
+
+#include "SpinLock.hpp"
 #include "Optional.hpp"
 
 namespace sharpen
@@ -48,9 +49,9 @@ namespace sharpen
         }
     public:
         Future()
-            :lock_(new sharpen::SpinLock())
+            :lock_(new (std::nothrow) sharpen::SpinLock())
             ,value_(sharpen::EmptyOpt)
-            ,cond_(new std::condition_variable_any())
+            ,cond_(new (std::nothrow) std::condition_variable_any())
             ,callback_()
             ,state_(sharpen::FutureState::Pending)
             ,error_()
@@ -242,8 +243,8 @@ namespace sharpen
     public:
 
         Future()
-            :lock_(new sharpen::SpinLock())
-            ,cond_(new std::condition_variable_any())
+            :lock_(new (std::nothrow) sharpen::SpinLock())
+            ,cond_(new (std::nothrow) std::condition_variable_any())
             ,callback_()
             ,state_(sharpen::FutureState::Pending)
             ,error_()

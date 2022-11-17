@@ -5,6 +5,7 @@
 #include <mutex>
 #include <cassert>
 #include <limits>
+#include <new>
 
 #include <fcntl.h>
 
@@ -24,7 +25,11 @@ sharpen::EpollSelector::EpollSelector()
 #ifdef SHARPEN_HAS_IOURING
     if(sharpen::TestIoUring())
     {
-        ring_.reset(new sharpen::IoUringQueue());
+        this->ring_.reset(new (std::nothrow) sharpen::IoUringQueue());
+        if(!this->ring_)
+        {
+            throw std::bad_alloc{};
+        }
         this->RegisterInternalEventFd(this->ring_->EventFd().GetHandle(),2);
     }
 #endif
