@@ -34,7 +34,7 @@ void sharpen::NetStreamActor::DoOpen()
     channel->ConnectAsync(*this->remoteEndpoint_);
 }
 
-std::unique_ptr<sharpen::IMail> sharpen::NetStreamActor::DoPost(const sharpen::IMail &mail)
+sharpen::Mail sharpen::NetStreamActor::DoPost(const sharpen::Mail &mail)
 {
     sharpen::NetStreamChannelPtr channel{nullptr};
     {
@@ -48,20 +48,18 @@ std::unique_ptr<sharpen::IMail> sharpen::NetStreamActor::DoPost(const sharpen::I
         throw sharpen::ActorClosedError{"actor already closed"};
     }
     //post mail
-    sharpen::ByteBuffer header{mail.GenerateHeader()};
-    if(!header.Empty())
+    if(!mail.Header().Empty())
     {
-        channel->WriteAsync(header);
+        channel->WriteAsync(mail.Header());
     }
-    const sharpen::IMailContent &content{mail.Content()};
-    if(content.GetSize())
+    if(!mail.Content().Empty())
     {
-        channel->WriteAsync(content.Content(),content.GetSize());
+        channel->WriteAsync(mail.Content());
     }
     //receive mail
     sharpen::ByteBuffer buffer{4096};
-    std::unique_ptr<sharpen::IMail> response{nullptr};
-    do
+    sharpen::Mail response;
+    while (!this->parser_->Completed())
     {
         std::size_t sz{channel->ReadAsync(buffer)};
         if(!sz)
@@ -69,12 +67,13 @@ std::unique_ptr<sharpen::IMail> sharpen::NetStreamActor::DoPost(const sharpen::I
             throw sharpen::ActorClosedError{"actor already closed"};
         }
         sharpen::ByteSlice slice{buffer.Data(),sz};
-        response = this->parser_->Parse(slice);
-    } while (!response);
+        this->parser_->Parse(slice);
+    }
+    response = this->parser_->PopCompletedMail();
     return response;
 }
 
-std::uint64_t sharpen::NetStreamActor::DoGetAddressHash() const noexcept
+std::uint64_t sharpen::NetStreamActor::DoGetId() const noexcept
 {
     return this->remoteEndpoint_->GetHashCode64();
 }

@@ -57,7 +57,7 @@ namespace sharpen
 
         static void *Alloc(std::size_t size) noexcept;
 
-        static void Free(void *p,std::size_t size) noexcept;
+        static void Free(void *p) noexcept;
     public:
         using Iterator = sharpen::PointerIterator<char>;
         using ConstIterator = sharpen::PointerIterator<const char>;

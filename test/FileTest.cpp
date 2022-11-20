@@ -6,6 +6,7 @@
 #include <sharpen/EventEngine.hpp>
 #include <sharpen/FileOps.hpp>
 #include <sharpen/AlignedAlloc.hpp>
+#include <sharpen/MemoryPage.hpp>
 
 void Test()
 {
@@ -128,9 +129,9 @@ void Test()
     {
         channel = sharpen::MakeFileChannel("./raw_file.tmp",sharpen::FileAccessMethod::Write,sharpen::FileOpenMethod::CreateNew,sharpen::FileIoMethod::DirectAndSync);
         channel->Register(engine);
-        sharpen::ByteBuffer content{4096};
+        sharpen::MemoryPage content{1};
         std::memcpy(content.Data(),"1234",4);
-        channel->WriteAsync(content,0);
+        channel->WriteAsync(content.Data(),content.GetSize(),0);
         channel->Close();
         sharpen::RemoveFile("./raw_file.tmp");
     }

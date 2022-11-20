@@ -21,9 +21,9 @@ namespace sharpen
         std::unique_ptr<sharpen::IMailParser> parser_;
         sharpen::INetSteamFactory *factory_;
 
-        virtual std::uint64_t DoGetAddressHash() const noexcept override;
+        virtual std::uint64_t DoGetId() const noexcept override;
 
-        virtual std::unique_ptr<sharpen::IMail> DoPost(const sharpen::IMail &mail) override;
+        virtual sharpen::Mail DoPost(const sharpen::Mail &mail) override;
 
         virtual void DoClose() noexcept override;
 

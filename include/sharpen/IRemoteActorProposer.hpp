@@ -20,11 +20,11 @@ namespace sharpen
         std::unique_ptr<sharpen::WorkerGroup> worker_;
         bool isOpened_;
 
-        void DoPropose(sharpen::Future<bool> *future,const sharpen::IMail *mail) noexcept;
+        void DoPropose(sharpen::Future<bool> *future,const sharpen::Mail *mail) noexcept;
 
     protected:
 
-        virtual bool OnResponse(const sharpen::IMail &mail) noexcept = 0;
+        virtual bool OnResponse(const sharpen::Mail &mail) noexcept = 0;
     public:
     
         IRemoteActorProposer(std::unique_ptr<sharpen::WorkerGroup> singleWorker,sharpen::IRemoteActor &actor) noexcept;
@@ -39,7 +39,7 @@ namespace sharpen
             return *this;
         }
 
-        void ProposeAsync(sharpen::Future<bool> &future,const sharpen::IMail &mail);
+        void ProposeAsync(sharpen::Future<bool> &future,const sharpen::Mail &mail);
 
         void Cancel() noexcept;
     };   

@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "IMail.hpp"
+#include "Mail.hpp"
 #include "ByteSlice.hpp"
 
 namespace sharpen
@@ -33,8 +33,11 @@ namespace sharpen
             return *this;
         }
 
-        //nullptr if mail not completed
-        virtual std::unique_ptr<sharpen::IMail> Parse(const sharpen::ByteSlice &slice) = 0;
+        virtual void Parse(const sharpen::ByteSlice &slice) = 0;
+
+        virtual sharpen::Mail PopCompletedMail() = 0;
+
+        virtual bool Completed() const noexcept = 0;
     };
 }
 

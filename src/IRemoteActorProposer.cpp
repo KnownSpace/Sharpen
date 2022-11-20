@@ -1,6 +1,6 @@
 #include <sharpen/IRemoteActorProposer.hpp>
 
-void sharpen::IRemoteActorProposer::DoPropose(sharpen::Future<bool> *future,const sharpen::IMail *mail) noexcept
+void sharpen::IRemoteActorProposer::DoPropose(sharpen::Future<bool> *future,const sharpen::Mail *mail) noexcept
 {
     (void)mail;
     try
@@ -10,9 +10,8 @@ void sharpen::IRemoteActorProposer::DoPropose(sharpen::Future<bool> *future,cons
             this->actor_->Open();
             this->isOpened_ = true;
         }
-        std::unique_ptr<sharpen::IMail> response{this->actor_->Post(*mail)};
-        assert(response);
-        bool result{this->OnResponse(*response)};
+        sharpen::Mail response{this->actor_->Post(*mail)};
+        bool result{this->OnResponse(response)};
         future->Complete(result);
     }
     catch(const std::exception &)
@@ -21,7 +20,7 @@ void sharpen::IRemoteActorProposer::DoPropose(sharpen::Future<bool> *future,cons
     }
 }
 
-void sharpen::IRemoteActorProposer::ProposeAsync(sharpen::Future<bool> &future,const sharpen::IMail &mail)
+void sharpen::IRemoteActorProposer::ProposeAsync(sharpen::Future<bool> &future,const sharpen::Mail &mail)
 {
     this->worker_->Submit(&Self::DoPropose,this,&future,&mail);
 }

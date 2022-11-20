@@ -56,3 +56,9 @@ void sharpen::WorkerGroup::Entry(std::size_t index)
     }
     future->Complete();
 }
+
+void sharpen::WorkerGroup::DoSubmit(std::function<void()> task)
+{
+    assert(this->token_.load());
+    this->queue_.Emplace(std::move(task));
+}

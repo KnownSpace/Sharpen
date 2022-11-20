@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "IMail.hpp"
+#include "Mail.hpp"
 #include "Future.hpp"
 
 namespace sharpen
@@ -15,9 +15,9 @@ namespace sharpen
         using Self = sharpen::IRemoteActor;
     protected:
 
-        virtual std::uint64_t DoGetAddressHash() const noexcept = 0;
+        virtual std::uint64_t DoGetId() const noexcept = 0;
 
-        virtual std::unique_ptr<sharpen::IMail> DoPost(const sharpen::IMail &mail) = 0;
+        virtual sharpen::Mail DoPost(const sharpen::Mail &mail) = 0;
 
         virtual void DoClose() noexcept = 0;
 
@@ -51,9 +51,14 @@ namespace sharpen
             return this->DoClose();
         }
 
-        inline std::unique_ptr<sharpen::IMail> Post(const sharpen::IMail &mail)
+        inline sharpen::Mail Post(const sharpen::Mail &mail)
         {
             return this->DoPost(mail);
+        }
+
+        inline std::uint64_t GetId() const noexcept
+        {
+            return this->DoGetId();
         }
     };
 }
