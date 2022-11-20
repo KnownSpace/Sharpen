@@ -21,7 +21,7 @@ namespace sharpen
         using ReverseIterator = typename Vector::ReverseIterator;
         using ConstReverseIterator = typename Vector::ConstReverseIterator;
 
-        ByteBuffer() = default;
+        ByteBuffer() noexcept = default;
 
         explicit ByteBuffer(std::size_t size);
 

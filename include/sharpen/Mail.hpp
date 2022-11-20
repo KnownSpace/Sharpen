@@ -15,7 +15,17 @@ namespace sharpen
         sharpen::ByteBuffer content_;
     public:
     
-        Mail() = default;
+        Mail() noexcept = default;
+
+        explicit Mail(sharpen::ByteBuffer content) noexcept
+            :header_()
+            ,content_(content)
+        {}
+
+        Mail(sharpen::ByteBuffer header,sharpen::ByteBuffer content) noexcept
+            :header_(std::move(header))
+            ,content_(std::move(content))
+        {}
     
         Mail(const Self &other) = default;
     
