@@ -5,7 +5,7 @@
 #include "IRemoteActor.hpp"
 #include "IEndPoint.hpp"
 #include "INetSteamFactory.hpp"
-#include "ActorClosedError.hpp"
+#include "RemoteActorClosedError.hpp"
 #include "IMailParser.hpp"
 
 namespace sharpen

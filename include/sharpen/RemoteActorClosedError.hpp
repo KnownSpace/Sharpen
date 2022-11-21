@@ -6,25 +6,25 @@
 
 namespace sharpen
 {
-    class ActorClosedError:public std::logic_error
+    class RemoteActorClosedError:public std::logic_error
     {
     private:
     
-        using Self = ActorClosedError;
+        using Self = RemoteActorClosedError;
         using Base = std::logic_error;
     public:
     
-        ActorClosedError() noexcept = default;
+        RemoteActorClosedError() noexcept = default;
     
-        explicit ActorClosedError(const char *msg) noexcept
+        explicit RemoteActorClosedError(const char *msg) noexcept
             :Base(msg)
         {}
     
-        ActorClosedError(const Self &other) noexcept = default;
+        RemoteActorClosedError(const Self &other) noexcept = default;
     
-        ActorClosedError(Self &&other) noexcept = default;
+        RemoteActorClosedError(Self &&other) noexcept = default;
     
-        ~ActorClosedError() noexcept = default;
+        ~RemoteActorClosedError() noexcept = default;
     
         Self &operator=(const Self &other) noexcept = default;
     

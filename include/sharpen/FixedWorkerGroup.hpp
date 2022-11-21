@@ -12,10 +12,10 @@ namespace sharpen
 {
     class EventEngine;
 
-    class WorkerGroup:public sharpen::IWorkerGroup,public sharpen::Noncopyable,public sharpen::Nonmovable
+    class FixedWorkerGroup:public sharpen::IWorkerGroup,public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
-        using Self = sharpen::WorkerGroup;
+        using Self = sharpen::FixedWorkerGroup;
 
         void Entry(std::size_t index);
 
@@ -26,11 +26,11 @@ namespace sharpen
         std::vector<sharpen::AwaitableFuture<void>> workers_;
     public:
     
-        explicit WorkerGroup(sharpen::EventEngine &engine);
+        explicit FixedWorkerGroup(sharpen::EventEngine &engine);
 
-        WorkerGroup(sharpen::EventEngine &engine,std::size_t workerCount);
+        FixedWorkerGroup(sharpen::EventEngine &engine,std::size_t workerCount);
     
-        virtual ~WorkerGroup() noexcept
+        virtual ~FixedWorkerGroup() noexcept
         {
             this->Stop();
             this->Join();

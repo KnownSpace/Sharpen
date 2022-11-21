@@ -45,7 +45,7 @@ sharpen::Mail sharpen::NetStreamActor::DoPost(const sharpen::Mail &mail)
     if(!channel)
     {
         //already closed
-        throw sharpen::ActorClosedError{"actor already closed"};
+        throw sharpen::RemoteActorClosedError{"actor already closed"};
     }
     //post mail
     if(!mail.Header().Empty())
@@ -64,7 +64,7 @@ sharpen::Mail sharpen::NetStreamActor::DoPost(const sharpen::Mail &mail)
         std::size_t sz{channel->ReadAsync(buffer)};
         if(!sz)
         {
-            throw sharpen::ActorClosedError{"actor already closed"};
+            throw sharpen::RemoteActorClosedError{"actor already closed"};
         }
         sharpen::ByteSlice slice{buffer.Data(),sz};
         this->parser_->Parse(slice);

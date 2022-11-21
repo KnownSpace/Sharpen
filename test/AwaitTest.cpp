@@ -3,7 +3,7 @@
 
 #include <sharpen/AsyncOps.hpp>
 #include <sharpen/AwaitOps.hpp>
-#include <sharpen/WorkerGroup.hpp>
+#include <sharpen/FixedWorkerGroup.hpp>
 #include <sharpen/TimerOps.hpp>
 #include <sharpen/AsyncNagleBarrier.hpp>
 
@@ -53,7 +53,7 @@ void AwaitTest()
     assert(r == 3);
     std::puts("reset test pass");
     std::puts("worker group test begin");
-    sharpen::WorkerGroup workers{sharpen::EventEngine::GetEngine()};
+    sharpen::FixedWorkerGroup workers{sharpen::EventEngine::GetEngine()};
     auto workerFuture = workers.Invoke([]()
     {
         std::puts("work");

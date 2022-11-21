@@ -1,12 +1,12 @@
-#include <sharpen/WorkerGroup.hpp>
+#include <sharpen/FixedWorkerGroup.hpp>
 
 #include <sharpen/EventEngine.hpp>
 
-sharpen::WorkerGroup::WorkerGroup(sharpen::EventEngine &engine)
-    :WorkerGroup(engine,engine.GetParallelCount())
+sharpen::FixedWorkerGroup::FixedWorkerGroup(sharpen::EventEngine &engine)
+    :FixedWorkerGroup(engine,engine.GetParallelCount())
 {}
 
-sharpen::WorkerGroup::WorkerGroup(sharpen::EventEngine &engine,std::size_t workerCount)
+sharpen::FixedWorkerGroup::FixedWorkerGroup(sharpen::EventEngine &engine,std::size_t workerCount)
     :token_(true)
     ,queue_()
     ,workers_(workerCount)
@@ -18,7 +18,7 @@ sharpen::WorkerGroup::WorkerGroup(sharpen::EventEngine &engine,std::size_t worke
     }
 }
 
-void sharpen::WorkerGroup::Stop() noexcept
+void sharpen::FixedWorkerGroup::Stop() noexcept
 {
     bool token{this->token_.exchange(false)};
     if(token)
@@ -30,7 +30,7 @@ void sharpen::WorkerGroup::Stop() noexcept
     }
 }
 
-void sharpen::WorkerGroup::Join() noexcept
+void sharpen::FixedWorkerGroup::Join() noexcept
 {
     for(auto begin = this->workers_.begin(),end = this->workers_.end(); begin != end; ++begin)
     {
@@ -41,7 +41,7 @@ void sharpen::WorkerGroup::Join() noexcept
     }
 }
 
-void sharpen::WorkerGroup::Entry(std::size_t index)
+void sharpen::FixedWorkerGroup::Entry(std::size_t index)
 {
     sharpen::AwaitableFuture<void> *future{&this->workers_[index]};
     assert(future != nullptr);
@@ -57,7 +57,7 @@ void sharpen::WorkerGroup::Entry(std::size_t index)
     future->Complete();
 }
 
-void sharpen::WorkerGroup::DoSubmit(std::function<void()> task)
+void sharpen::FixedWorkerGroup::DoSubmit(std::function<void()> task)
 {
     assert(this->token_.load());
     this->queue_.Emplace(std::move(task));
