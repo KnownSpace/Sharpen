@@ -82,18 +82,35 @@ void sharpen::EventEngine::Schedule(sharpen::FiberPtr &&fiber)
         return;
     }
     //find a waiting loop
+#ifndef SHARPEN_NOT_SELECTED_SCHEDULE
+    sharpen::EventLoop *selectedLoop{nullptr};
+    std::size_t leastCount{0};
+#endif
     for (auto begin = this->loops_.begin(),end = this->loops_.end(); begin != end; begin++)
     {
         sharpen::EventLoop *loop = *begin;
-        if (loop->IsWaiting())
+        std::size_t works{loop->GetWorkCount()};
+        if (!works)
         {
             loop->RunInLoopSoon(std::move(fn));
             return;
         }
+#ifndef SHARPEN_NOT_SELECTED_SCHEDULE
+        else if(!selectedLoop || leastCount > works)
+        {
+            leastCount = works;
+            selectedLoop = loop;
+        }
+#endif
     }
+#ifndef SHARPEN_NOT_SELECTED_SCHEDULE
+    assert(selectedLoop);
+    selectedLoop->RunInLoopSoon(std::move(fn));
+#else
     //could not found a waiting loop
     //round robin schedule
     this->RoundRobinLoop()->RunInLoopSoon(std::move(fn));
+#endif
 }
 
 void sharpen::EventEngine::ProcessFiber(sharpen::FiberPtr fiber)

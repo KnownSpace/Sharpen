@@ -14,7 +14,7 @@ sharpen::EventLoop::EventLoop(SelectorPtr selector)
     ,exectingTask_(false)
     ,lock_()
     ,running_(false)
-    ,waiting_(false)
+    ,works_(0)
 {
     assert(selector != nullptr);
     this->pendingTasks_.reserve(32);
@@ -35,6 +35,7 @@ void sharpen::EventLoop::RunInLoop(Task task)
 {
     if (this->GetLocalLoop() == this)
     {
+        this->works_ += 1;
         try
         {
             task();
@@ -56,6 +57,7 @@ void sharpen::EventLoop::RunInLoop(Task task)
             assert(ignore.what() == nullptr && "an exception occured in event loop");
             (void)ignore;
         }
+        this->works_ -= 1;
         return;
     }
     this->RunInLoopSoon(std::move(task));
@@ -63,6 +65,7 @@ void sharpen::EventLoop::RunInLoop(Task task)
 
 void sharpen::EventLoop::RunInLoopSoon(Task task)
 {
+    this->works_ += 1;
     bool execting(true);
     {
         std::unique_lock<Lock> lock(this->lock_);
@@ -112,6 +115,7 @@ void sharpen::EventLoop::ExecuteTask()
             (void)ignore;
         }
     }
+    this->works_ -= this->tasks_.size();
     this->tasks_.clear();
 }
 
@@ -129,9 +133,8 @@ void sharpen::EventLoop::Run()
     while (this->running_)
     {
         //select events
-        this->waiting_ = true;
         this->selector_->Select(events);
-        this->waiting_ = false;
+        this->works_ += events.size();
         for (auto begin = events.begin(),end = events.end();begin != end;++begin)
         {
             sharpen::ChannelPtr channel = (*begin)->GetChannel();
@@ -140,6 +143,7 @@ void sharpen::EventLoop::Run()
                 channel->OnEvent(*begin);
             }
         }
+        this->works_ -= events.size();
         events.clear();
         //execute tasks
         this->ExecuteTask();
@@ -174,5 +178,10 @@ bool sharpen::EventLoop::IsInLoop() noexcept
 
 bool sharpen::EventLoop::IsWaiting() const noexcept
 {
-    return this->waiting_;
+    return !this->works_;
+}
+
+std::size_t sharpen::EventLoop::GetWorkCount() const noexcept
+{
+    return this->works_;
 }

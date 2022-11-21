@@ -34,7 +34,7 @@ namespace sharpen
         bool exectingTask_;
         Lock lock_;
         std::atomic_bool running_;
-        std::atomic_bool waiting_;
+        std::atomic_size_t works_;
 
         //one loop per thread
         thread_local static EventLoop *localLoop_;
@@ -83,6 +83,8 @@ namespace sharpen
         {
             return this->selector_.get();
         }
+
+        std::size_t GetWorkCount() const noexcept;
     };
 }
 
