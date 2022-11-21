@@ -4,7 +4,14 @@
 
 void sharpen::AsyncNagleBarrier::ResetWithoutLock() noexcept
 {
-    this->currentCount_ = 0;
+    if(this->model_ == sharpen::BarrierModel::Boundaried && this->currentCount_ >= this->count_)
+    {
+        this->currentCount_ -= this->count_;
+    }
+    else
+    {
+        this->currentCount_ = 0;
+    }
 }
 
 void sharpen::AsyncNagleBarrier::TimeoutNotice(sharpen::Future<bool> &future) noexcept
@@ -24,6 +31,10 @@ void sharpen::AsyncNagleBarrier::TimeoutNotice(sharpen::Future<bool> &future) no
             futurePtr = this->waiters_.back();
             this->waiters_.pop_back();
             count = this->currentCount_;
+            if(this->model_ == sharpen::BarrierModel::Boundaried && count > this->count_)
+            {
+                count = this->count_;
+            }
             this->ResetWithoutLock();
         }
         futurePtr->Complete(count);
@@ -58,6 +69,10 @@ std::size_t sharpen::AsyncNagleBarrier::WaitAsync()
         if(this->currentCount_ >= this->count_)
         {
             std::size_t currentCount{this->currentCount_};
+            if(this->model_ == sharpen::BarrierModel::Boundaried && currentCount > this->count_)
+            {
+                currentCount = this->count_;
+            }
             this->ResetWithoutLock();
             return currentCount;
         }
@@ -83,6 +98,10 @@ void sharpen::AsyncNagleBarrier::Notify(std::size_t count) noexcept
                 future = this->waiters_.back();
                 this->waiters_.pop_back();
                 currentCount = this->currentCount_;
+                if(this->model_ == sharpen::BarrierModel::Boundaried && currentCount > this->count_)
+                {
+                    currentCount = this->count_;
+                }
             }
             //close timer
             this->StopTimer();

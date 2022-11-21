@@ -2,10 +2,11 @@
 
 #include <cassert>
 
-sharpen::AsyncBarrier::AsyncBarrier(std::uint64_t counter)
+sharpen::AsyncBarrier::AsyncBarrier(sharpen::BarrierModel model,std::uint64_t counter)
     :count_(counter)
     ,waiters_()
     ,currentCount_(0)
+    ,model_(model)
 {}
 
 std::size_t sharpen::AsyncBarrier::WaitAsync()
@@ -16,6 +17,10 @@ std::size_t sharpen::AsyncBarrier::WaitAsync()
         if (this->currentCount_ >= this->count_)
         {
             std::size_t currentCount{this->currentCount_};
+            if(this->model_ == sharpen::BarrierModel::Boundaried && currentCount > this->count_)
+            {
+                currentCount = this->count_;
+            }
             this->ResetWithoutLock();
             return currentCount;
         }
@@ -26,7 +31,14 @@ std::size_t sharpen::AsyncBarrier::WaitAsync()
 
 void sharpen::AsyncBarrier::ResetWithoutLock() noexcept
 {
-    this->currentCount_ = 0;
+    if(this->model_ == sharpen::BarrierModel::Boundaried && this->currentCount_ >= this->count_)
+    {
+        this->currentCount_ -= this->count_;
+    }
+    else
+    {
+        this->currentCount_ = 0;
+    }
 }
 
 void sharpen::AsyncBarrier::Reset() noexcept
@@ -46,6 +58,10 @@ void sharpen::AsyncBarrier::Notify(std::size_t count) noexcept
         if(this->currentCount_ >= this->count_)
         {
             currentCount = this->currentCount_;
+            if(this->model_ == sharpen::BarrierModel::Boundaried && currentCount > this->count_)
+            {
+                currentCount = this->count_;
+            }
             futurePtr = this->waiters_.back();
             this->waiters_.pop_back();
             this->ResetWithoutLock();

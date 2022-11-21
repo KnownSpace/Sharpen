@@ -22,10 +22,15 @@ namespace sharpen
         Waiters waiters_;
         std::size_t currentCount_;
         sharpen::SpinLock lock_;
+        sharpen::BarrierModel model_;
 
         void ResetWithoutLock() noexcept;
     public:
-        explicit AsyncBarrier(std::size_t count);
+        AsyncBarrier(std::size_t count)
+            :AsyncBarrier(sharpen::BarrierModel::Flush,count)
+        {}
+
+        AsyncBarrier(sharpen::BarrierModel model,std::size_t count);
 
         virtual std::size_t WaitAsync() override;
         
@@ -33,7 +38,12 @@ namespace sharpen
         
         virtual void Reset() noexcept override;
 
-        ~AsyncBarrier() noexcept = default;
+        virtual ~AsyncBarrier() noexcept = default;
+
+        inline virtual sharpen::BarrierModel GetModel() const noexcept override
+        {
+            return this->model_;
+        }
     };
     
 }

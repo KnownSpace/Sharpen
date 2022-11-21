@@ -29,6 +29,7 @@ namespace sharpen
         sharpen::Future<bool> timeoutFuture_;
         Waiters waiters_;
         sharpen::SpinLock lock_;
+        sharpen::BarrierModel model_;
 
         void TimeoutNotice(sharpen::Future<bool> &future) noexcept;
 
@@ -41,6 +42,11 @@ namespace sharpen
     
         template<typename _Rep,typename _Period>
         AsyncNagleBarrier(sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,std::size_t count)
+            :AsyncNagleBarrier(sharpen::BarrierModel::Flush,std::move(timer),timeout,count)
+        {}
+
+        template<typename _Rep,typename _Period>
+        AsyncNagleBarrier(sharpen::BarrierModel model,sharpen::TimerPtr timer,const std::chrono::duration<_Rep,_Period> &timeout,std::size_t count)
             :timeout_(timeout)
             ,count_(count)
             ,currentCount_(0)
@@ -49,11 +55,12 @@ namespace sharpen
             ,timeoutFuture_()
             ,waiters_()
             ,lock_()
+            ,model_(model)
         {
             assert(this->count_);
         }
     
-        ~AsyncNagleBarrier() noexcept = default;
+        virtual ~AsyncNagleBarrier() noexcept = default;
     
         inline const Self &Const() const noexcept
         {
@@ -65,6 +72,11 @@ namespace sharpen
         virtual void Notify(std::size_t count) noexcept override;
 
         virtual void Reset() noexcept override;
+
+        inline virtual sharpen::BarrierModel GetModel() const noexcept override
+        {
+            return this->model_;
+        }
     };   
 }
 

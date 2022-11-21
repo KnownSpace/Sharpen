@@ -4,6 +4,8 @@
 
 #include <cstddef>
 
+#include "BarrierModel.hpp"
+
 namespace sharpen
 {
     class IAsyncBarrier
@@ -40,6 +42,8 @@ namespace sharpen
         virtual std::size_t WaitAsync() = 0;
 
         virtual void Reset() noexcept = 0;
+
+        virtual sharpen::BarrierModel GetModel() const noexcept = 0;
     };    
 }
 
