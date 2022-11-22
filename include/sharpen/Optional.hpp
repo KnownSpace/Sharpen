@@ -85,7 +85,7 @@ namespace sharpen
         }
 
         template<typename ..._Args,typename _Check = decltype(_T{std::declval<_Args>()...})>
-        InternalOptional(_Args &&...args) SHARPEN_NOEXCEPT_IF(_T {std::declval<_Args>()...})
+        InternalOptional(_Args &&...args) SHARPEN_NOEXCEPT_IF(_T{std::declval<_Args>()...})
             :hasValue_(false)
             ,dummy_()
         {
