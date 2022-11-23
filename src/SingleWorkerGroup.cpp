@@ -1,5 +1,7 @@
 #include <sharpen/SingleWorkerGroup.hpp>
 
+#include <sharpen/EventEngine.hpp>
+
 sharpen::SingleWorkerGroup::SingleWorkerGroup(sharpen::EventEngine &engine)
     :token_(true)
     ,queue_()
