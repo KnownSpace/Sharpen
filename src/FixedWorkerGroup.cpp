@@ -41,7 +41,7 @@ void sharpen::FixedWorkerGroup::Join() noexcept
     }
 }
 
-void sharpen::FixedWorkerGroup::Entry(std::size_t index)
+void sharpen::FixedWorkerGroup::Entry(std::size_t index) noexcept
 {
     sharpen::AwaitableFuture<void> *future{&this->workers_[index]};
     assert(future != nullptr);

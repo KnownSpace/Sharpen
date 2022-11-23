@@ -17,7 +17,7 @@ namespace sharpen
     private:
         using Self = sharpen::FixedWorkerGroup;
 
-        void Entry(std::size_t index);
+        void Entry(std::size_t index) noexcept;
 
         virtual void DoSubmit(std::function<void()> task) override;
 
