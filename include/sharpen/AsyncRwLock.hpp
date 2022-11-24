@@ -9,22 +9,22 @@
 
 namespace sharpen
 {
-    enum class ReadWriteLockState
+    enum class RwLockState
     {
         Free,
         SharedReading,
         UniquedWriting
     };
 
-    class AsyncReadWriteLock:public sharpen::Noncopyable,public sharpen::Nonmovable
+    class AsyncRwLock:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
-        using Self = sharpen::AsyncReadWriteLock;
-        using MyFuture = sharpen::AwaitableFuture<sharpen::ReadWriteLockState>;
+        using Self = sharpen::AsyncRwLock;
+        using MyFuture = sharpen::AwaitableFuture<sharpen::RwLockState>;
         using MyFuturePtr = MyFuture*;
         using Waiters = std::vector<MyFuturePtr>;
 
-        sharpen::ReadWriteLockState state_;
+        sharpen::RwLockState state_;
         Waiters readWaiters_;
         Waiters writeWaiters_;
         sharpen::SpinLock lock_;
@@ -44,27 +44,27 @@ namespace sharpen
             this->LockWrite();
         }
     public:
-        AsyncReadWriteLock();
+        AsyncRwLock();
 
         //return prev status
-        sharpen::ReadWriteLockState LockRead();
+        sharpen::RwLockState LockRead();
 
         bool TryLockRead();
 
-        bool TryLockRead(sharpen::ReadWriteLockState &prevStatus);
+        bool TryLockRead(sharpen::RwLockState &prevStatus);
 
         //return prev status
-        sharpen::ReadWriteLockState LockWrite();
+        sharpen::RwLockState LockWrite();
 
         bool TryLockWrite();
 
-        bool TryLockWrite(sharpen::ReadWriteLockState &prevStatus);
+        bool TryLockWrite(sharpen::RwLockState &prevStatus);
 
         //upgrade to write lock
-        sharpen::ReadWriteLockState UpgradeFromRead();
+        sharpen::RwLockState UpgradeFromRead();
 
         //downgrade to read lock
-        sharpen::ReadWriteLockState DowngradeFromWrite();
+        sharpen::RwLockState DowngradeFromWrite();
 
         void Unlock() noexcept;
 
@@ -73,7 +73,7 @@ namespace sharpen
             this->Unlock();
         }
 
-        ~AsyncReadWriteLock() noexcept = default;
+        ~AsyncRwLock() noexcept = default;
     };
     
 }

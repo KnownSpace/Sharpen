@@ -21,17 +21,17 @@ namespace sharpen
 
         Waiters waiters_;
         sharpen::SpinLock lock_;
-        std::uint32_t counter_;
+        std::size_t counter_;
 
         bool NeedWait() const;
     public:
-        explicit AsyncSemaphore(std::uint32_t count);
+        explicit AsyncSemaphore(std::size_t count);
 
         virtual void LockAsync() override;
 
         virtual void Unlock() noexcept override;
         
-        void Unlock(std::uint32_t count) noexcept;
+        void Unlock(std::size_t count) noexcept;
 
         bool TryLock();
 
