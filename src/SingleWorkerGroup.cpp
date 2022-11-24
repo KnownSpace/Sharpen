@@ -18,11 +18,9 @@ sharpen::SingleWorkerGroup::~SingleWorkerGroup() noexcept
 
 void sharpen::SingleWorkerGroup::Stop() noexcept
 {
-    bool token{false};
-    this->token_.exchange(token);
-    if(token)
+    if(this->token_.exchange(false))
     {
-        this->DoSubmit(std::function<void()>{});
+        this->queue_.Emplace(std::function<void()>{});
     }
 }
 
