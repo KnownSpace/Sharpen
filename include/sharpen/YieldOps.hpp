@@ -17,22 +17,15 @@ namespace sharpen
         using Self = YieldCycleCallback;
 
         sharpen::FiberPtr fiber_;
-        sharpen::IFiberScheduler *scheduler_;
     public:
 
-        YieldCycleCallback(sharpen::FiberPtr fiber,sharpen::IFiberScheduler *scheduler) noexcept
+        YieldCycleCallback(sharpen::FiberPtr fiber) noexcept
             :fiber_(std::move(fiber))
-            ,scheduler_(scheduler)
         {}
 
         YieldCycleCallback(const Self &other) = default;
 
-        YieldCycleCallback(Self &&other) noexcept
-            :fiber_(std::move(other.fiber_))
-            ,scheduler_(other.scheduler_)
-        {
-            other.scheduler_ = nullptr;
-        }
+        YieldCycleCallback(Self &&other) noexcept = default;
 
         inline Self &operator=(const Self &other)
         {
@@ -49,8 +42,6 @@ namespace sharpen
             if(this != std::addressof(other))
             {
                 this->fiber_ = std::move(other.fiber_);
-                this->scheduler_ = other.scheduler_;
-                other.scheduler_ = nullptr;
             }
             return *this;
         }
@@ -66,9 +57,8 @@ namespace sharpen
         {
             if(this->fiber_)
             {
-                assert(this->scheduler_);
-                sharpen::IFiberScheduler *scheduler{nullptr};
-                std::swap(scheduler,this->scheduler_);
+                sharpen::IFiberScheduler *scheduler{this->fiber_->GetScheduler()};
+                assert(scheduler);
                 scheduler->ScheduleSoon(std::move(this->fiber_));
             }
         }

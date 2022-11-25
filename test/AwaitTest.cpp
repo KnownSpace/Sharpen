@@ -9,6 +9,7 @@
 #include <sharpen/DynamicWorkerGroup.hpp>
 #include <sharpen/TimerOps.hpp>
 #include <sharpen/AsyncNagleBarrier.hpp>
+#include <sharpen/YieldOps.hpp>
 
 void WorkerGroupTest(sharpen::IWorkerGroup &workers,std::size_t jobs)
 {
@@ -18,6 +19,7 @@ void WorkerGroupTest(sharpen::IWorkerGroup &workers,std::size_t jobs)
     {
         workers.Invoke(futures[i],[i]()
         {
+            sharpen::YieldCycle();
             return i;
         });
     }
@@ -77,7 +79,7 @@ void AwaitTest()
     assert(r == 3);
     std::puts("reset test pass");
     std::puts("worker group test begin");
-    constexpr std::size_t jobs{64*1024};
+    constexpr std::size_t jobs{256*1024};
     {
         std::puts("fixed worker group");
         sharpen::FixedWorkerGroup workers{sharpen::EventEngine::GetEngine()};
@@ -137,7 +139,7 @@ void AwaitTest()
 
 int main()
 {
-    sharpen::EventEngine &engine = sharpen::EventEngine::SetupSingleThreadEngine();
+    sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine();
     engine.Startup(&AwaitTest);
     return 0;
 }

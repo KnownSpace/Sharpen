@@ -8,9 +8,9 @@
 extern "C" {
 #endif
 
-fcontext_t make_fcontext(void * sp, size_t size, void(*fn)(transfer_t));
-transfer_t jump_fcontext(fcontext_t const to, void *vp);
-transfer_t ontop_fcontext(fcontext_t const to, void *vp, transfer_t(*fn)(transfer_t));
+    fcontext_t make_fcontext(void *sp,size_t size,void(*fn)(transfer_t));
+    transfer_t jump_fcontext(fcontext_t const to,void *vp);
+    transfer_t ontop_fcontext(fcontext_t const to,void *vp,transfer_t(*fn)(transfer_t));
 
 #ifdef __cplusplus
 }
@@ -39,7 +39,7 @@ void sharpen::Fiber::Release() noexcept
 
 void sharpen::Fiber::Switch()
 {
-    if (!this->inited_)
+    if(!this->inited_)
     {
         this->inited_ = true;
         this->InitFiber();
@@ -56,14 +56,14 @@ void sharpen::Fiber::Switch(const sharpen::FiberPtr &callback)
 transfer_t sharpen::Fiber::SaveCurrentAndSwitch(transfer_t from)
 {
     sharpen::Fiber::GetCurrentFiber()->handle_ = from.fctx;
-    sharpen::Fiber *current = reinterpret_cast<sharpen::Fiber*>(from.data);
+    sharpen::Fiber *current = reinterpret_cast<sharpen::Fiber *>(from.data);
     sharpen::Fiber::currentFiber_ = current->shared_from_this();
     return from;
 }
 
 sharpen::FiberPtr sharpen::Fiber::GetCurrentFiber()
 {
-    if (!sharpen::Fiber::currentFiber_)
+    if(!sharpen::Fiber::currentFiber_)
     {
         sharpen::FiberPtr fiber = std::make_shared<sharpen::Fiber>();
         fiber->inited_ = true;
@@ -75,7 +75,7 @@ sharpen::FiberPtr sharpen::Fiber::GetCurrentFiber()
 void sharpen::Fiber::FiberEntry(transfer_t from)
 {
     from = ::jump_fcontext(from.fctx,nullptr);
-    sharpen::Fiber *fiber = reinterpret_cast<sharpen::Fiber*>(from.data);
+    sharpen::Fiber *fiber = reinterpret_cast<sharpen::Fiber *>(from.data);
     try
     {
         fiber->task_();
@@ -99,7 +99,6 @@ void sharpen::Fiber::FiberEntry(transfer_t from)
     }
     sharpen::Fiber *cb{nullptr};
     {
-        //fix memory leak
         sharpen::FiberPtr tmp{fiber->callback_.lock()};
         fiber->callback_.reset();
         if(tmp)
@@ -107,7 +106,7 @@ void sharpen::Fiber::FiberEntry(transfer_t from)
             cb = tmp.get();
         }
     }
-    if (cb)
+    if(cb)
     {
         cb->Switch();
     }

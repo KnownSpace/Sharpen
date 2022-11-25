@@ -6,6 +6,7 @@
 
 #include <sharpen/EventEngine.hpp>
 #include <sharpen/YieldOps.hpp>
+#include <sharpen/CompilerInfo.hpp>
 
 void sharpen::DynamicWorkerGroup::Entry(sharpen::AwaitableFuture<void> *future) noexcept
 {
@@ -32,7 +33,17 @@ bool sharpen::DynamicWorkerGroup::MoreWorker() const noexcept
             {
                 return false;
             }
-            sharpen::YieldCycle();
+#ifdef SHARPEN_COMPILER_MSVC
+#pragma warning(push)
+#pragma warning(disable:4127)
+#endif
+            if(probeCount_ > 1)
+            {
+                sharpen::YieldCycle();
+            }
+#ifdef SHARPEN_COMPILER_MSVC
+#pragma warning(pop)
+#endif
         }
         return this->token_;
     }

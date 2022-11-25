@@ -19,7 +19,7 @@
 void sharpen::SpinLock::lock() noexcept
 {
     std::size_t i{0};
-    while (this->flag_.test_and_set(std::memory_order::memory_order_acquire))
+    while (this->flag_.test_and_set())
     {
         SHARPEN_PAUSE;
         ++i;
@@ -33,12 +33,12 @@ void sharpen::SpinLock::lock() noexcept
 
 void sharpen::SpinLock::unlock() noexcept
 {
-    this->flag_.clear(std::memory_order::memory_order_release);
+    this->flag_.clear();
 }
 
 bool sharpen::SpinLock::TryLock()
 {
-    return !this->flag_.test_and_set(std::memory_order::memory_order_acquire);
+    return !this->flag_.test_and_set();
 }
 
 #ifdef SHARPEN_PAUSE

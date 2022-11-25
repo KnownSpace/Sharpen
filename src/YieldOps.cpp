@@ -12,7 +12,7 @@ void sharpen::YieldCycle()
     //this thread is a processer
     else
     {
-        scheduler->SetSwitchCallback(sharpen::YieldCycleCallback{std::move(current),scheduler});
+        scheduler->SetSwitchCallback(sharpen::YieldCycleCallback{std::move(current)});
         scheduler->SwitchToProcesserFiber();
     }
 }

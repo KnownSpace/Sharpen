@@ -19,7 +19,7 @@ namespace sharpen
         sharpen::FiberPtr pendingFiber_;
         sharpen::FiberPtr awaiter_;
 
-        void ScheduleFiber(sharpen::FiberPtr &&fiber)
+        static void ScheduleFiber(sharpen::FiberPtr &&fiber)
         {
             sharpen::IFiberScheduler *scheduler = fiber->GetScheduler();
             assert(scheduler);
@@ -31,7 +31,7 @@ namespace sharpen
             sharpen::FiberPtr fiber{nullptr};
             {
                 std::unique_lock<sharpen::SpinLock> lock(this->GetCompleteLock());
-                if(!this->CompletedOrError())
+                if(this->IsPending())
                 {
                     this->awaiter_ = std::move(this->pendingFiber_);
                     return;
@@ -63,19 +63,6 @@ namespace sharpen
 
         virtual ~AwaitableFuture() noexcept = default;
 
-        void NotifyAwaiter()
-        {
-            sharpen::FiberPtr fiber{nullptr};
-            {
-                std::unique_lock<sharpen::SpinLock> lock(this->GetCompleteLock());
-                fiber = std::move(this->awaiter_);
-            }
-            if(fiber)
-            {
-                this->ScheduleFiber(std::move(fiber));
-            }
-        }
-
         void WaitAsync()
         {
             sharpen::FiberPtr current = sharpen::Fiber::GetCurrentFiber();
@@ -88,9 +75,17 @@ namespace sharpen
             //this thread is a processer
             else
             {
-                if (this->IsPending())
+                bool pending{false};
                 {
-                    this->pendingFiber_ = std::move(current);
+                    std::unique_lock<sharpen::SpinLock> lock{this->GetCompleteLock()};
+                    pending = this->IsPending();
+                    if(pending)
+                    {
+                        this->pendingFiber_ = std::move(current);
+                    }
+                }
+                if (pending)
+                {
                     scheduler->SetSwitchCallback(std::bind(&sharpen::AwaitableFuture<_Result>::NotifyIfCompleted,this));
                     scheduler->SwitchToProcesserFiber();
                 }
@@ -104,13 +99,35 @@ namespace sharpen
         }
 
     protected:
-        virtual void ExecuteCallback() override
+
+        virtual void ExecuteCallback(sharpen::FutureState state) override
         {
-            MyBase::ExecuteCallback();
-            //must be last line
-            //resume coroutine
-            //and this maybe released
-            this->NotifyAwaiter();
+            bool notify{false};
+            Callback cb;
+            sharpen::FiberPtr fiber{nullptr};
+            {
+                std::unique_lock<sharpen::SpinLock> lock{this->GetCompleteLock()};
+                if(this->GetWaiters() != 0)
+                {
+                    this->SetWaiters(0);
+                    notify = true;
+                }
+                std::swap(cb,this->GetCallback());
+                std::swap(fiber,this->awaiter_);
+                this->SetState(state);
+            }
+            if(notify)
+            {
+                this->NotifyAll();
+            }
+            if(cb)
+            {
+                cb(*this);
+            }
+            if(fiber)
+            {
+                Self::ScheduleFiber(std::move(fiber));
+            }
         }
     };
 

@@ -13,7 +13,7 @@ void sharpen::AsyncSemaphore::LockAsync()
     sharpen::AsyncSemaphore::MyFuture future;
     {
         std::unique_lock<sharpen::SpinLock> lock(this->lock_);
-        if (!this->NeedWait())
+        if(!this->NeedWait())
         {
             this->counter_ -= 1;
             return;
@@ -25,13 +25,13 @@ void sharpen::AsyncSemaphore::LockAsync()
 
 bool sharpen::AsyncSemaphore::TryLock()
 {
+    if(!this->lock_.TryLock())
     {
-        if(!this->lock_.TryLock())
-        {
-            return false;
-        }
+        return false;
+    }
+    {
         std::unique_lock<sharpen::SpinLock> lock{this->lock_,std::adopt_lock};
-        if (!this->NeedWait())
+        if(!this->NeedWait())
         {
             this->counter_ -= 1;
             return true;
@@ -47,22 +47,27 @@ bool sharpen::AsyncSemaphore::NeedWait() const
 
 void sharpen::AsyncSemaphore::Unlock() noexcept
 {
-    std::unique_lock<sharpen::SpinLock> lock(this->lock_);
-    if (this->waiters_.empty())
+    sharpen::AsyncSemaphore::MyFuturePtr futurePtr{nullptr};
     {
-        this->counter_ += 1;
-        return;
+        std::unique_lock<sharpen::SpinLock> lock(this->lock_);
+        if(this->waiters_.empty())
+        {
+            this->counter_ += 1;
+            return;
+        }
+        futurePtr = this->waiters_.back();
+        this->waiters_.pop_back();
     }
-    sharpen::AsyncSemaphore::MyFuturePtr futurePtr = this->waiters_.back();
-    this->waiters_.pop_back();
-    lock.unlock();
-    futurePtr->Complete();
+    if(futurePtr)
+    {
+        futurePtr->Complete();
+    }
 }
 
 void sharpen::AsyncSemaphore::Unlock(std::size_t count) noexcept
 {
     std::unique_lock<sharpen::SpinLock> lock(this->lock_);
-    if (this->waiters_.empty())
+    if(this->waiters_.empty())
     {
         this->counter_ += count;
         return;

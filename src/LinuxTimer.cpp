@@ -6,6 +6,7 @@
 #include <cassert>
 
 #include <sharpen/SystemError.hpp>
+#include <sharpen/EventLoop.hpp>
 
 sharpen::LinuxTimer::LinuxTimer()
     :MyTimerBase()

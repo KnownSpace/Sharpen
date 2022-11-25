@@ -18,7 +18,7 @@ namespace sharpen
     private:
         using Self = sharpen::DynamicWorkerGroup;
     
-        constexpr static std::size_t probeCount_{3};
+        constexpr static std::size_t probeCount_{2};
 
         sharpen::IFiberScheduler *scheduler_;
         std::atomic_bool token_;
@@ -37,7 +37,7 @@ namespace sharpen
         virtual void DoSubmit(std::function<void()> task) override;
     public:
     
-        constexpr static std::size_t defaultBusyMark_{1024};
+        constexpr static std::size_t defaultBusyMark_{128};
 
         explicit DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler);
 
