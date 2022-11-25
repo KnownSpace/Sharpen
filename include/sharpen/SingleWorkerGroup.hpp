@@ -7,6 +7,7 @@
 #include "IWorkerGroup.hpp"
 #include "AsyncBlockingQueue.hpp"
 #include "NoexceptInvoke.hpp"
+#include "IFiberScheduler.hpp"
 
 namespace sharpen
 {
@@ -26,7 +27,7 @@ namespace sharpen
         virtual void DoSubmit(std::function<void()> task) override;
     public:
     
-        explicit SingleWorkerGroup(sharpen::EventEngine &engine);
+        explicit SingleWorkerGroup(sharpen::IFiberScheduler &scheduler);
     
         virtual ~SingleWorkerGroup() noexcept;
     

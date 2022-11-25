@@ -1,11 +1,35 @@
 #include <cstdio>
 #include <cassert>
 
+#include <sharpen/EventEngine.hpp>
 #include <sharpen/AsyncOps.hpp>
 #include <sharpen/AwaitOps.hpp>
 #include <sharpen/FixedWorkerGroup.hpp>
+#include <sharpen/SingleWorkerGroup.hpp>
+#include <sharpen/DynamicWorkerGroup.hpp>
 #include <sharpen/TimerOps.hpp>
 #include <sharpen/AsyncNagleBarrier.hpp>
+
+void WorkerGroupTest(sharpen::IWorkerGroup &workers,std::size_t jobs)
+{
+    std::vector<sharpen::AwaitableFuture<std::size_t>> futures;
+    futures.resize(jobs);
+    for (size_t i = 0; i != jobs; ++i)
+    {
+        workers.Invoke(futures[i],[i]()
+        {
+            return i;
+        });
+    }
+    for(std::size_t i = 0;i != jobs;++i)
+    {
+        std::size_t result{futures[i].Await()};
+        assert(result == i);   
+    }
+    std::printf("worker group size %zu\n",workers.GetWorkerCount()); 
+    workers.Stop();
+    workers.Join();
+}
 
 void AwaitTest()
 {
@@ -53,14 +77,22 @@ void AwaitTest()
     assert(r == 3);
     std::puts("reset test pass");
     std::puts("worker group test begin");
-    sharpen::FixedWorkerGroup workers{sharpen::EventEngine::GetEngine()};
-    auto workerFuture = workers.Invoke([]()
+    constexpr std::size_t jobs{64*1024};
     {
-        std::puts("work");
-        return 0;
-    });
-    r = workerFuture->Await();
-    assert(r == 0);
+        std::puts("fixed worker group");
+        sharpen::FixedWorkerGroup workers{sharpen::EventEngine::GetEngine()};
+        WorkerGroupTest(workers,jobs);
+    }
+    {
+        std::puts("single worker group");
+        sharpen::SingleWorkerGroup workers{sharpen::EventEngine::GetEngine()};
+        WorkerGroupTest(workers,jobs);
+    }
+    {
+        std::puts("dynamic worker group");
+        sharpen::DynamicWorkerGroup workers{sharpen::EventEngine::GetEngine()};
+        WorkerGroupTest(workers,jobs);
+    }
     std::puts("worker group test pass");
     std::puts("nagle test begin");
     {

@@ -1,13 +1,11 @@
 #include <sharpen/SingleWorkerGroup.hpp>
 
-#include <sharpen/EventEngine.hpp>
-
-sharpen::SingleWorkerGroup::SingleWorkerGroup(sharpen::EventEngine &engine)
+sharpen::SingleWorkerGroup::SingleWorkerGroup(sharpen::IFiberScheduler &scheduler)
     :token_(true)
     ,queue_()
     ,worker_()
 {
-    engine.Launch(&Self::Entry,this);
+    scheduler.Launch(&Self::Entry,this);
 }
 
 sharpen::SingleWorkerGroup::~SingleWorkerGroup() noexcept

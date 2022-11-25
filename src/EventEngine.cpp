@@ -72,15 +72,10 @@ void sharpen::EventEngine::CallSwitchCallback()
     }
 }
 
-void sharpen::EventEngine::Schedule(sharpen::FiberPtr &&fiber)
+void sharpen::EventEngine::ScheduleSoon(sharpen::FiberPtr &&fiber)
 {
     using FnPtr = void(*)(sharpen::FiberPtr);
     auto &&fn = std::bind(static_cast<FnPtr>(&sharpen::EventEngine::ProcessFiber),std::move(fiber));
-    if (this->IsProcesser() && sharpen::EventLoop::GetLocalFiber() == sharpen::Fiber::GetCurrentFiber())
-    {
-        fn();
-        return;
-    }
     //find a waiting loop
 #ifndef SHARPEN_NOT_SELECTED_SCHEDULE
     sharpen::EventLoop *selectedLoop{nullptr};
@@ -111,6 +106,18 @@ void sharpen::EventEngine::Schedule(sharpen::FiberPtr &&fiber)
     //round robin schedule
     this->RoundRobinLoop()->RunInLoopSoon(std::move(fn));
 #endif
+}
+
+void sharpen::EventEngine::Schedule(sharpen::FiberPtr &&fiber)
+{
+    using FnPtr = void(*)(sharpen::FiberPtr);
+    if (this->IsProcesser() && sharpen::EventLoop::GetLocalFiber() == sharpen::Fiber::GetCurrentFiber())
+    {
+        auto &&fn = std::bind(static_cast<FnPtr>(&sharpen::EventEngine::ProcessFiber),std::move(fiber));
+        fn();
+        return;
+    }
+    this->ScheduleSoon(std::move(fiber));
 }
 
 void sharpen::EventEngine::ProcessFiber(sharpen::FiberPtr fiber)

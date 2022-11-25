@@ -5,6 +5,8 @@
 #include "SystemMacro.hpp"
 #ifdef SHARPEN_IS_WIN
 
+#include <Windows.h>
+
 #include "ITimer.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"

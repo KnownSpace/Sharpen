@@ -97,9 +97,19 @@ void sharpen::Fiber::FiberEntry(transfer_t from)
         assert(ignore.what() == nullptr && "an exception occured in event loop");
         (void)ignore;
     }
-    if (!fiber->callback_.expired())
+    sharpen::Fiber *cb{nullptr};
     {
-        fiber->callback_.lock()->Switch();
+        //fix memory leak
+        sharpen::FiberPtr tmp{fiber->callback_.lock()};
+        fiber->callback_.reset();
+        if(tmp)
+        {
+            cb = tmp.get();
+        }
+    }
+    if (cb)
+    {
+        cb->Switch();
     }
 }
 

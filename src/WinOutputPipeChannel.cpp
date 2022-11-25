@@ -6,6 +6,8 @@
 #include <stdexcept>
 #include <new>
 
+#include <sharpen/EventLoop.hpp>
+
 sharpen::WinOutputPipeChannel::WinOutputPipeChannel(sharpen::FileHandle handle)
     :Mybase()
 {

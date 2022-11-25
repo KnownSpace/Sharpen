@@ -9,6 +9,8 @@
 #include <io.h>
 #include <winioctl.h>
 
+#include <sharpen/EventLoop.hpp>
+
 sharpen::Optional<bool> sharpen::WinFileChannel::supportSparseFile_{sharpen::EmptyOpt};
 
 sharpen::WinFileChannel::WinFileChannel(sharpen::FileHandle handle)

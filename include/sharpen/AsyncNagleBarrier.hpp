@@ -5,6 +5,7 @@
 #include <utility>
 #include <chrono>
 #include <cassert>
+#include <vector>
 
 #include "ITimer.hpp"
 #include "Noncopyable.hpp"

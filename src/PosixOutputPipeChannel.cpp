@@ -4,6 +4,8 @@
 #include <stdexcept>
 #include <cassert>
 
+#include <sharpen/EventLoop.hpp>
+
 sharpen::PosixOutputPipeChannel::PosixOutputPipeChannel(sharpen::FileHandle handle)
     :Mybase()
     ,writer_()

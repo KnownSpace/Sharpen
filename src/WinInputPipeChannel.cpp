@@ -8,6 +8,8 @@
 
 #include <Windows.h>
 
+#include <sharpen/EventEngine.hpp>
+
 sharpen::WinInputPipeChannel::WinInputPipeChannel(sharpen::FileHandle handle)
     :Mybase()
 {

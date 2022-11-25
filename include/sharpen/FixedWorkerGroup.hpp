@@ -7,6 +7,7 @@
 #include "AsyncBlockingQueue.hpp"
 #include "NoexceptInvoke.hpp"
 #include "IWorkerGroup.hpp"
+#include "IFiberScheduler.hpp"
 
 namespace sharpen
 {
@@ -26,9 +27,9 @@ namespace sharpen
         std::vector<sharpen::AwaitableFuture<void>> workers_;
     public:
     
-        explicit FixedWorkerGroup(sharpen::EventEngine &engine);
+        explicit FixedWorkerGroup(sharpen::IFiberScheduler &scheduler);
 
-        FixedWorkerGroup(sharpen::EventEngine &engine,std::size_t workerCount);
+        FixedWorkerGroup(sharpen::IFiberScheduler &scheduler,std::size_t workerCount);
     
         virtual ~FixedWorkerGroup() noexcept
         {

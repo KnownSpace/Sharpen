@@ -5,7 +5,7 @@
 #include <cassert>
 
 #include "Future.hpp"
-#include "EventEngine.hpp"
+#include "IFiberScheduler.hpp"
 
 namespace sharpen
 {
@@ -26,9 +26,9 @@ namespace sharpen
             scheduler->Schedule(std::move(fiber));
         }
 
-        void NotifyIfCompleted()
+        void NotifyIfCompleted() noexcept
         {
-            sharpen::FiberPtr fiber;
+            sharpen::FiberPtr fiber{nullptr};
             {
                 std::unique_lock<sharpen::SpinLock> lock(this->GetCompleteLock());
                 if(!this->CompletedOrError())

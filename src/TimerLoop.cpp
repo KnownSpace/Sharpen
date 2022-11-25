@@ -1,5 +1,7 @@
 #include <sharpen/TimerLoop.hpp>
 
+#include <sharpen/EventEngine.hpp>
+
 sharpen::TimerLoop::TimerLoop(sharpen::EventEngine &engine,sharpen::TimerPtr timer,Handler handler,std::function<WaitTime()> waittimeGenerator)
     :timer_(std::move(timer))
     ,handler_(std::move(handler))

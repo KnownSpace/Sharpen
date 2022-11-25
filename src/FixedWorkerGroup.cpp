@@ -1,12 +1,10 @@
 #include <sharpen/FixedWorkerGroup.hpp>
 
-#include <sharpen/EventEngine.hpp>
-
-sharpen::FixedWorkerGroup::FixedWorkerGroup(sharpen::EventEngine &engine)
-    :FixedWorkerGroup(engine,engine.GetParallelCount())
+sharpen::FixedWorkerGroup::FixedWorkerGroup(sharpen::IFiberScheduler &scheduler)
+    :FixedWorkerGroup(scheduler,scheduler.GetParallelCount())
 {}
 
-sharpen::FixedWorkerGroup::FixedWorkerGroup(sharpen::EventEngine &engine,std::size_t workerCount)
+sharpen::FixedWorkerGroup::FixedWorkerGroup(sharpen::IFiberScheduler &scheduler,std::size_t workerCount)
     :token_(true)
     ,queue_()
     ,workers_(workerCount)
@@ -14,7 +12,7 @@ sharpen::FixedWorkerGroup::FixedWorkerGroup(sharpen::EventEngine &engine,std::si
     assert(workerCount != 0);
     for(std::size_t i = 0;i != workerCount;++i)
     {
-        engine.Launch(&Self::Entry,this,i);
+        scheduler.Launch(&Self::Entry,this,i);
     }
 }
 

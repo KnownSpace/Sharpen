@@ -8,6 +8,7 @@
 #include "TimerPool.hpp"
 #include "TypeTraits.hpp"
 #include "FutureCompletor.hpp"
+#include "EventEngine.hpp"
 
 namespace sharpen
 {
