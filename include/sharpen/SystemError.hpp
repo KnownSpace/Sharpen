@@ -44,6 +44,8 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorNoSpace = ERROR_DISK_FULL;
     constexpr sharpen::ErrorCode ErrorOperationNotSupport = ERROR_NOT_SUPPORTED;
     constexpr sharpen::ErrorCode ErrorAddressInUse = WSAEADDRINUSE;
+    constexpr sharpen::ErrorCode ErrorFileNotFound = ERROR_FILE_NOT_FOUND;
+    constexpr sharpen::ErrorCode ErrorPathNotFound = ERROR_PATH_NOT_FOUND;
 #else
     constexpr sharpen::ErrorCode ErrorCancel = ECANCELED;
     constexpr sharpen::ErrorCode ErrorConnectionAborted = ECONNABORTED;
@@ -71,6 +73,8 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorNoSpace = ENOSPC;
     constexpr sharpen::ErrorCode ErrorOperationNotSupport = EOPNOTSUPP;
     constexpr sharpen::ErrorCode ErrorAddressInUse = EADDRINUSE;
+    constexpr sharpen::ErrorCode ErrorFileNotFound = ENOENT;
+    constexpr sharpen::ErrorCode ErrorPathNotFound = ENOENT;
 #endif
 
     inline bool IsFatalError(sharpen::ErrorCode code) noexcept
