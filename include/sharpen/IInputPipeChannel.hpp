@@ -35,7 +35,7 @@ namespace sharpen
 
     using InputPipeChannelPtr = std::shared_ptr<sharpen::IInputPipeChannel>;
 
-    sharpen::InputPipeChannelPtr MakeStdinPipe();
+    sharpen::InputPipeChannelPtr OpenStdinPipe();
 }
 
 #endif

@@ -6,8 +6,9 @@
 #include <sharpen/SystemError.hpp>
 
 sharpen::Epoll::Epoll()
-    :handle_(::epoll_create1(EPOLL_CLOEXEC))
+    :handle_(-1)
 {
+    this->handle_ = ::epoll_create1(EPOLL_CLOEXEC);
     if(this->handle_ == -1)
     {
         sharpen::ThrowLastError();

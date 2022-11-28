@@ -17,7 +17,7 @@
 #include <mstcpip.h>
 #endif
 
-sharpen::NetStreamChannelPtr sharpen::MakeTcpStreamChannel(sharpen::AddressFamily af)
+sharpen::NetStreamChannelPtr sharpen::OpenTcpStreamChannel(sharpen::AddressFamily af)
 {
     sharpen::NetStreamChannelPtr channel;
     int afValue;

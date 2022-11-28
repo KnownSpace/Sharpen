@@ -13,7 +13,7 @@ void ClientTest();
 void ServerTest()
 {
     std::printf("server test begin\n");
-    sharpen::NetStreamChannelPtr server = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
+    sharpen::NetStreamChannelPtr server = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
     sharpen::IpEndPoint serverEndpoint;
     serverEndpoint.SetAddrByString("127.0.0.1");
     serverEndpoint.SetPort(8080);
@@ -43,7 +43,7 @@ void ServerTest()
 void ClientTest()
 {
     std::printf("client test begin\n");
-    sharpen::NetStreamChannelPtr client = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
+    sharpen::NetStreamChannelPtr client = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
     sharpen::IpEndPoint clientEndpoint;
     clientEndpoint.SetAddrByString("127.0.0.1");
     clientEndpoint.SetPort(0);
@@ -80,8 +80,8 @@ void ClientTest()
 
 void CancelTest()
 {
-    sharpen::NetStreamChannelPtr server = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
-    sharpen::NetStreamChannelPtr client = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
+    sharpen::NetStreamChannelPtr server = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
+    sharpen::NetStreamChannelPtr client = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
     sharpen::IpEndPoint addr;
     addr.SetAddrByString("127.0.0.1");
     addr.SetPort(8080);
@@ -126,8 +126,8 @@ void CancelTest()
 
 void TimeoutTest()
 {
-    sharpen::NetStreamChannelPtr server = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
-    sharpen::NetStreamChannelPtr client = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
+    sharpen::NetStreamChannelPtr server = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
+    sharpen::NetStreamChannelPtr client = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
     sharpen::IpEndPoint ep{0,0};
     ep.SetAddrByString("127.0.0.1");
     client->Bind(ep);
@@ -157,8 +157,8 @@ void TimeoutTest()
 
 void CloseTest()
 {
-    sharpen::NetStreamChannelPtr server = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
-    sharpen::NetStreamChannelPtr client = sharpen::MakeTcpStreamChannel(sharpen::AddressFamily::Ip);
+    sharpen::NetStreamChannelPtr server = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
+    sharpen::NetStreamChannelPtr client = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
     sharpen::IpEndPoint ep{0,0};
     ep.SetAddrByString("127.0.0.1");
     client->Bind(ep);

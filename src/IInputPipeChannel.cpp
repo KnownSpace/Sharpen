@@ -51,7 +51,7 @@ std::string sharpen::IInputPipeChannel::GetsAsync()
     return str;
 }
 
-sharpen::InputPipeChannelPtr sharpen::MakeStdinPipe()
+sharpen::InputPipeChannelPtr sharpen::OpenStdinPipe()
 {
 #ifdef SHARPEN_HAS_WININPUTPIPE
     sharpen::FileHandle handle = ::CreateFileA("CONIN$",FILE_GENERIC_READ,FILE_SHARE_READ,nullptr,OPEN_EXISTING,FILE_FLAG_OVERLAPPED,nullptr);

@@ -3,7 +3,7 @@
 sharpen::TcpAcceptor::TcpAcceptor(sharpen::AddressFamily af,const sharpen::IEndPoint &endpoint,sharpen::EventEngine &engine)
     :listener_()
 {
-    this->listener_ = sharpen::MakeTcpStreamChannel(af);
+    this->listener_ = sharpen::OpenTcpStreamChannel(af);
     this->listener_->Register(engine);
 #ifdef SHARPEN_IS_NIX
     this->listener_->SetReuseAddress(true);

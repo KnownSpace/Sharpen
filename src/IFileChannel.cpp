@@ -11,7 +11,7 @@
 #include <fcntl.h>
 #endif
 
-sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::FileAccessMethod access,sharpen::FileOpenMethod open,sharpen::FileIoMethod io)
+sharpen::FileChannelPtr sharpen::OpenFileChannel(const char *filename,sharpen::FileAccessMethod access,sharpen::FileOpenMethod open,sharpen::FileIoMethod io)
 {
     sharpen::FileChannelPtr channel;
 #ifdef SHARPEN_HAS_WINFILE
@@ -123,19 +123,27 @@ sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::F
         throw std::logic_error("unknow io method");
         break;
     }
-    sharpen::FileHandle handle = ::open(filename,accessModel | openModel | O_CLOEXEC | ioFlag,S_IRUSR|S_IWUSR);
-    if (handle == -1)
+    sharpen::FileHandle handle{-1};
+    while(handle == -1)
     {
-        sharpen::ThrowLastError();
+        handle = ::open(filename,accessModel | openModel | O_CLOEXEC | ioFlag,S_IRUSR|S_IWUSR);
+        if(handle == -1)
+        {
+            sharpen::ErrorCode error{sharpen::GetLastError()};
+            if(error != EINTR)
+            {
+                sharpen::ThrowSystemError(error);
+            }
+        }
     }
     channel = std::make_shared<sharpen::PosixFileChannel>(handle);
 #endif
     return channel;
 }
 
-sharpen::FileChannelPtr sharpen::MakeFileChannel(const char *filename,sharpen::FileAccessMethod access,sharpen::FileOpenMethod open)
+sharpen::FileChannelPtr sharpen::OpenFileChannel(const char *filename,sharpen::FileAccessMethod access,sharpen::FileOpenMethod open)
 {
-    return sharpen::MakeFileChannel(filename,access,open,sharpen::FileIoMethod::Normal);
+    return sharpen::OpenFileChannel(filename,access,open,sharpen::FileIoMethod::Normal);
 }
 
 void sharpen::IFileChannel::ZeroMemoryAsync(sharpen::Future<std::size_t> &future,std::size_t size,std::uint64_t offset)
