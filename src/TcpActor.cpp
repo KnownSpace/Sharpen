@@ -1,9 +1,9 @@
-#include <sharpen/NetStreamActor.hpp>
+#include <sharpen/TcpActor.hpp>
 
 #include <new>
 #include <cassert>
 
-void sharpen::NetStreamActor::DoClose() noexcept
+void sharpen::TcpActor::DoClose() noexcept
 {
     sharpen::NetStreamChannelPtr channel{nullptr};
     {
@@ -17,7 +17,7 @@ void sharpen::NetStreamActor::DoClose() noexcept
     }
 }
 
-void sharpen::NetStreamActor::DoOpen()
+void sharpen::TcpActor::DoOpen()
 {
     sharpen::NetStreamChannelPtr channel{nullptr};
     {
@@ -34,7 +34,7 @@ void sharpen::NetStreamActor::DoOpen()
     channel->ConnectAsync(*this->remoteEndpoint_);
 }
 
-sharpen::Mail sharpen::NetStreamActor::DoPost(const sharpen::Mail &mail)
+sharpen::Mail sharpen::TcpActor::DoPost(const sharpen::Mail &mail)
 {
     sharpen::NetStreamChannelPtr channel{nullptr};
     {
@@ -73,12 +73,12 @@ sharpen::Mail sharpen::NetStreamActor::DoPost(const sharpen::Mail &mail)
     return response;
 }
 
-std::uint64_t sharpen::NetStreamActor::DoGetId() const noexcept
+std::uint64_t sharpen::TcpActor::DoGetId() const noexcept
 {
     return this->remoteEndpoint_->GetHashCode64();
 }
 
-sharpen::NetStreamActor::NetStreamActor(std::unique_ptr<sharpen::IEndPoint> endpoint,std::unique_ptr<sharpen::IMailParser> parser,sharpen::INetSteamFactory *factory)
+sharpen::TcpActor::TcpActor(std::unique_ptr<sharpen::IEndPoint> endpoint,std::unique_ptr<sharpen::IMailParser> parser,sharpen::INetSteamFactory *factory)
     :lock_(nullptr)
     ,channel_(nullptr)
     ,remoteEndpoint_(std::move(endpoint))
@@ -95,7 +95,7 @@ sharpen::NetStreamActor::NetStreamActor(std::unique_ptr<sharpen::IEndPoint> endp
     }
 }
 
-sharpen::NetStreamActor::NetStreamActor(Self &&other) noexcept
+sharpen::TcpActor::TcpActor(Self &&other) noexcept
     :lock_(std::move(other.lock_))
     ,channel_(std::move(other.channel_))
     ,remoteEndpoint_(std::move(other.remoteEndpoint_))
@@ -105,7 +105,7 @@ sharpen::NetStreamActor::NetStreamActor(Self &&other) noexcept
     other.factory_ = nullptr;
 }
 
-sharpen::NetStreamActor &sharpen::NetStreamActor::operator=(Self &&other) noexcept
+sharpen::TcpActor &sharpen::TcpActor::operator=(Self &&other) noexcept
 {
     if(this != std::addressof(other))
     {

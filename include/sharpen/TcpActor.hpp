@@ -10,10 +10,10 @@
 
 namespace sharpen
 {
-    class NetStreamActor:public sharpen::IRemoteActor,public sharpen::Noncopyable
+    class TcpActor:public sharpen::IRemoteActor,public sharpen::Noncopyable
     {
     private:
-        using Self = sharpen::NetStreamActor;
+        using Self = sharpen::TcpActor;
     
         std::unique_ptr<sharpen::SpinLock> lock_;
         sharpen::NetStreamChannelPtr channel_;
@@ -30,11 +30,11 @@ namespace sharpen
         virtual void DoOpen() override;
     public:
     
-        NetStreamActor(std::unique_ptr<sharpen::IEndPoint> endpoint,std::unique_ptr<sharpen::IMailParser> parser,sharpen::INetSteamFactory *factory);
+        TcpActor(std::unique_ptr<sharpen::IEndPoint> endpoint,std::unique_ptr<sharpen::IMailParser> parser,sharpen::INetSteamFactory *factory);
         
-        NetStreamActor(Self &&other) noexcept;
+        TcpActor(Self &&other) noexcept;
 
-        virtual ~NetStreamActor() noexcept = default;
+        virtual ~TcpActor() noexcept = default;
     
         inline const Self &Const() const noexcept
         {
