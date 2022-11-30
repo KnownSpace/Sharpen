@@ -1,9 +1,11 @@
 #pragma once
-#ifndef _SHARPEN_IREMOTEACTORPROPOSER_HPP
-#define _SHARPEN_IREMOTEACTORPROPOSER_HPP
+#ifndef _SHARPEN_IREMOTEACTOR_HPP
+#define _SHARPEN_IREMOTEACTOR_HPP
+
+#include <memory>
 
 #include "Mail.hpp"
-#include "RemotePosterStatus.hpp"
+#include "Future.hpp"
 
 namespace sharpen
 {
@@ -13,6 +15,13 @@ namespace sharpen
         using Self = sharpen::IRemotePoster;
     protected:
 
+        virtual std::uint64_t DoGetId() const noexcept = 0;
+
+        virtual sharpen::Mail DoPost(const sharpen::Mail &mail) = 0;
+
+        virtual void DoClose() noexcept = 0;
+
+        virtual void DoOpen() = 0;
     public:
     
         IRemotePoster() noexcept = default;
@@ -32,11 +41,25 @@ namespace sharpen
             return *this;
         }
 
-        virtual void Post(const sharpen::Mail &mail) = 0;
+        inline void Open() 
+        {
+            return this->DoOpen();
+        }
 
-        virtual void Canel() = 0;
+        inline void Close() noexcept
+        {
+            return this->DoClose();
+        }
 
-        virtual sharpen::RemotePosterStatus GetStatus() const noexcept = 0;
+        inline sharpen::Mail Post(const sharpen::Mail &mail)
+        {
+            return this->DoPost(mail);
+        }
+
+        inline std::uint64_t GetId() const noexcept
+        {
+            return this->DoGetId();
+        }
     };
 }
 

@@ -1,47 +1,66 @@
 #pragma once
-#ifndef _SHARPEN_NETSTREAMACTOR_HPP
-#define _SHARPEN_NETSTREAMACTOR_HPP
+#ifndef _SHARPEN_TCPPOSTER_HPP
+#define _SHARPEN_TCPPOSTER_HPP
+
+#include <cassert>
 
 #include "IRemoteActor.hpp"
-#include "IEndPoint.hpp"
-#include "INetSteamFactory.hpp"
-#include "RemoteActorClosedError.hpp"
-#include "IMailParser.hpp"
+#include "IRemotePoster.hpp"
+#include "IMailReceiver.hpp"
+#include "IWorkerGroup.hpp"
+#include "Nonmovable.hpp"
+#include "Noncopyable.hpp"
 
 namespace sharpen
 {
-    class TcpActor:public sharpen::IRemoteActor,public sharpen::Noncopyable
+    class TcpActor:public sharpen::IRemoteActor,public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
         using Self = sharpen::TcpActor;
     
-        std::unique_ptr<sharpen::SpinLock> lock_;
-        sharpen::NetStreamChannelPtr channel_;
-        std::unique_ptr<sharpen::IEndPoint> remoteEndpoint_;
-        std::unique_ptr<sharpen::IMailParser> parser_;
-        sharpen::INetSteamFactory *factory_;
+        sharpen::IMailReceiver *receiver_;
+        std::unique_ptr<sharpen::IRemotePoster> poster_;
+        std::atomic<sharpen::RemoteActorStatus> status_;
+        std::unique_ptr<sharpen::IWorkerGroup> worker_;
 
-        virtual std::uint64_t DoGetId() const noexcept override;
-
-        virtual sharpen::Mail DoPost(const sharpen::Mail &mail) override;
-
-        virtual void DoClose() noexcept override;
-
-        virtual void DoOpen() override;
+        void DoPost(const sharpen::Mail *mail) noexcept;
     public:
     
-        TcpActor(std::unique_ptr<sharpen::IEndPoint> endpoint,std::unique_ptr<sharpen::IMailParser> parser,sharpen::INetSteamFactory *factory);
-        
-        TcpActor(Self &&other) noexcept;
-
-        virtual ~TcpActor() noexcept = default;
+        TcpActor(sharpen::IFiberScheduler &scheduler,sharpen::IMailReceiver &receiver,std::unique_ptr<sharpen::IRemotePoster> poster);
+    
+        ~TcpActor() noexcept = default;
     
         inline const Self &Const() const noexcept
         {
             return *this;
         }
 
-        Self &operator=(Self &&other) noexcept;
+        inline const sharpen::IRemotePoster &Poster() const noexcept
+        {
+            assert(this->poster_);
+            return *this->poster_;
+        }
+
+        inline sharpen::IMailReceiver &MailReceiver() noexcept
+        {
+            assert(this->receiver_);
+            return *this->receiver_;
+        }
+        
+        inline const sharpen::IMailReceiver &MailReceiver() const noexcept
+        {
+            assert(this->receiver_);
+            return *this->receiver_;
+        }
+
+        virtual void Post(const sharpen::Mail &mail) override;
+
+        inline virtual sharpen::RemoteActorStatus GetStatus() const noexcept override
+        {
+            return this->status_;
+        }
+
+        virtual void Cancel() noexcept override;
     };
 }
 

@@ -4,11 +4,11 @@
 
 namespace sharpen
 {
-    enum class RemotePosterStatus
+    enum class RemoteActorStatus
     {
         Closed,
         Opened,
-        InProgressed
+        InProgress
     };   
 }
 
