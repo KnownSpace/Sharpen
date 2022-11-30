@@ -70,7 +70,7 @@ int main()
             int a = opt.Get();
             assert(false);
         }
-        catch(const sharpen::BadOptionException &e)
+        catch(const sharpen::BadOptionError &e)
         {
             (void)e;
         }
@@ -83,7 +83,7 @@ int main()
             int a = opt.Get();
             assert(a == 1);
         }
-        catch(const sharpen::BadOptionException &e)
+        catch(const sharpen::BadOptionError &e)
         {
             (void)e;
             assert(false);
@@ -99,7 +99,7 @@ int main()
             Test &a = opt.Get();
             assert(false);
         }
-        catch(const sharpen::BadOptionException &e)
+        catch(const sharpen::BadOptionError &e)
         {
             (void)e;
         }
@@ -111,7 +111,7 @@ int main()
         {
             Test &test = opt.Get();
         }
-        catch(const sharpen::BadOptionException &e)
+        catch(const sharpen::BadOptionError &e)
         {
             (void)e;
             assert(false);
