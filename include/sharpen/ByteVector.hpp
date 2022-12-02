@@ -33,7 +33,8 @@ namespace sharpen
     private:
         using Self = ByteVector;
 
-        static constexpr std::size_t inlineSize_{sizeof(sharpen::ByteVectorStruct) + sizeof(void*)};
+        //inline size is 32
+        static constexpr std::size_t inlineSize_{sizeof(sharpen::ByteVectorStruct) + 2*sizeof(void*)};
         static constexpr std::size_t blobSize_{1*1024*1024};
     
         std::size_t size_;
