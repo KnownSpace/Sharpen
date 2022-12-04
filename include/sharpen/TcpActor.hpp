@@ -24,6 +24,12 @@ namespace sharpen
         std::unique_ptr<sharpen::IWorkerGroup> worker_;
 
         void DoPost(sharpen::Mail mail) noexcept;
+
+        inline virtual std::uint64_t DoGetId() const noexcept override
+        {
+            assert(this->poster_);
+            return this->poster_->GetId();
+        }
     public:
     
         TcpActor(sharpen::IFiberScheduler &scheduler,sharpen::IMailReceiver &receiver,std::unique_ptr<sharpen::IRemotePoster> poster);
@@ -34,25 +40,7 @@ namespace sharpen
         {
             return *this;
         }
-
-        inline const sharpen::IRemotePoster &Poster() const noexcept
-        {
-            assert(this->poster_);
-            return *this->poster_;
-        }
-
-        inline sharpen::IMailReceiver &MailReceiver() noexcept
-        {
-            assert(this->receiver_);
-            return *this->receiver_;
-        }
         
-        inline const sharpen::IMailReceiver &MailReceiver() const noexcept
-        {
-            assert(this->receiver_);
-            return *this->receiver_;
-        }
-
         virtual void Post(sharpen::Mail mail) override;
 
         inline virtual sharpen::RemoteActorStatus GetStatus() const noexcept override
