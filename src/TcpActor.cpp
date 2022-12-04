@@ -6,9 +6,8 @@
 #include <sharpen/RemotePosterClosedError.hpp>
 #include <sharpen/SingleWorkerGroup.hpp>
 
-void sharpen::TcpActor::DoPost(const sharpen::Mail *mail) noexcept
+void sharpen::TcpActor::DoPost(sharpen::Mail mail) noexcept
 {
-    assert(mail);
     sharpen::RemoteActorStatus status{this->status_.exchange(sharpen::RemoteActorStatus::InProgress)};
     if(status == sharpen::RemoteActorStatus::Closed)
     {
@@ -31,7 +30,7 @@ void sharpen::TcpActor::DoPost(const sharpen::Mail *mail) noexcept
     sharpen::Mail response{};
     try
     {
-        response = this->poster_->Post(*mail);
+        response = this->poster_->Post(mail);
         this->receiver_->ReceiveMail(std::move(response));
     }
     catch(const sharpen::RemotePosterClosedError &ignore)
@@ -57,9 +56,9 @@ void sharpen::TcpActor::Cancel() noexcept
     }
 }
 
-void sharpen::TcpActor::Post(const sharpen::Mail &mail)
+void sharpen::TcpActor::Post(sharpen::Mail mail)
 {
-    this->worker_->Submit(&Self::DoPost,this,&mail);
+    this->worker_->Submit(&Self::DoPost,this,std::move(mail));
 }
 
 sharpen::TcpActor::TcpActor(sharpen::IFiberScheduler &scheduler,sharpen::IMailReceiver &receiver,std::unique_ptr<sharpen::IRemotePoster> poster)

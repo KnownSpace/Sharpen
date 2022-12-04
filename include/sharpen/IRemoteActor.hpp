@@ -32,7 +32,7 @@ namespace sharpen
             return *this;
         }
 
-        virtual void Post(const sharpen::Mail &mail) = 0;
+        virtual void Post(sharpen::Mail mail) = 0;
 
         virtual sharpen::RemoteActorStatus GetStatus() const noexcept = 0;
 

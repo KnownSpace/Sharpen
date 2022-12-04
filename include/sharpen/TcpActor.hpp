@@ -23,7 +23,7 @@ namespace sharpen
         std::atomic<sharpen::RemoteActorStatus> status_;
         std::unique_ptr<sharpen::IWorkerGroup> worker_;
 
-        void DoPost(const sharpen::Mail *mail) noexcept;
+        void DoPost(sharpen::Mail mail) noexcept;
     public:
     
         TcpActor(sharpen::IFiberScheduler &scheduler,sharpen::IMailReceiver &receiver,std::unique_ptr<sharpen::IRemotePoster> poster);
@@ -53,7 +53,7 @@ namespace sharpen
             return *this->receiver_;
         }
 
-        virtual void Post(const sharpen::Mail &mail) override;
+        virtual void Post(sharpen::Mail mail) override;
 
         inline virtual sharpen::RemoteActorStatus GetStatus() const noexcept override
         {
