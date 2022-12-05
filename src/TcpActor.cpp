@@ -54,11 +54,28 @@ void sharpen::TcpActor::DoPost(sharpen::Mail mail) noexcept
     this->DoPostShared(&mail);
 }
 
+void sharpen::TcpActor::DoCancel(sharpen::Future<void> *future) noexcept
+{
+    future->Complete();
+}
+
 void sharpen::TcpActor::Cancel() noexcept
 {
-    if(this->status_.exchange(sharpen::RemoteActorStatus::Closed) != sharpen::RemoteActorStatus::Closed)
+    sharpen::RemoteActorStatus status{sharpen::RemoteActorStatus::InProgress};
+    while(!this->status_.compare_exchange_weak(status,sharpen::RemoteActorStatus::Closed))
     {
-        this->Cancel();
+        if(status != sharpen::RemoteActorStatus::InProgress)
+        {
+            break;
+        }
+    }
+    if(status == sharpen::RemoteActorStatus::InProgress)
+    {
+        using FnPtr = void(*)(sharpen::Future<void>*);
+        this->poster_->Close();
+        sharpen::AwaitableFuture<void> future;
+        this->worker_->Submit(static_cast<FnPtr>(&Self::DoCancel),&future);
+        future.WaitAsync();
     }
 }
 

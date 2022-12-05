@@ -10,6 +10,7 @@
 #include "IWorkerGroup.hpp"
 #include "Nonmovable.hpp"
 #include "Noncopyable.hpp"
+#include "AwaitableFuture.hpp"
 
 namespace sharpen
 {
@@ -26,6 +27,8 @@ namespace sharpen
         void DoPostShared(const sharpen::Mail *mail) noexcept;
 
         void DoPost(sharpen::Mail mail) noexcept;
+
+        static void DoCancel(sharpen::Future<void> *future) noexcept;
 
         inline virtual std::uint64_t DoGetId() const noexcept override
         {
