@@ -35,6 +35,8 @@ namespace sharpen
 
         virtual void Post(sharpen::Mail mail) = 0;
 
+        virtual void PostShared(const sharpen::Mail &mail) = 0;
+
         virtual sharpen::RemoteActorStatus GetStatus() const noexcept = 0;
 
         virtual void Cancel() noexcept = 0;

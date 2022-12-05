@@ -23,6 +23,8 @@ namespace sharpen
         std::atomic<sharpen::RemoteActorStatus> status_;
         std::unique_ptr<sharpen::IWorkerGroup> worker_;
 
+        void DoPostShared(const sharpen::Mail *mail) noexcept;
+
         void DoPost(sharpen::Mail mail) noexcept;
 
         inline virtual std::uint64_t DoGetId() const noexcept override
@@ -42,6 +44,8 @@ namespace sharpen
         }
         
         virtual void Post(sharpen::Mail mail) override;
+
+        virtual void PostShared(const sharpen::Mail &mail) override;
 
         inline virtual sharpen::RemoteActorStatus GetStatus() const noexcept override
         {
