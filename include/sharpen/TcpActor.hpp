@@ -39,7 +39,10 @@ namespace sharpen
     
         TcpActor(sharpen::IFiberScheduler &scheduler,sharpen::IMailReceiver &receiver,std::unique_ptr<sharpen::IRemotePoster> poster);
     
-        ~TcpActor() noexcept = default;
+        ~TcpActor() noexcept
+        {
+            this->poster_->Close();
+        }
     
         inline const Self &Const() const noexcept
         {
