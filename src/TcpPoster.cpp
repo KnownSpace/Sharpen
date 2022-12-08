@@ -44,6 +44,9 @@ void sharpen::TcpPoster::DoOpen()
         {
         case sharpen::ErrorIsConnected:
             return;
+        case sharpen::ErrorConnectionAborted:
+            throw sharpen::RemotePosterOpenError{"poster is closed by operator"};
+            break;
         case sharpen::ErrorCancel:
             throw sharpen::RemotePosterOpenError{"poster is closed by operator"};
             break;
@@ -93,7 +96,8 @@ sharpen::Mail sharpen::TcpPoster::DoPost(const sharpen::Mail &mail)
         }
         catch(const std::system_error &error)
         {
-            if(error.code().value() != sharpen::ErrorCancel)
+            sharpen::ErrorCode code{error.code().value()};
+            if(code != sharpen::ErrorCancel && code != sharpen::ErrorConnectionAborted)
             {
                 throw;
             }

@@ -5,6 +5,7 @@
 #include <sharpen/RemotePosterOpenError.hpp>
 #include <sharpen/RemotePosterClosedError.hpp>
 #include <sharpen/SingleWorkerGroup.hpp>
+#include <sharpen/YieldOps.hpp>
 
 void sharpen::TcpActor::DoPostShared(const sharpen::Mail *mail) noexcept
 {
@@ -43,7 +44,7 @@ void sharpen::TcpActor::DoPostShared(const sharpen::Mail *mail) noexcept
     }
     catch(const std::exception &ignore)
     {
-        assert(!ignore.what() && "fail to post mail or receive");
+        assert(!ignore.what() && "fail to post or receive mail");
         (void)ignore;
     }
     this->status_ = sharpen::RemoteActorStatus::Opened;
@@ -61,18 +62,19 @@ void sharpen::TcpActor::DoCancel(sharpen::Future<void> *future) noexcept
 
 void sharpen::TcpActor::Cancel() noexcept
 {
-    sharpen::RemoteActorStatus status{sharpen::RemoteActorStatus::InProgress};
-    while(!this->status_.compare_exchange_weak(status,sharpen::RemoteActorStatus::Closed))
+    bool wait{false};
+    while(this->status_ == sharpen::RemoteActorStatus::InProgress)
     {
-        if(status != sharpen::RemoteActorStatus::InProgress)
+        this->poster_->Close();
+        wait = true;
+        if(this->status_ == sharpen::RemoteActorStatus::InProgress)
         {
-            break;
+            sharpen::YieldCycle();
         }
     }
-    if(status == sharpen::RemoteActorStatus::InProgress)
+    if(wait)
     {
-        using FnPtr = void(*)(sharpen::Future<void>*);
-        this->poster_->Close();
+        using FnPtr = void(*)(sharpen::Future<void> *);
         sharpen::AwaitableFuture<void> future;
         this->worker_->Submit(static_cast<FnPtr>(&Self::DoCancel),&future);
         future.WaitAsync();
