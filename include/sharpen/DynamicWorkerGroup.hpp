@@ -17,8 +17,6 @@ namespace sharpen
     {
     private:
         using Self = sharpen::DynamicWorkerGroup;
-    
-        constexpr static std::size_t probeCount_{3};
 
         sharpen::IFiberScheduler *scheduler_;
         std::atomic_bool token_;
@@ -27,6 +25,7 @@ namespace sharpen
         std::atomic_size_t taskCount_;
         std::vector<std::unique_ptr<sharpen::AwaitableFuture<void>>> workers_;
         sharpen::AsyncBlockingQueue<std::function<void()>> queue_;
+        std::size_t probeCount_;
 
         bool MoreWorker() const noexcept;
 
@@ -39,11 +38,15 @@ namespace sharpen
     
         constexpr static std::size_t defaultBusyMark_{256};
 
+        constexpr static std::size_t defaultProbeCount_{3};
+
         explicit DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler);
 
         DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler,std::size_t workerCount);
 
         DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler,std::size_t workerCount,std::size_t busyMark);
+
+        DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler,std::size_t workerCount,std::size_t busyMark,std::size_t probeCount);
     
         virtual ~DynamicWorkerGroup() noexcept;
     

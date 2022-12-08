@@ -6,7 +6,6 @@
 
 #include <sharpen/EventEngine.hpp>
 #include <sharpen/YieldOps.hpp>
-#include <sharpen/CompilerInfo.hpp>
 
 void sharpen::DynamicWorkerGroup::Entry(sharpen::AwaitableFuture<void> *future) noexcept
 {
@@ -27,23 +26,16 @@ bool sharpen::DynamicWorkerGroup::MoreWorker() const noexcept
 {
     if(this->token_)
     {
-        for(std::size_t i = 0;i != probeCount_;++i)
+        for(std::size_t i = 0;i != this->probeCount_;++i)
         {
             if(this->taskCount_ <= this->busyMark_)
             {
                 return false;
             }
-#ifdef SHARPEN_COMPILER_MSVC
-#pragma warning(push)
-#pragma warning(disable:4127)
-#endif
-            if(probeCount_ > 1)
+            if(this->probeCount_ != i + 1)
             {
                 sharpen::YieldCycle();
             }
-#ifdef SHARPEN_COMPILER_MSVC
-#pragma warning(pop)
-#endif
         }
         return this->token_;
     }
@@ -126,7 +118,7 @@ std::size_t sharpen::DynamicWorkerGroup::GetWorkerCount() const noexcept
     }
 }
 
-sharpen::DynamicWorkerGroup::DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler,std::size_t workerCount,std::size_t busyMark)
+sharpen::DynamicWorkerGroup::DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler,std::size_t workerCount,std::size_t busyMark,std::size_t probeCount)
     :scheduler_(&scheduler)
     ,token_(true)
     ,busyMark_(busyMark)
@@ -134,7 +126,9 @@ sharpen::DynamicWorkerGroup::DynamicWorkerGroup(sharpen::IFiberScheduler &schedu
     ,taskCount_(0)
     ,workers_()
     ,queue_()
+    ,probeCount_(probeCount)
 {
+    assert(this->probeCount_);
     assert(this->busyMark_);
     assert(workerCount);
     for(std::size_t i = 0;i != workerCount;++i)
@@ -149,6 +143,10 @@ sharpen::DynamicWorkerGroup::DynamicWorkerGroup(sharpen::IFiberScheduler &schedu
         this->scheduler_->Launch(&Self::Entry,this,worker);
     }
 }
+
+sharpen::DynamicWorkerGroup::DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler,std::size_t workerCount,std::size_t busyMark)
+    :DynamicWorkerGroup(scheduler,workerCount,busyMark,defaultProbeCount_)
+{}
 
 sharpen::DynamicWorkerGroup::DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler,std::size_t workerCount)
     :DynamicWorkerGroup(scheduler,workerCount,defaultBusyMark_)

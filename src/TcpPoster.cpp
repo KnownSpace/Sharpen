@@ -96,7 +96,7 @@ sharpen::Mail sharpen::TcpPoster::DoPost(const sharpen::Mail &mail)
         }
         catch(const std::system_error &error)
         {
-            sharpen::ErrorCode code{error.code().value()};
+            sharpen::ErrorCode code{static_cast<sharpen::ErrorCode>(error.code().value())};
             if(code != sharpen::ErrorCancel && code != sharpen::ErrorConnectionAborted)
             {
                 throw;
