@@ -103,3 +103,7 @@ sharpen::TcpActor::TcpActor(sharpen::IFiberScheduler &scheduler,sharpen::IMailRe
     this->worker_.reset(worker);
 }
 
+sharpen::TcpActor::~TcpActor() noexcept
+{
+    this->poster_->Close();
+}
