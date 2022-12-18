@@ -44,7 +44,7 @@ namespace sharpen
             this->actors_.rehash(sz);
             while (begin != end)
             {
-                this->actors_.emplace_back(begin->GetId(),std::move(*begin));
+                this->actors_.emplace(begin->GetId(),std::move(*begin));
                 ++begin;
             }
         }
