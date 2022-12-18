@@ -3,9 +3,10 @@
 #define _SHARPEN_BROADCASTER_HPP
 
 #include <new>
-#include <vector>
+#include <unordered_map>
 #include <iterator>
 #include <memory>
+#include <stdexcept>
 
 #include "Noncopyable.hpp"
 #include "IMailProvider.hpp"
@@ -24,7 +25,7 @@ namespace sharpen
     
         std::unique_ptr<Lock> lock_;
         std::unique_ptr<sharpen::Mail> sharedMail_;
-        std::vector<std::unique_ptr<sharpen::IRemoteActor>> actors_;
+        std::unordered_map<std::uint64_t,std::unique_ptr<sharpen::IRemoteActor>> actors_;
     public:
     
         template<typename _Iterator,typename _Check = decltype(std::declval<std::unique_ptr<sharpen::IRemoteActor>>() = std::move(*std::declval<_Iterator>()++))>
@@ -40,10 +41,10 @@ namespace sharpen
                 throw std::bad_alloc{};
             }
             std::size_t sz{sharpen::GetRangeSize(begin,end)};
-            this->actors_.reserve(sz);
+            this->actors_.rehash(sz);
             while (begin != end)
             {
-                this->actors_.emplace_back(std::move(*begin));
+                this->actors_.emplace_back(begin->GetId(),std::move(*begin));
                 ++begin;
             }
         }
@@ -75,6 +76,12 @@ namespace sharpen
         bool Completed() const noexcept;
 
         void Cancel() noexcept;
+
+        const sharpen::IRemoteActor &GetActor(std::uint64_t id) const;
+
+        bool ExistActor(std::uint64_t id) const noexcept;
+
+        const sharpen::IRemoteActor *FindActor(std::uint64_t id) const noexcept;
     };
 }
 
