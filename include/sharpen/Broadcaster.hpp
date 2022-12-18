@@ -44,10 +44,13 @@ namespace sharpen
             this->actors_.rehash(sz);
             while (begin != end)
             {
-                this->actors_.emplace(begin->GetId(),std::move(*begin));
+                std::uint64_t id{begin->GetId()};
+                this->actors_.emplace(id,std::move(*begin));
                 ++begin;
             }
         }
+
+        Broadcaster(std::unique_ptr<sharpen::IRemoteActor> *actors,std::size_t size);
     
         Broadcaster(Self &&other) noexcept = default;
     

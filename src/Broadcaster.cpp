@@ -2,6 +2,25 @@
 
 #include <mutex>
 
+sharpen::Broadcaster::Broadcaster(std::unique_ptr<sharpen::IRemoteActor> *actor,std::size_t size)
+    :lock_(nullptr)
+    ,sharedMail_(nullptr)
+    ,actors_()
+{
+    this->lock_.reset(new (std::nothrow) Lock{});
+    this->sharedMail_.reset(new (std::nothrow) sharpen::Mail{});
+    if(!this->lock_ || !this->sharedMail_)
+    {
+        throw std::bad_alloc{};
+    }
+    this->actors_.rehash(size);
+    for(std::size_t i = 0;i != size;++i)
+    {
+        std::uint64_t id{actor[i]->GetId()};
+        this->actors_.emplace(id,std::move(actor[i]));
+    }
+}
+
 void sharpen::Broadcaster::Cancel() noexcept
 {
     for(auto begin = this->actors_.begin(),end = this->actors_.end(); begin != end; ++begin)
