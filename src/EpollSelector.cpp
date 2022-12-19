@@ -150,7 +150,7 @@ void sharpen::EpollSelector::Resister(WeakChannelPtr channel)
 }
 
 #ifdef SHARPEN_HAS_IOURING
-sharpen::IoUringQueue *sharpen::EpollSelector::GetRing() const noexcept
+sharpen::IoUringQueue *sharpen::EpollSelector::GetIoUring() const noexcept
 {
     return this->ring_.get();
 }

@@ -11,7 +11,7 @@ sharpen::TimerPtr sharpen::MakeTimer(sharpen::EventLoop &loop)
     return std::move(timer);
 #elif (defined SHARPEN_HAS_TIMERFD)
     std::shared_ptr<sharpen::LinuxTimer> timer = std::make_shared<sharpen::LinuxTimer>();
-    timer->Register(&loop);
+    timer->Register(loop);
     return timer;
 #endif
 }

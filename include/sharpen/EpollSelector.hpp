@@ -60,7 +60,7 @@ namespace sharpen
         virtual void Resister(WeakChannelPtr channel) override;
 
 #ifdef SHARPEN_HAS_IOURING
-        sharpen::IoUringQueue *GetRing() const noexcept;
+        sharpen::IoUringQueue *GetIoUring() const noexcept;
 #endif
     };
 }
