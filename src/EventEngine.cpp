@@ -37,9 +37,11 @@ sharpen::EventEngine::EventEngine(std::size_t workerCount)
         {
             throw std::bad_alloc{};
         }
+        thread->GetLoop()->SetLoopGroup(this);
         this->loops_.push_back(thread->GetLoop());
         this->workers_.push_back(std::move(thread));
     }
+    this->mainLoop_->SetLoopGroup(this);
 }
 
 sharpen::EventEngine::~EventEngine() noexcept

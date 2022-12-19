@@ -102,7 +102,11 @@ namespace sharpen
         {
             this->loopGroup_ = loopGroup;
         }
+
+        static sharpen::IEventLoopGroup *GetCurrentLoopGroup() noexcept;
     };
+
+    extern sharpen::IEventLoopGroup *GetLocalLoopGroup() noexcept;
 }
 
 #endif

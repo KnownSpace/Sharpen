@@ -9,7 +9,6 @@
 #include "TypeTraits.hpp"
 #include "FutureCompletor.hpp"
 #include "IEventLoopGroup.hpp"
-#include "EventEngine.hpp"
 
 namespace sharpen
 {
@@ -29,7 +28,9 @@ namespace sharpen
 
     inline sharpen::TimerPool &GetGobalTimerPool()
     {
-        return sharpen::TimerHelper::GetTimerPool(sharpen::EventEngine::GetEngine(),nullptr);   
+        sharpen::IEventLoopGroup *loopGroup{sharpen::GetLocalLoopGroup()};
+        assert(loopGroup != nullptr);
+        return sharpen::TimerHelper::GetTimerPool(*loopGroup,nullptr);   
     }
 
     template<typename _Rep,typename _Period>

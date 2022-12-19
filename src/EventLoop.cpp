@@ -186,3 +186,17 @@ std::size_t sharpen::EventLoop::GetWorkCount() const noexcept
 {
     return this->works_;
 }
+
+sharpen::IEventLoopGroup *sharpen::EventLoop::GetCurrentLoopGroup() noexcept
+{
+    if(localLoop_)
+    {
+        return localLoop_->GetLoopGroup();
+    }
+    return nullptr;
+}
+
+sharpen::IEventLoopGroup *sharpen::GetLocalLoopGroup() noexcept
+{
+    return sharpen::EventLoop::GetCurrentLoopGroup();
+}

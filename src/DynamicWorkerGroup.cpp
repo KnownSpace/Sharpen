@@ -4,7 +4,6 @@
 #include <cassert>
 #include <cstdlib>
 
-#include <sharpen/EventEngine.hpp>
 #include <sharpen/YieldOps.hpp>
 
 void sharpen::DynamicWorkerGroup::Entry(sharpen::AwaitableFuture<void> *future) noexcept

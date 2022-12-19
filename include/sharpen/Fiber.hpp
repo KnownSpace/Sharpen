@@ -95,7 +95,7 @@ namespace sharpen
         }
     };
 
-    extern sharpen::IFiberScheduler *GetFiberScheduler() noexcept;
+    extern sharpen::IFiberScheduler *GetLocalScheduler() noexcept;
 } 
 
 #endif
