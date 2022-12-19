@@ -40,7 +40,7 @@ namespace sharpen
             return this->TryLock();
         }
 
-        ~AsyncSemaphore() noexcept = default;
+        virtual ~AsyncSemaphore() noexcept = default;
     };
     
 }
