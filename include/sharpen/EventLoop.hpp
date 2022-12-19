@@ -17,6 +17,8 @@
 namespace sharpen
 {
     class IChannel;
+
+    class IEventLoopGroup;
     
     class EventLoop:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
@@ -35,11 +37,16 @@ namespace sharpen
         Lock lock_;
         std::atomic_bool running_;
         std::atomic_size_t works_;
+        sharpen::IEventLoopGroup *loopGroup_;
 
         //one loop per thread
         thread_local static EventLoop *localLoop_;
 
         thread_local static sharpen::FiberPtr localFiber_;
+
+        static constexpr std::size_t reservedTaskSize_{32};
+
+        static constexpr std::size_t reservedEventBufSize_{128};
 
         //execute pending tasks
         void ExecuteTask();
@@ -85,6 +92,16 @@ namespace sharpen
         }
 
         std::size_t GetWorkCount() const noexcept;
+
+        inline sharpen::IEventLoopGroup *GetLoopGroup() const noexcept
+        {
+            return this->loopGroup_;
+        }
+
+        inline void SetLoopGroup(sharpen::IEventLoopGroup *loopGroup) noexcept
+        {
+            this->loopGroup_ = loopGroup;
+        }
     };
 }
 

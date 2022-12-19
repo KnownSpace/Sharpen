@@ -28,11 +28,11 @@ namespace sharpen
         using EventBuf = std::vector<sharpen::Epoll::Event>;
         using Self = sharpen::EpollSelector;
 
-        static constexpr std::size_t MinEventBufLength_{8};
-        static constexpr std::size_t MaxEventBufLength_{512};
+        static constexpr std::size_t minEventBufLength_{8};
+        static constexpr std::size_t maxEventBufLength_{512};
 #ifdef SHARPEN_HAS_IOURING
-        static constexpr std::size_t MinCqesLength_{8};
-        static constexpr std::size_t MaxCqesLength_{512};
+        static constexpr std::size_t minCqesLength_{8};
+        static constexpr std::size_t maxCqesLength_{512};
 #endif
         sharpen::Epoll epoll_;
         sharpen::EventFd eventfd_;
