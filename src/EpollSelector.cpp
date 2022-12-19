@@ -13,11 +13,11 @@ sharpen::EpollSelector::EpollSelector()
     :epoll_()
     ,eventfd_(0,O_CLOEXEC | O_NONBLOCK)
     ,map_()
-    ,eventBuf_(Self::MinEventBufLength_)
+    ,eventBuf_(Self::minEventBufLength_)
     ,lock_()
 #ifdef SHARPEN_HAS_IOURING
     ,ring_(nullptr)
-    ,cqes_(Self::MinCqesLength_)
+    ,cqes_(Self::minCqesLength_)
 #endif
 {
     //register event fd
@@ -91,7 +91,7 @@ void sharpen::EpollSelector::Select(EventVector &events)
         }
 #endif
     }
-    if(count == this->eventBuf_.size() && count != Self::MaxEventBufLength_)
+    if(count == this->eventBuf_.size() && count != Self::maxEventBufLength_)
     {
         this->eventBuf_.resize(count * 2);
     }
@@ -115,7 +115,7 @@ void sharpen::EpollSelector::Select(EventVector &events)
             }
             events.push_back(&(st->event_));
         }
-        if(size == this->cqes_.size() && size != Self::MaxEventBufLength_)
+        if(size == this->cqes_.size() && size != Self::maxEventBufLength_)
         {
             this->cqes_.resize(size * 2);
         }

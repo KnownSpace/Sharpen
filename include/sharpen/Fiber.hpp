@@ -77,6 +77,8 @@ namespace sharpen
 
         static sharpen::FiberPtr GetCurrentFiber();
 
+        static sharpen::IFiberScheduler *GetCurrentFiberSceduler() noexcept;
+
         void Release() noexcept;
 
         sharpen::IFiberScheduler *GetScheduler() const noexcept;
@@ -92,6 +94,8 @@ namespace sharpen
             return fiber;
         }
     };
+
+    extern sharpen::IFiberScheduler *GetLocalScheduler() noexcept;
 } 
 
 #endif

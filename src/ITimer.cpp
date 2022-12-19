@@ -1,7 +1,7 @@
 #include <sharpen/ITimer.hpp>
 #include <sharpen/WinTimer.hpp>
 #include <sharpen/LinuxTimer.hpp>
-#include <sharpen/EventEngine.hpp>
+#include <sharpen/IEventLoopGroup.hpp>
 
 sharpen::TimerPtr sharpen::MakeTimer(sharpen::EventLoop &loop)
 {
@@ -16,7 +16,7 @@ sharpen::TimerPtr sharpen::MakeTimer(sharpen::EventLoop &loop)
 #endif
 }
 
-sharpen::TimerPtr sharpen::MakeTimer(sharpen::EventEngine &engine)
+sharpen::TimerPtr sharpen::MakeTimer(sharpen::IEventLoopGroup &loopGroup)
 {
-    return sharpen::MakeTimer(*engine.RoundRobinLoop());
+    return sharpen::MakeTimer(loopGroup.RoundRobinLoop());
 }

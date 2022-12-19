@@ -123,7 +123,7 @@ std::uint64_t sharpen::TcpPoster::DoGetId() const noexcept
     return this->remoteEndpoint_->GetHashCode64();
 }
 
-sharpen::TcpPoster::TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::unique_ptr<sharpen::IMailParser> parser,sharpen::INetSteamFactory *factory)
+sharpen::TcpPoster::TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::unique_ptr<sharpen::IMailParser> parser,sharpen::ITcpSteamFactory *factory)
     :lock_(nullptr)
     ,channel_(nullptr)
     ,remoteEndpoint_(std::move(endpoint))

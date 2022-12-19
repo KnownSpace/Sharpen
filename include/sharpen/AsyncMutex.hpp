@@ -34,7 +34,7 @@ namespace sharpen
             return this->TryLock();
         }
 
-        ~AsyncMutex() noexcept = default;
+        virtual ~AsyncMutex() noexcept = default;
     };
     
 }

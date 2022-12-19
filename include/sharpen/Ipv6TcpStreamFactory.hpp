@@ -1,32 +1,32 @@
 #pragma once
-#ifndef _SHARPEN_IPNETSTREAMFACTORY_HPP
-#define _SHARPEN_IPNETSTREAMFACTORY_HPP
+#ifndef _SHARPEN_IPV6TCPSTREAMFACTORY_HPP
+#define _SHARPEN_IPV6TCPSTREAMFACTORY_HPP
 
-#include "INetSteamFactory.hpp"
-#include "IpEndPoint.hpp"
+#include "ITcpSteamFactory.hpp"
+#include "Ipv6EndPoint.hpp"
 
 namespace sharpen
 {
-    class IpNetStreamFactory:public sharpen::INetSteamFactory
+    class Ipv6TcpStreamFactory:public sharpen::ITcpSteamFactory
     {
     private:
-        using Self = sharpen::IpNetStreamFactory;
+        using Self = sharpen::Ipv6TcpStreamFactory;
     
-        sharpen::EventEngine *engine_;
-        sharpen::IpEndPoint localEndpoint_;
+        sharpen::IEventLoopGroup *loopGroup_;
+        sharpen::Ipv6EndPoint localEndpoint_;
 
         virtual sharpen::NetStreamChannelPtr DoProduce() override;
     public:
     
-        IpNetStreamFactory(sharpen::EventEngine &engine,sharpen::IpEndPoint endpoint);
+        Ipv6TcpStreamFactory(sharpen::IEventLoopGroup &loopGroup,sharpen::Ipv6EndPoint endpoint);
     
-        IpNetStreamFactory(const Self &other) = default;
+        Ipv6TcpStreamFactory(const Self &other) = default;
     
-        IpNetStreamFactory(Self &&other) noexcept
-            :engine_(other.engine_)
+        Ipv6TcpStreamFactory(Self &&other) noexcept
+            :loopGroup_(other.loopGroup_)
             ,localEndpoint_(std::move(other.localEndpoint_))
         {
-            other.engine_ = nullptr;
+            other.loopGroup_ = nullptr;
         }
     
         inline Self &operator=(const Self &other)
@@ -43,14 +43,14 @@ namespace sharpen
         {
             if(this != std::addressof(other))
             {
-                this->engine_ = other.engine_;
+                this->loopGroup_ = other.loopGroup_;
                 this->localEndpoint_ = std::move(other.localEndpoint_);
-                other.engine_ = nullptr;
+                other.loopGroup_ = nullptr;
             }
             return *this;
         }
     
-        ~IpNetStreamFactory() noexcept = default;
+        ~Ipv6TcpStreamFactory() noexcept = default;
     
         inline const Self &Const() const noexcept
         {

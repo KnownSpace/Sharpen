@@ -15,10 +15,11 @@ sharpen::EventLoop::EventLoop(SelectorPtr selector)
     ,lock_()
     ,running_(false)
     ,works_(0)
+    ,loopGroup_(nullptr)
 {
     assert(selector != nullptr);
-    this->pendingTasks_.reserve(32);
-    this->tasks_.reserve(32);
+    this->pendingTasks_.reserve(reservedTaskSize_);
+    this->tasks_.reserve(reservedTaskSize_);
 }
 
 sharpen::EventLoop::~EventLoop() noexcept
@@ -128,7 +129,7 @@ void sharpen::EventLoop::Run()
     sharpen::EventLoop::localLoop_ = this;
     sharpen::EventLoop::localFiber_ = sharpen::Fiber::GetCurrentFiber();
     EventVector events;
-    events.reserve(128);
+    events.reserve(reservedEventBufSize_);
     this->running_ = true;
     while (this->running_)
     {
@@ -184,4 +185,18 @@ bool sharpen::EventLoop::IsWaiting() const noexcept
 std::size_t sharpen::EventLoop::GetWorkCount() const noexcept
 {
     return this->works_;
+}
+
+sharpen::IEventLoopGroup *sharpen::EventLoop::GetCurrentLoopGroup() noexcept
+{
+    if(localLoop_)
+    {
+        return localLoop_->GetLoopGroup();
+    }
+    return nullptr;
+}
+
+sharpen::IEventLoopGroup *sharpen::GetLocalLoopGroup() noexcept
+{
+    return sharpen::EventLoop::GetCurrentLoopGroup();
 }

@@ -7,10 +7,11 @@
 #include "EventLoopThread.hpp"
 #include "ISelector.hpp"
 #include "IFiberScheduler.hpp"
+#include "IEventLoopGroup.hpp"
 
 namespace sharpen
 {
-    class EventEngine:public sharpen::IFiberScheduler
+    class EventEngine:public sharpen::IFiberScheduler,public sharpen::IEventLoopGroup
     {
     private:
         using Workers = std::vector<std::unique_ptr<sharpen::EventLoopThread>>;
@@ -53,9 +54,9 @@ namespace sharpen
 
         static Self &GetEngine();
 
-        void Stop() noexcept;
+        virtual void Stop() noexcept override;
 
-        sharpen::EventLoop *RoundRobinLoop() noexcept;
+        virtual sharpen::EventLoop &RoundRobinLoop() noexcept override;
 
         virtual void Schedule(sharpen::FiberPtr &&fiber) override;
 
@@ -67,7 +68,7 @@ namespace sharpen
 
         virtual void SetSwitchCallback(std::function<void()> fn) override;
 
-        void Run();
+        virtual void Run() override;
 
         template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<void,_Fn,_Args...>::Value>>
         void Startup(_Fn &&fn,_Args &&...args)
@@ -87,7 +88,7 @@ namespace sharpen
             return code;
         }
 
-        inline std::size_t GetLoopCount() const noexcept
+        inline virtual std::size_t GetLoopCount() const noexcept override
         {
             return this->loops_.size();
         }

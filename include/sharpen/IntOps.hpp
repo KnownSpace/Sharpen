@@ -12,7 +12,7 @@
 namespace sharpen
 {
     template <typename _T, typename _Check = sharpen::EnableIf<std::is_integral<_T>::value>>
-    std::size_t MinSizeof(_T val)
+    inline std::size_t MinSizeof(_T val)
     {
         const char *data = reinterpret_cast<const char *>(&val);
 #ifdef SHARPEN_IS_BIG_ENDIAN

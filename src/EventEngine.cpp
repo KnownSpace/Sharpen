@@ -37,9 +37,11 @@ sharpen::EventEngine::EventEngine(std::size_t workerCount)
         {
             throw std::bad_alloc{};
         }
+        thread->GetLoop()->SetLoopGroup(this);
         this->loops_.push_back(thread->GetLoop());
         this->workers_.push_back(std::move(thread));
     }
+    this->mainLoop_->SetLoopGroup(this);
 }
 
 sharpen::EventEngine::~EventEngine() noexcept
@@ -47,10 +49,10 @@ sharpen::EventEngine::~EventEngine() noexcept
     this->Stop();
 }
 
-sharpen::EventLoop *sharpen::EventEngine::RoundRobinLoop() noexcept
+sharpen::EventLoop &sharpen::EventEngine::RoundRobinLoop() noexcept
 {
     std::size_t pos = this->pos_++;
-    return this->loops_[pos % this->loops_.size()];
+    return *this->loops_[pos % this->loops_.size()];
 }
 
 void sharpen::EventEngine::Stop() noexcept

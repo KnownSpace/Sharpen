@@ -4,7 +4,7 @@
 
 #include "IRemotePoster.hpp"
 #include "IEndPoint.hpp"
-#include "INetSteamFactory.hpp"
+#include "ITcpSteamFactory.hpp"
 #include "RemotePosterClosedError.hpp"
 #include "RemotePosterOpenError.hpp"
 #include "IMailParser.hpp"
@@ -21,7 +21,7 @@ namespace sharpen
         sharpen::NetStreamChannelPtr channel_;
         std::unique_ptr<sharpen::IEndPoint> remoteEndpoint_;
         std::unique_ptr<sharpen::IMailParser> parser_;
-        sharpen::INetSteamFactory *factory_;
+        sharpen::ITcpSteamFactory *factory_;
 
         virtual std::uint64_t DoGetId() const noexcept override;
 
@@ -32,7 +32,7 @@ namespace sharpen
         virtual void DoOpen() override;
     public:
     
-        TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::unique_ptr<sharpen::IMailParser> parser,sharpen::INetSteamFactory *factory);
+        TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::unique_ptr<sharpen::IMailParser> parser,sharpen::ITcpSteamFactory *factory);
         
         TcpPoster(Self &&other) noexcept;
 

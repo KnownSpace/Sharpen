@@ -6,13 +6,12 @@
 #include <functional>
 #include <memory>
 
+#include "IEventLoopGroup.hpp"
 #include "AwaitableFuture.hpp"
 
 namespace sharpen
 {
     class EventLoop;
-
-    class EventEngine;
 
     class ITimer
     {
@@ -40,7 +39,7 @@ namespace sharpen
         }
 
         template<typename _Rep,typename _Period>
-        bool Await(const std::chrono::duration<_Rep,_Period> &time)
+        inline bool Await(const std::chrono::duration<_Rep,_Period> &time)
         {
             sharpen::AwaitableFuture<bool> future;
             this->WaitAsync(future,time);
@@ -52,7 +51,7 @@ namespace sharpen
 
     extern sharpen::TimerPtr MakeTimer(sharpen::EventLoop &loop);
 
-    extern sharpen::TimerPtr MakeTimer(sharpen::EventEngine &engine);
+    extern sharpen::TimerPtr MakeTimer(sharpen::IEventLoopGroup &loopGroup);
 }
 
 #endif

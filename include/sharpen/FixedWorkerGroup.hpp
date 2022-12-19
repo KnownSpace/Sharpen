@@ -11,8 +11,6 @@
 
 namespace sharpen
 {
-    class EventEngine;
-
     class FixedWorkerGroup:public sharpen::IWorkerGroup,public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:

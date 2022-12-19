@@ -11,9 +11,9 @@
 
 namespace sharpen
 {
-    void *AlignedAlloc(std::size_t size,std::size_t alignment) noexcept;
+    extern void *AlignedAlloc(std::size_t size,std::size_t alignment) noexcept;
 
-    void AlignedFree(void *memblock) noexcept;
+    extern void AlignedFree(void *memblock) noexcept;
 
     inline void *AlignedCalloc(std::size_t count,std::size_t size,std::size_t alignment) noexcept
     {

@@ -5,44 +5,47 @@
 #include <vector>
 #include <mutex>
 
-#include "ITimer.hpp"
+#include "ITimerPool.hpp"
+#include "IEventLoopGroup.hpp"
 
 namespace sharpen
 {
-    class TimerPool:public sharpen::Noncopyable,public sharpen::Nonmovable
+    class TimerPool:public sharpen::ITimerPool,public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
         using Self = TimerPool;
-        using TimerMaker = sharpen::TimerPtr(*)(sharpen::EventEngine*);
+        using TimerMaker = sharpen::TimerPtr(*)(sharpen::IEventLoopGroup*);
     
+        static constexpr std::size_t reservedSize_{32};
+
         sharpen::SpinLock lock_;
         std::vector<sharpen::TimerPtr> timers_;
         TimerMaker maker_;
-        sharpen::EventEngine *engine_;
+        sharpen::IEventLoopGroup *loopGroup_;
 
         inline sharpen::TimerPtr MakeTimer() const
         {
             if(this->maker_)
             {
-                return this->maker_(this->engine_);
+                return this->maker_(this->loopGroup_);
             }
-            return sharpen::MakeTimer(*this->engine_);
+            return sharpen::MakeTimer(*this->loopGroup_);
         }
     public:
 
-        explicit TimerPool(sharpen::EventEngine &engine)
-            :TimerPool(engine,static_cast<std::size_t>(0))
+        explicit TimerPool(sharpen::IEventLoopGroup &loopGroup)
+            :TimerPool(loopGroup,static_cast<std::size_t>(0))
         {}
 
-        TimerPool(sharpen::EventEngine &engine,std::size_t reserveCount)
-            :TimerPool(engine,nullptr,reserveCount)
+        TimerPool(sharpen::IEventLoopGroup &loopGroup,std::size_t reserveCount)
+            :TimerPool(loopGroup,nullptr,reserveCount)
         {}
 
-        TimerPool(sharpen::EventEngine &engine,TimerMaker maker)
-            :TimerPool(engine,maker,0)
+        TimerPool(sharpen::IEventLoopGroup &loopGroup,TimerMaker maker)
+            :TimerPool(loopGroup,maker,0)
         {}
 
-        TimerPool(sharpen::EventEngine &engine,TimerMaker maker,std::size_t reserveCount);
+        TimerPool(sharpen::IEventLoopGroup &loopGroup,TimerMaker maker,std::size_t reserveCount);
     
         ~TimerPool() noexcept = default;
     
@@ -51,11 +54,11 @@ namespace sharpen
             return *this;
         }
 
-        sharpen::TimerPtr GetTimer();
+        virtual sharpen::TimerPtr GetTimer() override;
 
-        void Reserve(std::size_t size);
+        virtual void Reserve(std::size_t size) override;
 
-        void PutTimer(sharpen::TimerPtr &&timer);
+        virtual void ReturnTimer(sharpen::TimerPtr &&timer) noexcept override;
     };   
 }
 

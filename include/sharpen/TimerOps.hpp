@@ -8,36 +8,51 @@
 #include "TimerPool.hpp"
 #include "TypeTraits.hpp"
 #include "FutureCompletor.hpp"
-#include "EventEngine.hpp"
+#include "IEventLoopGroup.hpp"
+#include "TimerRef.hpp"
 
 namespace sharpen
 {
     struct TimerHelper
     {
     private:
-        using Maker = sharpen::TimerPtr(*)(sharpen::EventEngine*);
+        using Maker = sharpen::TimerPtr(*)(sharpen::IEventLoopGroup*);
 
         static std::unique_ptr<sharpen::TimerPool> gobalTimerPool_;
         static std::once_flag flag_;
 
-        static void InitTimerPool(sharpen::EventEngine *engine,Maker maker);
+        static void InitTimerPool(sharpen::IEventLoopGroup *loopGroup,Maker maker);
     public:
 
-        static sharpen::TimerPool &GetTimerPool(sharpen::EventEngine &engine,Maker maker);
+        static sharpen::TimerPool &GetTimerPool(sharpen::IEventLoopGroup &loopGroup,Maker maker);
     };
 
     inline sharpen::TimerPool &GetGobalTimerPool()
     {
-        return sharpen::TimerHelper::GetTimerPool(sharpen::EventEngine::GetEngine(),nullptr);   
+        sharpen::IEventLoopGroup *loopGroup{sharpen::GetLocalLoopGroup()};
+        assert(loopGroup != nullptr);
+        return sharpen::TimerHelper::GetTimerPool(*loopGroup,nullptr);   
+    }
+
+    inline sharpen::SharedTimerRef GetGobalTimerRef()
+    {
+        sharpen::TimerPool &pool{sharpen::GetGobalTimerPool()};
+        sharpen::SharedTimerRef timer{pool};
+        return timer;
+    }
+
+    inline sharpen::UniquedTimerRef GetUniquedTimerRef()
+    {
+        sharpen::TimerPool &pool{sharpen::GetGobalTimerPool()};
+        sharpen::UniquedTimerRef timer{pool};
+        return timer;
     }
 
     template<typename _Rep,typename _Period>
     inline void Delay(const std::chrono::duration<_Rep,_Period> &time)
     {
-        sharpen::TimerPool &pool{sharpen::GetGobalTimerPool()};
-        sharpen::TimerPtr timer{pool.GetTimer()};
-        timer->Await(time);
-        pool.PutTimer(std::move(timer));
+        sharpen::UniquedTimerRef timer{sharpen::GetUniquedTimerRef()};
+        timer.Await(time);
     }
 
     template<typename _T>

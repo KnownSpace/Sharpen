@@ -9,17 +9,17 @@
 
 namespace sharpen
 {
-    bool AccessFile(const char *name,sharpen::FileAccessMethod model);
+    extern bool AccessFile(const char *name,sharpen::FileAccessMethod model);
 
-    bool ExistFile(const char *name);
+    extern bool ExistFile(const char *name);
 
-    void RenameFile(const char *oldName,const char *newName);
+    extern void RenameFile(const char *oldName,const char *newName);
 
-    void RemoveFile(const char *name);
+    extern void RemoveFile(const char *name);
 
-    bool GetCurrentWorkDirectory(char *pathBuf,std::size_t size) noexcept;
+    extern bool GetCurrentWorkDirectory(char *pathBuf,std::size_t size) noexcept;
 
-    void SetCurrentWorkDirectory(const char *path);
+    extern void SetCurrentWorkDirectory(const char *path);
 
     constexpr inline std::size_t GetMaxPath() noexcept
     {
@@ -30,7 +30,7 @@ namespace sharpen
 #endif
     }
 
-    void ResolvePath(const char *currentPath,std::size_t currentPathSize,const char *path,std::size_t pathSize,char *resolvedPath,std::size_t resolvedPathSize);
+    extern void ResolvePath(const char *currentPath,std::size_t currentPathSize,const char *path,std::size_t pathSize,char *resolvedPath,std::size_t resolvedPathSize);
 
     constexpr inline bool IsPathSeparator(char c) noexcept
     {
@@ -41,9 +41,9 @@ namespace sharpen
 #endif
     }
 
-    void MakeDirectory(const char *name);
+    extern void MakeDirectory(const char *name);
 
-    void DeleteDirectory(const char *name);
+    extern void DeleteDirectory(const char *name);
 }
 
 #endif

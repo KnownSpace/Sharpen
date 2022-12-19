@@ -129,3 +129,17 @@ void sharpen::Fiber::SetScheduler(sharpen::IFiberScheduler *scheduler) noexcept
 {
     this->scheduler_ = scheduler;
 }
+
+sharpen::IFiberScheduler *sharpen::Fiber::GetCurrentFiberSceduler() noexcept
+{
+    if(currentFiber_)
+    {
+        return currentFiber_->GetScheduler();
+    }
+    return nullptr;
+}
+
+sharpen::IFiberScheduler *sharpen::GetLocalScheduler() noexcept
+{
+    return sharpen::Fiber::GetCurrentFiberSceduler();
+}
