@@ -203,12 +203,12 @@ std::uint64_t sharpen::PosixFileChannel::GetFileSize() const
     return buf.st_size;
 }
 
-void sharpen::PosixFileChannel::Register(sharpen::EventLoop *loop)
+void sharpen::PosixFileChannel::Register(sharpen::EventLoop &loop)
 {
-    this->loop_ = loop;
+    this->loop_ = &loop;
 #ifdef SHARPEN_HAS_IOURING
     sharpen::EpollSelector *selector = reinterpret_cast<sharpen::EpollSelector*>(this->loop_->GetSelectorPtr());
-    this->queue_ = selector->GetRing();
+    this->queue_ = selector->GetIoUring();
 #endif
 }
 

@@ -53,7 +53,7 @@ namespace sharpen
 
         virtual void OnEvent(sharpen::IoEvent *event) override;
 
-        virtual void Register(sharpen::EventLoop *loop) override;
+        virtual void Register(sharpen::EventLoop &loop) override;
 
         virtual std::uint64_t GetFileSize() const override;
 
