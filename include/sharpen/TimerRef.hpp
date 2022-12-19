@@ -55,8 +55,8 @@ namespace sharpen
         template<typename _Rep,typename _Period>
         inline bool Await(const std::chrono::duration<_Rep,_Period> &time)
         {
-            sassert(this->timer_);
-            this->timer_->Await(time);
+            assert(this->timer_);
+            return this->timer_->Await(time);
         }
 
         inline sharpen::TimerPtr &Timer() noexcept
@@ -129,7 +129,7 @@ namespace sharpen
         inline bool Await(const std::chrono::duration<_Rep,_Period> &time)
         {
             assert(this->realTimer_);
-            this->realTimer_->Await(time);
+            return this->realTimer_->Await(time);
         }
 
         inline sharpen::TimerPtr &Timer() noexcept

@@ -2,6 +2,7 @@
 #include <cassert>
 #include <sharpen/StopWatcher.hpp>
 #include <sharpen/TimerOps.hpp>
+#include <sharpen/EventEngine.hpp>
 
 void TimerTest()
 {
