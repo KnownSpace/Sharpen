@@ -58,9 +58,9 @@ namespace sharpen
 
     using FileChannelPtr = std::shared_ptr<sharpen::IFileChannel>;
 
-    sharpen::FileChannelPtr OpenFileChannel(const char *filename,sharpen::FileAccessMethod access,sharpen::FileOpenMethod open,sharpen::FileIoMethod io);
+    extern sharpen::FileChannelPtr OpenFileChannel(const char *filename,sharpen::FileAccessMethod access,sharpen::FileOpenMethod open,sharpen::FileIoMethod io);
 
-    sharpen::FileChannelPtr OpenFileChannel(const char *filename,sharpen::FileAccessMethod access,sharpen::FileOpenMethod open);
+    extern sharpen::FileChannelPtr OpenFileChannel(const char *filename,sharpen::FileAccessMethod access,sharpen::FileOpenMethod open);
 }
 
 #endif
