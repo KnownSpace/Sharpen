@@ -6,27 +6,27 @@
 
 namespace sharpen
 {
-    class INetSteamFactory
+    class ITcpSteamFactory
     {
     private:
-        using Self = sharpen::INetSteamFactory;
+        using Self = sharpen::ITcpSteamFactory;
 
     protected:
 
         virtual sharpen::NetStreamChannelPtr DoProduce() = 0;
     public:
     
-        INetSteamFactory() noexcept = default;
+        ITcpSteamFactory() noexcept = default;
     
-        INetSteamFactory(const Self &other) noexcept = default;
+        ITcpSteamFactory(const Self &other) noexcept = default;
     
-        INetSteamFactory(Self &&other) noexcept = default;
+        ITcpSteamFactory(Self &&other) noexcept = default;
     
         Self &operator=(const Self &other) noexcept = default;
     
         Self &operator=(Self &&other) noexcept = default;
     
-        virtual ~INetSteamFactory() noexcept = default;
+        virtual ~ITcpSteamFactory() noexcept = default;
     
         inline const Self &Const() const noexcept
         {

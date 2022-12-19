@@ -6,10 +6,10 @@ std::unique_ptr<sharpen::TimerPool> sharpen::TimerHelper::gobalTimerPool_{nullpt
 
 std::once_flag sharpen::TimerHelper::flag_;
 
-void sharpen::TimerHelper::InitTimerPool(sharpen::EventEngine *engine,Maker maker)
+void sharpen::TimerHelper::InitTimerPool(sharpen::IEventLoopGroup *loopGroup,Maker maker)
 {
-    assert(engine != nullptr);
-    auto *p = new (std::nothrow) sharpen::TimerPool{*engine,maker};
+    assert(loopGroup != nullptr);
+    auto *p = new (std::nothrow) sharpen::TimerPool{*loopGroup,maker};
     if(!p)
     {
         throw std::bad_alloc();
@@ -17,12 +17,12 @@ void sharpen::TimerHelper::InitTimerPool(sharpen::EventEngine *engine,Maker make
     gobalTimerPool_.reset(p);
 }
 
-sharpen::TimerPool &sharpen::TimerHelper::GetTimerPool(sharpen::EventEngine &engine,Maker maker)
+sharpen::TimerPool &sharpen::TimerHelper::GetTimerPool(sharpen::IEventLoopGroup &loopGroup,Maker maker)
 {
     if(!sharpen::TimerHelper::gobalTimerPool_)
     {
-        using FnPtr = void(*)(sharpen::EventEngine *,Maker);
-        std::call_once(sharpen::TimerHelper::flag_,std::bind(static_cast<FnPtr>(&sharpen::TimerHelper::InitTimerPool),&engine,maker));
+        using FnPtr = void(*)(sharpen::IEventLoopGroup *,Maker);
+        std::call_once(sharpen::TimerHelper::flag_,std::bind(static_cast<FnPtr>(&sharpen::TimerHelper::InitTimerPool),&loopGroup,maker));
     }
     return *sharpen::TimerHelper::gobalTimerPool_;
 }

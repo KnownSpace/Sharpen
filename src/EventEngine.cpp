@@ -47,10 +47,10 @@ sharpen::EventEngine::~EventEngine() noexcept
     this->Stop();
 }
 
-sharpen::EventLoop *sharpen::EventEngine::RoundRobinLoop() noexcept
+sharpen::EventLoop &sharpen::EventEngine::RoundRobinLoop() noexcept
 {
     std::size_t pos = this->pos_++;
-    return this->loops_[pos % this->loops_.size()];
+    return *this->loops_[pos % this->loops_.size()];
 }
 
 void sharpen::EventEngine::Stop() noexcept

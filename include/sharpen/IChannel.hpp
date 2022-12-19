@@ -14,8 +14,8 @@ namespace sharpen
     class EventLoop;
 
     class IoEvent;
-
-    class EventEngine;
+    
+    class IEventLoopGroup;
 
     void CloseFileHandle(sharpen::FileHandle handle) noexcept;
     
@@ -43,9 +43,9 @@ namespace sharpen
         
         virtual void OnEvent(sharpen::IoEvent *event) = 0;
         
-        virtual void Register(sharpen::EventLoop *loop);
+        virtual void Register(sharpen::EventLoop &loop);
 
-        void Register(sharpen::EventEngine &engine);
+        void Register(sharpen::IEventLoopGroup &loopGroup);
         
         //close channel
         void Close() noexcept;

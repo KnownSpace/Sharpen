@@ -8,6 +8,7 @@
 #include "TimerPool.hpp"
 #include "TypeTraits.hpp"
 #include "FutureCompletor.hpp"
+#include "IEventLoopGroup.hpp"
 #include "EventEngine.hpp"
 
 namespace sharpen
@@ -15,15 +16,15 @@ namespace sharpen
     struct TimerHelper
     {
     private:
-        using Maker = sharpen::TimerPtr(*)(sharpen::EventEngine*);
+        using Maker = sharpen::TimerPtr(*)(sharpen::IEventLoopGroup*);
 
         static std::unique_ptr<sharpen::TimerPool> gobalTimerPool_;
         static std::once_flag flag_;
 
-        static void InitTimerPool(sharpen::EventEngine *engine,Maker maker);
+        static void InitTimerPool(sharpen::IEventLoopGroup *loopGroup,Maker maker);
     public:
 
-        static sharpen::TimerPool &GetTimerPool(sharpen::EventEngine &engine,Maker maker);
+        static sharpen::TimerPool &GetTimerPool(sharpen::IEventLoopGroup &loopGroup,Maker maker);
     };
 
     inline sharpen::TimerPool &GetGobalTimerPool()

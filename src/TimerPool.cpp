@@ -1,10 +1,10 @@
 #include <sharpen/TimerPool.hpp>
 
-sharpen::TimerPool::TimerPool(sharpen::EventEngine &engine,TimerMaker maker,std::size_t reserveCount)
+sharpen::TimerPool::TimerPool(sharpen::IEventLoopGroup &loopGroup,TimerMaker maker,std::size_t reserveCount)
     :lock_()
     ,timers_()
     ,maker_(maker)
-    ,engine_(&engine)
+    ,loopGroup_(&loopGroup)
 {
     this->Reserve(reserveCount);
 }

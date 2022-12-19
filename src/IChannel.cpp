@@ -1,5 +1,5 @@
 #include <sharpen/IChannel.hpp>
-#include <sharpen/EventEngine.hpp>
+#include <sharpen/IEventLoopGroup.hpp>
 
 #include <sharpen/SystemMacro.hpp>
 
@@ -12,15 +12,15 @@ sharpen::IChannel::~IChannel() noexcept
     this->Close();
 }
 
-void sharpen::IChannel::Register(sharpen::EventLoop *loop)
+void sharpen::IChannel::Register(sharpen::EventLoop &loop)
 {
-    loop->Bind(this->shared_from_this());
-    this->loop_ = loop;
+    loop.Bind(this->shared_from_this());
+    this->loop_ = &loop;
 }
 
-void sharpen::IChannel::Register(sharpen::EventEngine &engine)
+void sharpen::IChannel::Register(sharpen::IEventLoopGroup &loopGroup)
 {
-    sharpen::EventLoop *loop = engine.RoundRobinLoop();
+    sharpen::EventLoop &loop = loopGroup.RoundRobinLoop();
     this->Register(loop);
 }
 
