@@ -1,22 +1,22 @@
 #include <sharpen/TimerRef.hpp>
 
-sharpen::TimerUniquedRef::TimerUniquedRef(sharpen::ITimerPool &pool)
+sharpen::UniquedTimerRef::UniquedTimerRef(sharpen::ITimerPool &pool)
     :Self(pool.GetTimer(),pool)
 {}
 
-sharpen::TimerUniquedRef::TimerUniquedRef(sharpen::TimerPtr &&timer,sharpen::ITimerPool &pool) noexcept
+sharpen::UniquedTimerRef::UniquedTimerRef(sharpen::TimerPtr &&timer,sharpen::ITimerPool &pool) noexcept
     :pool_(&pool)
     ,timer_(std::move(timer))
 {}
 
-sharpen::TimerUniquedRef::TimerUniquedRef(sharpen::TimerUniquedRef &&other) noexcept
+sharpen::UniquedTimerRef::UniquedTimerRef(sharpen::UniquedTimerRef &&other) noexcept
     :pool_(other.pool_)
     ,timer_(std::move(other.timer_))
 {
     other.pool_ = nullptr;
 }
 
-sharpen::TimerUniquedRef &sharpen::TimerUniquedRef::operator=(Self &&other) noexcept
+sharpen::UniquedTimerRef &sharpen::UniquedTimerRef::operator=(Self &&other) noexcept
 {
     if(this != std::addressof(other))
     {
@@ -27,7 +27,7 @@ sharpen::TimerUniquedRef &sharpen::TimerUniquedRef::operator=(Self &&other) noex
     return *this;
 }
 
-sharpen::TimerUniquedRef::~TimerUniquedRef() noexcept
+sharpen::UniquedTimerRef::~UniquedTimerRef() noexcept
 {
     if(this->timer_)
     {
@@ -36,15 +36,15 @@ sharpen::TimerUniquedRef::~TimerUniquedRef() noexcept
     }
 }
 
-sharpen::TimerRef::TimerRef(sharpen::ITimerPool &pool)
+sharpen::SharedTimerRef::SharedTimerRef(sharpen::ITimerPool &pool)
     :Self(pool.GetTimer(),pool)
 {}
 
-sharpen::TimerRef::TimerRef(sharpen::TimerPtr &&timer,sharpen::ITimerPool &pool) noexcept
-    :realTimer_(std::make_shared<sharpen::TimerUniquedRef>(std::move(timer),pool))
+sharpen::SharedTimerRef::SharedTimerRef(sharpen::TimerPtr &&timer,sharpen::ITimerPool &pool) noexcept
+    :realTimer_(std::make_shared<sharpen::UniquedTimerRef>(std::move(timer),pool))
 {}
 
-sharpen::TimerRef &sharpen::TimerRef::operator=(Self &&other) noexcept
+sharpen::SharedTimerRef &sharpen::SharedTimerRef::operator=(Self &&other) noexcept
 {
     if(this != std::addressof(other))
     {

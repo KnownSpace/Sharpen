@@ -34,11 +34,24 @@ namespace sharpen
         return sharpen::TimerHelper::GetTimerPool(*loopGroup,nullptr);   
     }
 
+    inline sharpen::SharedTimerRef GetGobalTimerRef()
+    {
+        sharpen::TimerPool &pool{sharpen::GetGobalTimerPool()};
+        sharpen::SharedTimerRef timer{pool};
+        return timer;
+    }
+
+    inline sharpen::UniquedTimerRef GetUniquedTimerRef()
+    {
+        sharpen::TimerPool &pool{sharpen::GetGobalTimerPool()};
+        sharpen::UniquedTimerRef timer{pool};
+        return timer;
+    }
+
     template<typename _Rep,typename _Period>
     inline void Delay(const std::chrono::duration<_Rep,_Period> &time)
     {
-        sharpen::TimerPool &pool{sharpen::GetGobalTimerPool()};
-        sharpen::TimerUniquedRef timer{pool};
+        sharpen::UniquedTimerRef timer{sharpen::GetUniquedTimerRef()};
         timer.Await(time);
     }
 

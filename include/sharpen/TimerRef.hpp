@@ -8,25 +8,25 @@
 
 namespace sharpen
 {
-    class TimerUniquedRef:public sharpen::Noncopyable
+    class UniquedTimerRef:public sharpen::Noncopyable
     {
     private:
-        using Self = sharpen::TimerUniquedRef;
+        using Self = sharpen::UniquedTimerRef;
         using WaitFuture = sharpen::Future<bool>;
     
         sharpen::ITimerPool *pool_;
         sharpen::TimerPtr timer_;
     public:
     
-        TimerUniquedRef(sharpen::ITimerPool &pool);
+        UniquedTimerRef(sharpen::ITimerPool &pool);
 
-        TimerUniquedRef(sharpen::TimerPtr &&timer,sharpen::ITimerPool &pool) noexcept;
+        UniquedTimerRef(sharpen::TimerPtr &&timer,sharpen::ITimerPool &pool) noexcept;
 
-        TimerUniquedRef(Self &&other) noexcept;
+        UniquedTimerRef(Self &&other) noexcept;
 
         Self &operator=(Self &&other) noexcept;
     
-        ~TimerUniquedRef() noexcept;
+        ~UniquedTimerRef() noexcept;
     
         inline const Self &Const() const noexcept
         {
@@ -70,22 +70,22 @@ namespace sharpen
         }
     };
 
-    class TimerRef
+    class SharedTimerRef
     {
     private:
-        using Self = sharpen::TimerRef;
+        using Self = sharpen::SharedTimerRef;
         using WaitFuture = sharpen::Future<bool>;
 
-        std::shared_ptr<sharpen::TimerUniquedRef> realTimer_;
+        std::shared_ptr<sharpen::UniquedTimerRef> realTimer_;
     public:
     
-        TimerRef(sharpen::ITimerPool &pool);
+        SharedTimerRef(sharpen::ITimerPool &pool);
 
-        TimerRef(sharpen::TimerPtr &&timer,sharpen::ITimerPool &pool) noexcept;
+        SharedTimerRef(sharpen::TimerPtr &&timer,sharpen::ITimerPool &pool) noexcept;
     
-        TimerRef(const Self &other) = default;
+        SharedTimerRef(const Self &other) = default;
     
-        TimerRef(Self &&other) noexcept = default;
+        SharedTimerRef(Self &&other) noexcept = default;
     
         inline Self &operator=(const Self &other)
         {
@@ -99,7 +99,7 @@ namespace sharpen
     
         Self &operator=(Self &&other) noexcept;
     
-        ~TimerRef() noexcept = default;
+        ~SharedTimerRef() noexcept = default;
     
         inline const Self &Const() const noexcept
         {
