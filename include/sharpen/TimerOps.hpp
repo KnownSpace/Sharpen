@@ -9,6 +9,7 @@
 #include "TypeTraits.hpp"
 #include "FutureCompletor.hpp"
 #include "IEventLoopGroup.hpp"
+#include "TimerRef.hpp"
 
 namespace sharpen
 {
@@ -37,9 +38,8 @@ namespace sharpen
     inline void Delay(const std::chrono::duration<_Rep,_Period> &time)
     {
         sharpen::TimerPool &pool{sharpen::GetGobalTimerPool()};
-        sharpen::TimerPtr timer{pool.GetTimer()};
-        timer->Await(time);
-        pool.PutTimer(std::move(timer));
+        sharpen::TimerUniquedRef timer{pool};
+        timer.Await(time);
     }
 
     template<typename _T>

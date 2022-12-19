@@ -5,17 +5,19 @@
 #include <vector>
 #include <mutex>
 
-#include "ITimer.hpp"
+#include "ITimerPool.hpp"
 #include "IEventLoopGroup.hpp"
 
 namespace sharpen
 {
-    class TimerPool:public sharpen::Noncopyable,public sharpen::Nonmovable
+    class TimerPool:public sharpen::ITimerPool,public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
         using Self = TimerPool;
         using TimerMaker = sharpen::TimerPtr(*)(sharpen::IEventLoopGroup*);
     
+        static constexpr std::size_t reservedSize_{32};
+
         sharpen::SpinLock lock_;
         std::vector<sharpen::TimerPtr> timers_;
         TimerMaker maker_;
@@ -52,11 +54,11 @@ namespace sharpen
             return *this;
         }
 
-        sharpen::TimerPtr GetTimer();
+        virtual sharpen::TimerPtr GetTimer() override;
 
-        void Reserve(std::size_t size);
+        virtual void Reserve(std::size_t size) override;
 
-        void PutTimer(sharpen::TimerPtr &&timer);
+        virtual void ReturnTimer(sharpen::TimerPtr &&timer) noexcept override;
     };   
 }
 

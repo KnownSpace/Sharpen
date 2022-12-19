@@ -39,7 +39,7 @@ namespace sharpen
         }
 
         template<typename _Rep,typename _Period>
-        bool Await(const std::chrono::duration<_Rep,_Period> &time)
+        inline bool Await(const std::chrono::duration<_Rep,_Period> &time)
         {
             sharpen::AwaitableFuture<bool> future;
             this->WaitAsync(future,time);

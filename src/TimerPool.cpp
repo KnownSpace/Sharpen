@@ -6,6 +6,10 @@ sharpen::TimerPool::TimerPool(sharpen::IEventLoopGroup &loopGroup,TimerMaker mak
     ,maker_(maker)
     ,loopGroup_(&loopGroup)
 {
+    if(!reserveCount)
+    {
+        this->timers_.reserve(reservedSize_);
+    }
     this->Reserve(reserveCount);
 }
 
@@ -15,7 +19,8 @@ void sharpen::TimerPool::Reserve(std::size_t size)
     {
         {
             std::unique_lock<sharpen::SpinLock> lock{this->lock_};
-            this->timers_.reserve(size);
+            std::size_t realSize{this->timers_.size() + size};
+            this->timers_.reserve(realSize);
             for (std::size_t i = 0; i != size; ++i)
             {
                 this->timers_.emplace_back(this->MakeTimer());   
@@ -42,10 +47,19 @@ sharpen::TimerPtr sharpen::TimerPool::GetTimer()
     return timer;
 }
 
-void sharpen::TimerPool::PutTimer(sharpen::TimerPtr &&timer)
+void sharpen::TimerPool::ReturnTimer(sharpen::TimerPtr &&timer) noexcept
 {
     {
         std::unique_lock<sharpen::SpinLock> lock{this->lock_};
-        this->timers_.emplace_back(std::move(timer));
+        try
+        {
+            this->timers_.emplace_back(std::move(timer));
+        }
+        catch(const std::bad_alloc &ignore)
+        {
+            //drop timer
+            (void)timer;
+            (void)ignore;
+        }
     }
 }
