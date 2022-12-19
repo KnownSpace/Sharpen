@@ -153,11 +153,11 @@ namespace sharpen
         }
     };
 
-    sharpen::NetStreamChannelPtr OpenTcpStreamChannel(sharpen::AddressFamily af);
+    extern sharpen::NetStreamChannelPtr OpenTcpStreamChannel(sharpen::AddressFamily af);
 
-    void StartupNetSupport();
+    extern void StartupNetSupport();
 
-    void CleanupNetSupport();
+    extern void CleanupNetSupport();
 }
 
 #endif
