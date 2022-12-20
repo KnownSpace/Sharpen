@@ -57,9 +57,9 @@ elseif (WIN32)
     
 endif()
 
-set(fcontext_src "${PROJECT_SOURCE_DIR}/lib/boost.context/asm/make_${CPU_ARCH}_${ASM_EXT}"
-                "${PROJECT_SOURCE_DIR}/lib/boost.context/asm/jump_${CPU_ARCH}_${ASM_EXT}"
-                "${PROJECT_SOURCE_DIR}/lib/boost.context/asm/ontop_${CPU_ARCH}_${ASM_EXT}")
+set(fcontext_src "${PROJECT_SOURCE_DIR}/lib/boost/context/asm/make_${CPU_ARCH}_${ASM_EXT}"
+                "${PROJECT_SOURCE_DIR}/lib/boost/context/asm/jump_${CPU_ARCH}_${ASM_EXT}"
+                "${PROJECT_SOURCE_DIR}/lib/boost/context/asm/ontop_${CPU_ARCH}_${ASM_EXT}")
 
 #build src
 aux_source_directory("${PROJECT_SOURCE_DIR}/src" src)
