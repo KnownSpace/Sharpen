@@ -196,7 +196,7 @@ sharpen::IEventLoopGroup *sharpen::EventLoop::GetCurrentLoopGroup() noexcept
     return nullptr;
 }
 
-sharpen::IEventLoopGroup *sharpen::GetLocalLoopGroup() noexcept
+sharpen::IEventLoopGroup *sharpen::GetLocalLoopGroupPtr() noexcept
 {
     return sharpen::EventLoop::GetCurrentLoopGroup();
 }

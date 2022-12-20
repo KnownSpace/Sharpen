@@ -6,210 +6,232 @@
 #include <sharpen/EventEngine.hpp>
 #include <sharpen/AsyncOps.hpp>
 
-const char data[] = "hello world\n";
+#include <simpletest/TestRunner.hpp>
 
-void ClientTest();
+static const char data[] = "hello world\n";
 
-void ServerTest()
+class PingpoingTest :public simpletest::ITypenamedTest<PingpoingTest>
 {
-    std::printf("server test begin\n");
-    sharpen::NetStreamChannelPtr server = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
-    sharpen::IpEndPoint serverEndpoint;
-    serverEndpoint.SetAddrByString("127.0.0.1");
-    serverEndpoint.SetPort(8080);
+private:
+    using Self = PingpoingTest;
+
+public:
+
+    PingpoingTest() noexcept = default;
+
+    ~PingpoingTest() noexcept = default;
+
+    inline const Self &Const() const noexcept
+    {
+        return *this;
+    }
+
+    inline virtual simpletest::TestResult Run() noexcept
+    {
+        sharpen::NetStreamChannelPtr server = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
+        sharpen::IpEndPoint serverEndpoint;
+        serverEndpoint.SetAddrByString("127.0.0.1");
+        serverEndpoint.SetPort(8080);
 #ifdef SHARPEN_IS_LINUX
-    server->SetReuseAddress(true);
+        server->SetReuseAddress(true);
 #endif
-    server->Bind(serverEndpoint);
-    server->Register(sharpen::EventEngine::GetEngine());
-    server->Listen(65535);
-    sharpen::Launch(&ClientTest);
-    sharpen::NetStreamChannelPtr client = server->AcceptAsync();
-    client->Register(sharpen::EventEngine::GetEngine());
-    std::size_t size = client->WriteAsync(data,sizeof(data) - 1);
-    assert(size == sizeof(data) - 1);
-    sharpen::ByteBuffer buf{4096};
-    size = client->ReadAsync(buf);
-    assert(size == sizeof(data) - 1);
-    for (size_t i = 0; i < size; i++)
-    {
-        assert(data[i] == buf[i]);
+        server->Bind(serverEndpoint);
+        server->Register(sharpen::GetLocalLoopGroup());
+        server->Listen(65535);
+        sharpen::NetStreamChannelPtr client = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
+        sharpen::IpEndPoint clientEndpoint;
+        clientEndpoint.SetAddrByString("127.0.0.1");
+        clientEndpoint.SetPort(0);
+        client->Bind(clientEndpoint);
+        client->Register(sharpen::GetLocalLoopGroup());
+        auto future = sharpen::Async([&serverEndpoint,client]()
+        {
+            client->ConnectAsync(serverEndpoint);
+            client->WriteAsync(data,sizeof(data) - 1);
+        });
+        char buf[sizeof(data)] = {0};
+        client = server->AcceptAsync();
+        client->Register(sharpen::GetLocalLoopGroup());
+        client->ReadAsync(buf,sizeof(buf));
+        future->Await();
+        return this->Assert(!std::strncmp(buf,data,sizeof(data) - 1),"buf should == data,but it not");
     }
-    client->WriteObjectAsync(0);
-    std::printf("server test pass\n");
-    server->Close();
-}
+};
 
-void ClientTest()
+class CancelTest :public simpletest::ITypenamedTest<CancelTest>
 {
-    std::printf("client test begin\n");
-    sharpen::NetStreamChannelPtr client = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
-    sharpen::IpEndPoint clientEndpoint;
-    clientEndpoint.SetAddrByString("127.0.0.1");
-    clientEndpoint.SetPort(0);
-    client->Bind(clientEndpoint);
-    client->Register(sharpen::EventEngine::GetEngine());
-    sharpen::IpEndPoint serverEndpoint;
-    serverEndpoint.SetAddrByString("127.0.0.1");
-    serverEndpoint.SetPort(8080);
-    std::printf("client connecting\n");
-    client->ConnectAsync(serverEndpoint);
-    std::printf("client connected\n");
-    sharpen::ByteBuffer buf{4096};
-    std::size_t size = client->ReadAsync(buf);
-    assert(size == sizeof(data) - 1);
-    for (size_t i = 0; i < size; i++)
-    {
-        assert(data[i] == buf[i]);
-    }
-    size = client->WriteAsync(data,sizeof(data) - 1);
-    assert(size == sizeof(data) - 1);
-    int val;
-    std::size_t sz{client->ReadObjectAsync(val)};
-    if(sz != sizeof(val))
-    {
-        std::puts("client closed");
-    }
-    else
-    {
-        std::printf("read obj %d\n",val);
-    }
-    std::printf("client test pass\n");
-    client->Close();
-}
+private:
+    using Self = CancelTest;
 
-void CancelTest()
-{
-    sharpen::NetStreamChannelPtr server = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
-    sharpen::NetStreamChannelPtr client = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
-    sharpen::IpEndPoint addr;
-    addr.SetAddrByString("127.0.0.1");
-    addr.SetPort(8080);
+public:
+
+    CancelTest() noexcept = default;
+
+    ~CancelTest() noexcept = default;
+
+    inline const Self &Const() const noexcept
+    {
+        return *this;
+    }
+
+    inline virtual simpletest::TestResult Run() noexcept
+    {
+        sharpen::NetStreamChannelPtr server = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
+        sharpen::NetStreamChannelPtr client = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
+        sharpen::IpEndPoint addr;
+        addr.SetAddrByString("127.0.0.1");
+        addr.SetPort(8080);
 #ifdef SHARPEN_IS_LINUX
-    server->SetReuseAddress(true);
+        server->SetReuseAddress(true);
 #endif
-    server->Bind(addr);
-    server->Register(sharpen::EventEngine::GetEngine());
-    addr.SetPort(0);
-    client->Bind(addr);
-    client->Register(sharpen::EventEngine::GetEngine());
-    server->Listen(65535);
-    std::printf("cancel test begin\n");
-    int flag = 0;
-    sharpen::AwaitableFuture<std::size_t> future[10];
-    addr.SetPort(8080);
-    client->ConnectAsync(addr);
-    char buf[512];
-    for (size_t i = 0; i < 10; i++)
-    {
-        client->ReadAsync(buf,512,future[i]);
+        server->Bind(addr);
+        server->Register(sharpen::GetLocalLoopGroup());
+        addr.SetPort(0);
+        client->Bind(addr);
+        client->Register(sharpen::GetLocalLoopGroup());
+        server->Listen(65535);
+        sharpen::AwaitableFuture<std::size_t> future[10];
+        addr.SetPort(8080);
+        client->ConnectAsync(addr);
+        char buf[512] = {0};
+        for(std::size_t i = 0;i != sizeof(future)/sizeof(*future);++i)
+        {
+            client->ReadAsync(buf,512,future[i]);
+        }
+        client->Cancel();
+        bool status{true};
+        for(std::size_t i = 0;i != sizeof(future)/sizeof(*future);++i)
+        {
+            try
+            {
+                future[i].Await();
+            }
+            catch(const std::system_error &e)
+            {
+                if(e.code().value() != sharpen::ErrorCancel)
+                {
+                    status = false;
+                }
+            }
+        }
+        return this->Assert(status,"All operations should throw ErrorCancel,but it not");
     }
-    client->Cancel();
-    for (size_t i = 0; i < 10; i++)
+};
+
+class TimeoutTest:public simpletest::ITypenamedTest<TimeoutTest>
+{
+private:
+    using Self = TimeoutTest;
+
+public:
+
+    TimeoutTest() noexcept = default;
+
+    ~TimeoutTest() noexcept = default;
+
+    inline const Self &Const() const noexcept
     {
+        return *this;
+    }
+
+    inline virtual simpletest::TestResult Run() noexcept
+    {
+        sharpen::NetStreamChannelPtr server = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
+        sharpen::NetStreamChannelPtr client = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
+        sharpen::IpEndPoint ep{0,0};
+        ep.SetAddrByString("127.0.0.1");
+        client->Bind(ep);
+        ep.SetPort(8080);
+    #ifdef SHARPEN_IS_LINUX
+        server->SetReuseAddress(true);
+    #endif
+        server->Bind(ep);
+        server->Register(sharpen::GetLocalLoopGroup());
+        client->Register(sharpen::GetLocalLoopGroup());
+        server->Listen(65535);
+        sharpen::AwaitableFuture<void> future;
+        client->ConnectAsync(ep,future);
+        sharpen::NetStreamChannelPtr chd = server->AcceptAsync();
+        future.Await();
+        chd->Register(sharpen::GetLocalLoopGroup());
+        char buf[6] = {};
+        sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::GetLocalLoopGroup());
+        auto r = chd->ReadWithTimeout(timer,std::chrono::seconds(1),buf,sizeof(buf));
+        return this->Assert(!r.Exist(),"r should not exist,but it exist");
+    }
+};
+
+class CloseTest:public simpletest::ITypenamedTest<CloseTest>
+{
+private:
+    using Self = CloseTest;
+
+public:
+
+    CloseTest() noexcept = default;
+
+    ~CloseTest() noexcept = default;
+
+    inline const Self &Const() const noexcept
+    {
+        return *this;
+    }
+
+    inline virtual simpletest::TestResult Run() noexcept
+    {
+        sharpen::NetStreamChannelPtr server = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
+        sharpen::NetStreamChannelPtr client = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
+        sharpen::IpEndPoint ep{0,0};
+        ep.SetAddrByString("127.0.0.1");
+        client->Bind(ep);
+        ep.SetPort(8080);
+    #ifdef SHARPEN_IS_LINUX
+        server->SetReuseAddress(true);
+    #endif
+        server->Bind(ep);
+        server->Register(sharpen::GetLocalLoopGroup());
+        client->Register(sharpen::GetLocalLoopGroup());
+        server->Listen(65535);
+        sharpen::AwaitableFuture<void> future;
+        client->ConnectAsync(ep,future);
+        sharpen::NetStreamChannelPtr chd = server->AcceptAsync();
+        future.Await();
+        chd->Register(sharpen::GetLocalLoopGroup());
+        char buf[6] = {0};
+        sharpen::Launch([chd]()
+        {
+            sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::GetLocalLoopGroup());
+            timer->Await(std::chrono::seconds(3));
+            chd->Close();
+        });
+        bool status{false};
         try
         {
-            future[i].Await();
+            chd->ReadAsync(buf,sizeof(buf));
         }
-        catch(const std::system_error& e)
+        catch(const std::system_error &e)
         {
-            std::printf("%zu code: %d\nerror: %s\n",i,e.code().value(),e.what());
-            flag += 1;
+            status = e.code().value() == sharpen::ErrorConnectionAborted;
         }
-        
+        return this->Assert(status,"should throw ErrorConnectionAborted,but it not");
     }
-    std::printf("cancel test end\n");
-    assert(flag == 10);
-    server->Close();
-    client->Close();
-}
+};
 
-void TimeoutTest()
-{
-    sharpen::NetStreamChannelPtr server = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
-    sharpen::NetStreamChannelPtr client = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
-    sharpen::IpEndPoint ep{0,0};
-    ep.SetAddrByString("127.0.0.1");
-    client->Bind(ep);
-    ep.SetPort(8080);
-#ifdef SHARPEN_IS_LINUX
-    server->SetReuseAddress(true);
-#endif
-    server->Bind(ep);
-    server->Register(sharpen::EventEngine::GetEngine());
-    client->Register(sharpen::EventEngine::GetEngine());
-    server->Listen(65535);
-    sharpen::AwaitableFuture<void> future;
-    client->ConnectAsync(ep,future);
-    sharpen::NetStreamChannelPtr chd = server->AcceptAsync();
-    future.Await();
-    chd->Register(sharpen::EventEngine::GetEngine());
-    char buf[6] = {};
-    sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::EventEngine::GetEngine());
-    auto r = chd->ReadWithTimeout(timer,std::chrono::seconds(1),buf,sizeof(buf));
-    if(!r.Exist())
-    {
-        std::puts("timeout");
-    }
-    client->Close();
-    server->Close();
-}
-
-void CloseTest()
-{
-    sharpen::NetStreamChannelPtr server = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
-    sharpen::NetStreamChannelPtr client = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
-    sharpen::IpEndPoint ep{0,0};
-    ep.SetAddrByString("127.0.0.1");
-    client->Bind(ep);
-    ep.SetPort(8080);
-#ifdef SHARPEN_IS_LINUX
-    server->SetReuseAddress(true);
-#endif
-    server->Bind(ep);
-    server->Register(sharpen::EventEngine::GetEngine());
-    client->Register(sharpen::EventEngine::GetEngine());
-    server->Listen(65535);
-    sharpen::AwaitableFuture<void> future;
-    client->ConnectAsync(ep,future);
-    sharpen::NetStreamChannelPtr chd = server->AcceptAsync();
-    future.Await();
-    chd->Register(sharpen::EventEngine::GetEngine());
-    char buf[6] = {};
-    sharpen::Launch([chd](){
-        sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::EventEngine::GetEngine());
-        timer->Await(std::chrono::seconds(3));
-        chd->Close();
-    });
-    try
-    {
-        chd->ReadAsync(buf,sizeof(buf));
-    }
-    catch(const std::system_error &e)
-    {
-        assert(e.code().value() == sharpen::ErrorConnectionAborted);
-        std::printf("%s %d\n",e.code().message().c_str(),e.code().value());   
-    }
-    server->Close();
-    client->Close();
-}
-
-void NetworkTest()
+static int Test()
 {
     sharpen::StartupNetSupport();
-    sharpen::EventEngine &engine = sharpen::EventEngine::SetupSingleThreadEngine();
-    engine.Startup([&engine]()
-    {
-        ServerTest();
-        CancelTest();
-        TimeoutTest();
-        CloseTest();
-        sharpen::CleanupNetSupport();
-    });
+    simpletest::TestRunner runner;
+    runner.Register<PingpoingTest>();
+    runner.Register<CancelTest>();
+    runner.Register<TimeoutTest>();
+    runner.Register<CloseTest>();
+    int code{runner.Run()};
+    sharpen::CleanupNetSupport();
+    return code;
 }
 
 int main()
 {
-    NetworkTest();
-    return 0;
+    sharpen::EventEngine &engine = sharpen::EventEngine::SetupSingleThreadEngine();
+    return engine.StartupWithCode(&Test);
 }

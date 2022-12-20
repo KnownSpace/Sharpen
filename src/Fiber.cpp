@@ -139,7 +139,7 @@ sharpen::IFiberScheduler *sharpen::Fiber::GetCurrentFiberSceduler() noexcept
     return nullptr;
 }
 
-sharpen::IFiberScheduler *sharpen::GetLocalScheduler() noexcept
+sharpen::IFiberScheduler *sharpen::GetLocalSchedulerPtr() noexcept
 {
     return sharpen::Fiber::GetCurrentFiberSceduler();
 }

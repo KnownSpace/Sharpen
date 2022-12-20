@@ -29,7 +29,7 @@ namespace sharpen
 
     inline sharpen::TimerPool &GetGobalTimerPool()
     {
-        sharpen::IEventLoopGroup *loopGroup{sharpen::GetLocalLoopGroup()};
+        sharpen::IEventLoopGroup *loopGroup{sharpen::GetLocalLoopGroupPtr()};
         assert(loopGroup != nullptr);
         return sharpen::TimerHelper::GetTimerPool(*loopGroup,nullptr);   
     }

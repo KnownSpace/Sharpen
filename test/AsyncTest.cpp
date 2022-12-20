@@ -219,9 +219,9 @@ static int Test()
     runner.Register<AsyncTest>();
     runner.Register<AwaitAllTest>();
     runner.Register<AwaitAnyTest>();
-    runner.Register<WorkerGroupTest>(new (std::nothrow) sharpen::FixedWorkerGroup{*sharpen::GetLocalScheduler()},workerGroupJobs);
-    runner.Register<WorkerGroupTest>(new (std::nothrow) sharpen::SingleWorkerGroup{*sharpen::GetLocalScheduler()},workerGroupJobs);
-    runner.Register<WorkerGroupTest>(new (std::nothrow) sharpen::DynamicWorkerGroup{*sharpen::GetLocalScheduler()},workerGroupJobs);
+    runner.Register<WorkerGroupTest>(new (std::nothrow) sharpen::FixedWorkerGroup{*sharpen::GetLocalSchedulerPtr()},workerGroupJobs);
+    runner.Register<WorkerGroupTest>(new (std::nothrow) sharpen::SingleWorkerGroup{*sharpen::GetLocalSchedulerPtr()},workerGroupJobs);
+    runner.Register<WorkerGroupTest>(new (std::nothrow) sharpen::DynamicWorkerGroup{*sharpen::GetLocalSchedulerPtr()},workerGroupJobs);
     return runner.Run();
 }
 

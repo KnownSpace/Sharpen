@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <functional>
+#include <cassert>
 
 #include "MemoryStack.hpp"
 #include "Noncopyable.hpp"
@@ -95,7 +96,14 @@ namespace sharpen
         }
     };
 
-    extern sharpen::IFiberScheduler *GetLocalScheduler() noexcept;
+    extern sharpen::IFiberScheduler *GetLocalSchedulerPtr() noexcept;
+
+    inline sharpen::IFiberScheduler &GetLocalScheduler() noexcept
+    {
+        sharpen::IFiberScheduler *scheduler{sharpen::GetLocalSchedulerPtr()};
+        assert(scheduler != nullptr);
+        return *scheduler;
+    }
 } 
 
 #endif
