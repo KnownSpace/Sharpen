@@ -2,7 +2,7 @@
 
 #ifdef SHARPEN_IS_NIX
 
-void sharpen::PosixIoWriter::DoExecute(sharpen::FileHandle handle,bool &executed,bool &blocking)
+void sharpen::PosixIoWriter::NviExecute(sharpen::FileHandle handle,bool &executed,bool &blocking)
 {
     std::size_t size = this->GetRemainingSize();
     if (size == 0)

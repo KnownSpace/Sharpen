@@ -41,6 +41,10 @@ namespace sharpen
 
         void ProcessStartupWithCode(std::function<int()> fn,int *code);
 
+        virtual void NviSchedule(sharpen::FiberPtr &&fiber) override;
+
+        virtual void NviScheduleSoon(sharpen::FiberPtr &&fiber) override;
+
         static void InitEngine();
     public:
         
@@ -57,10 +61,6 @@ namespace sharpen
         virtual void Stop() noexcept override;
 
         virtual sharpen::EventLoop &RoundRobinLoop() noexcept override;
-
-        virtual void Schedule(sharpen::FiberPtr &&fiber) override;
-
-        virtual void ScheduleSoon(sharpen::FiberPtr &&fiber) override;
 
         virtual bool IsProcesser() const override;
 

@@ -21,14 +21,26 @@ namespace sharpen
     private:
 
         constexpr static std::size_t defaultFiberStackSize_{SHARPEN_FIBER_STACK_SIZE};
+
+        virtual void NviSchedule(sharpen::FiberPtr &&fiber) = 0;
+
+        virtual void NviScheduleSoon(sharpen::FiberPtr &&fiber) = 0;
     public:
         IFiberScheduler() noexcept = default;
 
         virtual ~IFiberScheduler() noexcept = default;
 
-        virtual void Schedule(sharpen::FiberPtr &&fiber) = 0;
+        inline void Schedule(sharpen::FiberPtr &&fiber)
+        {
+            fiber->SetScheduler(this);
+            this->NviSchedule(std::move(fiber));
+        }
 
-        virtual void ScheduleSoon(sharpen::FiberPtr &&fiber) = 0;
+        inline void ScheduleSoon(sharpen::FiberPtr &&fiber)
+        {
+            fiber->SetScheduler(this);
+            this->NviScheduleSoon(std::move(fiber));
+        }
 
         template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<void,_Fn,_Args...>::Value>>
         void Launch(_Fn &&fn,_Args &&...args)

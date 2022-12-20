@@ -17,13 +17,13 @@
 
 namespace simpletest
 {
-    constexpr inline static const char *Demangle(const char *name) noexcept
+    inline static char *Demangle(const char *name) noexcept
     {
         int status{0};
         //drop status
         (void)status;
-        return abi::__cxa_demangle(name, 0, 0, &status)
-    }   
+        return abi::__cxa_demangle(name,0,0,&status);
+    }
 }
 
 #define SIMPLETEST_TYPENAME(x) simpletest::Demangle(typeid(x).name())
@@ -63,33 +63,33 @@ namespace simpletest
 
         std::string name_;
     public:
-    
+
         ITest(std::string name) noexcept
             :name_(std::move(name))
         {}
-    
+
         ITest(const Self &other) noexcept = delete;
-    
+
         ITest(Self &&other) noexcept = delete;
-    
+
         Self &operator=(const Self &other) noexcept = delete;
-    
+
         Self &operator=(Self &&other) noexcept = delete;
-    
+
         virtual ~ITest() noexcept = default;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
         }
 
         virtual simpletest::TestResult Run() noexcept = 0;
-        
+
         inline const std::string &Name() const noexcept
         {
             return this->name_;
         }
-    }; 
+    };
 
     template<typename _T>
     inline static std::string GetReadableTypeName()
@@ -97,18 +97,18 @@ namespace simpletest
 #ifdef SIMPLETEST_MSVC
         return std::string{SIMPLETEST_TYPENAME(_T)};
 #else
-        const char *name{SIMPLETEST_TYPENAME(_T)};
+        char *name{SIMPLETEST_TYPENAME(_T)};
         try
         {
             std::string realName{name};
+            std::free(name);
+            return realName;
         }
-        catch(const std::exception& rethrow)
+        catch(const std::exception &rethrow)
         {
             std::free(name);
-            throw;   
+            throw;
         }
-        std::free(name);
-        return realName;
 #endif
     }
 
@@ -119,26 +119,26 @@ namespace simpletest
         using Self = simpletest::ITypenamedTest<_T>;
         using Base = simpletest::ITest;
     public:
-    
+
         ITypenamedTest() noexcept
             :Base(simpletest::GetReadableTypeName<_T>())
         {}
-    
+
         ITypenamedTest(const Self &other) noexcept = default;
-    
+
         ITypenamedTest(Self &&other) noexcept = default;
-    
+
         Self &operator=(const Self &other) noexcept = default;
-    
+
         Self &operator=(Self &&other) noexcept = default;
-    
+
         virtual ~ITypenamedTest() noexcept = default;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
         }
-    };  
+    };
 }
 
 #ifdef _MSC_VER

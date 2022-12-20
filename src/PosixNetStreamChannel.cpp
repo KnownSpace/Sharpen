@@ -22,7 +22,6 @@ sharpen::PosixNetStreamChannel::PosixNetStreamChannel(sharpen::FileHandle handle
     ,connectCb_()
     ,pollReadCbs_()
     ,pollWriteCbs_()
-    ,closeWaiter_()
 {
     this->handle_ = handle;
     //reset closer before ~IChannel() to be invoked
@@ -38,17 +37,13 @@ sharpen::PosixNetStreamChannel::~PosixNetStreamChannel() noexcept
         std::function<void(sharpen::FileHandle)> tmp;
         std::swap(tmp,this->closer_);
     }
-    if(this->closeWaiter_)
-    {
-        this->closeWaiter_->WaitAsync();
-    }
 }
 
-void sharpen::PosixNetStreamChannel::DoSafeClose(sharpen::FileHandle handle) noexcept
+void sharpen::PosixNetStreamChannel::DoSafeClose(sharpen::FileHandle handle,std::shared_ptr<sharpen::IChannel> keepalive) noexcept
 {
+    (void)keepalive;
     this->DoCancel(sharpen::ErrorConnectionAborted);
     sharpen::CloseFileHandle(handle);
-    this->closeWaiter_->Complete();
 }
 
 void sharpen::PosixNetStreamChannel::SafeClose(sharpen::FileHandle handle) noexcept
@@ -56,18 +51,12 @@ void sharpen::PosixNetStreamChannel::SafeClose(sharpen::FileHandle handle) noexc
     if(this->loop_)
     {
         //FIXME:throw bad alloc
-        if(!this->closeWaiter_)
+        sharpen::IEventLoopGroup *loopGroup{this->loop_->GetLoopGroup()};
+        if(!loopGroup || loopGroup->GetLoopCount() == 1)
         {
-            auto *p{new (std::nothrow) sharpen::AwaitableFuture<void>{}};
-            if(!p)
-            {
-                //bad alloc
-                std::terminate();
-            }
-            this->closeWaiter_.reset(p);
+            return this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::DoSafeClose,this,handle,this->shared_from_this()));
         }
-        this->closeWaiter_->Reset();
-        return this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixNetStreamChannel::DoSafeClose,this,handle));
+        return this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixNetStreamChannel::DoSafeClose,this,handle,this->shared_from_this()));
     }
     sharpen::CloseFileHandle(handle);
 }

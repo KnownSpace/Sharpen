@@ -32,9 +32,6 @@ public:
         sharpen::IpEndPoint serverEndpoint;
         serverEndpoint.SetAddrByString("127.0.0.1");
         serverEndpoint.SetPort(8080);
-#ifdef SHARPEN_IS_LINUX
-        server->SetReuseAddress(true);
-#endif
         server->Bind(serverEndpoint);
         server->Register(sharpen::GetLocalLoopGroup());
         server->Listen(65535);
@@ -44,16 +41,19 @@ public:
         clientEndpoint.SetPort(0);
         client->Bind(clientEndpoint);
         client->Register(sharpen::GetLocalLoopGroup());
-        auto future = sharpen::Async([&serverEndpoint,client]()
+        auto future = sharpen::Async([&serverEndpoint,client]() mutable
         {
             client->ConnectAsync(serverEndpoint);
             client->WriteAsync(data,sizeof(data) - 1);
+            client->Close();
         });
         char buf[sizeof(data)] = {0};
         client = server->AcceptAsync();
         client->Register(sharpen::GetLocalLoopGroup());
         client->ReadAsync(buf,sizeof(buf));
         future->Await();
+        server->Close();
+        client->Close();
         return this->Assert(!std::strncmp(buf,data,sizeof(data) - 1),"buf should == data,but it not");
     }
 };
@@ -80,10 +80,7 @@ public:
         sharpen::NetStreamChannelPtr client = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
         sharpen::IpEndPoint addr;
         addr.SetAddrByString("127.0.0.1");
-        addr.SetPort(8080);
-#ifdef SHARPEN_IS_LINUX
-        server->SetReuseAddress(true);
-#endif
+        addr.SetPort(8081);
         server->Bind(addr);
         server->Register(sharpen::GetLocalLoopGroup());
         addr.SetPort(0);
@@ -91,7 +88,7 @@ public:
         client->Register(sharpen::GetLocalLoopGroup());
         server->Listen(65535);
         sharpen::AwaitableFuture<std::size_t> future[10];
-        addr.SetPort(8080);
+        addr.SetPort(8081);
         client->ConnectAsync(addr);
         char buf[512] = {0};
         for(std::size_t i = 0;i != sizeof(future)/sizeof(*future);++i)
@@ -114,6 +111,8 @@ public:
                 }
             }
         }
+        server->Close();
+        client->Close();
         return this->Assert(status,"All operations should throw ErrorCancel,but it not");
     }
 };
@@ -141,10 +140,7 @@ public:
         sharpen::IpEndPoint ep{0,0};
         ep.SetAddrByString("127.0.0.1");
         client->Bind(ep);
-        ep.SetPort(8080);
-    #ifdef SHARPEN_IS_LINUX
-        server->SetReuseAddress(true);
-    #endif
+        ep.SetPort(8082);
         server->Bind(ep);
         server->Register(sharpen::GetLocalLoopGroup());
         client->Register(sharpen::GetLocalLoopGroup());
@@ -157,6 +153,9 @@ public:
         char buf[6] = {};
         sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::GetLocalLoopGroup());
         auto r = chd->ReadWithTimeout(timer,std::chrono::seconds(1),buf,sizeof(buf));
+        server->Close();
+        client->Close();
+        chd->Close();
         return this->Assert(!r.Exist(),"r should not exist,but it exist");
     }
 };
@@ -184,10 +183,7 @@ public:
         sharpen::IpEndPoint ep{0,0};
         ep.SetAddrByString("127.0.0.1");
         client->Bind(ep);
-        ep.SetPort(8080);
-    #ifdef SHARPEN_IS_LINUX
-        server->SetReuseAddress(true);
-    #endif
+        ep.SetPort(8083);
         server->Bind(ep);
         server->Register(sharpen::GetLocalLoopGroup());
         client->Register(sharpen::GetLocalLoopGroup());
@@ -213,6 +209,8 @@ public:
         {
             status = e.code().value() == sharpen::ErrorConnectionAborted;
         }
+        server->Close();
+        client->Close();
         return this->Assert(status,"should throw ErrorConnectionAborted,but it not");
     }
 };

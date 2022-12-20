@@ -26,46 +26,52 @@ target_link_libraries(TimerTest sharpen)
 
 add_test(NAME Timer_Test COMMAND "./TimerTest${extname}")
 
-#executables
-#file test
-add_executable(filetest "${PROJECT_SOURCE_DIR}/test/FileTest.cpp")
-#network test
-add_executable(networktest "${PROJECT_SOURCE_DIR}/test/NetworkTest.cpp")
-#checksum test
-add_executable(checksumtest "${PROJECT_SOURCE_DIR}/test/ChecksumTest.cpp")
-#base64 test
-add_executable(base64test "${PROJECT_SOURCE_DIR}/test/Base64Test.cpp")
-#buffer compare test
-add_executable(buffercomparetest "${PROJECT_SOURCE_DIR}/test/BufferCompareTest.cpp")
-#dns test
-add_executable(dnstest "${PROJECT_SOURCE_DIR}/test/DnsTest.cpp")
-#io_uring test
-if(UNIX)
-    add_executable(iouringtest "${PROJECT_SOURCE_DIR}/test/IoUringTest.cpp")
-endif()
-#serializable test
-add_executable(serializabletest "${PROJECT_SOURCE_DIR}/test/SerializableTest.cpp")
-target_link_libraries(filetest sharpen)
-target_link_libraries(networktest sharpen)
-target_link_libraries(checksumtest sharpen)
-target_link_libraries(base64test sharpen)
-target_link_libraries(buffercomparetest sharpen)
-target_link_libraries(dnstest sharpen)
-if(UNIX)
-    target_link_libraries(iouringtest sharpen)
-endif()
-target_link_libraries(serializabletest sharpen)
-#test
+#File Test
+add_executable(FileTest "${PROJECT_SOURCE_DIR}/test/FileTest.cpp")
 
-#tests
-add_test(NAME file_test COMMAND "./filetest${extname}")
-add_test(NAME network_test COMMAND "./networktest${extname}")
-add_test(NAME quorum_test COMMAND "./quorumtest${extname}")
-add_test(NAME checksum_test COMMAND "./checksumtest${extname}")
-add_test(NAME base64_test COMMAND "./base64test${extname}")
-add_test(NAME buffercompare_test COMMAND "./buffercomparetest${extname}")
-add_test(NAME dns_test COMMAND "./dnstest${extname}")
-if(UNIX)
-    add_test(NAME iouring_test COMMAND "./iouringtest${extname}")
-endif()
-add_test(NAME serializable_test COMMAND "./serializabletest${extname}")
+target_link_libraries(FileTest sharpen)
+
+add_test(NAME File_Test COMMAND "./FileTest${extname}")
+
+#Network Test
+add_executable(NetworkTest "${PROJECT_SOURCE_DIR}/test/NetworkTest.cpp")
+
+target_link_libraries(NetworkTest sharpen)
+
+add_test(NAME Network_Test COMMAND "./NetworkTest${extname}")
+
+#Chksum Test
+add_executable(ChksumTest "${PROJECT_SOURCE_DIR}/test/ChecksumTest.cpp")
+
+target_link_libraries(ChksumTest sharpen)
+
+add_test(NAME Chksum_Test COMMAND "./ChksumTest${extname}")
+
+#BufferCompare Test
+add_executable(BufferCompareTest "${PROJECT_SOURCE_DIR}/test/BufferCompareTest.cpp")
+
+target_link_libraries(BufferCompareTest sharpen)
+
+add_test(NAME BufferCompare_Test COMMAND "./BufferCompareTest${extname}")
+
+#Base64 Test
+add_executable(Base64Test "${PROJECT_SOURCE_DIR}/test/Base64Test.cpp")
+
+target_link_libraries(Base64Test sharpen)
+
+add_test(NAME Base64_Test COMMAND "./Base64Test${extname}")
+
+#Dns Test
+add_executable(DnsTest "${PROJECT_SOURCE_DIR}/test/DnsTest.cpp")
+
+target_link_libraries(DnsTest sharpen)
+
+add_test(NAME Dns_Test COMMAND "./DnsTest${extname}")
+
+#Serializable Test
+
+add_executable(SerializableTest "${PROJECT_SOURCE_DIR}/test/SerializableTest.cpp")
+
+target_link_libraries(SerializableTest sharpen)
+
+add_test(NAME Serializable_Test COMMAND "./SerializableTest${extname}")

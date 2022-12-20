@@ -6,6 +6,7 @@
 #include <functional>
 #include <cstdint>
 #include <cstddef>
+#include <cassert>
 
 #include "CompilerInfo.hpp"
 
@@ -445,13 +446,13 @@ namespace sharpen
     using IsCompletedBindableReturned = sharpen::IsMatches<sharpen::InternalIsCompletedBindableReturned,_R,_Fn,_Args...>;
 
 #ifndef SHARPEN_COMPILER_MSVC
-    constexpr inline static const char *Demangle(const char *name) noexcept
+    inline static const char *Demangle(const char *name) noexcept
     {
         int status{0};
         //drop status
         (void)status;
         assert(status == 0);
-        return abi::__cxa_demangle(name, 0, 0, &status)
+        return abi::__cxa_demangle(name, 0, 0, &status);
     }
 #endif
 

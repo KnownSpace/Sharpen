@@ -13,7 +13,7 @@ namespace sharpen
     private:
         using Mybase = sharpen::IPosixIoOperator;
     protected:
-        virtual void DoExecute(sharpen::FileHandle handle,bool &executed,bool &blocking) override;
+        virtual void NviExecute(sharpen::FileHandle handle,bool &executed,bool &blocking) override;
     public:
         PosixIoReader() = default;
 

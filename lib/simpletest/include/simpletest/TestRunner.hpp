@@ -72,6 +72,7 @@ namespace simpletest
                 simpletest::ITest *test{this->tests_[i].get()};
                 assert(test != nullptr);
                 std::fprintf(fp,"[%zu/%zu]Testing %s...",i + 1,this->tests_.size(),test->Name().c_str());
+                std::fflush(fp);
                 simpletest::TestResult result{test->Run()};
                 if(result.Success())
                 {
