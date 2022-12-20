@@ -450,6 +450,7 @@ namespace sharpen
         int status{0};
         //drop status
         (void)status;
+        assert(status == 0);
         return abi::__cxa_demangle(name, 0, 0, &status)
     }
 #endif
@@ -462,6 +463,15 @@ namespace sharpen
         return typeid(_T).name() + 6;
 #else
         return sharpen::Demangle(typeid(_T).name());
+#endif
+    }
+
+    constexpr inline static bool DynamicAllocatedReableTypeName() noexcept
+    {
+#ifdef SHARPEN_COMPILER_MSVC
+        return false;
+#else
+        return true;
 #endif
     }
 }

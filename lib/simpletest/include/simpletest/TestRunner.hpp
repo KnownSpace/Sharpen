@@ -83,7 +83,7 @@ namespace simpletest
                     return -1;
                 }
             }
-            std::fputs("All tests passed\n",fp);
+            std::fprintf(fp,"All tests(%zu) passed\n",this->tests_.size());
             return 0;   
         }
 

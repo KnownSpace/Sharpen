@@ -11,6 +11,8 @@
 #endif
 
 #ifndef SIMPLETEST_MSVC
+#include <cstdlib>
+
 #include <cxxabi.h>
 
 namespace simpletest
@@ -90,17 +92,36 @@ namespace simpletest
     }; 
 
     template<typename _T>
+    inline static std::string GetReadableTypeName()
+    {
+#ifdef SIMPLETEST_MSVC
+        return std::string{SIMPLETEST_TYPENAME(_T)};
+#else
+        const char *name{SIMPLETEST_TYPENAME(_T)};
+        try
+        {
+            std::string realName{name};
+        }
+        catch(const std::exception& rethrow)
+        {
+            std::free(name);
+            throw;   
+        }
+        std::free(name);
+        return realName;
+#endif
+    }
+
+    template<typename _T>
     class ITypenamedTest:public simpletest::ITest
     {
     private:
         using Self = simpletest::ITypenamedTest<_T>;
         using Base = simpletest::ITest;
-    protected:
-
     public:
     
         ITypenamedTest() noexcept
-            :Base(SIMPLETEST_TYPENAME(_T))
+            :Base(simpletest::GetReadableTypeName<_T>())
         {}
     
         ITypenamedTest(const Self &other) noexcept = default;
@@ -117,14 +138,16 @@ namespace simpletest
         {
             return *this;
         }
-    };
-
-    template<typename _T>
-    constexpr inline static const char *GetReadableTypeName() noexcept
-    {
-        return SIMPLETEST_TYPENAME(_T);
-    }  
+    };  
 }
+
+#ifdef _MSC_VER
+#undef SIMPLETEST_MSVC
+#elif (defined __GNUC__)
+#undef SIMPLETEST_GCC
+#elif (defined __clang__)
+#undef SIMPLETEST_CLANG
+#endif
 
 #undef SIMPLETEST_TYPENAME
 #endif
