@@ -111,8 +111,8 @@ namespace sharpen
 
         void DoCancel(sharpen::ErrorCode err) noexcept;
 
-        void DoSafeClose(sharpen::FileHandle handle,std::shared_ptr<sharpen::IChannel> keepalive) noexcept;
-
+        void DoSafeCancel(sharpen::ErrorCode err,std::shared_ptr<sharpen::IChannel> keepalive) noexcept;
+        
         void SafeClose(sharpen::FileHandle handle) noexcept;
     public:
 

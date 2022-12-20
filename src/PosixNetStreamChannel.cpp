@@ -39,24 +39,13 @@ sharpen::PosixNetStreamChannel::~PosixNetStreamChannel() noexcept
     }
 }
 
-void sharpen::PosixNetStreamChannel::DoSafeClose(sharpen::FileHandle handle,std::shared_ptr<sharpen::IChannel> keepalive) noexcept
-{
-    (void)keepalive;
-    this->DoCancel(sharpen::ErrorConnectionAborted);
-    sharpen::CloseFileHandle(handle);
-}
-
 void sharpen::PosixNetStreamChannel::SafeClose(sharpen::FileHandle handle) noexcept
 {
     if(this->loop_)
     {
+        sharpen::CloseFileHandle(handle);
         //FIXME:throw bad alloc
-        sharpen::IEventLoopGroup *loopGroup{this->loop_->GetLoopGroup()};
-        if(!loopGroup || loopGroup->GetLoopCount() == 1)
-        {
-            return this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::DoSafeClose,this,handle,this->shared_from_this()));
-        }
-        return this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixNetStreamChannel::DoSafeClose,this,handle,this->shared_from_this()));
+        return this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixNetStreamChannel::DoSafeCancel,this,sharpen::ErrorConnectionAborted,this->shared_from_this()));
     }
     sharpen::CloseFileHandle(handle);
 }
@@ -529,9 +518,15 @@ void sharpen::PosixNetStreamChannel::DoCancel(sharpen::ErrorCode err) noexcept
     }
 }
 
+void sharpen::PosixNetStreamChannel::DoSafeCancel(sharpen::ErrorCode err,std::shared_ptr<sharpen::IChannel> keepalive) noexcept
+{
+    (void)keepalive;
+    this->DoCancel(err);
+}
+
 void sharpen::PosixNetStreamChannel::Cancel() noexcept
 {
-    this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixNetStreamChannel::DoCancel,this,sharpen::ErrorCancel));
+    this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixNetStreamChannel::DoSafeCancel,this,sharpen::ErrorCancel,this->shared_from_this()));
 }
 
 #endif

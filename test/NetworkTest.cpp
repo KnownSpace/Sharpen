@@ -45,15 +45,12 @@ public:
         {
             client->ConnectAsync(serverEndpoint);
             client->WriteAsync(data,sizeof(data) - 1);
-            client->Close();
         });
         char buf[sizeof(data)] = {0};
         client = server->AcceptAsync();
         client->Register(sharpen::GetLocalLoopGroup());
         client->ReadAsync(buf,sizeof(buf));
         future->Await();
-        server->Close();
-        client->Close();
         return this->Assert(!std::strncmp(buf,data,sizeof(data) - 1),"buf should == data,but it not");
     }
 };
@@ -111,8 +108,6 @@ public:
                 }
             }
         }
-        server->Close();
-        client->Close();
         return this->Assert(status,"All operations should throw ErrorCancel,but it not");
     }
 };
@@ -153,9 +148,6 @@ public:
         char buf[6] = {};
         sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::GetLocalLoopGroup());
         auto r = chd->ReadWithTimeout(timer,std::chrono::seconds(1),buf,sizeof(buf));
-        server->Close();
-        client->Close();
-        chd->Close();
         return this->Assert(!r.Exist(),"r should not exist,but it exist");
     }
 };
@@ -209,8 +201,6 @@ public:
         {
             status = e.code().value() == sharpen::ErrorConnectionAborted;
         }
-        server->Close();
-        client->Close();
         return this->Assert(status,"should throw ErrorConnectionAborted,but it not");
     }
 };
