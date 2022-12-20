@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14.0)
 
-include_directories("${SHARPEN_INCLUDE_DIRS}" "${PROJECT_SOURCE_DIR}/lib/include")
+include_directories("${SHARPEN_INCLUDE_DIRS}")
 
 #build fcontext
 

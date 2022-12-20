@@ -1,12 +1,32 @@
 cmake_minimum_required(VERSION 3.14.0)
 
-include_directories("${SHARPEN_INCLUDE_DIRS}")
+set(SIMPLETEST_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/lib/simpletest/include/")
+
+include_directories("${SHARPEN_INCLUDE_DIRS}" "${SIMPLETEST_INCLUDE_DIRS}")
+
+enable_testing()
+
+if(WIN32)
+    set(extname ".exe")
+else()
+    set(extname "")
+endif()
+
+#Async Test
+add_executable(AsyncTest "${PROJECT_SOURCE_DIR}/test/AsyncTest.cpp")
+
+target_link_libraries(AsyncTest sharpen)
+
+add_test(NAME Async_Test COMMAND "./AsyncTest${extname}")
+
+#Timer Test
+add_executable(TimerTest "${PROJECT_SOURCE_DIR}/test/TimerTest.cpp")
+
+target_link_libraries(TimerTest sharpen)
+
+add_test(NAME Timer_Test COMMAND "./TimerTest${extname}")
 
 #executables
-#await test
-add_executable(awaittest "${PROJECT_SOURCE_DIR}/test/AwaitTest.cpp")
-#timer test
-add_executable(timertest "${PROJECT_SOURCE_DIR}/test/TimerTest.cpp")
 #console test
 add_executable(consoletest "${PROJECT_SOURCE_DIR}/test/ConsoleTest.cpp")
 #template test
@@ -43,9 +63,6 @@ add_executable(iteratortest "${PROJECT_SOURCE_DIR}/test/IteratorTest.cpp")
 add_executable(serializabletest "${PROJECT_SOURCE_DIR}/test/SerializableTest.cpp")
 #functional test
 add_executable(functionaltest "${PROJECT_SOURCE_DIR}/test/FunctionalTest.cpp")
-#link
-target_link_libraries(awaittest sharpen)
-target_link_libraries(timertest sharpen)
 target_link_libraries(consoletest sharpen)
 target_link_libraries(templatetest sharpen)
 target_link_libraries(filetest sharpen)
@@ -66,15 +83,8 @@ target_link_libraries(iteratortest sharpen)
 target_link_libraries(serializabletest sharpen)
 target_link_libraries(functionaltest sharpen)
 #test
-enable_testing()
+
 #tests
-if(WIN32)
-    set(extname ".exe")
-else()
-    set(extname "")
-endif()
-add_test(NAME await_test COMMAND "./awaittest${extname}")
-add_test(NAME timer_test COMMAND "./timertest${extname}")
 add_test(NAME console_test COMMAND "./consoletest${extname}")
 add_test(NAME template_test COMMAND "./templatetest${extname}")
 add_test(NAME file_test COMMAND "./filetest${extname}")

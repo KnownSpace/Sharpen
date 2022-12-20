@@ -7,6 +7,12 @@
 #include <cstdint>
 #include <cstddef>
 
+#include "CompilerInfo.hpp"
+
+#ifndef SHARPEN_COMPILER_MSVC
+#include <cxxabi.h>
+#endif
+
 namespace sharpen
 {
     template<typename _Type,_Type _Value>
@@ -437,5 +443,26 @@ namespace sharpen
 
     template<typename _R,typename _Fn,typename ..._Args>
     using IsCompletedBindableReturned = sharpen::IsMatches<sharpen::InternalIsCompletedBindableReturned,_R,_Fn,_Args...>;
+
+#ifndef SHARPEN_COMPILER_MSVC
+    constexpr inline static const char *Demangle(const char *name) noexcept
+    {
+        int status{0};
+        //drop status
+        (void)status;
+        return abi::__cxa_demangle(name, 0, 0, &status)
+    }
+#endif
+
+    template<typename _T>
+    constexpr inline static const char *GetReadableTypeName() noexcept
+    {
+#ifdef SHARPEN_COMPILER_MSVC
+        //remove "class "
+        return typeid(_T).name() + 6;
+#else
+        return sharpen::Demangle(typeid(_T).name());
+#endif
+    }
 }
 #endif
