@@ -27,8 +27,6 @@ target_link_libraries(TimerTest sharpen)
 add_test(NAME Timer_Test COMMAND "./TimerTest${extname}")
 
 #executables
-#console test
-add_executable(consoletest "${PROJECT_SOURCE_DIR}/test/ConsoleTest.cpp")
 #template test
 add_executable(templatetest "${PROJECT_SOURCE_DIR}/test/TemplateTest.cpp")
 #file test
@@ -63,7 +61,6 @@ add_executable(iteratortest "${PROJECT_SOURCE_DIR}/test/IteratorTest.cpp")
 add_executable(serializabletest "${PROJECT_SOURCE_DIR}/test/SerializableTest.cpp")
 #functional test
 add_executable(functionaltest "${PROJECT_SOURCE_DIR}/test/FunctionalTest.cpp")
-target_link_libraries(consoletest sharpen)
 target_link_libraries(templatetest sharpen)
 target_link_libraries(filetest sharpen)
 target_link_libraries(networktest sharpen)
@@ -85,7 +82,6 @@ target_link_libraries(functionaltest sharpen)
 #test
 
 #tests
-add_test(NAME console_test COMMAND "./consoletest${extname}")
 add_test(NAME template_test COMMAND "./templatetest${extname}")
 add_test(NAME file_test COMMAND "./filetest${extname}")
 add_test(NAME network_test COMMAND "./networktest${extname}")
