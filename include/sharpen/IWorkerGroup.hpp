@@ -16,7 +16,7 @@ namespace sharpen
         using Self = sharpen::IWorkerGroup;
     protected:
 
-        virtual void DoSubmit(std::function<void()> task) = 0;
+        virtual void NviSubmit(std::function<void()> task) = 0;
     public:
     
         IWorkerGroup() noexcept = default;
@@ -48,7 +48,7 @@ namespace sharpen
         inline void Submit(_Fn &&fn,_Args &&...args)
         {
             std::function<void()> task{std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...)};
-            this->DoSubmit(std::move(task));   
+            this->NviSubmit(std::move(task));   
         }
 
         template<typename _Fn,typename ..._Args,typename _R,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<_R,_Fn,_Args...>::Value>>
@@ -59,7 +59,7 @@ namespace sharpen
             FnPtr fnPtr{static_cast<FnPtr>(&sharpen::FutureCompletor<_R>::CompleteForBind)};
             std::function<_R()> task{std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...)};
             std::function<void()> packagedTask{std::bind(fnPtr,&future,std::move(task))};
-            this->DoSubmit(std::move(packagedTask));
+            this->NviSubmit(std::move(packagedTask));
         }
 
         template<typename _Fn,typename ..._Args,typename _R = decltype(std::declval<_Fn>()(std::declval<_Args>()...)),typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<_R,_Fn,_Args...>::Value>>

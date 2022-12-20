@@ -13,7 +13,7 @@ namespace sharpen
 
     protected:
 
-        virtual sharpen::NetStreamChannelPtr DoProduce() = 0;
+        virtual sharpen::NetStreamChannelPtr NviProduce() = 0;
     public:
     
         ITcpSteamFactory() noexcept = default;
@@ -35,7 +35,7 @@ namespace sharpen
 
         inline sharpen::NetStreamChannelPtr Produce()
         {
-            return this->DoProduce();
+            return this->NviProduce();
         }
     };
 }

@@ -18,7 +18,7 @@ namespace sharpen
 
         void Entry(std::size_t index) noexcept;
 
-        virtual void DoSubmit(std::function<void()> task) override;
+        virtual void NviSubmit(std::function<void()> task) override;
 
         std::atomic_bool token_;
         sharpen::AsyncBlockingQueue<std::function<void()>> queue_;

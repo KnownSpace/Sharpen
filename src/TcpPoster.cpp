@@ -5,7 +5,7 @@
 
 #include <sharpen/SystemError.hpp>
 
-void sharpen::TcpPoster::DoClose() noexcept
+void sharpen::TcpPoster::NviClose() noexcept
 {
     sharpen::NetStreamChannelPtr channel{nullptr};
     {
@@ -19,7 +19,7 @@ void sharpen::TcpPoster::DoClose() noexcept
     }
 }
 
-void sharpen::TcpPoster::DoOpen()
+void sharpen::TcpPoster::NviOpen()
 {
     sharpen::NetStreamChannelPtr channel{nullptr};
     {
@@ -62,7 +62,7 @@ void sharpen::TcpPoster::DoOpen()
     }
 }
 
-sharpen::Mail sharpen::TcpPoster::DoPost(const sharpen::Mail &mail)
+sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail)
 {
     sharpen::NetStreamChannelPtr channel{nullptr};
     {
@@ -118,7 +118,7 @@ sharpen::Mail sharpen::TcpPoster::DoPost(const sharpen::Mail &mail)
     return response;
 }
 
-std::uint64_t sharpen::TcpPoster::DoGetId() const noexcept
+std::uint64_t sharpen::TcpPoster::NviGetId() const noexcept
 {
     return this->remoteEndpoint_->GetHashCode64();
 }

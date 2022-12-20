@@ -55,7 +55,7 @@ void sharpen::FixedWorkerGroup::Entry(std::size_t index) noexcept
     future->Complete();
 }
 
-void sharpen::FixedWorkerGroup::DoSubmit(std::function<void()> task)
+void sharpen::FixedWorkerGroup::NviSubmit(std::function<void()> task)
 {
     assert(this->token_.load());
     this->queue_.Emplace(std::move(task));

@@ -16,7 +16,7 @@ namespace sharpen
         sharpen::IEventLoopGroup *loopGroup_;
         sharpen::IpEndPoint localEndpoint_;
 
-        virtual sharpen::NetStreamChannelPtr DoProduce() override;
+        virtual sharpen::NetStreamChannelPtr NviProduce() override;
     public:
     
         IpTcpStreamFactory(sharpen::IEventLoopGroup &loopGroup,sharpen::IpEndPoint endpoint);

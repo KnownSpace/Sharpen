@@ -33,7 +33,7 @@ namespace sharpen
 
         void Entry(sharpen::AwaitableFuture<void> *future) noexcept;
     
-        virtual void DoSubmit(std::function<void()> task) override;
+        virtual void NviSubmit(std::function<void()> task) override;
     public:
     
         constexpr static std::size_t defaultBusyMark_{256};

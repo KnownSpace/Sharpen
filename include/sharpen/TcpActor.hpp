@@ -30,7 +30,7 @@ namespace sharpen
 
         static void DoCancel(sharpen::Future<void> *future) noexcept;
 
-        inline virtual std::uint64_t DoGetId() const noexcept override
+        inline virtual std::uint64_t NviGetId() const noexcept override
         {
             assert(this->poster_);
             return this->poster_->GetId();

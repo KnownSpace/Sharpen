@@ -152,7 +152,7 @@ public:
         sharpen::Launch([&future](){
             future.Complete(2);
         });
-        return this->Assert(future.Await() == 2,"Reset() don't reset status of future");
+        return this->Assert(future.Await() == 2,"Reset() doesn't reset status of future");
     }
 };
 

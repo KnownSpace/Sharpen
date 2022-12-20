@@ -1,10 +1,13 @@
 #include <cstdio>
 #include <map>
+
 #include <sharpen/BinarySerializable.hpp>
 #include <sharpen/Varint.hpp>
 #include <sharpen/DataCorruptionException.hpp>
 
-class Message:public sharpen::BinarySerializable<Message>
+#include <simpletest/TestRunner.hpp>
+
+class Message :public sharpen::BinarySerializable<Message>
 {
 private:
     using Self = Message;
@@ -73,78 +76,86 @@ void Load(sharpen::BinarySerializable<Message> &msg,const sharpen::ByteBuffer &b
     msg.LoadFrom(buf);
 }
 
-int main(int argc, char const *argv[])
+class SimpleObjectTest :public simpletest::ITypenamedTest<SimpleObjectTest>
 {
-    sharpen::ByteBuffer buf;
+private:
+    using Self = SimpleObjectTest;
+
+public:
+
+    SimpleObjectTest() noexcept = default;
+
+    ~SimpleObjectTest() noexcept = default;
+
+    inline const Self &Const() const noexcept
     {
-        Message msg;
-        msg.Container().emplace("hello","world");
-        msg.Container().emplace("1234",sharpen::EmptyOpt);
-        Store(msg,buf);
+        return *this;
     }
+
+    inline virtual simpletest::TestResult Run() noexcept
     {
-        Message msg;
-        Load(msg,buf);
-        for (auto begin = msg.Container().begin(),end = msg.Container().end(); begin != end; ++begin)
-        {
-            if(begin->second.Exist())
-            {
-                std::printf("%s:%s\n",begin->first.c_str(),begin->second.Get().c_str());
-            }
-        }
-        assert(msg.Container()["hello"].Get() == "world");
-        assert(!msg.Container()["1234"].Exist());
-    }
-    buf.Clear();
-    {
-        std::vector<Message> msgs;
-        for (std::size_t i = 0; i != 3; ++i)
+        sharpen::ByteBuffer buf;
         {
             Message msg;
-            msg.Container().emplace("vector msg","test");
-            msgs.emplace_back(msg);   
+            msg.Container().emplace("hello","world");
+            msg.Container().emplace("1234",sharpen::EmptyOpt);
+            Store(msg,buf);
         }
-        sharpen::BinarySerializator::StoreTo(msgs,buf);
-    }
-    {
-        std::vector<Message> msgs;
-        sharpen::BinarySerializator::LoadFrom(msgs,buf);
-        for (std::size_t i = 0,count = msgs.size(); i != count; ++i)
-        {
-            for (auto begin = msgs[i].Container().begin(),end = msgs[i].Container().end(); begin != end; ++begin)
-            {
-                if(begin->second.Exist())
-                {
-                    std::printf("%s:%s\n",begin->first.c_str(),begin->second.Get().c_str());
-                }
-            }
-        }
-    }
-    buf.Clear();
-    {
-        sharpen::Optional<std::vector<Message>> msgs;
-        msgs.Construct();
-        for (std::size_t i = 0; i != 3; ++i)
         {
             Message msg;
-            msg.Container().emplace("opt msgs","test");
-            msgs.Get().emplace_back(msg);   
+            Load(msg,buf);
+            return this->Assert(msg.Container()["hello"].Get() == "world" && !msg.Container()["1234"].Exist(),"Serialize/Unserialize return wrong answer");
         }
-        sharpen::BinarySerializator::StoreTo(msgs,buf);
     }
+};
+
+class StdContainerTest :public simpletest::ITypenamedTest<StdContainerTest>
+{
+private:
+    using Self = StdContainerTest;
+
+public:
+
+    StdContainerTest() noexcept = default;
+
+    ~StdContainerTest() noexcept = default;
+
+    inline const Self &Const() const noexcept
     {
-        sharpen::Optional<std::vector<Message>> msgs;
-        sharpen::BinarySerializator::LoadFrom(msgs,buf);
-        for (std::size_t i = 0,count = msgs.Get().size(); i != count; ++i)
+        return *this;
+    }
+
+    inline virtual simpletest::TestResult Run() noexcept
+    {
+        sharpen::ByteBuffer buf;
         {
-            for (auto begin = msgs.Get()[i].Container().begin(),end = msgs.Get()[i].Container().end(); begin != end; ++begin)
+            std::vector<Message> msgs;
+            for(std::size_t i = 0; i != 3; ++i)
             {
-                if(begin->second.Exist())
-                {
-                    std::printf("%s:%s\n",begin->first.c_str(),begin->second.Get().c_str());
-                }
+                Message msg;
+                msg.Container().emplace("vector msg","test");
+                msgs.emplace_back(msg);
             }
+            sharpen::BinarySerializator::StoreTo(msgs,buf);
+        }
+        {
+            std::vector<Message> msgs;
+            sharpen::BinarySerializator::LoadFrom(msgs,buf);
+            bool status{true};
+            for(std::size_t i = 0,count = msgs.size(); i != count; ++i)
+            {
+                auto &opt{msgs[i].Container()["vector msg"]};
+                status = status && opt.Exist() && opt.Get() == "test";
+            }
+            return this->Assert(status,"Serialize/Unserialize return wrong answer");
         }
     }
-    return 0;
+};
+
+int main(int argc,char const *argv[])
+{
+    simpletest::TestRunner runner;
+    runner.Register<SimpleObjectTest>();
+    runner.Register<StdContainerTest>();
+    return runner.Run();
 }

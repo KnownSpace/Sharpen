@@ -1,4 +1,6 @@
 #include <cstdio>
+
+#include <simpletest/TestRunner.hpp>
 #include <sharpen/IoUringQueue.hpp>
 
 #ifdef SHARPEN_HAS_IOURING
@@ -66,7 +68,7 @@ int main(int argc, char const *argv[])
 #else
 int main(int argc, char const *argv[])
 {
-    std::puts("pass");
-    return 0;
+    simpletest::TestRunner runner;
+    return runner.Run();
 }
 #endif
