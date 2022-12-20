@@ -22,7 +22,6 @@ sharpen::PosixNetStreamChannel::PosixNetStreamChannel(sharpen::FileHandle handle
     ,connectCb_()
     ,pollReadCbs_()
     ,pollWriteCbs_()
-    ,closeWaiter_()
 {
     this->handle_ = handle;
     //reset closer before ~IChannel() to be invoked
@@ -38,36 +37,15 @@ sharpen::PosixNetStreamChannel::~PosixNetStreamChannel() noexcept
         std::function<void(sharpen::FileHandle)> tmp;
         std::swap(tmp,this->closer_);
     }
-    if(this->closeWaiter_)
-    {
-        this->closeWaiter_->WaitAsync();
-    }
-}
-
-void sharpen::PosixNetStreamChannel::DoSafeClose(sharpen::FileHandle handle) noexcept
-{
-    this->DoCancel(sharpen::ErrorConnectionAborted);
-    sharpen::CloseFileHandle(handle);
-    this->closeWaiter_->Complete();
 }
 
 void sharpen::PosixNetStreamChannel::SafeClose(sharpen::FileHandle handle) noexcept
 {
     if(this->loop_)
     {
+        sharpen::CloseFileHandle(handle);
         //FIXME:throw bad alloc
-        if(!this->closeWaiter_)
-        {
-            auto *p{new (std::nothrow) sharpen::AwaitableFuture<void>{}};
-            if(!p)
-            {
-                //bad alloc
-                std::terminate();
-            }
-            this->closeWaiter_.reset(p);
-        }
-        this->closeWaiter_->Reset();
-        return this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixNetStreamChannel::DoSafeClose,this,handle));
+        return this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixNetStreamChannel::DoSafeCancel,this,sharpen::ErrorConnectionAborted,this->shared_from_this()));
     }
     sharpen::CloseFileHandle(handle);
 }
@@ -540,9 +518,15 @@ void sharpen::PosixNetStreamChannel::DoCancel(sharpen::ErrorCode err) noexcept
     }
 }
 
+void sharpen::PosixNetStreamChannel::DoSafeCancel(sharpen::ErrorCode err,std::shared_ptr<sharpen::IChannel> keepalive) noexcept
+{
+    (void)keepalive;
+    this->DoCancel(err);
+}
+
 void sharpen::PosixNetStreamChannel::Cancel() noexcept
 {
-    this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixNetStreamChannel::DoCancel,this,sharpen::ErrorCancel));
+    this->loop_->RunInLoopSoon(std::bind(&sharpen::PosixNetStreamChannel::DoSafeCancel,this,sharpen::ErrorCancel,this->shared_from_this()));
 }
 
 #endif

@@ -49,7 +49,7 @@ void sharpen::SingleWorkerGroup::Entry() noexcept
     this->worker_.Complete();
 }
 
-void sharpen::SingleWorkerGroup::DoSubmit(std::function<void()> task)
+void sharpen::SingleWorkerGroup::NviSubmit(std::function<void()> task)
 {
     assert(this->token_);
     this->queue_.Emplace(std::move(task));

@@ -16,7 +16,7 @@ namespace sharpen
         using Self = sharpen::IMailReceiver;
     protected:
 
-        virtual void DoReceiveMail(sharpen::Mail mail,std::uint64_t actorId) = 0;
+        virtual void NviReceiveMail(sharpen::Mail mail,std::uint64_t actorId) = 0;
     public:
     
         IMailReceiver() noexcept = default;
@@ -39,7 +39,7 @@ namespace sharpen
         inline void ReceiveMail(sharpen::Mail mail,std::uint64_t actorId)
         {
             assert(!mail.Header().Empty() || !mail.Content().Empty());
-            this->DoReceiveMail(std::move(mail),actorId);
+            this->NviReceiveMail(std::move(mail),actorId);
         }
     };
 }

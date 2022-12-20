@@ -106,7 +106,14 @@ namespace sharpen
         static sharpen::IEventLoopGroup *GetCurrentLoopGroup() noexcept;
     };
 
-    extern sharpen::IEventLoopGroup *GetLocalLoopGroup() noexcept;
+    extern sharpen::IEventLoopGroup *GetLocalLoopGroupPtr() noexcept;
+
+    inline sharpen::IEventLoopGroup &GetLocalLoopGroup() noexcept
+    {
+        sharpen::IEventLoopGroup *loopGroup{sharpen::GetLocalLoopGroupPtr()};
+        assert(loopGroup != nullptr);
+        return *loopGroup;
+    }
 }
 
 #endif

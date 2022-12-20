@@ -115,7 +115,7 @@ std::size_t sharpen::IPosixIoOperator::GetRemainingSize() const
 void sharpen::IPosixIoOperator::Execute(sharpen::FileHandle handle,bool &executed,bool &blocking)
 {
     this->FillBufferAndCallback();
-    this->DoExecute(handle,executed,blocking);
+    this->NviExecute(handle,executed,blocking);
 }
 
 bool sharpen::IPosixIoOperator::IsBlockingError(sharpen::ErrorCode err)

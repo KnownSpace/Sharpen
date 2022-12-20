@@ -15,13 +15,13 @@ namespace sharpen
         using Self = sharpen::IRemotePoster;
     protected:
 
-        virtual std::uint64_t DoGetId() const noexcept = 0;
+        virtual std::uint64_t NviGetId() const noexcept = 0;
 
-        virtual sharpen::Mail DoPost(const sharpen::Mail &mail) = 0;
+        virtual sharpen::Mail NviPost(const sharpen::Mail &mail) = 0;
 
-        virtual void DoClose() noexcept = 0;
+        virtual void NviClose() noexcept = 0;
 
-        virtual void DoOpen() = 0;
+        virtual void NviOpen() = 0;
     public:
     
         IRemotePoster() noexcept = default;
@@ -43,22 +43,22 @@ namespace sharpen
 
         inline void Open() 
         {
-            return this->DoOpen();
+            return this->NviOpen();
         }
 
         inline void Close() noexcept
         {
-            return this->DoClose();
+            return this->NviClose();
         }
 
         inline sharpen::Mail Post(const sharpen::Mail &mail)
         {
-            return this->DoPost(mail);
+            return this->NviPost(mail);
         }
 
         inline std::uint64_t GetId() const noexcept
         {
-            return this->DoGetId();
+            return this->NviGetId();
         }
     };
 }

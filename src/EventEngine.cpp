@@ -74,7 +74,7 @@ void sharpen::EventEngine::CallSwitchCallback()
     }
 }
 
-void sharpen::EventEngine::ScheduleSoon(sharpen::FiberPtr &&fiber)
+void sharpen::EventEngine::NviScheduleSoon(sharpen::FiberPtr &&fiber)
 {
     using FnPtr = void(*)(sharpen::FiberPtr);
     auto &&fn = std::bind(static_cast<FnPtr>(&sharpen::EventEngine::ProcessFiber),std::move(fiber));
@@ -110,7 +110,7 @@ void sharpen::EventEngine::ScheduleSoon(sharpen::FiberPtr &&fiber)
 #endif
 }
 
-void sharpen::EventEngine::Schedule(sharpen::FiberPtr &&fiber)
+void sharpen::EventEngine::NviSchedule(sharpen::FiberPtr &&fiber)
 {
     using FnPtr = void(*)(sharpen::FiberPtr);
     if (this->IsProcesser() && sharpen::EventLoop::GetLocalFiber() == sharpen::Fiber::GetCurrentFiber())

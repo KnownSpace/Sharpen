@@ -63,7 +63,7 @@ void sharpen::DynamicWorkerGroup::CreateWorker()
     }
 }
 
-void sharpen::DynamicWorkerGroup::DoSubmit(std::function<void()> task)
+void sharpen::DynamicWorkerGroup::NviSubmit(std::function<void()> task)
 {
     assert(this->token_);
     this->taskCount_ += 1;

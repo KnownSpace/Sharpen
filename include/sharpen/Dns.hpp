@@ -20,21 +20,81 @@
 
 namespace sharpen
 {
+    class DnsResolveResult
+    {
+    private:
+        using Self = DnsResolveResult;
+
+        sharpen::AddressFamily af_;
+        std::unique_ptr<sharpen::IEndPoint> endPoint_;
+        sharpen::ByteBuffer canonname_;
+    public:
+
+        DnsResolveResult() noexcept = default;
+
+        DnsResolveResult(Self &&other) noexcept = default;
+
+        Self &operator=(Self &&other) noexcept;
+
+        ~DnsResolveResult() noexcept = default;
+
+        inline const Self &Const() const noexcept
+        {
+            return *this;
+        }
+
+        inline sharpen::AddressFamily GetAddressFamily() const noexcept
+        {
+            return this->af_;
+        }
+
+        inline void SetAddressFamily(sharpen::AddressFamily af) noexcept
+        {
+            this->af_ = af;
+        }
+
+        inline std::unique_ptr<sharpen::IEndPoint> &EndPointPtr() noexcept
+        {
+            return this->endPoint_;
+        }
+        
+        inline const std::unique_ptr<sharpen::IEndPoint> &EndPointPtr() const noexcept
+        {
+            return this->endPoint_;
+        }
+
+        inline sharpen::IEndPoint &EndPoint() noexcept
+        {
+            assert(this->endPoint_);
+            return *this->endPoint_;
+        }
+        
+        inline const sharpen::IEndPoint &EndPoint() const noexcept
+        {
+            assert(this->endPoint_);
+            return *this->endPoint_;
+        }
+
+        inline sharpen::ByteBuffer &Canonname() noexcept
+        {
+            return this->canonname_;
+        }
+        
+        inline const sharpen::ByteBuffer &Canonname() const noexcept
+        {
+            return this->canonname_;
+        }
+    };
+
     struct Dns
     {
     public:
-        struct ResolveResult
-        {
-            sharpen::AddressFamily af_;
-            std::unique_ptr<sharpen::IEndPoint> endPoint_;
-            sharpen::ByteBuffer canonname_;
-        };
     private:
         static int InternalResolveName(const char *name,addrinfo **addrInfos,bool useHint,int af,int sockType,int protocol) noexcept;
 
-        static ResolveResult ConvertAddrInfoToResolveResult(addrinfo *addrInfo);
+        static sharpen::DnsResolveResult ConvertAddrInfoToResolveResult(addrinfo *addrInfo);
 
-        template<typename _InsertIterator,typename _Check = decltype(std::declval<_InsertIterator>() = std::declval<ResolveResult>())>
+        template<typename _InsertIterator,typename _Check = decltype(*std::declval<_InsertIterator&>()++ = std::declval<sharpen::DnsResolveResult&&>())>
         inline static void ResolveName(const char *name,_InsertIterator inserter,int af)
         {
             addrinfo *addrs{nullptr};
@@ -45,13 +105,13 @@ namespace sharpen
             }
             try
             {
-                for (auto begin = addrs; begin; begin = begin->ai_next)
+                for(auto begin = addrs; begin; begin = begin->ai_next)
                 {
                     *inserter++ = sharpen::Dns::ConvertAddrInfoToResolveResult(begin);
                 }
                 ::freeaddrinfo(addrs);
             }
-            catch(const std::exception&)
+            catch(const std::exception &)
             {
                 ::freeaddrinfo(addrs);
                 throw;
@@ -59,13 +119,13 @@ namespace sharpen
         }
     public:
 
-        template<typename _InsertIterator,typename _Check = decltype(std::declval<_InsertIterator>() = std::declval<ResolveResult>())>
+        template<typename _InsertIterator,typename _Check = decltype(*std::declval<_InsertIterator&>()++ = std::declval<sharpen::DnsResolveResult&&>())>
         inline static void ResolveName(const char *name,_InsertIterator inserter)
         {
             sharpen::Dns::ResolveName(name,inserter,AF_UNSPEC);
         }
 
-        template<typename _InsertIterator,typename _Check = decltype(std::declval<_InsertIterator>() = std::declval<ResolveResult>())>
+        template<typename _InsertIterator,typename _Check = decltype(*std::declval<_InsertIterator&>()++ = std::declval<sharpen::DnsResolveResult&&>())>
         static void ResolveName(const char *name,sharpen::AddressFamily af,_InsertIterator inserter)
         {
             int intAf = af == sharpen::AddressFamily::Ip ? AF_INET : AF_INET6;

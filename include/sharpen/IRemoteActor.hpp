@@ -13,7 +13,7 @@ namespace sharpen
         using Self = sharpen::IRemoteActor;
     protected:
 
-        virtual std::uint64_t DoGetId() const noexcept = 0;
+        virtual std::uint64_t NviGetId() const noexcept = 0;
     public:
     
         IRemoteActor() noexcept = default;
@@ -43,7 +43,7 @@ namespace sharpen
 
         inline std::uint64_t GetId() const noexcept
         {
-            return this->DoGetId();
+            return this->NviGetId();
         }
     };
 }

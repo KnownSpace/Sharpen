@@ -5,7 +5,7 @@ sharpen::IpTcpStreamFactory::IpTcpStreamFactory(sharpen::IEventLoopGroup &loopGr
     ,localEndpoint_(std::move(endpoint))
 {}
 
-sharpen::NetStreamChannelPtr sharpen::IpTcpStreamFactory::DoProduce()
+sharpen::NetStreamChannelPtr sharpen::IpTcpStreamFactory::NviProduce()
 {
     assert(this->loopGroup_);
     sharpen::NetStreamChannelPtr channel{sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip)};

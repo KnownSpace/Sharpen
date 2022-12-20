@@ -52,7 +52,7 @@ namespace sharpen
 
         std::size_t ComputePendingSize() const;
 
-        virtual void DoExecute(sharpen::FileHandle handle,bool &executed,bool &blocking) = 0;
+        virtual void NviExecute(sharpen::FileHandle handle,bool &executed,bool &blocking) = 0;
     private:
         
         std::size_t mark_;

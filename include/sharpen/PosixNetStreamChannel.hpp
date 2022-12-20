@@ -22,6 +22,7 @@ namespace sharpen
     class PosixNetStreamChannel:public sharpen::INetStreamChannel,public sharpen::Noncopyable
     {
     private:
+        using Self = sharpen::PosixNetStreamChannel;
         using Mybase = sharpen::INetStreamChannel;
         using Lock = sharpen::SpinLock;
         using AcceptCallback = std::function<void(sharpen::FileHandle)>;
@@ -49,8 +50,6 @@ namespace sharpen
         ConnectCallback connectCb_;
         Callbacks pollReadCbs_;
         Callbacks pollWriteCbs_;
-        //close waiter
-        std::unique_ptr<sharpen::AwaitableFuture<void>> closeWaiter_;
 
         sharpen::FileHandle DoAccept();
 
@@ -112,8 +111,8 @@ namespace sharpen
 
         void DoCancel(sharpen::ErrorCode err) noexcept;
 
-        void DoSafeClose(sharpen::FileHandle handle) noexcept;
-
+        void DoSafeCancel(sharpen::ErrorCode err,std::shared_ptr<sharpen::IChannel> keepalive) noexcept;
+        
         void SafeClose(sharpen::FileHandle handle) noexcept;
     public:
 

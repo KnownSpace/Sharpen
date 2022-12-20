@@ -22,7 +22,7 @@ namespace sharpen
 
         void Entry() noexcept;
     
-        virtual void DoSubmit(std::function<void()> task) override;
+        virtual void NviSubmit(std::function<void()> task) override;
     public:
     
         explicit SingleWorkerGroup(sharpen::IFiberScheduler &scheduler);

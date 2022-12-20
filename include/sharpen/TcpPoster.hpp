@@ -23,13 +23,13 @@ namespace sharpen
         std::unique_ptr<sharpen::IMailParser> parser_;
         sharpen::ITcpSteamFactory *factory_;
 
-        virtual std::uint64_t DoGetId() const noexcept override;
+        virtual std::uint64_t NviGetId() const noexcept override;
 
-        virtual sharpen::Mail DoPost(const sharpen::Mail &mail) override;
+        virtual sharpen::Mail NviPost(const sharpen::Mail &mail) override;
 
-        virtual void DoClose() noexcept override;
+        virtual void NviClose() noexcept override;
 
-        virtual void DoOpen() override;
+        virtual void NviOpen() override;
     public:
     
         TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::unique_ptr<sharpen::IMailParser> parser,sharpen::ITcpSteamFactory *factory);
