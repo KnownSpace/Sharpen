@@ -34,6 +34,7 @@ void sharpen::TcpHost::ConsumeChannel(sharpen::NetStreamChannelPtr channel,std::
 
 void sharpen::TcpHost::Stop() noexcept
 {
+    this->pipeline_->Stop();
     this->token_ = false;
     this->acceptor_->Close();
 }
