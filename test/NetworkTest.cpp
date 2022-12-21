@@ -210,102 +210,6 @@ public:
     }
 };
 
-class SimpleStep:public sharpen::IHostPipelineStep
-{
-private:
-    using Self = SimpleStep;
-protected:
-public:
-
-    sharpen::ByteBuffer *data_;
-
-    SimpleStep() noexcept = default;
-
-    SimpleStep(const Self &other) noexcept = default;
-
-    SimpleStep(Self &&other) noexcept = default;
-
-    Self &operator=(const Self &other) noexcept = default;
-
-    Self &operator=(Self &&other) noexcept = default;
-
-    ~SimpleStep() noexcept = default;
-
-    inline const Self &Const() const noexcept
-    {
-        return *this;
-    }
-
-    inline virtual sharpen::HostPipelineResult Consume(sharpen::INetStreamChannel &channel,const std::atomic_bool &active) noexcept override
-    {
-        if(active)
-        {
-            //process data
-            sharpen::Delay(std::chrono::seconds(2));
-            channel.ReadAsync(*this->data_);
-        }
-        return sharpen::HostPipelineResult::Broken;
-    }
-};
-
-static std::unique_ptr<sharpen::IHostPipeline> ConfiguratePipeline(SimpleStep *step)
-{
-    std::unique_ptr<sharpen::IHostPipeline> pipeline{new (std::nothrow) sharpen::SimpleHostPipeline{}};
-    pipeline->RegisterStep(std::unique_ptr<sharpen::IHostPipelineStep>{step});
-    return pipeline;
-}
-
-class HostTest:public simpletest::ITypenamedTest<HostTest>
-{
-private:
-    using Self = HostTest;
-
-public:
-
-    HostTest() noexcept = default;
-
-    ~HostTest() noexcept = default;
-
-    inline const Self &Const() const noexcept
-    {
-        return *this;
-    }
-
-    inline virtual simpletest::TestResult Run() noexcept
-    {
-        sharpen::IpEndPoint endPoint;
-        endPoint.SetAddrByString("127.0.0.1");
-        endPoint.SetPort(8084);
-        sharpen::IpTcpStreamFactory factory{sharpen::GetLocalLoopGroup(),endPoint};
-        sharpen::TcpHost host{sharpen::GetLocalScheduler(),factory};
-        sharpen::ByteBuffer receivedData{4096};
-        std::unique_ptr<SimpleStep> step{new (std::nothrow) SimpleStep{}};
-        step->data_ = &receivedData;
-        host.ConfiguratePipeline(&ConfiguratePipeline,step.release());
-        auto future = sharpen::Async([&host]() mutable
-        {
-            host.Run();
-        });
-        //let host runs
-        sharpen::YieldCycle();
-        sharpen::NetStreamChannelPtr client = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
-        endPoint.SetPort(0);
-        client->Bind(endPoint);
-        client->Register(sharpen::GetLocalLoopGroup());
-        endPoint.SetPort(8084);
-        client->ConnectAsync(endPoint);
-        client->WriteAsync(data,sizeof(data) - 1);
-        client->Close();
-        sharpen::YieldCycle();
-        host.Stop();
-        if(!future->IsPending())
-        {
-            return this->Fail("future should still pending,but completed");
-        }
-        future->WaitAsync();
-        return this->Assert(!std::strncmp(data,receivedData.Data(),sizeof(data) - 1),"Pingpong failed");
-    }
-};
 
 static int Test()
 {
@@ -315,7 +219,6 @@ static int Test()
     runner.Register<CancelTest>();
     runner.Register<TimeoutTest>();
     runner.Register<CloseTest>();
-    runner.Register<HostTest>();
     int code{runner.Run()};
     sharpen::CleanupNetSupport();
     return code;

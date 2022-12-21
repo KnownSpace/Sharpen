@@ -123,16 +123,15 @@ std::uint64_t sharpen::TcpPoster::NviGetId() const noexcept
     return this->remoteEndpoint_->GetHashCode64();
 }
 
-sharpen::TcpPoster::TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::unique_ptr<sharpen::IMailParser> parser,sharpen::ITcpSteamFactory *factory)
+sharpen::TcpPoster::TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::unique_ptr<sharpen::IMailParser> parser,sharpen::ITcpSteamFactory &factory)
     :lock_(nullptr)
     ,channel_(nullptr)
     ,remoteEndpoint_(std::move(endpoint))
     ,parser_(std::move(parser))
-    ,factory_(factory)
+    ,factory_(&factory)
 {
     assert(this->remoteEndpoint_);
     assert(this->parser_);
-    assert(this->factory_);
     this->lock_.reset(new (std::nothrow) sharpen::SpinLock{});
     if(!this->lock_)
     {
