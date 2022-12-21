@@ -32,7 +32,7 @@ namespace sharpen
         virtual void NviOpen() override;
     public:
     
-        TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::unique_ptr<sharpen::IMailParser> parser,sharpen::ITcpSteamFactory *factory);
+        TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::unique_ptr<sharpen::IMailParser> parser,sharpen::ITcpSteamFactory &factory);
         
         TcpPoster(Self &&other) noexcept;
 
