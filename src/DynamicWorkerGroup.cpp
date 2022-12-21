@@ -21,7 +21,7 @@ void sharpen::DynamicWorkerGroup::Entry(sharpen::AwaitableFuture<void> *future) 
     future->Complete();
 }
 
-bool sharpen::DynamicWorkerGroup::MoreWorker() const noexcept
+bool sharpen::DynamicWorkerGroup::BusyProbe() const noexcept
 {
     if(this->token_)
     {
@@ -51,6 +51,10 @@ void sharpen::DynamicWorkerGroup::CreateWorker()
     sharpen::AwaitableFuture<void> *worker{nullptr};
     {
         std::unique_lock<sharpen::SpinLock> lock{this->lock_};
+        if(this->maxWorkerCount_ && this->workers_.size() + 1 > this->maxWorkerCount_)
+        {
+            return;
+        }
         if(this->token_)
         {
             worker = future.get();
@@ -68,7 +72,7 @@ void sharpen::DynamicWorkerGroup::NviSubmit(std::function<void()> task)
     assert(this->token_);
     this->taskCount_ += 1;
     this->queue_.Emplace(std::move(task));
-    if(this->MoreWorker())
+    if(this->BusyProbe())
     {
         this->CreateWorker();
     }
@@ -117,7 +121,7 @@ std::size_t sharpen::DynamicWorkerGroup::GetWorkerCount() const noexcept
     }
 }
 
-sharpen::DynamicWorkerGroup::DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler,std::size_t workerCount,std::size_t busyMark,std::size_t probeCount)
+sharpen::DynamicWorkerGroup::DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler,std::size_t workerCount,std::size_t busyMark,std::size_t probeCount,std::size_t maxWorkerCount)
     :scheduler_(&scheduler)
     ,token_(true)
     ,busyMark_(busyMark)
@@ -126,6 +130,7 @@ sharpen::DynamicWorkerGroup::DynamicWorkerGroup(sharpen::IFiberScheduler &schedu
     ,workers_()
     ,queue_()
     ,probeCount_(probeCount)
+    ,maxWorkerCount_(maxWorkerCount)
 {
     assert(this->probeCount_);
     assert(this->busyMark_);
@@ -143,12 +148,16 @@ sharpen::DynamicWorkerGroup::DynamicWorkerGroup(sharpen::IFiberScheduler &schedu
     }
 }
 
+sharpen::DynamicWorkerGroup::DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler,std::size_t workerCount,std::size_t busyMark,std::size_t probeCount)
+    :DynamicWorkerGroup(scheduler,workerCount,busyMark,probeCount,defaultMaxWorkerCount)
+{}
+
 sharpen::DynamicWorkerGroup::DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler,std::size_t workerCount,std::size_t busyMark)
-    :DynamicWorkerGroup(scheduler,workerCount,busyMark,defaultProbeCount_)
+    :DynamicWorkerGroup(scheduler,workerCount,busyMark,defaultProbeCount)
 {}
 
 sharpen::DynamicWorkerGroup::DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler,std::size_t workerCount)
-    :DynamicWorkerGroup(scheduler,workerCount,defaultBusyMark_)
+    :DynamicWorkerGroup(scheduler,workerCount,defaultBusyMark)
 {}
 
 sharpen::DynamicWorkerGroup::DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler)

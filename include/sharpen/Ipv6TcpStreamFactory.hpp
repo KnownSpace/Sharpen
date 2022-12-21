@@ -56,6 +56,12 @@ namespace sharpen
         {
             return *this;
         }
+
+        inline virtual sharpen::IEventLoopGroup &GetLoopGroup() const noexcept override
+        {
+            assert(this->loopGroup_ != nullptr);
+            return *this->loopGroup_;
+        }
     };
 }
 
