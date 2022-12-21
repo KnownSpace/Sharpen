@@ -37,6 +37,8 @@ namespace sharpen
         {
             return this->NviProduce();
         }
+
+        virtual sharpen::IEventLoopGroup &GetLoopGroup() const noexcept = 0;
     };
 }
 

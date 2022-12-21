@@ -26,8 +26,9 @@ namespace sharpen
         std::vector<std::unique_ptr<sharpen::AwaitableFuture<void>>> workers_;
         sharpen::AsyncBlockingQueue<std::function<void()>> queue_;
         std::size_t probeCount_;
+        std::size_t maxWorkerCount_;
 
-        bool MoreWorker() const noexcept;
+        bool BusyProbe() const noexcept;
 
         void CreateWorker();
 
@@ -36,9 +37,13 @@ namespace sharpen
         virtual void NviSubmit(std::function<void()> task) override;
     public:
     
-        constexpr static std::size_t defaultBusyMark_{256};
+        constexpr static std::size_t defaultBusyMark{256};
 
-        constexpr static std::size_t defaultProbeCount_{3};
+        constexpr static std::size_t defaultProbeCount{3};
+
+        constexpr static std::size_t unlimitedWorkerCount{0};
+
+        constexpr static std::size_t defaultMaxWorkerCount{unlimitedWorkerCount};
 
         explicit DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler);
 
@@ -47,6 +52,8 @@ namespace sharpen
         DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler,std::size_t workerCount,std::size_t busyMark);
 
         DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler,std::size_t workerCount,std::size_t busyMark,std::size_t probeCount);
+
+        DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler,std::size_t workerCount,std::size_t busyMark,std::size_t probeCount,std::size_t maxWorkerCount);
     
         virtual ~DynamicWorkerGroup() noexcept;
     
