@@ -1,8 +1,8 @@
 #include <sharpen/IpTcpStreamFactory.hpp>
 
-sharpen::IpTcpStreamFactory::IpTcpStreamFactory(sharpen::IEventLoopGroup &loopGroup,sharpen::IpEndPoint endpoint)
+sharpen::IpTcpStreamFactory::IpTcpStreamFactory(sharpen::IEventLoopGroup &loopGroup,const sharpen::IpEndPoint &endpoint)
     :loopGroup_(&loopGroup)
-    ,localEndpoint_(std::move(endpoint))
+    ,localEndpoint_(endpoint)
 {}
 
 sharpen::NetStreamChannelPtr sharpen::IpTcpStreamFactory::NviProduce()

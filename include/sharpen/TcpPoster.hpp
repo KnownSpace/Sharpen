@@ -21,7 +21,7 @@ namespace sharpen
         sharpen::NetStreamChannelPtr channel_;
         std::unique_ptr<sharpen::IEndPoint> remoteEndpoint_;
         std::unique_ptr<sharpen::IMailParser> parser_;
-        sharpen::ITcpSteamFactory *factory_;
+        std::shared_ptr<sharpen::ITcpSteamFactory> factory_;
 
         virtual std::uint64_t NviGetId() const noexcept override;
 
@@ -29,12 +29,12 @@ namespace sharpen
 
         virtual void NviClose() noexcept override;
 
-        virtual void NviOpen() override;
+        virtual void NviOpen(std::unique_ptr<sharpen::IMailParser> parser) override;
     public:
     
-        TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::unique_ptr<sharpen::IMailParser> parser,sharpen::ITcpSteamFactory &factory);
+        TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::shared_ptr<sharpen::ITcpSteamFactory> factory);
         
-        TcpPoster(Self &&other) noexcept;
+        TcpPoster(Self &&other) noexcept = default;
 
         virtual ~TcpPoster() noexcept = default;
     
