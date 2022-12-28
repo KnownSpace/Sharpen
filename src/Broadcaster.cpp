@@ -33,6 +33,11 @@ void sharpen::Broadcaster::Cancel() noexcept
     }
 }
 
+sharpen::Broadcaster::~Broadcaster() noexcept
+{
+    this->Cancel();
+}
+
 void sharpen::Broadcaster::Broadcast(sharpen::Mail mail)
 {
     {
