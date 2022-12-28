@@ -42,6 +42,11 @@ namespace sharpen
         virtual std::uint64_t GetHashCode64() const noexcept = 0;
 
         virtual std::size_t GetHashCode() const noexcept = 0;
+
+        inline std::uint64_t GetActorId() const noexcept
+        {
+            return this->GetHashCode64();
+        }
     };
 }
 

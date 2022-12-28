@@ -65,7 +65,7 @@ namespace sharpen
             return *this;
         }
     
-        ~Broadcaster() noexcept = default;
+        ~Broadcaster() noexcept;
     
         inline const Self &Const() const noexcept
         {
