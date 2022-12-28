@@ -39,7 +39,7 @@ namespace sharpen
             return *this;
         }
 
-        virtual sharpen::Broadcaster CreateBroadcaster() const = 0;
+        virtual std::unique_ptr<sharpen::Broadcaster> CreateBroadcaster() const = 0;
 
         inline sharpen::IRemoteActorBuilder *Lookup(std::uint64_t actorId)
         {

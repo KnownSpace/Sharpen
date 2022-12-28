@@ -35,7 +35,7 @@ namespace sharpen
             return *this;
         }
 
-        virtual sharpen::Broadcaster CreateBroadcaster() const override;
+        virtual std::unique_ptr<sharpen::Broadcaster> CreateBroadcaster() const override;
 
         virtual void Remove(std::uint64_t actorId) noexcept override;
     };

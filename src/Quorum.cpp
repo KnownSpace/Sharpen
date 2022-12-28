@@ -9,7 +9,7 @@ sharpen::Quorum &sharpen::Quorum::operator=(Self &&other) noexcept
     return *this;
 }
 
-sharpen::Broadcaster sharpen::Quorum::CreateBroadcaster() const
+std::unique_ptr<sharpen::Broadcaster> sharpen::Quorum::CreateBroadcaster() const
 {
     std::vector<std::unique_ptr<sharpen::IRemoteActor>> actors;
     actors.reserve(this->builders_.size());
@@ -17,7 +17,12 @@ sharpen::Broadcaster sharpen::Quorum::CreateBroadcaster() const
     {
         actors.emplace_back(begin->second->Build());   
     }
-    return sharpen::Broadcaster{std::make_move_iterator(actors.begin()),std::make_move_iterator(actors.end())};
+    std::unique_ptr<sharpen::Broadcaster> broadcaster{new (std::nothrow) sharpen::Broadcaster{std::make_move_iterator(actors.begin()),std::make_move_iterator(actors.end())}};
+    if(!broadcaster)
+    {
+        throw std::bad_alloc{};
+    }
+    return broadcaster;
 }
 
 sharpen::IRemoteActorBuilder *sharpen::Quorum::NviLookup(std::uint64_t actorId) noexcept
