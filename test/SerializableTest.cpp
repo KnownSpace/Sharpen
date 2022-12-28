@@ -3,7 +3,7 @@
 
 #include <sharpen/BinarySerializable.hpp>
 #include <sharpen/Varint.hpp>
-#include <sharpen/DataCorruptionException.hpp>
+#include <sharpen/CorruptedDataError.hpp>
 
 #include <simpletest/TestRunner.hpp>
 

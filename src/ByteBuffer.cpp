@@ -4,7 +4,7 @@
 #include <cassert>
 
 #include <sharpen/Varint.hpp>
-#include <sharpen/DataCorruptionException.hpp>
+#include <sharpen/CorruptedDataError.hpp>
 
 sharpen::ByteBuffer::ByteBuffer(std::size_t size)
     :vector_(size)
@@ -229,7 +229,7 @@ std::size_t sharpen::ByteBuffer::LoadFrom(const char *data,std::size_t size)
         if (size < offset + sz)
         {
             this->Clear();
-            throw sharpen::DataCorruptionException("byte buffer corruption");
+            throw sharpen::CorruptedDataError("byte buffer corruption");
         }
         this->ExtendTo(sz);
         std::memcpy(this->Data(),data + offset,sz);

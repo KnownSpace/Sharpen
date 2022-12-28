@@ -19,8 +19,9 @@ void sharpen::TcpPoster::NviClose() noexcept
     }
 }
 
-void sharpen::TcpPoster::NviOpen()
+void sharpen::TcpPoster::NviOpen(std::unique_ptr<sharpen::IMailParser> parser)
 {
+    this->parser_ = std::move(parser);
     sharpen::NetStreamChannelPtr channel{nullptr};
     {
         assert(this->lock_);
@@ -123,30 +124,20 @@ std::uint64_t sharpen::TcpPoster::NviGetId() const noexcept
     return this->remoteEndpoint_->GetHashCode64();
 }
 
-sharpen::TcpPoster::TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::unique_ptr<sharpen::IMailParser> parser,sharpen::ITcpSteamFactory &factory)
+sharpen::TcpPoster::TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::shared_ptr<sharpen::ITcpSteamFactory> factory)
     :lock_(nullptr)
     ,channel_(nullptr)
     ,remoteEndpoint_(std::move(endpoint))
-    ,parser_(std::move(parser))
-    ,factory_(&factory)
+    ,parser_(nullptr)
+    ,factory_(std::move(factory))
 {
+    assert(this->factory_);
     assert(this->remoteEndpoint_);
-    assert(this->parser_);
     this->lock_.reset(new (std::nothrow) sharpen::SpinLock{});
     if(!this->lock_)
     {
         throw std::bad_alloc{};
     }
-}
-
-sharpen::TcpPoster::TcpPoster(Self &&other) noexcept
-    :lock_(std::move(other.lock_))
-    ,channel_(std::move(other.channel_))
-    ,remoteEndpoint_(std::move(other.remoteEndpoint_))
-    ,parser_(std::move(other.parser_))
-    ,factory_(other.factory_)
-{
-    other.factory_ = nullptr;
 }
 
 sharpen::TcpPoster &sharpen::TcpPoster::operator=(Self &&other) noexcept
@@ -157,8 +148,7 @@ sharpen::TcpPoster &sharpen::TcpPoster::operator=(Self &&other) noexcept
         this->channel_ = std::move(other.channel_);
         this->remoteEndpoint_ = std::move(other.remoteEndpoint_);
         this->parser_ = std::move(other.parser_);
-        this->factory_ = other.factory_;
-        other.factory_ = nullptr;
+        this->factory_ = std::move(other.factory_);
     }
     return *this;
 }

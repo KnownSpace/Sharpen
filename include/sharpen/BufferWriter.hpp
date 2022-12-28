@@ -19,9 +19,9 @@ namespace sharpen
         sharpen::ByteBuffer *target_;
     public:
     
-        explicit BufferWriter(sharpen::ByteBuffer *target)
+        explicit BufferWriter(sharpen::ByteBuffer &target)
             :offset_(0)
-            ,target_(target)
+            ,target_(&target)
         {
             assert(this->target_);
         }
@@ -80,6 +80,20 @@ namespace sharpen
                 this->target_->ExtendTo(this->offset_ + sz);
             }
             this->offset_ += sharpen::BinarySerializator::UnsafeStoreTo(obj,this->target_->Data() + this->offset_);
+        }
+
+        inline void Write(const char *data,std::size_t size)
+        {
+            assert(this->target_);
+            if(this->target_->GetSize() < this->offset_ + size)
+            {
+                this->target_->ExtendTo(this->offset_ + size);
+            }
+            for (size_t i = 0; i != size; ++i)
+            {
+                this->target_->Get(this->offset_ + i) = data[i];   
+            }
+            this->offset_ += size;
         }
 
         inline std::size_t GetLength() const noexcept

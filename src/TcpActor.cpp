@@ -15,12 +15,11 @@ void sharpen::TcpActor::DoPostShared(const sharpen::Mail *mail) noexcept
     {
         try
         {
-            this->poster_->Open();
+            this->poster_->Open(this->parserFactory_->Produce());
         }
         catch(const sharpen::RemotePosterOpenError &ignore)
         {
             (void)ignore;
-            this->status_ = sharpen::RemoteActorStatus::Closed;
             return;
         }
         catch(const std::exception &ignore)
@@ -29,17 +28,20 @@ void sharpen::TcpActor::DoPostShared(const sharpen::Mail *mail) noexcept
             (void)ignore;
         }
     }
-    sharpen::Mail response{};
+    sharpen::Mail response;
     try
     {
         response = this->poster_->Post(*mail);
-        this->receiver_->ReceiveMail(std::move(response),this->GetId());
+        sharpen::RemoteActorStatus expectedStatus{sharpen::RemoteActorStatus::InProgress};
+        if(this->status_.compare_exchange_strong(expectedStatus,sharpen::RemoteActorStatus::Opened))
+        {
+            this->receiver_->ReceiveMail(std::move(response),this->GetId());
+        }
     }
     catch(const sharpen::RemotePosterClosedError &ignore)
     {
         //cancel by operator
         (void)ignore;
-        this->status_ = sharpen::RemoteActorStatus::Closed;
         return;
     }
     catch(const std::exception &ignore)
@@ -47,7 +49,6 @@ void sharpen::TcpActor::DoPostShared(const sharpen::Mail *mail) noexcept
         assert(!ignore.what() && "fail to post or receive mail");
         (void)ignore;
     }
-    this->status_ = sharpen::RemoteActorStatus::Opened;
 }
 
 void sharpen::TcpActor::DoPost(sharpen::Mail mail) noexcept
@@ -55,29 +56,12 @@ void sharpen::TcpActor::DoPost(sharpen::Mail mail) noexcept
     this->DoPostShared(&mail);
 }
 
-void sharpen::TcpActor::DoCancel(sharpen::Future<void> *future) noexcept
-{
-    future->Complete();
-}
-
 void sharpen::TcpActor::Cancel() noexcept
 {
-    bool wait{false};
-    while(this->status_ == sharpen::RemoteActorStatus::InProgress)
+    sharpen::RemoteActorStatus expectedStatus{sharpen::RemoteActorStatus::InProgress};
+    if(this->status_.compare_exchange_strong(expectedStatus,sharpen::RemoteActorStatus::Closed))
     {
         this->poster_->Close();
-        wait = true;
-        if(this->status_ == sharpen::RemoteActorStatus::InProgress)
-        {
-            sharpen::YieldCycle();
-        }
-    }
-    if(wait)
-    {
-        using FnPtr = void(*)(sharpen::Future<void> *);
-        sharpen::AwaitableFuture<void> future;
-        this->worker_->Submit(static_cast<FnPtr>(&Self::DoCancel),&future);
-        future.WaitAsync();
     }
 }
 
@@ -91,12 +75,15 @@ void sharpen::TcpActor::PostShared(const sharpen::Mail &mail)
     this->worker_->Submit(&Self::DoPostShared,this,&mail);
 }
 
-sharpen::TcpActor::TcpActor(sharpen::IFiberScheduler &scheduler,sharpen::IMailReceiver &receiver,std::unique_ptr<sharpen::IRemotePoster> poster)
+sharpen::TcpActor::TcpActor(sharpen::IFiberScheduler &scheduler,sharpen::IMailReceiver &receiver,std::shared_ptr<sharpen::IMailParserFactory> factory,std::unique_ptr<sharpen::IRemotePoster> poster)
     :receiver_(&receiver)
     ,poster_(std::move(poster))
     ,status_(sharpen::RemoteActorStatus::Closed)
     ,worker_(nullptr)
+    ,parserFactory_(std::move(parserFactory_))
 {
+    assert(this->parserFactory_);
+    assert(this->poster_);
     sharpen::IWorkerGroup *worker{new (std::nothrow) sharpen::SingleWorkerGroup{scheduler}};
     if(!worker)
     {

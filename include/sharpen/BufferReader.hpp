@@ -19,9 +19,9 @@ namespace sharpen
         const sharpen::ByteBuffer *target_;
     public:
     
-        explicit BufferReader(const sharpen::ByteBuffer *target)
+        explicit BufferReader(const sharpen::ByteBuffer &target)
             :offset_(0)
-            ,target_(target)
+            ,target_(&target)
         {
             assert(this->target_);
         }
@@ -74,6 +74,21 @@ namespace sharpen
                 throw std::out_of_range{"index out of range"};
             }
             this->offset_ += sharpen::BinarySerializator::LoadFrom(obj,this->target_->Data(),sz);
+        }
+
+        inline void Read(char *data,std::size_t size)
+        {
+            assert(this->target_);
+            std::size_t sz{this->target_->GetSize() - this->offset_};
+            if(sz < size)
+            {
+                throw std::out_of_range{"index out of range"};
+            }
+            for(std::size_t i = 0;i != size;++i)
+            {
+                data[i] = this->target_->Get(i + this->offset_);
+            }
+            this->offset_ += size;
         }
 
         template<typename _T,typename _Check = decltype(sharpen::BinarySerializator::LoadFrom(std::declval<_T&>(),nullptr,0),_T{})>

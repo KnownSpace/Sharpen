@@ -6,6 +6,7 @@
 
 #include "Mail.hpp"
 #include "Future.hpp"
+#include "IMailParser.hpp"
 
 namespace sharpen
 {
@@ -21,7 +22,7 @@ namespace sharpen
 
         virtual void NviClose() noexcept = 0;
 
-        virtual void NviOpen() = 0;
+        virtual void NviOpen(std::unique_ptr<sharpen::IMailParser> parser) = 0;
     public:
     
         IRemotePoster() noexcept = default;
@@ -41,9 +42,10 @@ namespace sharpen
             return *this;
         }
 
-        inline void Open() 
+        inline void Open(std::unique_ptr<sharpen::IMailParser> parser) 
         {
-            return this->NviOpen();
+            assert(parser != nullptr);
+            return this->NviOpen(std::move(parser));
         }
 
         inline void Close() noexcept

@@ -11,6 +11,7 @@
 #include "Nonmovable.hpp"
 #include "Noncopyable.hpp"
 #include "AwaitableFuture.hpp"
+#include "IMailParserFactory.hpp"
 
 namespace sharpen
 {
@@ -23,12 +24,11 @@ namespace sharpen
         std::unique_ptr<sharpen::IRemotePoster> poster_;
         std::atomic<sharpen::RemoteActorStatus> status_;
         std::unique_ptr<sharpen::IWorkerGroup> worker_;
+        std::shared_ptr<sharpen::IMailParserFactory> parserFactory_;
 
         void DoPostShared(const sharpen::Mail *mail) noexcept;
 
         void DoPost(sharpen::Mail mail) noexcept;
-
-        static void DoCancel(sharpen::Future<void> *future) noexcept;
 
         inline virtual std::uint64_t NviGetId() const noexcept override
         {
@@ -37,7 +37,7 @@ namespace sharpen
         }
     public:
     
-        TcpActor(sharpen::IFiberScheduler &scheduler,sharpen::IMailReceiver &receiver,std::unique_ptr<sharpen::IRemotePoster> poster);
+        TcpActor(sharpen::IFiberScheduler &scheduler,sharpen::IMailReceiver &receiver,std::shared_ptr<sharpen::IMailParserFactory> parserFactory,std::unique_ptr<sharpen::IRemotePoster> poster);
     
         virtual ~TcpActor() noexcept;
     

@@ -11,7 +11,7 @@
 #include "IteratorOps.hpp"
 #include "IntOps.hpp"
 #include "Optional.hpp"
-#include "DataCorruptionException.hpp"
+#include "CorruptedDataError.hpp"
 
 namespace sharpen
 {
@@ -93,7 +93,7 @@ namespace sharpen
             {
                 if(size == offset)
                 {
-                    throw sharpen::DataCorruptionException("optional data corruption");
+                    throw sharpen::CorruptedDataError("optional data corruption");
                 }
                 //type should be default constructible
                 obj.Construct();
@@ -117,7 +117,7 @@ namespace sharpen
             offset += Self::LoadFrom(obj.first,data,size);
             if(size == offset)
             {
-                throw sharpen::DataCorruptionException("pair data corruption");
+                throw sharpen::CorruptedDataError("pair data corruption");
             }
             offset += Self::LoadFrom(obj.second,data + offset,size - offset);
             return offset;
@@ -156,7 +156,7 @@ namespace sharpen
             {
                 if(size <= offset)
                 {
-                    throw sharpen::DataCorruptionException("container data corruption");
+                    throw sharpen::CorruptedDataError("container data corruption");
                 }
                 //type should be default constructible
                 NoconstValType obj;
