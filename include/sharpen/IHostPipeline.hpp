@@ -20,7 +20,7 @@ namespace sharpen
 
         virtual void NviConsume(sharpen::NetStreamChannelPtr channel) noexcept = 0;
 
-        virtual void NviRegisterStep(std::unique_ptr<sharpen::IHostPipelineStep> step) = 0;
+        virtual void NviRegister(std::unique_ptr<sharpen::IHostPipelineStep> step) = 0;
     public:
     
         IHostPipeline() noexcept = default;
@@ -52,15 +52,15 @@ namespace sharpen
             }
         }
 
-        inline Self &RegisterStep(std::unique_ptr<sharpen::IHostPipelineStep> step)
+        inline Self &Register(std::unique_ptr<sharpen::IHostPipelineStep> step)
         {
             assert(step != nullptr);
-            this->NviRegisterStep(std::move(step));
+            this->NviRegister(std::move(step));
             return *this;
         }
 
         template<typename _Impl,typename ..._Args,typename _Check = decltype(std::declval<sharpen::IHostPipelineStep*&>() = std::declval<_Impl*>(),_Impl{std::declval<_Args>()...})>
-        inline Self &RegisterStep(_Args &&...args)
+        inline Self &Register(_Args &&...args)
         {
             std::unique_ptr<sharpen::IHostPipelineStep> step{nullptr};
             step.reset(new (std::nothrow) _Impl{std::forward<_Args>(args)...});
@@ -68,7 +68,7 @@ namespace sharpen
             {
                 throw std::bad_alloc{};
             }
-            return this->RegisterStep(std::move(step));
+            return this->Register(std::move(step));
         }
     };
 }

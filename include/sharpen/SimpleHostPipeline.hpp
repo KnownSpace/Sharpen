@@ -22,7 +22,7 @@ namespace sharpen
 
         virtual void NviConsume(sharpen::NetStreamChannelPtr channel) noexcept override;
 
-        virtual void NviRegisterStep(std::unique_ptr<sharpen::IHostPipelineStep> step) override;
+        virtual void NviRegister(std::unique_ptr<sharpen::IHostPipelineStep> step) override;
     public:
     
         SimpleHostPipeline();

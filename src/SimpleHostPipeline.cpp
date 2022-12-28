@@ -26,7 +26,7 @@ void sharpen::SimpleHostPipeline::NviConsume(sharpen::NetStreamChannelPtr channe
     }
 }
 
-void sharpen::SimpleHostPipeline::NviRegisterStep(std::unique_ptr<sharpen::IHostPipelineStep> step)
+void sharpen::SimpleHostPipeline::NviRegister(std::unique_ptr<sharpen::IHostPipelineStep> step)
 {
     this->pipeline_.emplace_back(std::move(step));
 }
