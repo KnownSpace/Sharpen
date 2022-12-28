@@ -31,9 +31,9 @@ void sharpen::FunctorHostPipeline::NviConsume(sharpen::NetStreamChannelPtr chann
 
 void sharpen::FunctorHostPipeline::NviRegister(std::unique_ptr<sharpen::IHostPipelineStep> step)
 {
-    sharpen::IHostPipelineStep *step{step.get()};
+    sharpen::IHostPipelineStep *rawStep{step.get()};
     this->pipeline_.emplace_back(std::move(step));
-    this->functors_.emplace_back(std::bind(&IHostPipelineStep::Consume,step,std::placeholders::_1,std::placeholders::_2));
+    this->functors_.emplace_back(std::bind(&IHostPipelineStep::Consume,rawStep,std::placeholders::_1,std::placeholders::_2));
 }
 
 sharpen::FunctorHostPipeline &sharpen::FunctorHostPipeline::Register(Functor func)
