@@ -32,9 +32,9 @@ namespace sharpen
             return *this;
         }
 
-        virtual std::unique_ptr<sharpen::IRemoteActor> Build() = 0;
+        virtual std::unique_ptr<sharpen::IRemoteActor> Build() const = 0;
 
-        virtual std::shared_ptr<sharpen::IRemoteActor> BuildShared() = 0;
+        virtual std::shared_ptr<sharpen::IRemoteActor> BuildShared() const = 0;
     };
 }
 

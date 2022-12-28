@@ -58,9 +58,9 @@ namespace sharpen
 
         void SetParserFactory(std::shared_ptr<sharpen::IMailParserFactory> parserFactory) noexcept;
 
-        virtual std::unique_ptr<sharpen::IRemoteActor> Build() override;
+        virtual std::unique_ptr<sharpen::IRemoteActor> Build() const override;
 
-        virtual std::shared_ptr<sharpen::IRemoteActor> BuildShared() override;
+        virtual std::shared_ptr<sharpen::IRemoteActor> BuildShared() const override;
     };
 }
 

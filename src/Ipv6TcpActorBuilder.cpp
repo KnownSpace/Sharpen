@@ -72,7 +72,7 @@ void sharpen::Ipv6TcpActorBuilder::EnsureConfiguration() const
     }
 }
 
-std::unique_ptr<sharpen::IRemoteActor> sharpen::Ipv6TcpActorBuilder::Build()
+std::unique_ptr<sharpen::IRemoteActor> sharpen::Ipv6TcpActorBuilder::Build() const
 {
     this->EnsureConfiguration();
     std::unique_ptr<sharpen::IEndPoint> remote{new (std::nothrow) sharpen::Ipv6EndPoint{this->remote_}};
@@ -93,7 +93,7 @@ std::unique_ptr<sharpen::IRemoteActor> sharpen::Ipv6TcpActorBuilder::Build()
     return actor;
 }
 
-std::shared_ptr<sharpen::IRemoteActor> sharpen::Ipv6TcpActorBuilder::BuildShared()
+std::shared_ptr<sharpen::IRemoteActor> sharpen::Ipv6TcpActorBuilder::BuildShared() const
 {
     this->EnsureConfiguration();
     std::unique_ptr<sharpen::IEndPoint> remote{new (std::nothrow) sharpen::Ipv6EndPoint{this->remote_}};
