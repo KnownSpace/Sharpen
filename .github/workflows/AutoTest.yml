@@ -7,7 +7,7 @@ env:
   BUILD_TYPE: Debug
 
 jobs:
-  test-x86_64:
+  build-ubuntu:
     # The CMake configure and build commands are platform agnostic and should work equally
     # well on Windows or Mac.  You can convert this to a matrix build if you need
     # cross-platform coverage.
@@ -39,8 +39,9 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: ctest -C $BUILD_TYPE -VV
-  test-arm64:
-    runs-on: ubuntu-latest
+  build-windows:
+    runs-on: windows-latest
+
     steps:
     - uses: actions/checkout@v2
     - name: Get latest CMake and Ninja
@@ -48,24 +49,21 @@ jobs:
       with:
         cmakeVersion: latest
         ninjaVersion: latest
+
+    - name: Create Build Environment
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
     - name: Configure CMake
       shell: bash
       working-directory: ${{runner.workspace}}/build
       run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
-      
-    - uses: uraimo/run-on-arch-action@v2
-      name: Build
-      with:
-        arch: aarch64
-        distro: ubuntu20.04
-        githubToken: ${{ github.token }}
-        run: |
-          cmake --build . --config $BUILD_TYPE
-    - uses: uraimo/run-on-arch-action@v2
-      name: Test
-      with:
-        arch: aarch64
-        distro: ubuntu20.04
-        githubToken: ${{ github.token }}
-        run: |
-          ctest -C $BUILD_TYPE -VV
+
+    - name: Build
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: cmake --build . --config $BUILD_TYPE
+
+    - name: Test
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: ctest -C $BUILD_TYPE -VV
