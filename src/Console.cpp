@@ -20,6 +20,7 @@ void sharpen::ClearConsole()
     ::SetConsoleCursorPosition(hStdOut, coord);
     (void)count;
 #else
-    ::write(STDOUT_FILENO,"\x1b[1J",4);
+    ssize_t size{::write(STDOUT_FILENO,"\x1b[1J",4)};
+    (void)size;
 #endif
 }
