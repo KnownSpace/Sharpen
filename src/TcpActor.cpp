@@ -79,8 +79,8 @@ sharpen::TcpActor::TcpActor(sharpen::IFiberScheduler &scheduler,sharpen::IMailRe
     :receiver_(&receiver)
     ,poster_(std::move(poster))
     ,status_(sharpen::RemoteActorStatus::Closed)
-    ,worker_(nullptr)
     ,parserFactory_(std::move(factory))
+    ,worker_(nullptr)
 {
     assert(this->parserFactory_);
     assert(this->poster_);
