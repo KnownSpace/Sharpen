@@ -48,18 +48,24 @@ jobs:
       with:
         cmakeVersion: latest
         ninjaVersion: latest
+    - name: Configure CMake
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+      
     - uses: uraimo/run-on-arch-action@v2
-      name: Use aarch64
+      name: Build
       with:
         arch: aarch64
         distro: ubuntu20.04
         githubToken: ${{ github.token }}
-        dockerRunArgs: |
-            --volume "${PWD}:/build"
-            --volume "/home/runner:/home/runner"
         run: |
-          cmake -E make_directory ${{runner.workspace}}/build
-          cd ${{runner.workspace}}/build
           cmake --build . --config $BUILD_TYPE
+    - uses: uraimo/run-on-arch-action@v2
+      name: Test
+      with:
+        arch: aarch64
+        distro: ubuntu20.04
+        githubToken: ${{ github.token }}
+        run: |
           ctest -C $BUILD_TYPE -VV
-    
