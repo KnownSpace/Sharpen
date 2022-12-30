@@ -35,7 +35,7 @@ void sharpen::TcpActor::DoPostShared(const sharpen::Mail *mail) noexcept
         sharpen::RemoteActorStatus expectedStatus{sharpen::RemoteActorStatus::InProgress};
         if(this->status_.compare_exchange_strong(expectedStatus,sharpen::RemoteActorStatus::Opened))
         {
-            this->receiver_->ReceiveMail(std::move(response),this->GetId());
+            this->receiver_->Receive(std::move(response),this->GetId());
         }
     }
     catch(const sharpen::RemotePosterClosedError &ignore)
@@ -79,8 +79,8 @@ sharpen::TcpActor::TcpActor(sharpen::IFiberScheduler &scheduler,sharpen::IMailRe
     :receiver_(&receiver)
     ,poster_(std::move(poster))
     ,status_(sharpen::RemoteActorStatus::Closed)
-    ,worker_(nullptr)
     ,parserFactory_(std::move(factory))
+    ,worker_(nullptr)
 {
     assert(this->parserFactory_);
     assert(this->poster_);

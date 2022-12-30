@@ -23,8 +23,8 @@ namespace sharpen
         sharpen::IMailReceiver *receiver_;
         std::unique_ptr<sharpen::IRemotePoster> poster_;
         std::atomic<sharpen::RemoteActorStatus> status_;
-        std::unique_ptr<sharpen::IWorkerGroup> worker_;
         std::shared_ptr<sharpen::IMailParserFactory> parserFactory_;
+        std::unique_ptr<sharpen::IWorkerGroup> worker_;
 
         void DoPostShared(const sharpen::Mail *mail) noexcept;
 
