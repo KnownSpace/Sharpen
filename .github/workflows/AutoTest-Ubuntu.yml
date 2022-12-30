@@ -1,4 +1,4 @@
-name: AutoTest
+name: AutoTest-Ubuntu
 
 on: [push]
 
