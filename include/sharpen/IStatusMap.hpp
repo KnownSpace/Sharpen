@@ -9,10 +9,10 @@
 
 namespace sharpen
 {
-    class IPersistentMap
+    class IStatusMap
     {
     private:
-        using Self = sharpen::IPersistentMap;
+        using Self = sharpen::IStatusMap;
     protected:
 
         virtual sharpen::Optional<sharpen::ByteBuffer> NviLookup(const sharpen::ByteBuffer &key) const = 0;
@@ -20,17 +20,17 @@ namespace sharpen
         virtual void NviWrite(sharpen::ByteBuffer key,sharpen::ByteBuffer value) = 0;
     public:
     
-        IPersistentMap() noexcept = default;
+        IStatusMap() noexcept = default;
     
-        IPersistentMap(const Self &other) noexcept = default;
+        IStatusMap(const Self &other) noexcept = default;
     
-        IPersistentMap(Self &&other) noexcept = default;
+        IStatusMap(Self &&other) noexcept = default;
     
         Self &operator=(const Self &other) noexcept = default;
     
         Self &operator=(Self &&other) noexcept = default;
     
-        virtual ~IPersistentMap() noexcept = default;
+        virtual ~IStatusMap() noexcept = default;
     
         inline const Self &Const() const noexcept
         {

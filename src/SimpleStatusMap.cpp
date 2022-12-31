@@ -1,9 +1,9 @@
-#include <sharpen/SimplePersistentMap.hpp>
+#include <sharpen/SimpleStatusMap.hpp>
 
 #include <sharpen/SystemError.hpp>
 #include <sharpen/BufferWriter.hpp>
 
-sharpen::SimplePersistentMap::SimplePersistentMap(sharpen::FileChannelPtr file)
+sharpen::SimpleStatusMap::SimpleStatusMap(sharpen::FileChannelPtr file)
     :file_(std::move(file))
     ,map_()
     ,lock_()
@@ -12,7 +12,7 @@ sharpen::SimplePersistentMap::SimplePersistentMap(sharpen::FileChannelPtr file)
     this->ReadFromFile(0);
 }
 
-void sharpen::SimplePersistentMap::SaveFile()
+void sharpen::SimpleStatusMap::SaveFile()
 {
     assert(this->file_);
     std::uint64_t count{this->map_.size()};
@@ -39,7 +39,7 @@ void sharpen::SimplePersistentMap::SaveFile()
     }
 }
 
-void sharpen::SimplePersistentMap::ReadFromFile(std::uint64_t offset)
+void sharpen::SimpleStatusMap::ReadFromFile(std::uint64_t offset)
 {
     assert(this->file_);
     std::uint64_t fileSize{this->file_->GetFileSize() - offset};
@@ -63,7 +63,7 @@ void sharpen::SimplePersistentMap::ReadFromFile(std::uint64_t offset)
     }
 }
 
-sharpen::Optional<sharpen::ByteBuffer> sharpen::SimplePersistentMap::NviLookup(const sharpen::ByteBuffer &key) const
+sharpen::Optional<sharpen::ByteBuffer> sharpen::SimpleStatusMap::NviLookup(const sharpen::ByteBuffer &key) const
 {
     {
         this->lock_.LockRead();
@@ -77,7 +77,7 @@ sharpen::Optional<sharpen::ByteBuffer> sharpen::SimplePersistentMap::NviLookup(c
     }
 }
 
-void sharpen::SimplePersistentMap::NviWrite(sharpen::ByteBuffer key,sharpen::ByteBuffer value)
+void sharpen::SimpleStatusMap::NviWrite(sharpen::ByteBuffer key,sharpen::ByteBuffer value)
 {
     {
         this->lock_.LockWrite();

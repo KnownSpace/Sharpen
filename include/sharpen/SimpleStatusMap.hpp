@@ -5,15 +5,15 @@
 #include <map>
 
 #include "IFileChannel.hpp"
-#include "IPersistentMap.hpp"
+#include "IStatusMap.hpp"
 #include "AsyncRwLock.hpp"
 
 namespace sharpen
 {
-    class SimplePersistentMap:public sharpen::IPersistentMap,public sharpen::Noncopyable,public sharpen::Nonmovable
+    class SimpleStatusMap:public sharpen::IStatusMap,public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
-        using Self = sharpen::SimplePersistentMap;
+        using Self = sharpen::SimpleStatusMap;
     
         sharpen::FileChannelPtr file_;
         std::map<sharpen::ByteBuffer,sharpen::ByteBuffer> map_;
@@ -28,9 +28,9 @@ namespace sharpen
         virtual void NviWrite(sharpen::ByteBuffer key,sharpen::ByteBuffer value) override;
     public:
     
-        explicit SimplePersistentMap(sharpen::FileChannelPtr file);
+        explicit SimpleStatusMap(sharpen::FileChannelPtr file);
     
-        virtual ~SimplePersistentMap() noexcept = default;
+        virtual ~SimpleStatusMap() noexcept = default;
     
         inline const Self &Const() const noexcept
         {

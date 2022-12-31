@@ -1,5 +1,5 @@
-#include <sharpen/IPersistentMap.hpp>
-#include <sharpen/SimplePersistentMap.hpp>
+#include <sharpen/IStatusMap.hpp>
+#include <sharpen/SimpleStatusMap.hpp>
 #include <sharpen/EventEngine.hpp>
 #include <sharpen/FileOps.hpp>
 
@@ -24,7 +24,7 @@ public:
     {
         sharpen::FileChannelPtr channel = sharpen::OpenFileChannel("./Test.bin",sharpen::FileAccessMethod::All,sharpen::FileOpenMethod::CreateNew);
         channel->Register(sharpen::GetLocalLoopGroup());
-        std::unique_ptr<sharpen::IPersistentMap> map{new (std::nothrow) sharpen::SimplePersistentMap{std::move(channel)}};
+        std::unique_ptr<sharpen::IStatusMap> map{new (std::nothrow) sharpen::SimpleStatusMap{std::move(channel)}};
         sharpen::ByteBuffer key{"key",3};
         sharpen::ByteBuffer value{"val",3};
         map->Write(key,value);
@@ -52,7 +52,7 @@ public:
     {
         sharpen::FileChannelPtr channel = sharpen::OpenFileChannel("./Test.bin",sharpen::FileAccessMethod::All,sharpen::FileOpenMethod::Open);
         channel->Register(sharpen::GetLocalLoopGroup());
-        std::unique_ptr<sharpen::IPersistentMap> map{new (std::nothrow) sharpen::SimplePersistentMap{std::move(channel)}};
+        std::unique_ptr<sharpen::IStatusMap> map{new (std::nothrow) sharpen::SimpleStatusMap{std::move(channel)}};
         sharpen::ByteBuffer key{"key",3};
         sharpen::ByteBuffer value{"val",3};
         auto valOpt = map->Lookup(key);
