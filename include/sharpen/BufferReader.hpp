@@ -65,7 +65,7 @@ namespace sharpen
         }
 
         template<typename _T,typename _Check = decltype(sharpen::BinarySerializator::LoadFrom(std::declval<_T&>(),nullptr,0))>
-        inline void Read(_T &obj) const
+        inline void Read(_T &obj)
         {
             assert(this->target_);
             std::size_t sz{this->target_->GetSize() - this->offset_};
@@ -73,7 +73,7 @@ namespace sharpen
             {
                 throw std::out_of_range{"index out of range"};
             }
-            this->offset_ += sharpen::BinarySerializator::LoadFrom(obj,this->target_->Data(),sz);
+            this->offset_ += sharpen::BinarySerializator::LoadFrom(obj,this->target_->Data() + this->offset_,sz);
         }
 
         inline void Read(char *data,std::size_t size)
@@ -92,7 +92,7 @@ namespace sharpen
         }
 
         template<typename _T,typename _Check = decltype(sharpen::BinarySerializator::LoadFrom(std::declval<_T&>(),nullptr,0),_T{})>
-        inline _T Read() const
+        inline _T Read()
         {
             _T obj{};
             this->Read(obj);
