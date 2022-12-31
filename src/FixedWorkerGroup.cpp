@@ -1,5 +1,9 @@
 #include <sharpen/FixedWorkerGroup.hpp>
 
+sharpen::FixedWorkerGroup::FixedWorkerGroup()
+    :FixedWorkerGroup(sharpen::GetLocalScheduler())
+{}
+
 sharpen::FixedWorkerGroup::FixedWorkerGroup(sharpen::IFiberScheduler &scheduler)
     :FixedWorkerGroup(scheduler,scheduler.GetParallelCount())
 {}

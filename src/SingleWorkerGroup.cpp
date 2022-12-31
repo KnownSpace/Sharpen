@@ -1,5 +1,9 @@
 #include <sharpen/SingleWorkerGroup.hpp>
 
+sharpen::SingleWorkerGroup::SingleWorkerGroup()
+    :SingleWorkerGroup(sharpen::GetLocalScheduler())
+{}
+
 sharpen::SingleWorkerGroup::SingleWorkerGroup(sharpen::IFiberScheduler &scheduler)
     :token_(true)
     ,queue_()
