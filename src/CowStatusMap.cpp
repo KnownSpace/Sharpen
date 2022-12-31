@@ -10,12 +10,6 @@ sharpen::CowStatusMap::CowStatusMap(std::string name)
 
 void sharpen::CowStatusMap::Load()
 {
-#ifdef SHARPEN_IS_WIN
-    if(!sharpen::ExistFile(this->name_.c_str()) && sharpen::ExistFile(this->tempName_.c_str()))
-    {
-        sharpen::RenameFile(this->tempName_.c_str(),this->name_.c_str());
-    }
-#endif
     sharpen::FileChannelPtr channel{sharpen::OpenFileChannel(this->name_.c_str(),sharpen::FileAccessMethod::Read,sharpen::FileOpenMethod::CreateOrOpen)};
     channel->Register(*this->loopGroup_);
     std::uint64_t size{channel->GetFileSize()};
@@ -69,10 +63,6 @@ void sharpen::CowStatusMap::Save()
             offset += channel->WriteAsync(buf.Data(),writer.GetLength(),offset);
         }
         channel->Close();
-        //windows does not support atomic rename()
-#ifdef SHARPEN_IS_WIN
-        sharpen::RemoveFile(this->name_.c_str());
-#endif
         sharpen::RenameFile(this->tempName_.c_str(),this->name_.c_str());
     }
 }
