@@ -76,9 +76,9 @@ target_link_libraries(SerializableTest sharpen)
 
 add_test(NAME Serializable_Test COMMAND "./SerializableTest${extname}")
 
-#PersistentMap Test
-add_executable(PersistentMapTest "${PROJECT_SOURCE_DIR}/test/PersistentMapTest.cpp")
+#StatusMap Test
+add_executable(StatusMapTest "${PROJECT_SOURCE_DIR}/test/StatusMapTest.cpp")
 
-target_link_libraries(PersistentMapTest sharpen)
+target_link_libraries(StatusMapTest sharpen)
 
-add_test(NAME PersistentMap_Test COMMAND "./PersistentMapTest${extname}")
+add_test(NAME StatusMap_Test COMMAND "./StatusMapTest${extname}")

@@ -61,7 +61,7 @@ bool sharpen::ExistFile(const char *name)
 void sharpen::RenameFile(const char *oldName, const char *newName)
 {
 #ifdef SHARPEN_IS_WIN
-    if (::MoveFileExA(oldName, newName, MOVEFILE_COPY_ALLOWED) == FALSE)
+    if (::MoveFileExA(oldName, newName, MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING) == FALSE)
     {
         sharpen::ThrowLastError();
     }

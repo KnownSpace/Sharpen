@@ -50,7 +50,7 @@ void sharpen::IChannel::Close() noexcept
         }
         else
         {
-            sharpen::CloseFileHandle(this->handle_);
+            sharpen::CloseFileHandle(handle);
         }
     }
 }
