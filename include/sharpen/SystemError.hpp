@@ -46,6 +46,7 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorAddressInUse = WSAEADDRINUSE;
     constexpr sharpen::ErrorCode ErrorFileNotFound = ERROR_FILE_NOT_FOUND;
     constexpr sharpen::ErrorCode ErrorPathNotFound = ERROR_PATH_NOT_FOUND;
+    constexpr sharpen::ErrorCode ErrorOutOfQuota = WSAEDQUOT;
 #else
     constexpr sharpen::ErrorCode ErrorCancel = ECANCELED;
     constexpr sharpen::ErrorCode ErrorConnectionAborted = ECONNABORTED;
@@ -75,6 +76,7 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorAddressInUse = EADDRINUSE;
     constexpr sharpen::ErrorCode ErrorFileNotFound = ENOENT;
     constexpr sharpen::ErrorCode ErrorPathNotFound = ENOENT;
+    constexpr sharpen::ErrorCode ErrorOutOfQuota = EDQUOT;
 #endif
 
     inline bool IsFatalError(sharpen::ErrorCode code) noexcept

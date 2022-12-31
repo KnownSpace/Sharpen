@@ -18,6 +18,8 @@ namespace sharpen
         virtual sharpen::Optional<sharpen::ByteBuffer> NviLookup(const sharpen::ByteBuffer &key) const = 0;
 
         virtual void NviWrite(sharpen::ByteBuffer key,sharpen::ByteBuffer value) = 0;
+
+        virtual void NviRemove(const sharpen::ByteBuffer &key) = 0;
     public:
     
         IStatusMap() noexcept = default;
@@ -47,6 +49,12 @@ namespace sharpen
         {
             assert(!key.Empty());
             return this->NviLookup(key);
+        }
+
+        inline void Remove(const sharpen::ByteBuffer &key)
+        {
+            assert(!key.Empty());
+            return this->NviRemove(key);
         }
     };
 }
