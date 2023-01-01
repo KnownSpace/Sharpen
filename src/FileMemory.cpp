@@ -111,3 +111,10 @@ void sharpen::FileMemory::FlushAndWait() const
 #endif
     }
 }
+
+void *sharpen::FileMemory::ReleaseOwnership() noexcept
+{
+    void *p{nullptr};
+    std::swap(this->address_,p);
+    return p;
+}

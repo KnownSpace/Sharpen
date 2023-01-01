@@ -39,6 +39,8 @@ namespace sharpen
         void Flush() const;
 
         void FlushAndWait() const;
+
+        void *ReleaseOwnership() noexcept;
     }; 
 }
 
