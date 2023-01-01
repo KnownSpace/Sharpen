@@ -24,7 +24,8 @@ namespace sharpen
         sharpen::AsyncBlockingQueue<std::function<void()>> queue_;
         std::vector<sharpen::AwaitableFuture<void>> workers_;
     public:
-    
+        FixedWorkerGroup();
+
         explicit FixedWorkerGroup(sharpen::IFiberScheduler &scheduler);
 
         FixedWorkerGroup(sharpen::IFiberScheduler &scheduler,std::size_t workerCount);

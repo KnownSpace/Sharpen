@@ -45,6 +45,8 @@ namespace sharpen
 
         constexpr static std::size_t defaultMaxWorkerCount{unlimitedWorkerCount};
 
+        DynamicWorkerGroup();
+
         explicit DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler);
 
         DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler,std::size_t workerCount);

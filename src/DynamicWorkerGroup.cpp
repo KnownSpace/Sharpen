@@ -164,6 +164,10 @@ sharpen::DynamicWorkerGroup::DynamicWorkerGroup(sharpen::IFiberScheduler &schedu
     :DynamicWorkerGroup(scheduler,scheduler.GetParallelCount())
 {}
 
+sharpen::DynamicWorkerGroup::DynamicWorkerGroup()
+    :DynamicWorkerGroup(sharpen::GetLocalScheduler())
+{}
+
 sharpen::DynamicWorkerGroup::~DynamicWorkerGroup() noexcept
 {
     this->Stop();

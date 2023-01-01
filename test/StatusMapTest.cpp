@@ -2,18 +2,25 @@
 #include <sharpen/CowStatusMap.hpp>
 #include <sharpen/EventEngine.hpp>
 #include <sharpen/FileOps.hpp>
+#include <sharpen/WalStatusMap.hpp>
 
 #include <simpletest/TestRunner.hpp>
 
-class MapTest:public simpletest::ITypenamedTest<MapTest>
+static const char *cowName = "./Test.cow";
+
+static const char *walName = "./Test.wal";
+
+static constexpr std::size_t keyCount{100};
+
+class CowMapTest:public simpletest::ITypenamedTest<CowMapTest>
 {
 private:
-    using Self = MapTest;
+    using Self = CowMapTest;
 public:
 
-    MapTest() noexcept = default;
+    CowMapTest() noexcept = default;
 
-    ~MapTest() noexcept = default;
+    ~CowMapTest() noexcept = default;
 
     inline const Self &Const() const noexcept
     {
@@ -22,24 +29,52 @@ public:
 
     inline virtual simpletest::TestResult Run() noexcept
     {
-        std::unique_ptr<sharpen::IStatusMap> map{new (std::nothrow) sharpen::CowStatusMap{"./Test.bin"}};
-        sharpen::ByteBuffer key{"key",3};
-        sharpen::ByteBuffer value{"val",3};
-        map->Write(key,value);
-        auto valOpt = map->Lookup(key);
-        return this->Assert(valOpt.Exist() && valOpt.Get() == value,"Map test return wrong answer");
+        std::unique_ptr<sharpen::IStatusMap> map{new (std::nothrow) sharpen::CowStatusMap{cowName}};
+        sharpen::ByteBuffer key{"key",4};
+        sharpen::ByteBuffer value{"val",4};
+        for(std::size_t i = 0;i != keyCount;++i)
+        {
+            key[3] = i;
+            value[3] = i;
+            map->Write(key,value);
+        }
+        for(std::size_t i = 0;i != keyCount;++i)
+        {
+            key[3] = i;
+            value[3] = i;
+            auto valOpt = map->Lookup(key);
+            if(valOpt.Get() != value)
+            {
+                return this->Fail("Get() return wrong answer,put failed or lookup failed");
+            }
+        }
+        for(std::size_t i = 0;i != keyCount;++i)
+        {
+            key[3] = i;
+            map->Remove(key);
+        }
+        for(std::size_t i = 0;i != keyCount;++i)
+        {
+            key[3] = i;
+            auto valOpt = map->Lookup(key);
+            if(valOpt.Exist())
+            {
+                return this->Fail("Get() return wrong answer,remove failed");
+            }
+        }
+        return this->Success();
     }
 };
 
-class PersistentTest:public simpletest::ITypenamedTest<PersistentTest>
+class CowPersistentTest:public simpletest::ITypenamedTest<CowPersistentTest>
 {
 private:
-    using Self = PersistentTest;
+    using Self = CowPersistentTest;
 public:
 
-    PersistentTest() noexcept = default;
+    CowPersistentTest() noexcept = default;
 
-    ~PersistentTest() noexcept = default;
+    ~CowPersistentTest() noexcept = default;
 
     inline const Self &Const() const noexcept
     {
@@ -48,21 +83,111 @@ public:
 
     inline virtual simpletest::TestResult Run() noexcept
     {
-        std::unique_ptr<sharpen::IStatusMap> map{new (std::nothrow) sharpen::CowStatusMap{"./Test.bin"}};
+        std::unique_ptr<sharpen::IStatusMap> map{new (std::nothrow) sharpen::CowStatusMap{cowName}};
         sharpen::ByteBuffer key{"key",3};
         sharpen::ByteBuffer value{"val",3};
+        map->Write(key,value);
+        map.reset(nullptr);
+        map.reset(new (std::nothrow) sharpen::CowStatusMap{cowName});
         auto valOpt = map->Lookup(key);
-        return this->Assert(valOpt.Exist() && valOpt.Get() == value,"Persistent test return wrong answer");
+        return this->Assert(valOpt.Exist() && valOpt.Get() == value,"Get() return wrong answer,persistence failed");
+    }
+};
+
+class WalMapTest:public simpletest::ITypenamedTest<WalMapTest>
+{
+private:
+    using Self = WalMapTest;
+
+public:
+
+    WalMapTest() noexcept = default;
+
+    ~WalMapTest() noexcept = default;
+
+    inline const Self &Const() const noexcept
+    {
+        return *this;
+    }
+
+    inline virtual simpletest::TestResult Run() noexcept
+    {
+        std::unique_ptr<sharpen::IStatusMap> map{new (std::nothrow) sharpen::WalStatusMap{walName}};
+        sharpen::ByteBuffer key{"key",4};
+        sharpen::ByteBuffer value{"val",4};
+        for(std::size_t i = 0;i != keyCount;++i)
+        {
+            key[3] = i;
+            value[3] = i;
+            map->Write(key,value);
+        }
+        for(std::size_t i = 0;i != keyCount;++i)
+        {
+            key[3] = i;
+            value[3] = i;
+            auto valOpt = map->Lookup(key);
+            if(valOpt.Get() != value)
+            {
+                return this->Fail("Get() return wrong answer,put failed or lookup failed");
+            }
+        }
+        for(std::size_t i = 0;i != keyCount;++i)
+        {
+            key[3] = i;
+            map->Remove(key);
+        }
+        for(std::size_t i = 0;i != keyCount;++i)
+        {
+            key[3] = i;
+            auto valOpt = map->Lookup(key);
+            if(valOpt.Exist())
+            {
+                return this->Fail("Get() return wrong answer,remove failed");
+            }
+        }
+        return this->Success();
+    }
+};
+
+class WalPersisentTest:public simpletest::ITypenamedTest<WalPersisentTest>
+{
+private:
+    using Self = WalPersisentTest;
+
+public:
+
+    WalPersisentTest() noexcept = default;
+
+    ~WalPersisentTest() noexcept = default;
+
+    inline const Self &Const() const noexcept
+    {
+        return *this;
+    }
+
+    inline virtual simpletest::TestResult Run() noexcept
+    {
+        std::unique_ptr<sharpen::IStatusMap> map{new (std::nothrow) sharpen::WalStatusMap{walName}};
+        sharpen::ByteBuffer key{"key",3};
+        sharpen::ByteBuffer value{"val",3};
+        map->Write(key,value);
+        map.reset(nullptr);
+        map.reset(new (std::nothrow) sharpen::WalStatusMap{walName});
+        auto valOpt = map->Lookup(key);
+        return this->Assert(valOpt.Exist() && valOpt.Get() == value,"Get() return wrong answer,persistence failed");
     }
 };
 
 static int Test()
 {
     simpletest::TestRunner runner;
-    runner.Register<MapTest>();
-    runner.Register<PersistentTest>();
+    runner.Register<CowMapTest>();
+    runner.Register<CowPersistentTest>();
+    runner.Register<WalMapTest>();
+    runner.Register<WalPersisentTest>();
     int code{runner.Run()};
-    sharpen::RemoveFile("./Test.bin");
+    sharpen::RemoveFile(cowName);
+    sharpen::RemoveFile(walName);
     return code;
 }
 
