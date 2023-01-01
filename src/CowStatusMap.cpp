@@ -3,6 +3,7 @@
 #include <sharpen/BufferWriter.hpp>
 #include <sharpen/BufferReader.hpp>
 #include <sharpen/FileOps.hpp>
+#include <sharpen/IntOps.hpp>
 
 sharpen::CowStatusMap::CowStatusMap(std::string name)
     :CowStatusMap(sharpen::GetLocalLoopGroup(),std::move(name))
@@ -13,10 +14,12 @@ void sharpen::CowStatusMap::Load()
     sharpen::FileChannelPtr channel{sharpen::OpenFileChannel(this->name_.c_str(),sharpen::FileAccessMethod::Read,sharpen::FileOpenMethod::CreateOrOpen)};
     channel->Register(*this->loopGroup_);
     std::uint64_t size{channel->GetFileSize()};
-    sharpen::ByteBuffer buf{size};
-    channel->ReadAsync(buf,0);
+    sharpen::ByteBuffer buf{sharpen::IntCast<std::size_t>(size)};
+    std::size_t sz{channel->ReadAsync(buf,0)};
+    assert(sz == size);
+    (void)sz;
     sharpen::BufferReader reader{buf};
-    while (reader.GetOffset() != buf.GetSize())
+    while(reader.GetOffset() != buf.GetSize())
     {
         sharpen::ByteBuffer key;
         sharpen::ByteBuffer value;
@@ -35,8 +38,8 @@ sharpen::CowStatusMap::CowStatusMap(sharpen::IEventLoopGroup &loopGroup,std::str
 {
     assert(!this->name_.empty());
     this->tempName_.resize(this->name_.size() + 4);
-    std::memcpy(const_cast<char*>(this->tempName_.data()),this->name_.data(),this->name_.size());
-    std::memcpy(const_cast<char*>(this->tempName_.data() + this->name_.size()),".tmp",4);
+    std::memcpy(const_cast<char *>(this->tempName_.data()),this->name_.data(),this->name_.size());
+    std::memcpy(const_cast<char *>(this->tempName_.data() + this->name_.size()),".tmp",4);
     this->lock_.reset(new (std::nothrow) sharpen::AsyncRwLock{});
     if(!this->lock_)
     {
@@ -47,10 +50,10 @@ sharpen::CowStatusMap::CowStatusMap(sharpen::IEventLoopGroup &loopGroup,std::str
 
 void sharpen::CowStatusMap::Save()
 {
+    assert(!this->tempName_.empty());
+    assert(!this->name_.empty());
     if(!this->map_.empty())
     {
-        assert(!this->tempName_.empty());
-        assert(!this->name_.empty());
         sharpen::FileChannelPtr channel{sharpen::OpenFileChannel(this->tempName_.c_str(),sharpen::FileAccessMethod::Write,sharpen::FileOpenMethod::CreateNew)};
         channel->Register(*this->loopGroup_);
         std::uint64_t offset{0};
@@ -60,11 +63,25 @@ void sharpen::CowStatusMap::Save()
             sharpen::BufferWriter writer{buf};
             writer.Write(begin->first);
             writer.Write(begin->second);
-            offset += channel->WriteAsync(buf.Data(),writer.GetLength(),offset);
+            std::size_t sz{channel->WriteAsync(buf.Data(),writer.GetLength(),offset)};
+            assert(sz == writer.GetLength());
+            if(sz != writer.GetLength())
+            {
+                sharpen::ThrowSystemError(sharpen::ErrorIo);
+            }
+            offset += sz;
         }
+        channel->Flush();
         channel->Close();
-        sharpen::RenameFile(this->tempName_.c_str(),this->name_.c_str());
     }
+    else
+    {
+        //trunc the file
+        sharpen::FileChannelPtr channel{sharpen::OpenFileChannel(this->tempName_.c_str(),sharpen::FileAccessMethod::Write,sharpen::FileOpenMethod::CreateNew)};
+        (void)channel;
+        channel->Close();
+    }
+    sharpen::RenameFile(this->tempName_.c_str(),this->name_.c_str());
 }
 
 void sharpen::CowStatusMap::NviRemove(const sharpen::ByteBuffer &key)
