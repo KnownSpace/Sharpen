@@ -18,6 +18,7 @@ sharpen::WalStatusMap::WalStatusMap(sharpen::IEventLoopGroup &loopGroup,std::str
     ,map_()
     ,lock_(nullptr)
     ,offset_(0)
+    ,contentSize_(0)
 {
     assert(!this->name_.empty());
     this->tempName_.resize(this->name_.size() + 4);
@@ -33,6 +34,7 @@ sharpen::WalStatusMap::WalStatusMap(sharpen::IEventLoopGroup &loopGroup,std::str
         throw std::bad_alloc{};
     }
     this->Load();
+    this->contentSize_ = this->ComputeContentSize();
 }
 
 bool sharpen::WalStatusMap::Insert(sharpen::ByteBuffer key,sharpen::ByteBuffer value)
@@ -44,10 +46,14 @@ bool sharpen::WalStatusMap::Insert(sharpen::ByteBuffer key,sharpen::ByteBuffer v
         {
             return false;
         }
+        this->contentSize_ -= ite->second.GetSize();
+        this->contentSize_ += value.GetSize();
         ite->second = std::move(value);
     }
     else
     {
+        this->contentSize_ += key.GetSize();
+        this->contentSize_ += value.GetSize();
         this->map_.emplace(std::move(key),std::move(value));
     }
     return true;
@@ -58,13 +64,15 @@ bool sharpen::WalStatusMap::Erase(const sharpen::ByteBuffer &key) noexcept
     auto ite = this->map_.find(key);
     if(ite != this->map_.end())
     {
+        this->contentSize_ -= ite->first.GetSize();
+        this->contentSize_ -= ite->second.GetSize();
         this->map_.erase(ite);
         return true;
     }
     return false;
 }
 
-std::size_t sharpen::WalStatusMap::GetContentSize() const noexcept
+std::size_t sharpen::WalStatusMap::ComputeContentSize() const noexcept
 {
     std::size_t size{0};
     for(auto begin = this->map_.begin(),end = this->map_.end(); begin != end; ++begin)
@@ -166,7 +174,6 @@ void sharpen::WalStatusMap::RebuildFile()
             offset += sz;
         }
         channel->Flush();
-        
     }
     channel->Close();
     this->channel_->Close();
@@ -174,6 +181,7 @@ void sharpen::WalStatusMap::RebuildFile()
     this->offset_ = offset;
     this->channel_ = sharpen::OpenFileChannel(this->name_.c_str(),sharpen::FileAccessMethod::Write,sharpen::FileOpenMethod::CreateOrOpen);
     this->channel_->Register(*this->loopGroup_);
+    this->contentSize_ = this->ComputeContentSize();
 }
 
 void sharpen::WalStatusMap::NviWrite(sharpen::ByteBuffer key,sharpen::ByteBuffer value)
@@ -184,7 +192,7 @@ void sharpen::WalStatusMap::NviWrite(sharpen::ByteBuffer key,sharpen::ByteBuffer
         bool result{this->Insert(key,value)};
         if(result)
         {
-            std::size_t contentSize{this->GetContentSize()};
+            std::size_t contentSize{this->contentSize_};
             if(this->offset_ >= contentSize*limitFactor_)
             {
                 this->RebuildFile();
@@ -217,7 +225,7 @@ void sharpen::WalStatusMap::NviRemove(const sharpen::ByteBuffer &key)
         bool result{this->Erase(key)};
         if(result)
         {
-            std::size_t contentSize{this->GetContentSize()};
+            std::size_t contentSize{this->contentSize_};
             if(this->offset_ >= contentSize*limitFactor_)
             {
                 this->RebuildFile();
@@ -263,9 +271,11 @@ sharpen::WalStatusMap::WalStatusMap(Self &&other) noexcept
     ,map_(std::move(other.map_))
     ,lock_(std::move(other.lock_))
     ,offset_(other.offset_)
+    ,contentSize_(other.contentSize_)
 {
     other.loopGroup_ = nullptr;
     other.offset_ = 0;
+    other.contentSize_ = 0;
 }
 
 sharpen::WalStatusMap &sharpen::WalStatusMap::operator=(Self &&other) noexcept
@@ -278,8 +288,10 @@ sharpen::WalStatusMap &sharpen::WalStatusMap::operator=(Self &&other) noexcept
         this->map_ = std::move(other.map_);
         this->lock_ = std::move(other.lock_);
         this->offset_ = other.offset_;
+        this->contentSize_ = other.contentSize_;
         other.loopGroup_ = nullptr;
         other.offset_ = 0;
+        other.contentSize_ = 0;
     }
     return *this;
 }

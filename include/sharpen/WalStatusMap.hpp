@@ -29,7 +29,8 @@ namespace sharpen
         sharpen::IEventLoopGroup *loopGroup_;
         Map map_;
         std::unique_ptr<sharpen::AsyncRwLock> lock_;
-        std::uint64_t offset_{0};
+        std::uint64_t offset_;
+        std::size_t contentSize_;
 
         bool Insert(sharpen::ByteBuffer key,sharpen::ByteBuffer value);
 
@@ -37,7 +38,7 @@ namespace sharpen
 
         void Load();
 
-        std::size_t GetContentSize() const noexcept;
+        std::size_t ComputeContentSize() const noexcept;
 
         void RebuildFile();
 
