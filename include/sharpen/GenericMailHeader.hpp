@@ -2,6 +2,8 @@
 #ifndef _SHARPEN_GENERICMAILHEADER_HPP
 #define _SHARPEN_GENERICMAILHEADER_HPP
 
+#include <cstdint>
+#include <cstddef>
 #include <utility>
 #include <type_traits>
 
