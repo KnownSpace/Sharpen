@@ -22,6 +22,8 @@ namespace sharpen
         GenericMail() noexcept;
     
         explicit GenericMail(std::uint32_t magic) noexcept;
+
+        explicit GenericMail(sharpen::Mail mail) noexcept;
     
         GenericMail(const Self &other) = default;
     

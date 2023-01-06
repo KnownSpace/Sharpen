@@ -13,6 +13,15 @@ sharpen::GenericMail::GenericMail(std::uint32_t magic) noexcept
     this->Header().As<sharpen::GenericMailHeader>().SetMagic(magic);
 }
 
+sharpen::GenericMail::GenericMail(sharpen::Mail mail) noexcept
+    :Base()
+{
+    assert(mail.Header().GetSize() == sizeof(sharpen::GenericMailHeader));
+    assert(mail.Content().GetSize() == mail.Header().As<sharpen::GenericMailHeader>().GetContentSize());
+    this->Header() = std::move(mail.Header());
+    this->Content() = std::move(mail.Content());
+}
+
 sharpen::GenericMailHeader &sharpen::GenericMail::GenericHeader() noexcept
 {
     assert(this->Header().GetSize() == sizeof(sharpen::GenericMailHeader));
