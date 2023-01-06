@@ -23,7 +23,7 @@ namespace sharpen
     
         GenericMailParserFactory(const Self &other) noexcept = default;
     
-        GenericMailParserFactory(Self &&other) noexcept = default;
+        GenericMailParserFactory(Self &&other) noexcept;
     
         inline Self &operator=(const Self &other) noexcept
         {
