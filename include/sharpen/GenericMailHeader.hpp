@@ -19,6 +19,9 @@ namespace sharpen
         std::uint32_t magic_;
         std::uint32_t contentSize_;
         char form_[formSize_];
+
+        //24 is inline size of byte vector
+        static_assert(sizeof(Self) == 24,"sizeof(GenericMailHeader) should be 24");
     public:
     
         static constexpr std::size_t formSize{formSize_};
