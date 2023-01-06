@@ -2,11 +2,11 @@
 
 #include <sharpen/IntOps.hpp>
 
-sharpen::GenericMail::GenericMail()
+sharpen::GenericMail::GenericMail() noexcept
     :Self(0)
 {}
 
-sharpen::GenericMail::GenericMail(std::uint32_t magic)
+sharpen::GenericMail::GenericMail(std::uint32_t magic) noexcept
     :Base()
 {
     this->Header().ExtendTo(sizeof(sharpen::GenericMailHeader));
