@@ -30,6 +30,7 @@ void sharpen::TcpActor::DoPostShared(const sharpen::Mail *mail) noexcept
             {
                 std::terminate();
             }
+            assert(!error.what() && "fail to post mail");
             (void)error;
             return;
         }
