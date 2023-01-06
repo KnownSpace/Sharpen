@@ -56,12 +56,22 @@ namespace sharpen
 
         void SetMagic(std::uint32_t magic) noexcept;
 
-        inline const sharpen::ByteBuffer &ConstContent() const noexcept
+        inline const sharpen::ByteBuffer &ImmutableContent() const noexcept
         {
             return Base::Content();
         }
 
         void SetContent(sharpen::ByteBuffer content);
+
+        inline Base &AsMail() noexcept
+        {
+            return *this;
+        }
+
+        inline const Base &AsMail() const noexcept
+        {
+            return *this;
+        }
     };
 }
 
