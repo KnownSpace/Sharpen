@@ -57,11 +57,23 @@ namespace sharpen
             this->NviParse(slice);
         }
 
+        inline void Parse(const sharpen::ByteBuffer &buffer)
+        {
+            this->NviParse(buffer.GetSlice());
+        }
+
+        inline void Parse(const sharpen::ByteBuffer &buffer,std::size_t offset)
+        {
+            assert(buffer.GetSize() > offset);
+            std::size_t size{buffer.GetSize() - offset};
+            this->Parse(buffer,offset,size);
+        }
+
         inline sharpen::Mail PopCompletedMail()
         {
             if(!this->Completed())
             {
-                throw sharpen::MailParseError{"Pase not complete"};
+                throw sharpen::MailParseError{"Parse not complete"};
             }
             return this->NviPopCompletedMail();
         }
