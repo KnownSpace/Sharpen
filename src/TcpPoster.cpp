@@ -106,8 +106,8 @@ sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail)
         }
         catch(const std::system_error &error)
         {
-            sharpen::ErrorCode code{static_cast<sharpen::ErrorCode>(error.code().value())};
-            if(code != sharpen::ErrorCancel && code != sharpen::ErrorConnectionAborted)
+            sharpen::ErrorCode code{sharpen::GetErrorCode(error)};
+            if(code != sharpen::ErrorCancel && code != sharpen::ErrorConnectionAborted && code != sharpen::ErrorConnectReset)
             {
                 throw;
             }

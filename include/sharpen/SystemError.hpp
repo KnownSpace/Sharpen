@@ -23,7 +23,7 @@ namespace sharpen
 
 #ifdef SHARPEN_IS_WIN
     constexpr sharpen::ErrorCode ErrorCancel = ERROR_OPERATION_ABORTED;
-    constexpr sharpen::ErrorCode ErrorConnectionAborted = ERROR_CONNECTION_ABORTED;
+    constexpr sharpen::ErrorCode ErrorConnectionAborted = WSAECONNABORTED;
     constexpr sharpen::ErrorCode ErrorBlocking = WSAEWOULDBLOCK;
     constexpr sharpen::ErrorCode ErrorNotSocket = WSAENOTSOCK;
     constexpr sharpen::ErrorCode ErrorNotConnected = WSAENOTCONN;
@@ -34,19 +34,34 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorIsConnected = WSAEISCONN;
     constexpr sharpen::ErrorCode ErrorIo = ERROR_IO_DEVICE;
     constexpr sharpen::ErrorCode ErrorToManyFiles = ERROR_TOO_MANY_OPEN_FILES;
-    constexpr sharpen::ErrorCode ErrorConnectReset = WSAECONNRESET;
+    constexpr sharpen::ErrorCode ErrorConnectReset = ERROR_NETNAME_DELETED;
     constexpr sharpen::ErrorCode ErrorNameTooLong = ERROR_FILENAME_EXCED_RANGE;
-    constexpr sharpen::ErrorCode ErrorNotEnoughMemory = ERROR_NOT_ENOUGH_MEMORY;
+    constexpr sharpen::ErrorCode ErrorOutOfMemory = ERROR_OUTOFMEMORY;
     constexpr sharpen::ErrorCode ErrorFunctionNotImplemented = ERROR_NOT_SUPPORTED;
     constexpr sharpen::ErrorCode ErrorBrokenPipe = ERROR_BROKEN_PIPE;
     constexpr sharpen::ErrorCode ErrorBadSocketHandle = WSAEBADF;
     constexpr sharpen::ErrorCode ErrorBadFileHandle = ERROR_INVALID_HANDLE;
     constexpr sharpen::ErrorCode ErrorNoSpace = ERROR_DISK_FULL;
-    constexpr sharpen::ErrorCode ErrorOperationNotSupport = ERROR_NOT_SUPPORTED;
+    constexpr sharpen::ErrorCode ErrorOperationNotSupport = WSAEOPNOTSUPP;
     constexpr sharpen::ErrorCode ErrorAddressInUse = WSAEADDRINUSE;
     constexpr sharpen::ErrorCode ErrorFileNotFound = ERROR_FILE_NOT_FOUND;
     constexpr sharpen::ErrorCode ErrorPathNotFound = ERROR_PATH_NOT_FOUND;
     constexpr sharpen::ErrorCode ErrorOutOfQuota = WSAEDQUOT;
+    constexpr sharpen::ErrorCode ErrorHostUnreaCHable = WSAEHOSTUNREACH;
+    constexpr sharpen::ErrorCode ErrorNetUnreachable = WSAENETUNREACH;
+    constexpr sharpen::ErrorCode ErrorBadAddress = WSAEFAULT;
+    constexpr sharpen::ErrorCode ErrorMessageTooLong = WSAEMSGSIZE;
+    constexpr sharpen::ErrorCode ErrorNoDevice = ERROR_BAD_UNIT;
+    constexpr sharpen::ErrorCode ErrorShutdown = WSAESHUTDOWN;
+    constexpr sharpen::ErrorCode ErrorTimeout = WSAETIMEDOUT;
+    //netdb errors
+    constexpr sharpen::ErrorCode ErrorNetDbHostNotFound = WSAHOST_NOT_FOUND;
+    constexpr sharpen::ErrorCode ErrorNetDbTryAgain = WSATRY_AGAIN;
+    constexpr sharpen::ErrorCode ErrorNetdbNoData = WSANO_DATA;
+    constexpr sharpen::ErrorCode ErrorNetdbNoRecovery = WSANO_RECOVERY;
+    //addrinfo errors
+    constexpr sharpen::ErrorCode ErrorServiceNotFound = WSATYPE_NOT_FOUND;
+    constexpr sharpen::ErrorCode ErrorSocketTypeNotSupport = WSAESOCKTNOSUPPORT;
 #else
     constexpr sharpen::ErrorCode ErrorCancel = ECANCELED;
     constexpr sharpen::ErrorCode ErrorConnectionAborted = ECONNABORTED;
@@ -66,7 +81,7 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorToManyFiles = EMFILE;
     constexpr sharpen::ErrorCode ErrorConnectReset = ECONNRESET;
     constexpr sharpen::ErrorCode ErrorNameTooLong = ENAMETOOLONG;
-    constexpr sharpen::ErrorCode ErrorNotEnoughMemory = ENOMEM;
+    constexpr sharpen::ErrorCode ErrorOutOfMemory = ENOMEM;
     constexpr sharpen::ErrorCode ErrorFunctionNotImplemented = ENOSYS;
     constexpr sharpen::ErrorCode ErrorBrokenPipe = EPIPE;
     constexpr sharpen::ErrorCode ErrorBadSocketHandle = EBADF;
@@ -77,12 +92,27 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorFileNotFound = ENOENT;
     constexpr sharpen::ErrorCode ErrorPathNotFound = ENOENT;
     constexpr sharpen::ErrorCode ErrorOutOfQuota = EDQUOT;
+    constexpr sharpen::ErrorCode ErrorHostUnreaCHable = EHOSTUNREACH;
+    constexpr sharpen::ErrorCode ErrorNetUnreachable = ENETUNREACH;
+    constexpr sharpen::ErrorCode ErrorBadAddress = EFAULT;
+    constexpr sharpen::ErrorCode ErrorMessageTooLong = EMSGSIZE;
+    constexpr sharpen::ErrorCode ErrorNoDevice = ENODEV;
+    constexpr sharpen::ErrorCode ErrorShutdown = ESHUTDOWN;
+    constexpr sharpen::ErrorCode ErrorTimeout = ETIMEDOUT;
+    //netdb errors
+    constexpr sharpen::ErrorCode ErrorNetDbHostNotFound = HOST_NOT_FOUND;
+    constexpr sharpen::ErrorCode ErrorNetDbTryAgain = TRY_AGAIN;
+    constexpr sharpen::ErrorCode ErrorNetdbNoData = NO_DATA;
+    constexpr sharpen::ErrorCode ErrorNetdbNoRecovery = NO_RECOVERY;
+    //addrinfo errors
+    constexpr sharpen::ErrorCode ErrorServiceNotFound = EAI_SERVICE;
+    constexpr sharpen::ErrorCode ErrorSocketTypeNotSupport = EAI_SOCKTYPE;
 #endif
 
     inline bool IsFatalError(sharpen::ErrorCode code) noexcept
     {
         return code == sharpen::ErrorIo 
-                || code == sharpen::ErrorNotEnoughMemory
+                || code == sharpen::ErrorOutOfMemory
                 || code == sharpen::ErrorNoSpace;
     }
 
@@ -97,6 +127,29 @@ namespace sharpen
 
     inline void ThrowSystemError(sharpen::ErrorCode err)
     {
+#ifdef SHARPEN_IS_WIN
+        switch(err)
+        {
+        case ERROR_CONNECTION_REFUSED:
+            err = sharpen::ErrorConnectRefused;
+            break;
+        case ERROR_CONNECTION_ABORTED:
+            err = sharpen::ErrorConnectionAborted;
+            break;
+        case ERROR_NETNAME_DELETED:
+            err = sharpen::ErrorConnectReset;
+            break;
+        case ERROR_PORT_UNREACHABLE:
+            err = sharpen::ErrorConnectRefused;
+            break;
+        case ERROR_HOST_UNREACHABLE:
+            err = sharpen::ErrorHostUnreaCHable;
+            break;
+        case ERROR_NETWORK_UNREACHABLE:
+            err = sharpen::ErrorNetUnreachable;
+            break;
+        }
+#endif
         throw std::system_error(err,std::system_category());
     }
 
