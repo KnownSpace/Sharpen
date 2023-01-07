@@ -46,13 +46,22 @@ void sharpen::TcpPoster::NviOpen(std::unique_ptr<sharpen::IMailParser> parser)
         case sharpen::ErrorIsConnected:
             return;
         case sharpen::ErrorConnectionAborted:
-            throw sharpen::RemotePosterOpenError{"poster is closed by operator"};
+            throw sharpen::RemotePosterOpenError{"connection aborted"};
             break;
         case sharpen::ErrorCancel:
             throw sharpen::RemotePosterOpenError{"poster is closed by operator"};
             break;
-        case sharpen::ErrorConnectRefused:
-            throw sharpen::RemotePosterOpenError{"fail to open poster"};
+        case sharpen::ErrorConnectionRefused:
+            throw sharpen::RemotePosterOpenError{"connection refused"};
+            break;
+        case sharpen::ErrorHostUnreachable:
+            throw sharpen::RemotePosterOpenError{"unreachable host"};
+            break;
+        case sharpen::ErrorNetUnreachable:
+            throw sharpen::RemotePosterOpenError{"unreachable network"};
+            break;
+        case sharpen::ErrorConnectionReset:
+            throw sharpen::RemotePosterOpenError{"connection reset"};
             break;
         }
         throw;
@@ -88,7 +97,9 @@ sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail)
     catch(const std::system_error &error)
     {
        sharpen::ErrorCode code{static_cast<sharpen::ErrorCode>(error.code().value())};
-        if(code != sharpen::ErrorCancel && code != sharpen::ErrorConnectionAborted)
+        if(code != sharpen::ErrorCancel 
+                    && code != sharpen::ErrorConnectionAborted 
+                    && code != sharpen::ErrorConnectionReset)
         {
             throw;
         }
@@ -107,7 +118,9 @@ sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail)
         catch(const std::system_error &error)
         {
             sharpen::ErrorCode code{sharpen::GetErrorCode(error)};
-            if(code != sharpen::ErrorCancel && code != sharpen::ErrorConnectionAborted && code != sharpen::ErrorConnectReset)
+            if(code != sharpen::ErrorCancel 
+                    && code != sharpen::ErrorConnectionAborted 
+                    && code != sharpen::ErrorConnectionReset)
             {
                 throw;
             }
