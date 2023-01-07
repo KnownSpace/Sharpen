@@ -265,7 +265,7 @@ void sharpen::WinNetStreamChannel::RequestAccept(sharpen::Future<sharpen::NetStr
 void sharpen::WinNetStreamChannel::RequestConnect(const sharpen::IEndPoint *endpoint,sharpen::Future<void> *future)
 {
     static LPFN_CONNECTEX WSAConnectEx = nullptr;
-    //get acceptex
+    //get connectex
     {
         GUID connectexId = WSAID_CONNECTEX;
         DWORD dwBytes;
