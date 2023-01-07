@@ -113,7 +113,8 @@ namespace sharpen
     {
         return code == sharpen::ErrorIo 
                 || code == sharpen::ErrorOutOfMemory
-                || code == sharpen::ErrorNoSpace;
+                || code == sharpen::ErrorNoSpace
+                || code == sharpen::ErrorNoDevice;
     }
 
     inline sharpen::ErrorCode GetLastError() noexcept
