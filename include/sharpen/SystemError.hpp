@@ -120,15 +120,8 @@ namespace sharpen
     inline sharpen::ErrorCode GetLastError() noexcept
     {
 #ifdef SHARPEN_IS_WIN
-        return ::GetLastError();
-#else
-        return errno;
-#endif
-    }
-
-    inline void ThrowSystemError(sharpen::ErrorCode err)
-    {
-#ifdef SHARPEN_IS_WIN
+        sharpen::ErrorCode err{::GetLastError()};
+        //covert to WSAE* error code
         switch(err)
         {
         case ERROR_CONNECTION_REFUSED:
@@ -150,7 +143,14 @@ namespace sharpen
             err = sharpen::ErrorNetUnreachable;
             break;
         }
+        return err;
+#else
+        return errno;
 #endif
+    }
+
+    inline void ThrowSystemError(sharpen::ErrorCode err)
+    {
         throw std::system_error(err,std::system_category());
     }
 
