@@ -20,6 +20,27 @@
 
 namespace sharpen
 {
+
+#ifdef SHARPEN_IS_WIN
+    //netdb errors
+    constexpr sharpen::ErrorCode ErrorNetDbHostNotFound = WSAHOST_NOT_FOUND;
+    constexpr sharpen::ErrorCode ErrorNetDbTryAgain = WSATRY_AGAIN;
+    constexpr sharpen::ErrorCode ErrorNetdbNoData = WSANO_DATA;
+    constexpr sharpen::ErrorCode ErrorNetdbNoRecovery = WSANO_RECOVERY;
+    //addrinfo errors
+    constexpr sharpen::ErrorCode ErrorServiceNotFound = WSATYPE_NOT_FOUND;
+    constexpr sharpen::ErrorCode ErrorSocketTypeNotSupport = WSAESOCKTNOSUPPORT;
+#else
+    //netdb errors
+    constexpr sharpen::ErrorCode ErrorNetDbHostNotFound = HOST_NOT_FOUND;
+    constexpr sharpen::ErrorCode ErrorNetDbTryAgain = TRY_AGAIN;
+    constexpr sharpen::ErrorCode ErrorNetdbNoData = NO_DATA;
+    constexpr sharpen::ErrorCode ErrorNetdbNoRecovery = NO_RECOVERY;
+    //addrinfo errors
+    constexpr sharpen::ErrorCode ErrorServiceNotFound = EAI_SERVICE;
+    constexpr sharpen::ErrorCode ErrorSocketTypeNotSupport = EAI_SOCKTYPE;
+#endif
+
     class DnsResolveResult
     {
     private:

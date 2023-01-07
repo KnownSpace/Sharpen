@@ -8,7 +8,8 @@
 #include "SystemMacro.hpp"
 
 #ifdef SHARPEN_IS_WIN
-#include <Windows.h>
+#include <winerror.h>
+#include <errhandlingapi.h>
 #else
 #include <errno.h>
 #endif
@@ -54,14 +55,6 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorNoDevice = ERROR_BAD_UNIT;
     constexpr sharpen::ErrorCode ErrorShutdown = WSAESHUTDOWN;
     constexpr sharpen::ErrorCode ErrorTimeout = WSAETIMEDOUT;
-    //netdb errors
-    constexpr sharpen::ErrorCode ErrorNetDbHostNotFound = WSAHOST_NOT_FOUND;
-    constexpr sharpen::ErrorCode ErrorNetDbTryAgain = WSATRY_AGAIN;
-    constexpr sharpen::ErrorCode ErrorNetdbNoData = WSANO_DATA;
-    constexpr sharpen::ErrorCode ErrorNetdbNoRecovery = WSANO_RECOVERY;
-    //addrinfo errors
-    constexpr sharpen::ErrorCode ErrorServiceNotFound = WSATYPE_NOT_FOUND;
-    constexpr sharpen::ErrorCode ErrorSocketTypeNotSupport = WSAESOCKTNOSUPPORT;
 #else
     constexpr sharpen::ErrorCode ErrorCancel = ECANCELED;
     constexpr sharpen::ErrorCode ErrorConnectionAborted = ECONNABORTED;
@@ -99,14 +92,6 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorNoDevice = ENODEV;
     constexpr sharpen::ErrorCode ErrorShutdown = ESHUTDOWN;
     constexpr sharpen::ErrorCode ErrorTimeout = ETIMEDOUT;
-    //netdb errors
-    constexpr sharpen::ErrorCode ErrorNetDbHostNotFound = HOST_NOT_FOUND;
-    constexpr sharpen::ErrorCode ErrorNetDbTryAgain = TRY_AGAIN;
-    constexpr sharpen::ErrorCode ErrorNetdbNoData = NO_DATA;
-    constexpr sharpen::ErrorCode ErrorNetdbNoRecovery = NO_RECOVERY;
-    //addrinfo errors
-    constexpr sharpen::ErrorCode ErrorServiceNotFound = EAI_SERVICE;
-    constexpr sharpen::ErrorCode ErrorSocketTypeNotSupport = EAI_SOCKTYPE;
 #endif
 
     inline bool IsFatalError(sharpen::ErrorCode code) noexcept
