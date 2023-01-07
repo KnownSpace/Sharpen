@@ -17,8 +17,10 @@ namespace sharpen
 
         virtual sharpen::NetStreamChannelPtr NviProduce() override;
     public:
+
+        explicit Ipv6TcpStreamFactory(const sharpen::Ipv6EndPoint &endpoint);
     
-        Ipv6TcpStreamFactory(sharpen::IEventLoopGroup &loopGroup,sharpen::Ipv6EndPoint endpoint);
+        Ipv6TcpStreamFactory(sharpen::IEventLoopGroup &loopGroup,const sharpen::Ipv6EndPoint &endpoint) noexcept;
     
         Ipv6TcpStreamFactory(const Self &other) = default;
     

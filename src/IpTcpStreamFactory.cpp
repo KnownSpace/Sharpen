@@ -1,6 +1,10 @@
 #include <sharpen/IpTcpStreamFactory.hpp>
 
-sharpen::IpTcpStreamFactory::IpTcpStreamFactory(sharpen::IEventLoopGroup &loopGroup,const sharpen::IpEndPoint &endpoint)
+sharpen::IpTcpStreamFactory::IpTcpStreamFactory(const sharpen::IpEndPoint &endpoint)
+    :Self{sharpen::GetLocalLoopGroup(),endpoint}
+{}
+
+sharpen::IpTcpStreamFactory::IpTcpStreamFactory(sharpen::IEventLoopGroup &loopGroup,const sharpen::IpEndPoint &endpoint) noexcept
     :loopGroup_(&loopGroup)
     ,localEndpoint_(endpoint)
 {}
