@@ -30,11 +30,11 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorInvalidHandle = ERROR_INVALID_HANDLE;
     constexpr sharpen::ErrorCode ErrorAccessDenied = ERROR_ACCESS_DENIED;
     constexpr sharpen::ErrorCode ErrorAlreadyInProgress = WSAEALREADY;
-    constexpr sharpen::ErrorCode ErrorConnectRefused = WSAECONNREFUSED;
+    constexpr sharpen::ErrorCode ErrorConnectionRefused = WSAECONNREFUSED;
     constexpr sharpen::ErrorCode ErrorIsConnected = WSAEISCONN;
     constexpr sharpen::ErrorCode ErrorIo = ERROR_IO_DEVICE;
     constexpr sharpen::ErrorCode ErrorToManyFiles = ERROR_TOO_MANY_OPEN_FILES;
-    constexpr sharpen::ErrorCode ErrorConnectReset = ERROR_NETNAME_DELETED;
+    constexpr sharpen::ErrorCode ErrorConnectionReset = ERROR_NETNAME_DELETED;
     constexpr sharpen::ErrorCode ErrorNameTooLong = ERROR_FILENAME_EXCED_RANGE;
     constexpr sharpen::ErrorCode ErrorOutOfMemory = ERROR_OUTOFMEMORY;
     constexpr sharpen::ErrorCode ErrorFunctionNotImplemented = ERROR_NOT_SUPPORTED;
@@ -47,7 +47,7 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorFileNotFound = ERROR_FILE_NOT_FOUND;
     constexpr sharpen::ErrorCode ErrorPathNotFound = ERROR_PATH_NOT_FOUND;
     constexpr sharpen::ErrorCode ErrorOutOfQuota = WSAEDQUOT;
-    constexpr sharpen::ErrorCode ErrorHostUnreaCHable = WSAEHOSTUNREACH;
+    constexpr sharpen::ErrorCode ErrorHostUnreachable = WSAEHOSTUNREACH;
     constexpr sharpen::ErrorCode ErrorNetUnreachable = WSAENETUNREACH;
     constexpr sharpen::ErrorCode ErrorBadAddress = WSAEFAULT;
     constexpr sharpen::ErrorCode ErrorMessageTooLong = WSAEMSGSIZE;
@@ -75,11 +75,11 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorInvalidHandle = EBADF;
     constexpr sharpen::ErrorCode ErrorAccessDenied = EACCES;
     constexpr sharpen::ErrorCode ErrorAlreadyInProgress = EALREADY;
-    constexpr sharpen::ErrorCode ErrorConnectRefused = ECONNREFUSED;
+    constexpr sharpen::ErrorCode ErrorConnectionRefused = ECONNREFUSED;
     constexpr sharpen::ErrorCode ErrorIsConnected = EISCONN;
     constexpr sharpen::ErrorCode ErrorIo = EIO;
     constexpr sharpen::ErrorCode ErrorToManyFiles = EMFILE;
-    constexpr sharpen::ErrorCode ErrorConnectReset = ECONNRESET;
+    constexpr sharpen::ErrorCode ErrorConnectionReset = ECONNRESET;
     constexpr sharpen::ErrorCode ErrorNameTooLong = ENAMETOOLONG;
     constexpr sharpen::ErrorCode ErrorOutOfMemory = ENOMEM;
     constexpr sharpen::ErrorCode ErrorFunctionNotImplemented = ENOSYS;
@@ -92,7 +92,7 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorFileNotFound = ENOENT;
     constexpr sharpen::ErrorCode ErrorPathNotFound = ENOENT;
     constexpr sharpen::ErrorCode ErrorOutOfQuota = EDQUOT;
-    constexpr sharpen::ErrorCode ErrorHostUnreaCHable = EHOSTUNREACH;
+    constexpr sharpen::ErrorCode ErrorHostUnreachable = EHOSTUNREACH;
     constexpr sharpen::ErrorCode ErrorNetUnreachable = ENETUNREACH;
     constexpr sharpen::ErrorCode ErrorBadAddress = EFAULT;
     constexpr sharpen::ErrorCode ErrorMessageTooLong = EMSGSIZE;
@@ -131,19 +131,19 @@ namespace sharpen
         switch(err)
         {
         case ERROR_CONNECTION_REFUSED:
-            err = sharpen::ErrorConnectRefused;
+            err = sharpen::ErrorConnectionRefused;
             break;
         case ERROR_CONNECTION_ABORTED:
             err = sharpen::ErrorConnectionAborted;
             break;
         case ERROR_NETNAME_DELETED:
-            err = sharpen::ErrorConnectReset;
+            err = sharpen::ErrorConnectionReset;
             break;
         case ERROR_PORT_UNREACHABLE:
-            err = sharpen::ErrorConnectRefused;
+            err = sharpen::ErrorConnectionRefused;
             break;
         case ERROR_HOST_UNREACHABLE:
-            err = sharpen::ErrorHostUnreaCHable;
+            err = sharpen::ErrorHostUnreachable;
             break;
         case ERROR_NETWORK_UNREACHABLE:
             err = sharpen::ErrorNetUnreachable;
