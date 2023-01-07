@@ -4,6 +4,14 @@
 #include <sharpen/TcpPoster.hpp>
 #include <sharpen/TcpActor.hpp>
 
+sharpen::Ipv6TcpActorBuilder::Ipv6TcpActorBuilder()
+    :Self{sharpen::GetLocalScheduler(),sharpen::GetLocalLoopGroup()}
+{}
+
+sharpen::Ipv6TcpActorBuilder::Ipv6TcpActorBuilder(const sharpen::Ipv6EndPoint &local)
+    :Self{local,sharpen::GetLocalScheduler(),sharpen::GetLocalLoopGroup()}
+{}
+
 sharpen::Ipv6TcpActorBuilder::Ipv6TcpActorBuilder(sharpen::IFiberScheduler &scheduler,sharpen::IEventLoopGroup &loopGroup)
     :remote_()
     ,scheduler_(&scheduler)
@@ -12,8 +20,20 @@ sharpen::Ipv6TcpActorBuilder::Ipv6TcpActorBuilder(sharpen::IFiberScheduler &sche
     ,parserFactory_(nullptr)
 {
     sharpen::Ipv6EndPoint local;
-    local.SetAddrByString("0.0.0.0");
+    in6_addr addr;
+    std::memset(&addr,0,sizeof(addr));
+    local.SetAddr(addr);
     local.SetPort(0);
+    this->factory_ = std::make_shared<sharpen::Ipv6TcpStreamFactory>(loopGroup,local);
+}
+
+sharpen::Ipv6TcpActorBuilder::Ipv6TcpActorBuilder(const sharpen::Ipv6EndPoint &local,sharpen::IFiberScheduler &scheduler,sharpen::IEventLoopGroup &loopGroup)
+    :remote_()
+    ,scheduler_(&scheduler)
+    ,factory_(nullptr)
+    ,receiver_(nullptr)
+    ,parserFactory_(nullptr)
+{
     this->factory_ = std::make_shared<sharpen::Ipv6TcpStreamFactory>(loopGroup,local);
 }
 
@@ -69,6 +89,10 @@ void sharpen::Ipv6TcpActorBuilder::EnsureConfiguration() const
     if(!this->parserFactory_)
     {
         throw std::logic_error{"parser factory could not be null"};
+    }
+    if(this->remote_.GetPort() == 0)
+    {
+        throw std::logic_error{"remote port could not be 0"};
     }
 }
 
