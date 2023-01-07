@@ -203,10 +203,6 @@ void sharpen::WinNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,sh
 void sharpen::WinNetStreamChannel::RequestAccept(sharpen::Future<sharpen::NetStreamChannelPtr> *future)
 {
     static std::atomic<LPFN_ACCEPTEX> AcceptEx = nullptr;
-    if (!this->IsRegistered())
-    {
-        throw std::logic_error("should register to a loop first");
-    }
     //get acceptex
     if(AcceptEx == nullptr)
     {
@@ -268,10 +264,6 @@ void sharpen::WinNetStreamChannel::RequestAccept(sharpen::Future<sharpen::NetStr
 void sharpen::WinNetStreamChannel::RequestConnect(const sharpen::IEndPoint *endpoint,sharpen::Future<void> *future)
 {
     static std::atomic<LPFN_CONNECTEX> ConnectEx{nullptr};
-    if (!this->IsRegistered())
-    {
-        throw std::logic_error("should register to a loop first");
-    }
     //get connectex
     if(ConnectEx == nullptr)
     {
