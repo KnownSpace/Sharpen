@@ -119,11 +119,11 @@ namespace sharpen
         inline static void ResolveName(const char *name,_InsertIterator inserter,int af)
         {
             addrinfo *addrs{nullptr};
-            //ignore error
             if(sharpen::Dns::InternalResolveName(name,&addrs,true,af,SOCK_DGRAM|SOCK_STREAM,IPPROTO_TCP|IPPROTO_UDP) != 0)
             {
-                return;
+                sharpen::ThrowLastError();
             }
+            assert(addrs != nullptr);
             try
             {
                 for(auto begin = addrs; begin; begin = begin->ai_next)
