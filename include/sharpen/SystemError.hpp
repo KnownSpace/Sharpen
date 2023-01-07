@@ -8,8 +8,7 @@
 #include "SystemMacro.hpp"
 
 #ifdef SHARPEN_IS_WIN
-#include <winerror.h>
-#include <errhandlingapi.h>
+#include <Windows.h>
 #else
 #include <errno.h>
 #endif
