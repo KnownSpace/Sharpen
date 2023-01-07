@@ -27,7 +27,13 @@ namespace sharpen
         void EnsureConfiguration() const;
     public:
 
+        Ipv6TcpActorBuilder();
+
+        explicit Ipv6TcpActorBuilder(const sharpen::Ipv6EndPoint &local);
+
         Ipv6TcpActorBuilder(sharpen::IFiberScheduler &scheduler,sharpen::IEventLoopGroup &loopGroup);
+
+        Ipv6TcpActorBuilder(const sharpen::Ipv6EndPoint &local,sharpen::IFiberScheduler &scheduler,sharpen::IEventLoopGroup &loopGroup);
     
         Ipv6TcpActorBuilder(const Self &other) = default;
     

@@ -34,14 +34,14 @@ public:
         sharpen::ByteBuffer value{"val",4};
         for(std::size_t i = 0;i != keyCount;++i)
         {
-            key[3] = i;
-            value[3] = i;
+            key[3] = static_cast<char>(i);
+            value[3] = static_cast<char>(i);
             map->Write(key,value);
         }
         for(std::size_t i = 0;i != keyCount;++i)
         {
-            key[3] = i;
-            value[3] = i;
+            key[3] = static_cast<char>(i);
+            value[3] = static_cast<char>(i);
             auto valOpt = map->Lookup(key);
             if(valOpt.Get() != value)
             {
@@ -50,12 +50,12 @@ public:
         }
         for(std::size_t i = 0;i != keyCount;++i)
         {
-            key[3] = i;
+            key[3] = static_cast<char>(i);
             map->Remove(key);
         }
         for(std::size_t i = 0;i != keyCount;++i)
         {
-            key[3] = i;
+            key[3] = static_cast<char>(i);
             auto valOpt = map->Lookup(key);
             if(valOpt.Exist())
             {
@@ -117,14 +117,14 @@ public:
         sharpen::ByteBuffer value{"val",4};
         for(std::size_t i = 0;i != keyCount;++i)
         {
-            key[3] = i;
-            value[3] = i;
+            key[3] = static_cast<char>(i);
+            value[3] = static_cast<char>(i);
             map->Write(key,value);
         }
         for(std::size_t i = 0;i != keyCount;++i)
         {
-            key[3] = i;
-            value[3] = i;
+            key[3] = static_cast<char>(i);
+            value[3] = static_cast<char>(i);
             auto valOpt = map->Lookup(key);
             if(valOpt.Get() != value)
             {
@@ -133,12 +133,12 @@ public:
         }
         for(std::size_t i = 0;i != keyCount;++i)
         {
-            key[3] = i;
+            key[3] = static_cast<char>(i);
             map->Remove(key);
         }
         for(std::size_t i = 0;i != keyCount;++i)
         {
-            key[3] = i;
+            key[3] = static_cast<char>(i);
             auto valOpt = map->Lookup(key);
             if(valOpt.Exist())
             {

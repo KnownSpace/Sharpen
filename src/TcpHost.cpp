@@ -2,6 +2,10 @@
 
 #include <sharpen/YieldOps.hpp>
 
+sharpen::TcpHost::TcpHost(sharpen::ITcpSteamFactory &factory)
+    :Self{sharpen::GetLocalScheduler(),factory}
+{}
+
 sharpen::TcpHost::TcpHost(sharpen::IFiberScheduler &scheduler,sharpen::ITcpSteamFactory &factory)
     :scheduler_(&scheduler)
     ,loopGroup_(&factory.GetLoopGroup())

@@ -33,9 +33,10 @@ namespace sharpen
     private:
         using Self = ByteVector;
 
-        //inline size is 24
-        static constexpr std::size_t inlineSize_{sizeof(sharpen::ByteVectorStruct) + sizeof(void*)};
+        static constexpr std::size_t inlineSize_{24};
         static constexpr std::size_t blobSize_{1*1024*1024};
+
+        static_assert(inlineSize_ > sizeof(sharpen::ByteVectorStruct),"Inline size too small");
     
         std::size_t size_;
         sharpen::ByteVectorUnion<sharpen::ByteVector::inlineSize_> rawVector_;
@@ -64,6 +65,13 @@ namespace sharpen
         using ConstIterator = sharpen::PointerIterator<const char>;
         using ReverseIterator = sharpen::ReversePointerIterator<char>;
         using ConstReverseIterator = sharpen::ReversePointerIterator<const char>;
+
+        static constexpr std::size_t inlineSize{inlineSize_};
+
+        inline static constexpr std::size_t GetInlineSize() noexcept
+        {
+            return inlineSize;
+        }
 
         ByteVector() noexcept
             :size_(0)

@@ -6,6 +6,7 @@
 #include <sharpen/RemotePosterClosedError.hpp>
 #include <sharpen/SingleWorkerGroup.hpp>
 #include <sharpen/YieldOps.hpp>
+#include <sharpen/SystemError.hpp>
 
 void sharpen::TcpActor::DoPostShared(const sharpen::Mail *mail) noexcept
 {
@@ -22,10 +23,22 @@ void sharpen::TcpActor::DoPostShared(const sharpen::Mail *mail) noexcept
             (void)ignore;
             return;
         }
+        catch(const std::system_error &error)
+        {
+            sharpen::ErrorCode errorCode{sharpen::GetErrorCode(error)};
+            if(sharpen::IsFatalError(errorCode))
+            {
+                std::terminate();
+            }
+            assert(!error.what() && "fail to post mail");
+            (void)error;
+            return;
+        }
         catch(const std::exception &ignore)
         {
             assert(!ignore.what() && "fail to post mail");
             (void)ignore;
+            return;
         }
     }
     sharpen::Mail response;

@@ -180,15 +180,6 @@ sharpen::EventEngine &sharpen::EventEngine::SetupEngine()
     return *sharpen::EventEngine::engine_;
 }
 
-sharpen::EventEngine &sharpen::EventEngine::GetEngine()
-{
-    if (!sharpen::EventEngine::engine_)
-    {
-        throw std::logic_error("event engine isn't set");
-    }
-    return *sharpen::EventEngine::engine_;
-}
-
 sharpen::EventEngine &sharpen::EventEngine::SetupSingleThreadEngine()
 {
     return sharpen::EventEngine::SetupEngine(1);

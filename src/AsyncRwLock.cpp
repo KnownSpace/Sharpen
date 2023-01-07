@@ -13,8 +13,8 @@ sharpen::RwLockState sharpen::AsyncRwLock::LockRead()
 {
     sharpen::AsyncRwLock::MyFuture future;
     {
-        std::unique_lock<sharpen::SpinLock> lock(this->lock_);
-        if (this->state_ != sharpen::RwLockState::UniquedWriting)
+        std::unique_lock<sharpen::SpinLock> lock{this->lock_};
+        if (this->state_ != sharpen::RwLockState::UniquedWriting && this->writeWaiters_.empty())
         {
             this->readers_ += 1;
             auto old{this->state_};
@@ -29,6 +29,7 @@ sharpen::RwLockState sharpen::AsyncRwLock::LockRead()
 bool sharpen::AsyncRwLock::TryLockRead()
 {
     sharpen::RwLockState status{sharpen::RwLockState::Free};
+    (void)status;
     return this->TryLockRead(status);
 }
 
@@ -37,7 +38,7 @@ bool sharpen::AsyncRwLock::TryLockRead(sharpen::RwLockState &status)
     {
         //we always get spin lock
         std::unique_lock<sharpen::SpinLock> lock{this->lock_};
-        if (this->state_ != sharpen::RwLockState::UniquedWriting)
+        if (this->state_ != sharpen::RwLockState::UniquedWriting && this->writeWaiters_.empty())
         {
             status = this->state_;
             this->readers_ += 1;
@@ -91,7 +92,7 @@ bool sharpen::AsyncRwLock::TryLockWrite(sharpen::RwLockState &prevStatus)
 
 void sharpen::AsyncRwLock::WriteUnlock() noexcept
 {
-    std::unique_lock<sharpen::SpinLock> lock(this->lock_);
+    std::unique_lock<sharpen::SpinLock> lock{this->lock_};
     assert(this->state_ == sharpen::RwLockState::UniquedWriting);
     if (!this->writeWaiters_.empty())
     {
@@ -102,7 +103,7 @@ void sharpen::AsyncRwLock::WriteUnlock() noexcept
         futurePtr->Complete(sharpen::RwLockState::UniquedWriting);
         return;
     }
-    else if (!this->readWaiters_.empty())
+    else if(!this->readWaiters_.empty())
     {
         sharpen::AsyncRwLock::Waiters waiters;
         std::swap(waiters,this->readWaiters_);
@@ -141,7 +142,6 @@ void sharpen::AsyncRwLock::ReadUnlock() noexcept
 
 void sharpen::AsyncRwLock::Unlock() noexcept
 {
-    assert(this->state_ != sharpen::RwLockState::Free);
     if(this->state_ == sharpen::RwLockState::UniquedWriting)
     {
         this->WriteUnlock();

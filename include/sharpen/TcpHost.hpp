@@ -23,6 +23,8 @@ namespace sharpen
 
         void ConsumeChannel(sharpen::NetStreamChannelPtr channel,std::atomic_size_t *counter) noexcept;
     public:
+
+        explicit TcpHost(sharpen::ITcpSteamFactory &factory);
     
         TcpHost(sharpen::IFiberScheduler &scheduler,sharpen::ITcpSteamFactory &factory);
     

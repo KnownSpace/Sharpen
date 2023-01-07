@@ -4,16 +4,25 @@
 #include <sharpen/TcpPoster.hpp>
 #include <sharpen/TcpActor.hpp>
 
+sharpen::IpTcpActorBuilder::IpTcpActorBuilder()
+    :Self{sharpen::IpEndPoint{0,0},sharpen::GetLocalScheduler(),sharpen::GetLocalLoopGroup()}
+{}
+
+sharpen::IpTcpActorBuilder::IpTcpActorBuilder(const sharpen::IpEndPoint &local)
+    :Self{local,sharpen::GetLocalScheduler(),sharpen::GetLocalLoopGroup()}
+{}
+
 sharpen::IpTcpActorBuilder::IpTcpActorBuilder(sharpen::IFiberScheduler &scheduler,sharpen::IEventLoopGroup &loopGroup)
+    :Self{sharpen::IpEndPoint{0,0},scheduler,loopGroup}
+{}
+
+sharpen::IpTcpActorBuilder::IpTcpActorBuilder(const sharpen::IpEndPoint &local,sharpen::IFiberScheduler &scheduler,sharpen::IEventLoopGroup &loopGroup)
     :remote_()
     ,scheduler_(&scheduler)
     ,factory_(nullptr)
     ,receiver_(nullptr)
     ,parserFactory_(nullptr)
 {
-    sharpen::IpEndPoint local;
-    local.SetAddrByString("0.0.0.0");
-    local.SetPort(0);
     this->factory_ = std::make_shared<sharpen::IpTcpStreamFactory>(loopGroup,local);
 }
 
@@ -69,6 +78,10 @@ void sharpen::IpTcpActorBuilder::EnsureConfiguration() const
     if(!this->parserFactory_)
     {
         throw std::logic_error{"parser factory could not be null"};
+    }
+    if(this->remote_.GetPort() == 0)
+    {
+        throw std::logic_error{"remote port could not be 0"};
     }
 }
 

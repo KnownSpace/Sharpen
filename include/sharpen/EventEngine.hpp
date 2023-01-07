@@ -56,8 +56,6 @@ namespace sharpen
 
         static Self &SetupSingleThreadEngine();
 
-        static Self &GetEngine();
-
         virtual void Stop() noexcept override;
 
         virtual sharpen::EventLoop &RoundRobinLoop() noexcept override;

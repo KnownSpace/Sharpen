@@ -3,6 +3,11 @@
 #include <sharpen/LinuxTimer.hpp>
 #include <sharpen/IEventLoopGroup.hpp>
 
+sharpen::TimerPtr sharpen::MakeTimer()
+{
+    return sharpen::MakeTimer(sharpen::GetLocalLoopGroup());
+}
+
 sharpen::TimerPtr sharpen::MakeTimer(sharpen::EventLoop &loop)
 {
 #ifdef SHARPEN_HAS_WAITABLETIMER

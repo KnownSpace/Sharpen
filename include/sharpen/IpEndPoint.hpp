@@ -51,15 +51,15 @@ namespace sharpen
     public:
         IpEndPoint() noexcept;
 
-        IpEndPoint(const Self &other) = default;
+        IpEndPoint(const Self &other) noexcept = default;
 
         IpEndPoint(Self &&other) noexcept = default;
 
-        IpEndPoint(std::uint32_t addr,std::uint16_t port);
+        IpEndPoint(std::uint32_t addr,std::uint16_t port) noexcept;
 
         ~IpEndPoint() noexcept = default;
 
-        Self &operator=(const Self &other);
+        Self &operator=(const Self &other) noexcept;
 
         Self &operator=(Self &&other) noexcept;
 

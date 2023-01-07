@@ -40,19 +40,28 @@ void sharpen::TcpPoster::NviOpen(std::unique_ptr<sharpen::IMailParser> parser)
     }
     catch(const std::system_error &error)
     {
-        sharpen::ErrorCode errorCode{static_cast<sharpen::ErrorCode>(error.code().value())};
+        sharpen::ErrorCode errorCode{sharpen::GetErrorCode(error)};
         switch (errorCode)
         {
         case sharpen::ErrorIsConnected:
             return;
         case sharpen::ErrorConnectionAborted:
-            throw sharpen::RemotePosterOpenError{"poster is closed by operator"};
+            throw sharpen::RemotePosterOpenError{"connection aborted"};
             break;
         case sharpen::ErrorCancel:
             throw sharpen::RemotePosterOpenError{"poster is closed by operator"};
             break;
-        case sharpen::ErrorConnectRefused:
-            throw sharpen::RemotePosterOpenError{"fail to open poster"};
+        case sharpen::ErrorConnectionRefused:
+            throw sharpen::RemotePosterOpenError{"connection refused"};
+            break;
+        case sharpen::ErrorHostUnreachable:
+            throw sharpen::RemotePosterOpenError{"unreachable host"};
+            break;
+        case sharpen::ErrorNetUnreachable:
+            throw sharpen::RemotePosterOpenError{"unreachable network"};
+            break;
+        case sharpen::ErrorConnectionReset:
+            throw sharpen::RemotePosterOpenError{"connection reset"};
             break;
         }
         throw;
@@ -77,13 +86,24 @@ sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail)
         throw sharpen::RemotePosterClosedError{"poster already closed"};
     }
     //post mail
-    if(!mail.Header().Empty())
+    try
     {
         channel->WriteAsync(mail.Header());
+        if(!mail.Content().Empty())
+        {
+            channel->WriteAsync(mail.Content());
+        }
     }
-    if(!mail.Content().Empty())
+    catch(const std::system_error &error)
     {
-        channel->WriteAsync(mail.Content());
+       sharpen::ErrorCode code{sharpen::GetErrorCode(error)};
+        if(code != sharpen::ErrorCancel 
+                    && code != sharpen::ErrorConnectionAborted 
+                    && code != sharpen::ErrorConnectionReset)
+        {
+            throw;
+        }
+        throw sharpen::RemotePosterClosedError{"poster is closed by operator or peer"};
     }
     //receive mail
     sharpen::ByteBuffer buffer{4096};
@@ -97,12 +117,14 @@ sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail)
         }
         catch(const std::system_error &error)
         {
-            sharpen::ErrorCode code{static_cast<sharpen::ErrorCode>(error.code().value())};
-            if(code != sharpen::ErrorCancel && code != sharpen::ErrorConnectionAborted)
+            sharpen::ErrorCode code{sharpen::GetErrorCode(error)};
+            if(code != sharpen::ErrorCancel 
+                    && code != sharpen::ErrorConnectionAborted 
+                    && code != sharpen::ErrorConnectionReset)
             {
                 throw;
             }
-            throw sharpen::RemotePosterClosedError{"poster is closed by operator"};
+            throw sharpen::RemotePosterClosedError{"poster is closed by operator or peer"};
         }
         catch(const std::exception&)
         {
@@ -121,7 +143,7 @@ sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail)
 
 std::uint64_t sharpen::TcpPoster::NviGetId() const noexcept
 {
-    return this->remoteEndpoint_->GetHashCode64();
+    return this->remoteEndpoint_->GetActorId();
 }
 
 sharpen::TcpPoster::TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::shared_ptr<sharpen::ITcpSteamFactory> factory)
