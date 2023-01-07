@@ -202,23 +202,26 @@ void sharpen::WinNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,sh
 
 void sharpen::WinNetStreamChannel::RequestAccept(sharpen::Future<sharpen::NetStreamChannelPtr> *future)
 {
-    static LPFN_ACCEPTEX WSAAcceptEx = nullptr;
-
+    static std::atomic<LPFN_ACCEPTEX> AcceptEx = nullptr;
     if (!this->IsRegistered())
     {
         throw std::logic_error("should register to a loop first");
     }
     //get acceptex
+    if(AcceptEx == nullptr)
     {
+        LPFN_ACCEPTEX wsaAcceptEx{nullptr};
         GUID acceptexId = WSAID_ACCEPTEX;
         DWORD dwBytes;
-        int iResult = WSAIoctl(reinterpret_cast<SOCKET>(this->handle_), SIO_GET_EXTENSION_FUNCTION_POINTER,&acceptexId, sizeof (acceptexId), &WSAAcceptEx, sizeof (WSAAcceptEx), &dwBytes, NULL, NULL);
+        int iResult = WSAIoctl(reinterpret_cast<SOCKET>(this->handle_), SIO_GET_EXTENSION_FUNCTION_POINTER,&acceptexId, sizeof (acceptexId), &wsaAcceptEx, sizeof (wsaAcceptEx), &dwBytes, NULL, NULL);
         if (iResult != 0)
         {
             future->Fail(sharpen::MakeLastErrorPtr());
             return;
         }
+        AcceptEx.store(wsaAcceptEx);
     }
+    LPFN_ACCEPTEX WSAAcceptEx{AcceptEx.load()};
     sharpen::WSAOverlappedStruct *olStruct = new (std::nothrow) sharpen::WSAOverlappedStruct();
     if (!olStruct)
     {
@@ -264,18 +267,26 @@ void sharpen::WinNetStreamChannel::RequestAccept(sharpen::Future<sharpen::NetStr
 
 void sharpen::WinNetStreamChannel::RequestConnect(const sharpen::IEndPoint *endpoint,sharpen::Future<void> *future)
 {
-    static LPFN_CONNECTEX WSAConnectEx = nullptr;
-    //get connectex
+    static std::atomic<LPFN_CONNECTEX> ConnectEx{nullptr};
+    if (!this->IsRegistered())
     {
+        throw std::logic_error("should register to a loop first");
+    }
+    //get connectex
+    if(ConnectEx == nullptr)
+    {
+        LPFN_CONNECTEX wsaConnectEx{nullptr};
         GUID connectexId = WSAID_CONNECTEX;
         DWORD dwBytes;
-        int iResult = WSAIoctl(reinterpret_cast<SOCKET>(this->handle_), SIO_GET_EXTENSION_FUNCTION_POINTER,&connectexId, sizeof (connectexId), &WSAConnectEx, sizeof (WSAConnectEx), &dwBytes, NULL, NULL);
+        int iResult = WSAIoctl(reinterpret_cast<SOCKET>(this->handle_), SIO_GET_EXTENSION_FUNCTION_POINTER,&connectexId, sizeof(connectexId), &wsaConnectEx, sizeof(wsaConnectEx), &dwBytes, NULL, NULL);
         if (iResult != 0)
         {
             future->Fail(sharpen::MakeLastErrorPtr());
             return;
         }
+        ConnectEx.store(wsaConnectEx);
     }
+    LPFN_CONNECTEX WSAConnectEx{ConnectEx.load()};
     sharpen::WSAOverlappedStruct *olStruct = new (std::nothrow) sharpen::WSAOverlappedStruct();
     if (!olStruct)
     {

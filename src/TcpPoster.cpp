@@ -121,7 +121,7 @@ sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail)
 
 std::uint64_t sharpen::TcpPoster::NviGetId() const noexcept
 {
-    return this->remoteEndpoint_->GetHashCode64();
+    return this->remoteEndpoint_->GetActorId();
 }
 
 sharpen::TcpPoster::TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::shared_ptr<sharpen::ITcpSteamFactory> factory)
