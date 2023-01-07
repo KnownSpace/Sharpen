@@ -49,6 +49,8 @@ namespace sharpen
 
     using TimerPtr = std::shared_ptr<sharpen::ITimer>;
 
+    extern sharpen::TimerPtr MakeTimer();
+
     extern sharpen::TimerPtr MakeTimer(sharpen::EventLoop &loop);
 
     extern sharpen::TimerPtr MakeTimer(sharpen::IEventLoopGroup &loopGroup);
