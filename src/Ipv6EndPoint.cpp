@@ -16,7 +16,7 @@ sharpen::Ipv6EndPoint::Ipv6EndPoint() noexcept
     this->addr_.sin6_family = AF_INET6;
 }
 
-sharpen::Ipv6EndPoint::Ipv6EndPoint(const in6_addr &addr,std::uint16_t port)
+sharpen::Ipv6EndPoint::Ipv6EndPoint(const in6_addr &addr,std::uint16_t port) noexcept
     :addr_()
 {
     this->addr_.sin6_family = AF_INET6;
@@ -24,7 +24,7 @@ sharpen::Ipv6EndPoint::Ipv6EndPoint(const in6_addr &addr,std::uint16_t port)
     this->addr_.sin6_port = ::htons(port);
 }
 
-sharpen::Ipv6EndPoint &sharpen::Ipv6EndPoint::operator=(const sharpen::Ipv6EndPoint &other)
+sharpen::Ipv6EndPoint &sharpen::Ipv6EndPoint::operator=(const sharpen::Ipv6EndPoint &other) noexcept
 {
     if(this != std::addressof(other))
     {
