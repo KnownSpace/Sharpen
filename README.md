@@ -42,8 +42,3 @@ target_link_libraries(your_project sharpen::sharpen)
 #Include sharpen header file(optional)
 include_directories("${SHARPEN_INCLUDE_DIRS}")
 ```
-
-#### Licenses:
-  - Sharpen(MIT License)
-  - Boost.Context(BOOST License)
-  - llhttp(MIT License)
