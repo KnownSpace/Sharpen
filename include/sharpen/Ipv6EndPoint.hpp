@@ -42,15 +42,15 @@ namespace sharpen
     public:
         Ipv6EndPoint() noexcept;
 
-        Ipv6EndPoint(const in6_addr &ip,std::uint16_t port);
+        Ipv6EndPoint(const in6_addr &ip,std::uint16_t port) noexcept;
 
-        Ipv6EndPoint(const Self &other) = default;
+        Ipv6EndPoint(const Self &other) noexcept = default;
 
         Ipv6EndPoint(Self &&other) noexcept = default;
 
         ~Ipv6EndPoint() noexcept = default;
 
-        Self &operator=(const Self &other);
+        Self &operator=(const Self &other) noexcept;
 
         Self &operator=(Self &&other) noexcept;
 

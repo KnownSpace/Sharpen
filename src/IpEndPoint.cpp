@@ -19,7 +19,7 @@ sharpen::IpEndPoint::IpEndPoint() noexcept
     this->addr_.sin_family = AF_INET;
 }
 
-sharpen::IpEndPoint::IpEndPoint(std::uint32_t addr,std::uint16_t port)
+sharpen::IpEndPoint::IpEndPoint(std::uint32_t addr,std::uint16_t port) noexcept
     :addr_()
 {
     addr_.sin_family = AF_INET;
@@ -31,10 +31,12 @@ sharpen::IpEndPoint::IpEndPoint(std::uint32_t addr,std::uint16_t port)
     addr_.sin_port = ::htons(port);
 }
 
-sharpen::IpEndPoint &sharpen::IpEndPoint::operator=(const sharpen::IpEndPoint &other)
+sharpen::IpEndPoint &sharpen::IpEndPoint::operator=(const sharpen::IpEndPoint &other) noexcept
 {
-    Self tmp(other);
-    std::swap(tmp,*this);
+    if(this != std::addressof(other))
+    {
+        this->addr_ = other.addr_;
+    }
     return *this;
 }
 
