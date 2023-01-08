@@ -17,20 +17,39 @@ sharpen::PosixPipeSignalChannel::PosixPipeSignalChannel(sharpen::FileHandle read
     assert(this->handle_ != -1);
     assert(this->writer_ != -1);
     //register closer
-    using FnPtr = void(*)(sharpen::FileHandle,sharpen::FileHandle,sharpen::SignalMap *);
-    FnPtr doClosePtr{static_cast<FnPtr>(&Self::DoClose)};
-    this->closer_ = std::bind(doClosePtr,std::placeholders::_1,this->GetWriter(),this->map_);    
+    // using FnPtr = void(*)(sharpen::FileHandle,sharpen::FileHandle,sharpen::SignalMap *);
+    // FnPtr doClosePtr{static_cast<FnPtr>(&Self::DoClose)};
+    // this->closer_ = std::bind(doClosePtr,std::placeholders::_1,this->GetWriter(),this->map_);
+    this->closer_ = std::bind(&Self::SafeClose,this,std::placeholders::_1);    
 }
 
 sharpen::PosixPipeSignalChannel::~PosixPipeSignalChannel() noexcept
 {
+    std::function<void(sharpen::FileHandle)> closer;
+    std::swap(closer,this->closer_);
     this->reader_.CancelAllIo(sharpen::ErrorCancel);
+    this->map_->Unregister(this->GetWriter());
+    sharpen::CloseFileHandle(this->GetWriter());
 }
 
-void sharpen::PosixPipeSignalChannel::DoClose(sharpen::FileHandle handle,sharpen::FileHandle writer,sharpen::SignalMap *map) noexcept
+void sharpen::PosixPipeSignalChannel::DoSafeClose(sharpen::ErrorCode err,sharpen::ChannelPtr keepalive) noexcept
 {
-    map->Unregister(writer);
-    sharpen::CloseFileHandle(writer);
+    (void)keepalive;
+    this->reader_.CancelAllIo(err);
+    this->map_->Unregister(this->GetWriter());
+    sharpen::CloseFileHandle(this->GetWriter());
+}
+
+void sharpen::PosixPipeSignalChannel::SafeClose(sharpen::FileHandle handle) noexcept
+{
+    if(this->loop_)
+    {
+        sharpen::CloseFileHandle(handle);
+        //FIXME:throw bad alloc
+        return this->loop_->RunInLoopSoon(std::bind(&Self::DoSafeClose,this,sharpen::ErrorCancel,this->shared_from_this()));
+    }
+    this->map_->Unregister(this->GetWriter());
+    sharpen::CloseFileHandle(this->GetWriter());
     sharpen::CloseFileHandle(handle);
 }
 

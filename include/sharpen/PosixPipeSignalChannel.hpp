@@ -29,8 +29,6 @@ namespace sharpen
 
         sharpen::FileHandle GetWriter() const noexcept;
 
-        static void DoClose(sharpen::FileHandle handle,sharpen::FileHandle writer,sharpen::SignalMap *map) noexcept;
-
         void HandleRead();
 
         void DoRead();
@@ -40,6 +38,10 @@ namespace sharpen
         void RequestRead(char *buf,std::size_t bufSize,sharpen::Future<std::size_t> *future);
 
         static void CompleteReadCallback(sharpen::EventLoop *loop,sharpen::Future<std::size_t> *future,ssize_t size) noexcept;
+    
+        void DoSafeClose(sharpen::ErrorCode err,sharpen::ChannelPtr keepalive) noexcept;
+        
+        void SafeClose(sharpen::FileHandle handle) noexcept;
     public:
     
         PosixPipeSignalChannel(sharpen::FileHandle reader,sharpen::FileHandle writer,sharpen::SignalMap &map);
