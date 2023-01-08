@@ -1,24 +1,29 @@
 #include <sharpen/ISignalChannel.hpp>
 
-#include <sharpen/AwaitableFuture.hpp>
-#include <sharpen/WinPipeSignalChannel.hpp>
-#include <sharpen/PosixPipeSignalChannel.hpp>
 
 #ifdef SHARPEN_IS_WIN
 #include <csignal>
 
 #include <Windows.h>
+
 #include <sharpen/WinEx.h>
 #else
 #include <signal.h>
 #include <unistd.h>
 #include <fcntl.h>
-
-#ifdef SHARPEN_IS_LINUX
 #endif
 
+#include <sharpen/AwaitableFuture.hpp>
+#include <sharpen/SystemError.hpp>
+
+#ifdef SHARPEN_USE_SIGNALFD
+#include <sharpen/LinuxSignalFdChannel.hpp>
+#else
+#include <sharpen/WinPipeSignalChannel.hpp>
+#include <sharpen/PosixPipeSignalChannel.hpp>
 #endif
 
+#ifdef SHARPEN_USE_PIPESIGNAL
 std::unique_ptr<sharpen::SignalMap> sharpen::SignalStorage::sigmap;
 
 std::once_flag sharpen::SignalStorage::sigmapFlag;
@@ -80,6 +85,7 @@ void sharpen::SignalStorage::InstallHandler(std::int32_t sig)
 #endif
     }
 }
+#endif
 
 std::size_t sharpen::ISignalChannel::ReadAsync(sharpen::SignalBuffer &signals)
 {
@@ -100,8 +106,8 @@ sharpen::SignalChannelPtr sharpen::OpenSignalChannel(std::int32_t *sigs,std::siz
     }
     for(std::size_t i = 0;i != sigCount;++i)
     {
-        SignalStorage::InstallHandler(sigs[i]);   
-        SignalStorage::sigmap->Register(writer,sigs[i]);
+        sharpen::SignalStorage::InstallHandler(sigs[i]);   
+        sharpen::SignalStorage::sigmap->Register(writer,sigs[i]);
     }
     sharpen::SignalChannelPtr channel{nullptr};
     try
@@ -110,14 +116,14 @@ sharpen::SignalChannelPtr sharpen::OpenSignalChannel(std::int32_t *sigs,std::siz
     }
     catch(const std::exception &rethrow)
     {
-        SignalStorage::sigmap->Unregister(writer);
+        sharpen::SignalStorage::sigmap->Unregister(writer);
         sharpen::CloseFileHandle(writer);
         sharpen::CloseFileHandle(reader);
         (void)rethrow;
         throw;
     }
     return channel;
-#else
+#elif (defined (SHARPEN_USE_PIPESIGNAL))
     sharpen::FileHandle pipes[2];
     if(::pipe2(pipes,O_NONBLOCK|O_CLOEXEC) == -1)
     {
@@ -127,8 +133,8 @@ sharpen::SignalChannelPtr sharpen::OpenSignalChannel(std::int32_t *sigs,std::siz
     sharpen::FileHandle reader{pipes[0]};
     for(std::size_t i = 0;i != sigCount;++i)
     {
-        SignalStorage::InstallHandler(sigs[i]);   
-        SignalStorage::sigmap->Register(writer,sigs[i]);
+        sharpen::SignalStorage::InstallHandler(sigs[i]);   
+        sharpen::SignalStorage::sigmap->Register(writer,sigs[i]);
     }
     sharpen::SignalChannelPtr channel{nullptr};
     try
@@ -137,11 +143,36 @@ sharpen::SignalChannelPtr sharpen::OpenSignalChannel(std::int32_t *sigs,std::siz
     }
     catch(const std::exception &rethrow)
     {
-        SignalStorage::sigmap->Unregister(writer);
+        sharpen::SignalStorage::sigmap->Unregister(writer);
         sharpen::CloseFileHandle(writer);
         sharpen::CloseFileHandle(reader);
         (void)rethrow;
         throw;
+    }
+    return channel;
+#else
+    sigset_t sigset;
+    ::sigemptyset(&sigset);
+    for(std::size_t i = 0;i != sigCount;++i)
+    {
+        ::sigaddset(&sigset,sigs[i]);
+    }
+    ::sigprocmask(SIG_BLOCK,&sigset,nullptr);
+    sharpen::FileHandle signalFd{sharpen::OpenSignalFd(sigset)};
+    if(signalFd == -1)
+    {
+        sharpen::ThrowLastError();
+    }
+    sharpen::SignalChannelPtr channel{nullptr};
+    try
+    {
+        channel = std::make_shared<sharpen::LinuxSignalFdChannel>(signalFd);
+    }
+    catch(const std::exception& rethrow)
+    {
+        sharpen::CloseFileHandle(signalFd);
+        throw;
+        (void)rethrow;
     }
     return channel;
 #endif

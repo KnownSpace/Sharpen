@@ -9,7 +9,16 @@
 #include "Future.hpp"
 #include "SignalMap.hpp"
 #include "SignalBuffer.hpp"
+#include "SignalFd.hpp"
 
+//define SHARPEN_USE_PIPESIGNAL to force sharpen use pipe(on linux).
+#if (defined (SHARPEN_HAS_SIGNALFD)) && (!defined (SHARPEN_USE_PIPESIGNAL))
+#define SHARPEN_USE_SIGNALFD
+#elif (!defined (SHARPEN_USE_PIPESIGNAL))
+#define SHARPEN_USE_PIPESIGNAL
+#endif
+
+#ifdef SHARPEN_USE_PIPESIGNAL
 #ifdef __cplusplus
 extern "C"
 {
@@ -22,9 +31,13 @@ extern void SHARPEN_SignalHandler(int sig);
 #ifdef __cplusplus
 }
 #endif
+#endif
 
 namespace sharpen
 {
+
+#ifdef SHARPEN_USE_PIPESIGNAL
+
     class SignalStorage
     {
     private:
@@ -59,6 +72,8 @@ namespace sharpen
 
         static void InstallHandler(std::int32_t sig);
     };
+
+#endif
 
     class ISignalChannel:public sharpen::IChannel
     {
