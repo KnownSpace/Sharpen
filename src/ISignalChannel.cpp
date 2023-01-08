@@ -7,6 +7,7 @@
 #ifdef SHARPEN_IS_WIN
 #include <csignal>
 
+#include <Windows.h>
 #include <sharpen/WinEx.h>
 #else
 #include <signal.h>
@@ -92,7 +93,7 @@ sharpen::SignalChannelPtr sharpen::OpenSignalChannel(std::int32_t *sigs,std::siz
 #ifdef SHARPEN_IS_WIN
     sharpen::FileHandle reader{INVALID_HANDLE_VALUE};
     sharpen::FileHandle writer{INVALID_HANDLE_VALUE};
-    BOOL r = ::CreatePipeEx(&reader,&writer,nullptr,static_cast<DWORD>(sigCount*sizeof(*sigs)),FILE_FLAG_OVERLAPPED,PIPE_NOWAIT);
+    BOOL r = ::CreatePipeEx(&reader,&writer,nullptr,static_cast<DWORD>(sigCount*sizeof(*sigs)),FILE_FLAG_OVERLAPPED,0);
     if(r == FALSE)
     {
         sharpen::ThrowLastError();

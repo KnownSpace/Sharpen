@@ -10,6 +10,7 @@ void sharpen::SignalLock::GetBlockableSet(sigset_t &set) noexcept
     ::sigfillset(&set);
     ::sigdelset(&set,SIGKILL);
     ::sigdelset(&set,SIGSTOP);
+    ::sigdelset(&set,SIGCONT);
 }
 #endif
 
