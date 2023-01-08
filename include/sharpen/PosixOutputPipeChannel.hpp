@@ -22,6 +22,7 @@ namespace sharpen
     private:
         using Mybase = sharpen::IOutputPipeChannel;
         using Callback = std::function<void(ssize_t)>;
+        using Self = sharpen::PosixOutputPipeChannel;
         
         sharpen::PosixIoWriter writer_;
         bool writeable_;
@@ -36,6 +37,10 @@ namespace sharpen
         
         static void CompleteWriteCallback(sharpen::EventLoop *loop,sharpen::Future<std::size_t> *future,ssize_t size) noexcept;
     
+        void DoSafeClose(sharpen::ErrorCode err,sharpen::ChannelPtr keepalive) noexcept;
+        
+        void SafeClose(sharpen::FileHandle handle) noexcept;
+
     public:
         explicit PosixOutputPipeChannel(sharpen::FileHandle handle);
 
