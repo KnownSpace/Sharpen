@@ -71,7 +71,16 @@ sharpen::FileChannelPtr sharpen::OpenFileChannel(const char *filename,sharpen::F
     {
         sharpen::ThrowLastError();
     }
-    channel = std::make_shared<sharpen::WinFileChannel>(handle);
+    try
+    {
+        channel = std::make_shared<sharpen::WinFileChannel>(handle);
+    }
+    catch(const std::exception& rethrow)
+    {
+        sharpen::CloseFileHandle(handle);
+        throw;
+        (void)rethrow;
+    }
 #else
     std::int32_t accessModel{0};
     std::int32_t openModel{0};
@@ -136,7 +145,16 @@ sharpen::FileChannelPtr sharpen::OpenFileChannel(const char *filename,sharpen::F
             }
         }
     }
-    channel = std::make_shared<sharpen::PosixFileChannel>(handle);
+    try
+    {
+        channel = std::make_shared<sharpen::PosixFileChannel>(handle);
+    }
+    catch(const std::exception& rethrow)
+    {
+        sharpen::CloseFileHandle(handle);
+        throw;
+        (void)rethrow;
+    }
 #endif
     return channel;
 }
