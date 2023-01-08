@@ -159,7 +159,6 @@ void sharpen::WinNetStreamChannel::OnEvent(sharpen::IoEvent *event)
      {
          this->HandlePoll(*olStruct);
      }
-     
 }
 
 void sharpen::WinNetStreamChannel::RequestSendFile(sharpen::FileChannelPtr file,std::uint64_t size,std::uint64_t offset,sharpen::Future<void> *future)
@@ -433,6 +432,7 @@ void sharpen::WinNetStreamChannel::HandlePoll(sharpen::WSAOverlappedStruct &olSt
 
 void sharpen::WinNetStreamChannel::ReadAsync(char *buf,std::size_t bufSize,sharpen::Future<std::size_t> &future)
 {
+    assert(buf != nullptr || (buf == nullptr && bufSize == 0));
     if (!this->IsRegistered())
     {
         throw std::logic_error("should register to a loop first");
@@ -442,6 +442,7 @@ void sharpen::WinNetStreamChannel::ReadAsync(char *buf,std::size_t bufSize,sharp
 
 void sharpen::WinNetStreamChannel::WriteAsync(const char *buf,std::size_t bufSize,sharpen::Future<std::size_t> &future)
 {
+    assert(buf != nullptr || (buf == nullptr && bufSize == 0));
     if (!this->IsRegistered())
     {
         throw std::logic_error("should register to a loop first");

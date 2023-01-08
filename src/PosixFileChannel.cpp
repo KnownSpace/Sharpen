@@ -140,6 +140,7 @@ void sharpen::PosixFileChannel::DoRead(char *buf,std::size_t bufSize,std::uint64
 
 void sharpen::PosixFileChannel::WriteAsync(const char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> &future)
 {
+    assert(buf != nullptr || (buf == nullptr && bufSize == 0));
     if (!this->IsRegistered())
     {
         throw std::logic_error("should register to a loop first");
@@ -158,6 +159,7 @@ void sharpen::PosixFileChannel::WriteAsync(const sharpen::ByteBuffer &buf,std::s
 
 void sharpen::PosixFileChannel::ReadAsync(char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> &future)
 {
+    assert(buf != nullptr || (buf == nullptr && bufSize == 0));
     if (!this->IsRegistered())
     {
         throw std::logic_error("should register to a loop first");

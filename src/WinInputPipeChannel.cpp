@@ -68,6 +68,7 @@ void sharpen::WinInputPipeChannel::RequestRead(char *buf,std::size_t bufSize,sha
 
 void sharpen::WinInputPipeChannel::ReadAsync(char *buf,std::size_t bufSize,sharpen::Future<std::size_t> &future)
 {
+    assert(buf != nullptr || (buf == nullptr && bufSize == 0));
     if (!this->IsRegistered())
     {
         throw std::logic_error("should register to a loop first");

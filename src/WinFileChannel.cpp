@@ -72,6 +72,7 @@ void sharpen::WinFileChannel::RequestWrite(const char *buf,std::size_t bufSize,s
 
 void sharpen::WinFileChannel::WriteAsync(const char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> &future)
 {
+    assert(buf != nullptr || (buf == nullptr && bufSize == 0));
     if (!this->IsRegistered())
     {
         throw std::logic_error("should register to a loop first");
@@ -117,6 +118,7 @@ void sharpen::WinFileChannel::RequestRead(char *buf,std::size_t bufSize,std::uin
 
 void sharpen::WinFileChannel::ReadAsync(char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> &future)
 {
+    assert(buf != nullptr || (buf == nullptr && bufSize == 0));
     if (!this->IsRegistered())
     {
         throw std::logic_error("should register to a loop first");
@@ -133,13 +135,13 @@ void sharpen::WinFileChannel::ReadAsync(sharpen::ByteBuffer &buf,std::size_t buf
     this->ReadAsync(buf.Data() + bufferOffset,buf.GetSize() - bufferOffset,offset,future);
 }
 
-void sharpen::WinFileChannel::OnEvent(sharpen::IoEvent *olStruct)
+void sharpen::WinFileChannel::OnEvent(sharpen::IoEvent *event)
 {
-    std::unique_ptr<sharpen::IocpOverlappedStruct> ev(reinterpret_cast<sharpen::IocpOverlappedStruct*>(olStruct->GetData()));
+    std::unique_ptr<sharpen::IocpOverlappedStruct> ev(reinterpret_cast<sharpen::IocpOverlappedStruct*>(event->GetData()));
     MyFuturePtr future = reinterpret_cast<MyFuturePtr>(ev->data_);
-    if (olStruct->IsErrorEvent())
+    if (event->IsErrorEvent())
     {
-        future->Fail(sharpen::MakeSystemErrorPtr(olStruct->GetErrorCode()));
+        future->Fail(sharpen::MakeSystemErrorPtr(event->GetErrorCode()));
         return;
     }
     future->Complete(ev->length_);
