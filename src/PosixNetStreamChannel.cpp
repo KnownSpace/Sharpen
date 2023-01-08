@@ -520,7 +520,7 @@ void sharpen::PosixNetStreamChannel::DoCancel(sharpen::ErrorCode err) noexcept
     }
 }
 
-void sharpen::PosixNetStreamChannel::DoSafeCancel(sharpen::ErrorCode err,std::shared_ptr<sharpen::IChannel> keepalive) noexcept
+void sharpen::PosixNetStreamChannel::DoSafeCancel(sharpen::ErrorCode err,sharpen::ChannelPtr keepalive) noexcept
 {
     (void)keepalive;
     this->DoCancel(err);
