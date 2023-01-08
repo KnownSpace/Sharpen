@@ -64,4 +64,8 @@ BOOL CreatePipeEx(OUT LPHANDLE lpReadPipe,OUT LPHANDLE lpWritePipe,IN LPSECURITY
     return(TRUE);
 }
 
+#else
+
+typedef int MakeIsoCompilersHappy;
+
 #endif
