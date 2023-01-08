@@ -62,7 +62,7 @@ void sharpen::TcpHost::Run()
             {
                 std::terminate();
             }
-            if(code != sharpen::ErrorConnectionAborted)
+            if(code != sharpen::ErrorConnectionAborted && code != sharpen::ErrorCancel)
             {
                 throw;
             }
