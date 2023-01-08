@@ -27,7 +27,7 @@ public:
 
     inline virtual simpletest::TestResult Run() noexcept
     {
-        std::int32_t sig{SIGWINCH};
+        std::int32_t sig{SIGINT};
         sharpen::SignalChannelPtr channel{sharpen::OpenSignalChannel(&sig,1)};
         channel->Register(sharpen::GetLocalLoopGroup());
         sharpen::SignalBuffer signals{1};
@@ -62,7 +62,7 @@ public:
 
     inline virtual simpletest::TestResult Run() noexcept
     {
-        std::int32_t sig{SIGWINCH};
+        std::int32_t sig{SIGINT};
         sharpen::SignalChannelPtr channel{sharpen::OpenSignalChannel(&sig,1)};
         channel->Register(sharpen::GetLocalLoopGroup());
         sharpen::SignalBuffer signals{1};
@@ -81,7 +81,7 @@ public:
             code = sharpen::GetErrorCode(error);
         }
         (void)size;
-        return this->Assert(code == sharpen::ErrorCancel,"code could == ErrorCancel,but it not");
+        return this->Assert(code == sharpen::ErrorBrokenPipe,"code could == ErrorBrokenPipe,but it not");
     }
 };
 
