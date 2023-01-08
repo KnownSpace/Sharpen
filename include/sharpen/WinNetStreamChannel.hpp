@@ -53,7 +53,7 @@ namespace sharpen
     public:
         WinNetStreamChannel(sharpen::FileHandle handle,int af);
 
-        ~WinNetStreamChannel() noexcept = default;
+        virtual ~WinNetStreamChannel() noexcept = default;
 
         virtual void WriteAsync(const char *buf,std::size_t bufSize,sharpen::Future<std::size_t> &future) override;
         
