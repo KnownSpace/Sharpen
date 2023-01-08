@@ -17,7 +17,7 @@
 #include <mstcpip.h>
 #endif
 
-sharpen::NetStreamChannelPtr sharpen::OpenTcpStreamChannel(sharpen::AddressFamily af)
+sharpen::NetStreamChannelPtr sharpen::OpenTcpChannel(sharpen::AddressFamily af)
 {
     sharpen::NetStreamChannelPtr channel;
     int afValue;
@@ -35,17 +35,34 @@ sharpen::NetStreamChannelPtr sharpen::OpenTcpStreamChannel(sharpen::AddressFamil
     {
         sharpen::ThrowLastError();
     }
-    channel = std::make_shared<sharpen::WinNetStreamChannel>(reinterpret_cast<sharpen::FileHandle>(s),afValue);
-    return std::move(channel);
+    try
+    {
+        channel = std::make_shared<sharpen::WinNetStreamChannel>(reinterpret_cast<sharpen::FileHandle>(s),afValue);
+    }
+    catch(const std::exception& rethrow)
+    {
+        ::closesocket(s);
+        throw;
+        (void)rethrow;
+    }
 #else
     sharpen::FileHandle s = ::socket(afValue,SOCK_STREAM | SOCK_CLOEXEC | SOCK_NONBLOCK,IPPROTO_TCP);
     if (s == -1)
     {
         sharpen::ThrowLastError();
     }
-    channel = std::make_shared<sharpen::PosixNetStreamChannel>(s);
-    return channel;
+    try
+    {
+        channel = std::make_shared<sharpen::PosixNetStreamChannel>(s);
+    }
+    catch(const std::exception& rethrow)
+    {
+        sharpen::CloseFileHandle(s);
+        throw;
+        (void)rethrow;
+    }
 #endif
+    return channel;
 }
 
 void sharpen::StartupNetSupport()
