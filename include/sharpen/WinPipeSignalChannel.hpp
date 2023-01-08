@@ -9,15 +9,6 @@
 #ifdef SHARPEN_IS_WIN
 #include "IocpSelector.hpp"
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-    extern BOOL CreatePipeEx(OUT LPHANDLE lpReadPipe,OUT LPHANDLE lpWritePipe,IN LPSECURITY_ATTRIBUTES lpPipeAttributes,IN DWORD nSize,DWORD dwReadMode,DWORD dwWriteMode);
-#ifdef __cplusplus
-}
-#endif
-
 #define SHARPEN_HAS_WINSIGNALPIEPECHANNEL
 
 namespace sharpen
