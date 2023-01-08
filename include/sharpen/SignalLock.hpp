@@ -29,7 +29,7 @@ namespace sharpen
 #endif
     public:
     
-        SignalLock();
+        SignalLock() = default;
     
         ~SignalLock() noexcept = default;
     

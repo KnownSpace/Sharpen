@@ -62,7 +62,7 @@ void sharpen::SignalMap::Register(sharpen::FileHandle handle,std::int32_t *sigs,
             sigVec.resize(sigSize);
             for(std::size_t i = 0;i != sigSize;++i)
             {
-                sigVec.emplace_back(sigs[i]);   
+                sigVec[i] = sigs[i];   
             }
             this->remap_.emplace(handle,std::move(sigVec));
         }
@@ -78,13 +78,14 @@ void sharpen::SignalMap::Raise(std::int32_t sig) const noexcept
         {
             for(auto begin = ite->second.begin(),end = ite->second.end(); begin != end; ++begin)
             {
+                std::uint8_t sigBit{static_cast<std::uint8_t>(sig)};
     #ifdef SHARPEN_IS_WIN
-                ::WriteFile(*begin,&sig,sizeof(sig),nullptr,nullptr);
+                ::WriteFile(*begin,&sigBit,sizeof(sigBit),nullptr,nullptr);
     #else
                 ssize_t size{-1};
                 do
                 {
-                    size = ::write(*begin,&sig,sizeof(sig));
+                    size = ::write(*begin,&sigBit,sizeof(sigBit));
                 } while (size == -1 && errno == EINTR);
                 (void)size;
     #endif   
