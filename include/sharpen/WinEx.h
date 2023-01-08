@@ -2,9 +2,6 @@
 #ifndef _SHARPEN_WINEX_HPP
 #define _SHARPEN_WINEX_HPP
 
-#include <minwindef.h>
-#include <minwinbase.h>
-
 #ifdef __cplusplus
 extern "C"
 {

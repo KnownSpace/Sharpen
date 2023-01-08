@@ -1,11 +1,10 @@
-#include <sharpen/WinEx.h>
-
 #if (defined (_WIN32)) || (defined (_WIN64))
 
 #include <stdio.h>
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <sharpen/WinEx.h>
 
 BOOL CreatePipeEx(OUT LPHANDLE lpReadPipe,OUT LPHANDLE lpWritePipe,IN LPSECURITY_ATTRIBUTES lpPipeAttributes,IN DWORD nSize,DWORD dwReadMode,DWORD dwWriteMode)
 {
