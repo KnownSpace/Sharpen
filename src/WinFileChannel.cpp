@@ -54,6 +54,7 @@ void sharpen::WinFileChannel::RequestWrite(const char *buf,std::size_t bufSize,s
     //init iocp olStruct
     this->InitOverlappedStruct(*olStruct,offset);
     olStruct->event_.SetData(olStruct);
+    olStruct->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Write);
     //record future
     olStruct->data_ = future;
     //request
@@ -98,6 +99,7 @@ void sharpen::WinFileChannel::RequestRead(char *buf,std::size_t bufSize,std::uin
     //init iocp olStruct
     this->InitOverlappedStruct(*olStruct,offset);
     olStruct->event_.SetData(olStruct);
+    olStruct->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Read);
     //record future
     olStruct->data_ = future;
     BOOL r = ::ReadFile(this->handle_,buf,static_cast<DWORD>(bufSize),nullptr,&olStruct->ol_);

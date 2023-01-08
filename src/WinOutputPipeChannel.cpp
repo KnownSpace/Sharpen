@@ -48,6 +48,7 @@ void sharpen::WinOutputPipeChannel::RequestWrite(const char *buf,std::size_t buf
     //init iocp olStruct
     this->InitOverlappedStruct(*olStruct);
     olStruct->event_.SetData(olStruct);
+    olStruct->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Write);
     //record future
     olStruct->data_ = future;
     BOOL r = ::WriteFile(this->handle_,buf,static_cast<DWORD>(bufSize),nullptr,&(olStruct->ol_));

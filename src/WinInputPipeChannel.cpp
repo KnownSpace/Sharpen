@@ -49,6 +49,7 @@ void sharpen::WinInputPipeChannel::RequestRead(char *buf,std::size_t bufSize,sha
     }
     //init iocp olStruct
     this->InitOverlappedStruct(*olStruct);
+    olStruct->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Read);
     olStruct->event_.SetData(olStruct);
     //record future
     olStruct->data_ = future;
