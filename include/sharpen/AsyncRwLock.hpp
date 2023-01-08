@@ -49,16 +49,16 @@ namespace sharpen
         //return prev status
         sharpen::RwLockState LockRead();
 
-        bool TryLockRead();
+        bool TryLockRead() noexcept;
 
-        bool TryLockRead(sharpen::RwLockState &prevStatus);
+        bool TryLockRead(sharpen::RwLockState &prevStatus) noexcept;
 
         //return prev status
         sharpen::RwLockState LockWrite();
 
-        bool TryLockWrite();
+        bool TryLockWrite() noexcept;
 
-        bool TryLockWrite(sharpen::RwLockState &prevStatus);
+        bool TryLockWrite(sharpen::RwLockState &prevStatus) noexcept;
 
         //upgrade to write lock
         sharpen::RwLockState UpgradeFromRead();

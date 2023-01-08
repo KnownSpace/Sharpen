@@ -23,7 +23,7 @@ void sharpen::AsyncSemaphore::LockAsync()
     future.Await();
 }
 
-bool sharpen::AsyncSemaphore::TryLock()
+bool sharpen::AsyncSemaphore::TryLock() noexcept
 {
     if(!this->lock_.TryLock())
     {
