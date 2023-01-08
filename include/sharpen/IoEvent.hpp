@@ -36,6 +36,7 @@ namespace sharpen
                 Completed = 16,
                 //io request
                 Request = 32,
+                
                 //accept handle
                 Accept = 64,
                 //connect

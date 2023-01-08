@@ -6,6 +6,7 @@
 #include <Windows.h>
 #else
 #include <unistd.h>
+#include <errno.h>
 #endif
 
 void sharpen::ClearConsole()
@@ -21,6 +22,9 @@ void sharpen::ClearConsole()
     (void)count;
 #else
     ssize_t size{::write(STDOUT_FILENO,"\x1b[1J",4)};
-    (void)size;
+    while (size == -1 && errno == EINTR)
+    {
+        size = ::write(STDOUT_FILENO,"\x1b[1J",4);
+    }
 #endif
 }

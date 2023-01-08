@@ -21,6 +21,7 @@ namespace sharpen
     private:
         using Mybase = sharpen::IInputPipeChannel;
         using Callback = std::function<void(ssize_t)>;
+        using Self = sharpen::PosixInputPipeChannel;
 
         sharpen::PosixIoReader reader_;
         bool readable_;
@@ -34,6 +35,10 @@ namespace sharpen
         void RequestRead(char *buf,std::size_t bufSize,sharpen::Future<std::size_t> *future);
 
         static void CompleteReadCallback(sharpen::EventLoop *loop,sharpen::Future<std::size_t> *future,ssize_t size) noexcept;
+    
+        void DoSafeClose(sharpen::ErrorCode err,sharpen::ChannelPtr keepalive) noexcept;
+        
+        void SafeClose(sharpen::FileHandle handle) noexcept;
     public:
         explicit PosixInputPipeChannel(sharpen::FileHandle handle);
 

@@ -41,7 +41,7 @@ namespace sharpen
 
         explicit WinFileChannel(sharpen::FileHandle handle);
 
-        ~WinFileChannel() noexcept = default;
+        virtual ~WinFileChannel() noexcept = default;
 
         static bool SupportSparseFile(const char *rootName) noexcept;
 

@@ -49,6 +49,7 @@ void sharpen::WinInputPipeChannel::RequestRead(char *buf,std::size_t bufSize,sha
     }
     //init iocp olStruct
     this->InitOverlappedStruct(*olStruct);
+    olStruct->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Read);
     olStruct->event_.SetData(olStruct);
     //record future
     olStruct->data_ = future;
@@ -67,6 +68,7 @@ void sharpen::WinInputPipeChannel::RequestRead(char *buf,std::size_t bufSize,sha
 
 void sharpen::WinInputPipeChannel::ReadAsync(char *buf,std::size_t bufSize,sharpen::Future<std::size_t> &future)
 {
+    assert(buf != nullptr || (buf == nullptr && bufSize == 0));
     if (!this->IsRegistered())
     {
         throw std::logic_error("should register to a loop first");

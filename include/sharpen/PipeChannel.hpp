@@ -7,7 +7,7 @@
 
 namespace sharpen
 {
-    void MakePipeChannel(sharpen::InputPipeChannelPtr &in,sharpen::OutputPipeChannelPtr &out);
+    void OpenPipeChannel(sharpen::InputPipeChannelPtr &in,sharpen::OutputPipeChannelPtr &out);
 }
 
 #endif

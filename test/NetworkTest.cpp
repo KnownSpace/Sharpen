@@ -33,14 +33,14 @@ public:
 
     inline virtual simpletest::TestResult Run() noexcept
     {
-        sharpen::NetStreamChannelPtr server = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
+        sharpen::NetStreamChannelPtr server = sharpen::OpenTcpChannel(sharpen::AddressFamily::Ip);
         sharpen::IpEndPoint serverEndpoint;
         serverEndpoint.SetAddrByString("127.0.0.1");
         serverEndpoint.SetPort(8080);
         server->Bind(serverEndpoint);
         server->Register(sharpen::GetLocalLoopGroup());
         server->Listen(65535);
-        sharpen::NetStreamChannelPtr client = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
+        sharpen::NetStreamChannelPtr client = sharpen::OpenTcpChannel(sharpen::AddressFamily::Ip);
         sharpen::IpEndPoint clientEndpoint;
         clientEndpoint.SetAddrByString("127.0.0.1");
         clientEndpoint.SetPort(0);
@@ -78,8 +78,8 @@ public:
 
     inline virtual simpletest::TestResult Run() noexcept
     {
-        sharpen::NetStreamChannelPtr server = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
-        sharpen::NetStreamChannelPtr client = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
+        sharpen::NetStreamChannelPtr server = sharpen::OpenTcpChannel(sharpen::AddressFamily::Ip);
+        sharpen::NetStreamChannelPtr client = sharpen::OpenTcpChannel(sharpen::AddressFamily::Ip);
         sharpen::IpEndPoint addr;
         addr.SetAddrByString("127.0.0.1");
         addr.SetPort(8081);
@@ -135,8 +135,8 @@ public:
 
     inline virtual simpletest::TestResult Run() noexcept
     {
-        sharpen::NetStreamChannelPtr server = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
-        sharpen::NetStreamChannelPtr client = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
+        sharpen::NetStreamChannelPtr server = sharpen::OpenTcpChannel(sharpen::AddressFamily::Ip);
+        sharpen::NetStreamChannelPtr client = sharpen::OpenTcpChannel(sharpen::AddressFamily::Ip);
         sharpen::IpEndPoint ep{0,0};
         ep.SetAddrByString("127.0.0.1");
         client->Bind(ep);
@@ -175,8 +175,8 @@ public:
 
     inline virtual simpletest::TestResult Run() noexcept
     {
-        sharpen::NetStreamChannelPtr server = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
-        sharpen::NetStreamChannelPtr client = sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ip);
+        sharpen::NetStreamChannelPtr server = sharpen::OpenTcpChannel(sharpen::AddressFamily::Ip);
+        sharpen::NetStreamChannelPtr client = sharpen::OpenTcpChannel(sharpen::AddressFamily::Ip);
         sharpen::IpEndPoint ep{0,0};
         ep.SetAddrByString("127.0.0.1");
         client->Bind(ep);

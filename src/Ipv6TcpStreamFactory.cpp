@@ -12,7 +12,7 @@ sharpen::Ipv6TcpStreamFactory::Ipv6TcpStreamFactory(sharpen::IEventLoopGroup &lo
 sharpen::NetStreamChannelPtr sharpen::Ipv6TcpStreamFactory::NviProduce()
 {
     assert(this->loopGroup_);
-    sharpen::NetStreamChannelPtr channel{sharpen::OpenTcpStreamChannel(sharpen::AddressFamily::Ipv6)};
+    sharpen::NetStreamChannelPtr channel{sharpen::OpenTcpChannel(sharpen::AddressFamily::Ipv6)};
     channel->Bind(this->localEndpoint_);
     channel->Register(*this->loopGroup_);
     return channel;

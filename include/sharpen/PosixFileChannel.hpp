@@ -41,7 +41,7 @@ namespace sharpen
 
         explicit PosixFileChannel(sharpen::FileHandle handle);
 
-        ~PosixFileChannel() noexcept = default;
+        virtual ~PosixFileChannel() noexcept = default;
 
         virtual void WriteAsync(const char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> &future) override;
         

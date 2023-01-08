@@ -82,3 +82,10 @@ add_executable(StatusMapTest "${PROJECT_SOURCE_DIR}/test/StatusMapTest.cpp")
 target_link_libraries(StatusMapTest sharpen)
 
 add_test(NAME StatusMap_Test COMMAND "./StatusMapTest${extname}")
+
+#Signal Test
+add_executable(SignalTest "${PROJECT_SOURCE_DIR}/test/SignalTest.cpp")
+
+target_link_libraries(SignalTest sharpen)
+
+add_test(NAME Signal_Test COMMAND "./SignalTest${extname}")

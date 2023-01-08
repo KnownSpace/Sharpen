@@ -33,9 +33,9 @@ namespace sharpen
         
         void Unlock(std::size_t count) noexcept;
 
-        bool TryLock();
+        bool TryLock() noexcept;
 
-        inline bool try_lock()
+        inline bool try_lock() noexcept
         {
             return this->TryLock();
         }

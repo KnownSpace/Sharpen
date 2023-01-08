@@ -26,14 +26,14 @@ sharpen::RwLockState sharpen::AsyncRwLock::LockRead()
     return future.Await();
 }
 
-bool sharpen::AsyncRwLock::TryLockRead()
+bool sharpen::AsyncRwLock::TryLockRead() noexcept
 {
     sharpen::RwLockState status{sharpen::RwLockState::Free};
     (void)status;
     return this->TryLockRead(status);
 }
 
-bool sharpen::AsyncRwLock::TryLockRead(sharpen::RwLockState &status)
+bool sharpen::AsyncRwLock::TryLockRead(sharpen::RwLockState &status) noexcept
 {
     {
         //we always get spin lock
@@ -64,13 +64,13 @@ sharpen::RwLockState sharpen::AsyncRwLock::LockWrite()
     return future.Await();
 }
 
-bool sharpen::AsyncRwLock::TryLockWrite()
+bool sharpen::AsyncRwLock::TryLockWrite() noexcept
 {
     sharpen::RwLockState status{sharpen::RwLockState::Free};
     return this->TryLockWrite(status);
 }
 
-bool sharpen::AsyncRwLock::TryLockWrite(sharpen::RwLockState &prevStatus)
+bool sharpen::AsyncRwLock::TryLockWrite(sharpen::RwLockState &prevStatus) noexcept
 {
     {
         //if we could not get spin lock

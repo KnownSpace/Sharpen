@@ -48,6 +48,7 @@ void sharpen::WinOutputPipeChannel::RequestWrite(const char *buf,std::size_t buf
     //init iocp olStruct
     this->InitOverlappedStruct(*olStruct);
     olStruct->event_.SetData(olStruct);
+    olStruct->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Write);
     //record future
     olStruct->data_ = future;
     BOOL r = ::WriteFile(this->handle_,buf,static_cast<DWORD>(bufSize),nullptr,&(olStruct->ol_));
@@ -65,6 +66,7 @@ void sharpen::WinOutputPipeChannel::RequestWrite(const char *buf,std::size_t buf
 
 void sharpen::WinOutputPipeChannel::WriteAsync(const char *buf,std::size_t bufSize,sharpen::Future<std::size_t> &future)
 {
+    assert(buf != nullptr || (buf == nullptr && bufSize == 0));
     if (!this->IsRegistered())
     {
         throw std::logic_error("should register to a loop first");

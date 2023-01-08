@@ -386,6 +386,7 @@ void sharpen::PosixNetStreamChannel::CompleteAcceptCallback(sharpen::EventLoop *
 
 void sharpen::PosixNetStreamChannel::WriteAsync(const char *buf, std::size_t bufSize, sharpen::Future<std::size_t> &future)
 {
+    assert(buf != nullptr || (buf == nullptr && bufSize == 0));
     if (!this->IsRegistered())
     {
         throw std::logic_error("should register to a loop first");
@@ -404,6 +405,7 @@ void sharpen::PosixNetStreamChannel::WriteAsync(const sharpen::ByteBuffer &buf,s
 
 void sharpen::PosixNetStreamChannel::ReadAsync(char *buf, std::size_t bufSize, sharpen::Future<std::size_t> &future)
 {
+    assert(buf != nullptr || (buf == nullptr && bufSize == 0));
     if (!this->IsRegistered())
     {
         throw std::logic_error("should register to a loop first");
@@ -518,7 +520,7 @@ void sharpen::PosixNetStreamChannel::DoCancel(sharpen::ErrorCode err) noexcept
     }
 }
 
-void sharpen::PosixNetStreamChannel::DoSafeCancel(sharpen::ErrorCode err,std::shared_ptr<sharpen::IChannel> keepalive) noexcept
+void sharpen::PosixNetStreamChannel::DoSafeCancel(sharpen::ErrorCode err,sharpen::ChannelPtr keepalive) noexcept
 {
     (void)keepalive;
     this->DoCancel(err);

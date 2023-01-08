@@ -21,7 +21,7 @@ void sharpen::AsyncMutex::LockAsync()
     future.Await();
 }
 
-bool sharpen::AsyncMutex::TryLock()
+bool sharpen::AsyncMutex::TryLock() noexcept
 {
     {
         if (!this->lock_.TryLock())

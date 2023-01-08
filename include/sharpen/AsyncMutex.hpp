@@ -27,9 +27,9 @@ namespace sharpen
 
         virtual void Unlock() noexcept override;
 
-        bool TryLock();
+        bool TryLock() noexcept;
 
-        inline bool try_lock()
+        inline bool try_lock() noexcept
         {
             return this->TryLock();
         }
