@@ -1,0 +1,96 @@
+#include <sharpen/ISignalChannel.hpp>
+
+#include <sharpen/AwaitableFuture.hpp>
+#include <sharpen/WinPipeSignalChannel.hpp>
+
+#ifdef SHARPEN_IS_WIN
+#include <csignal>
+#else
+
+#endif
+
+std::unique_ptr<sharpen::SignalMap> sharpen::SignalStorage::sigmap;
+
+std::once_flag sharpen::SignalStorage::sigmapFlag;
+
+std::atomic_uint64_t sharpen::SignalStorage::sigBitset;
+
+void sharpen::SignalStorage::DoInstallHandler()
+{
+    sharpen::SignalMap *map{new (std::nothrow) sharpen::SignalMap{}};
+    if(!map)
+    {
+        throw std::bad_alloc{};
+    }
+    sigmap.reset(map);
+}
+
+void SHARPEN_SignalHandler(int sig)
+{
+    if(sharpen::SignalStorage::sigmap)
+    {
+        sharpen::SignalStorage::sigmap->Raise(sig);
+    }
+#ifdef SHARPEN_IS_WIN
+    //re-install handler
+    std::signal(sig,&SHARPEN_SignalHandler);
+#endif
+}
+
+void sharpen::SignalStorage::InstallHandler(std::int32_t sig)
+{
+    using FnPtr = void(*)();
+    std::call_once(sigmapFlag,static_cast<FnPtr>(Self::DoInstallHandler));
+    assert(sig > 0);
+    std::uint32_t sigBitPos{static_cast<std::uint32_t>(sig - 1)};
+    std::uint64_t sigBit{static_cast<std::uint64_t>(1) << sigBitPos};
+    std::uint64_t bitset{sigBitset.load()};
+    if(bitset & sigBit)
+    {
+        std::uint64_t newBitset{0};
+        do
+        {
+            newBitset = bitset | sigBit;
+        } while (!sigBitset.compare_exchange_weak(bitset,newBitset));
+    }
+    if(!(bitset & sigBit))
+    {
+        //install handler
+#ifdef SHARPEN_IS_WIN
+        //use signal, we need re-install handler
+        std::signal(sig,&SHARPEN_SignalHandler);
+#else
+        //use sigaction
+
+#endif
+    }
+}
+
+std::size_t sharpen::ISignalChannel::ReadAsync(sharpen::SignalBuffer &signals)
+{
+    sharpen::AwaitableFuture<std::size_t> future;
+    this->ReadAsync(signals,future);
+    return future.Await();
+}
+
+sharpen::SignalChannelPtr sharpen::OpenSignalChannel(std::int32_t *sigs,std::size_t sigCount)
+{
+#ifdef SHARPEN_IS_WIN
+    sharpen::FileHandle reader{INVALID_HANDLE_VALUE};
+    sharpen::FileHandle writer{INVALID_HANDLE_VALUE};
+    BOOL r = ::CreatePipeEx(&reader,&writer,nullptr,static_cast<DWORD>(sigCount*sizeof(*sigs)),FILE_FLAG_OVERLAPPED,0);
+    if(r == FALSE)
+    {
+        sharpen::ThrowLastError();
+    }
+    for(std::size_t i = 0;i != sigCount;++i)
+    {
+        SignalStorage::InstallHandler(sigs[i]);   
+        SignalStorage::sigmap->Register(writer,sigs[i]);
+    }
+    sharpen::SignalChannelPtr channel{std::make_shared<sharpen::WinPipeSignalChannel>(reader,writer,*sharpen::SignalStorage::sigmap)};
+    return channel;
+#else
+    
+#endif
+}

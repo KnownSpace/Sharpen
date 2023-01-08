@@ -1,0 +1,97 @@
+#pragma once
+#ifndef _SHARPEN_ISIGNALCHANNEL_HPP
+#define _SHARPEN_ISIGNALCHANNEL_HPP
+
+#include <cstdint>
+#include <cstddef>
+
+#include "IChannel.hpp"
+#include "Future.hpp"
+#include "SignalMap.hpp"
+#include "SignalBuffer.hpp"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+//Until C++17:
+//Signal handlers are expected to have C linkage and, in general, only use the features from the common subset of C and C++. It is implementation-defined if a function with C++ linkage can be used as a signal handler.
+extern void SHARPEN_SignalHandler(int sig);
+
+#ifdef __cplusplus
+}
+#endif
+
+namespace sharpen
+{
+    class SignalStorage
+    {
+    private:
+        using Self = sharpen::SignalStorage;
+
+        static void DoInstallHandler();
+    protected:
+    public:
+    
+        SignalStorage() noexcept = default;
+    
+        SignalStorage(const Self &other) noexcept = default;
+    
+        SignalStorage(Self &&other) noexcept = default;
+    
+        Self &operator=(const Self &other) noexcept = default;
+    
+        Self &operator=(Self &&other) noexcept = default;
+    
+        ~SignalStorage() noexcept = default;
+    
+        inline const Self &Const() const noexcept
+        {
+            return *this;
+        }
+
+        static std::unique_ptr<sharpen::SignalMap> sigmap;
+
+        static std::once_flag sigmapFlag;
+
+        static std::atomic_uint64_t sigBitset;
+
+        static void InstallHandler(std::int32_t sig);
+    };
+
+    class ISignalChannel:public sharpen::IChannel
+    {
+    private:
+        using Self = sharpen::ISignalChannel;
+    protected:
+    public:
+    
+        ISignalChannel() noexcept = default;
+    
+        ISignalChannel(const Self &other) noexcept = default;
+    
+        ISignalChannel(Self &&other) noexcept = default;
+    
+        Self &operator=(const Self &other) noexcept = default;
+    
+        Self &operator=(Self &&other) noexcept = default;
+    
+        virtual ~ISignalChannel() noexcept = default;
+    
+        inline const Self &Const() const noexcept
+        {
+            return *this;
+        }
+
+        virtual void ReadAsync(sharpen::SignalBuffer &signals,sharpen::Future<std::size_t> &future) = 0;
+
+        std::size_t ReadAsync(sharpen::SignalBuffer &signals);
+    };
+
+    using SignalChannelPtr = std::shared_ptr<sharpen::ISignalChannel>;
+
+    extern SignalChannelPtr OpenSignalChannel(std::int32_t *sig,std::size_t sigCount);
+}
+
+#endif
