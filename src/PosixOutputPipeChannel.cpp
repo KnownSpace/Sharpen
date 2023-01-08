@@ -17,7 +17,7 @@ sharpen::PosixOutputPipeChannel::PosixOutputPipeChannel(sharpen::FileHandle hand
 
 sharpen::PosixOutputPipeChannel::~PosixOutputPipeChannel() noexcept
 {
-    this->writer_.CancelAllIo(ECANCELED);
+    this->writer_.CancelAllIo(sharpen::ErrorCancel);
 }
 
 void sharpen::PosixOutputPipeChannel::DoWrite()
