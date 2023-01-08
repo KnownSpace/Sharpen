@@ -20,7 +20,7 @@ sharpen::PosixInputPipeChannel::~PosixInputPipeChannel() noexcept
 {
     std::function<void(sharpen::FileHandle)> closer;
     std::swap(closer,this->closer_);
-    this->reader_.CancelAllIo(sharpen::ErrorCancel);
+    this->reader_.CancelAllIo(sharpen::ErrorBrokenPipe);
 }
 
 void sharpen::PosixInputPipeChannel::DoSafeClose(sharpen::ErrorCode err,sharpen::ChannelPtr keepalive) noexcept
@@ -35,7 +35,7 @@ void sharpen::PosixInputPipeChannel::SafeClose(sharpen::FileHandle handle) noexc
     {
         sharpen::CloseFileHandle(handle);
         //FIXME:throw bad alloc
-        return this->loop_->RunInLoopSoon(std::bind(&Self::DoSafeClose,this,sharpen::ErrorCancel,this->shared_from_this()));
+        return this->loop_->RunInLoopSoon(std::bind(&Self::DoSafeClose,this,sharpen::ErrorBrokenPipe,this->shared_from_this()));
     }
     sharpen::CloseFileHandle(handle);
 }

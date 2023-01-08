@@ -17,9 +17,6 @@ sharpen::PosixPipeSignalChannel::PosixPipeSignalChannel(sharpen::FileHandle read
     assert(this->handle_ != -1);
     assert(this->writer_ != -1);
     //register closer
-    // using FnPtr = void(*)(sharpen::FileHandle,sharpen::FileHandle,sharpen::SignalMap *);
-    // FnPtr doClosePtr{static_cast<FnPtr>(&Self::DoClose)};
-    // this->closer_ = std::bind(doClosePtr,std::placeholders::_1,this->GetWriter(),this->map_);
     this->closer_ = std::bind(&Self::SafeClose,this,std::placeholders::_1);    
 }
 
@@ -27,7 +24,7 @@ sharpen::PosixPipeSignalChannel::~PosixPipeSignalChannel() noexcept
 {
     std::function<void(sharpen::FileHandle)> closer;
     std::swap(closer,this->closer_);
-    this->reader_.CancelAllIo(sharpen::ErrorCancel);
+    this->reader_.CancelAllIo(sharpen::ErrorBrokenPipe);
     this->map_->Unregister(this->GetWriter());
     sharpen::CloseFileHandle(this->GetWriter());
 }
@@ -46,7 +43,7 @@ void sharpen::PosixPipeSignalChannel::SafeClose(sharpen::FileHandle handle) noex
     {
         sharpen::CloseFileHandle(handle);
         //FIXME:throw bad alloc
-        return this->loop_->RunInLoopSoon(std::bind(&Self::DoSafeClose,this,sharpen::ErrorCancel,this->shared_from_this()));
+        return this->loop_->RunInLoopSoon(std::bind(&Self::DoSafeClose,this,sharpen::ErrorBrokenPipe,this->shared_from_this()));
     }
     this->map_->Unregister(this->GetWriter());
     sharpen::CloseFileHandle(this->GetWriter());

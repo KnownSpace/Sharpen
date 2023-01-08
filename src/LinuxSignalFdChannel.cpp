@@ -34,7 +34,7 @@ void sharpen::LinuxSignalFdChannel::SafeClose(sharpen::FileHandle handle) noexce
     {
         sharpen::CloseFileHandle(handle);
         //FIXME:throw bad alloc
-        return this->loop_->RunInLoopSoon(std::bind(&Self::DoSafeClose,this,sharpen::ErrorCancel,this->shared_from_this()));
+        return this->loop_->RunInLoopSoon(std::bind(&Self::DoSafeClose,this,sharpen::ErrorBrokenPipe,this->shared_from_this()));
     }
     sharpen::CloseFileHandle(handle);
 }
@@ -45,7 +45,7 @@ sharpen::LinuxSignalFdChannel::~LinuxSignalFdChannel() noexcept
     std::swap(this->closer_,closer);
     for(auto begin = this->tasks_.begin(),end = this->tasks_.end(); begin != end; ++begin)
     {
-        errno = sharpen::ErrorCancel;
+        errno = sharpen::ErrorBrokenPipe;
         begin->cb(-1);   
     }
 }
