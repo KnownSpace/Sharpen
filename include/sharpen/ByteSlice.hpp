@@ -28,17 +28,17 @@ namespace sharpen
         using ConstIterator = sharpen::PointerIterator<const char>;
         using ConstReverseIterator = sharpen::ReversePointerIterator<const char>;
 
-        ByteSlice()
+        constexpr ByteSlice() noexcept
             :data_(nullptr)
             ,size_(0)
         {}
 
-        ByteSlice(const char *data,std::size_t size)
+        constexpr ByteSlice(const char *data,std::size_t size) noexcept
             :data_(data)
             ,size_(size)
         {}
     
-        ByteSlice(const Self &other) = default;
+        ByteSlice(const Self &other) noexcept = default;
     
         ByteSlice(Self &&other) noexcept
             :data_(other.data_)
