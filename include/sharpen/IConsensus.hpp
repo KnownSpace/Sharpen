@@ -88,7 +88,7 @@ namespace sharpen
 
         inline bool IsConsensusMail(const sharpen::Mail &mail) const noexcept
         {
-            if(mail.Header().Empty())
+            if(mail.Empty())
             {
                 return false;
             }
