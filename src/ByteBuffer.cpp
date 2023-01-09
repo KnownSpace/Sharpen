@@ -10,10 +10,17 @@ sharpen::ByteBuffer::ByteBuffer(std::size_t size)
     :vector_(size)
 {}
 
+sharpen::ByteBuffer::ByteBuffer(sharpen::ByteSlice slice)
+    :Self{slice.Data(),slice.GetSize()}
+{}
+
 sharpen::ByteBuffer::ByteBuffer(const char *p,std::size_t size)
     :vector_(size)
 {
-    std::memcpy(this->vector_.Data(),p,size);
+    if(size)
+    {
+        std::memcpy(this->vector_.Data(),p,size);
+    }
 }
 
 void sharpen::ByteBuffer::PushBack(char val)

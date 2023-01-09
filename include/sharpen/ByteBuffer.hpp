@@ -25,6 +25,8 @@ namespace sharpen
 
         explicit ByteBuffer(std::size_t size);
 
+        explicit ByteBuffer(sharpen::ByteSlice slice);
+
         ByteBuffer(const char *p,std::size_t size);
 
         ByteBuffer(const Self &other) = default;
