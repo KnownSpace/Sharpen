@@ -80,6 +80,11 @@ namespace sharpen
         {
             return this->content_;
         }
+
+        inline bool Empty() const noexcept
+        {
+            return this->header_.Empty() && this->content_.Empty();
+        }
     };
 }
 
