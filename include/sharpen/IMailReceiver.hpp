@@ -38,8 +38,8 @@ namespace sharpen
 
         inline void Receive(sharpen::Mail mail,std::uint64_t actorId)
         {
-            assert(!mail.Header().Empty() || !mail.Content().Empty());
-            this->NviReceive(std::move(mail),actorId);
+            assert(!mail.Empty());
+            return this->NviReceive(std::move(mail),actorId);
         }
     };
 }
