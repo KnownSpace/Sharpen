@@ -22,9 +22,9 @@ namespace sharpen
 
         virtual sharpen::RaftMailType NviGetMailType(const sharpen::Mail &mail) const noexcept = 0;
 
-        virtual sharpen::RaftVoteForRequest NviExtractVoteRequest(const sharpen::Mail &mail) const = 0;
+        virtual sharpen::Optional<sharpen::RaftVoteForRequest> NviExtractVoteRequest(const sharpen::Mail &mail) const noexcept = 0;
 
-        virtual sharpen::RaftVoteForResponse NviExtractVoteResponse(const sharpen::Mail &mail) const = 0;
+        virtual sharpen::Optional<sharpen::RaftVoteForResponse> NviExtractVoteResponse(const sharpen::Mail &mail) const noexcept = 0;
     public:
     
         IRaftMailExtractor() noexcept = default;
@@ -62,20 +62,20 @@ namespace sharpen
             return this->NviIsRaftMail(mail);
         }
     
-        inline sharpen::RaftVoteForRequest ExtractVoteRequest(const sharpen::Mail &mail) const
+        inline sharpen::Optional<sharpen::RaftVoteForRequest> ExtractVoteRequest(const sharpen::Mail &mail) const noexcept
         {
             if(!this->IsRaftMail(mail))
             {
-                throw std::invalid_argument{"unexpected mail"};
+                return sharpen::EmptyOpt;
             }
             return this->NviExtractVoteRequest(mail);
         }
 
-        inline sharpen::RaftVoteForResponse ExtractVoteResponse(const sharpen::Mail &mail) const
+        inline sharpen::Optional<sharpen::RaftVoteForResponse> ExtractVoteResponse(const sharpen::Mail &mail) const noexcept
         {
             if(!this->IsRaftMail(mail))
             {
-                throw std::invalid_argument{"unexpected mail"};
+                sharpen::EmptyOpt;
             }
             return this->NviExtractVoteResponse(mail);
         }  

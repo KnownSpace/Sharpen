@@ -17,9 +17,9 @@ namespace sharpen
 
         virtual sharpen::RaftMailType NviGetMailType(const sharpen::Mail &mail) const noexcept override;
 
-        virtual sharpen::RaftVoteForRequest NviExtractVoteRequest(const sharpen::Mail &mail) const override;
+        virtual sharpen::Optional<sharpen::RaftVoteForRequest> NviExtractVoteRequest(const sharpen::Mail &mail) const override;
 
-        virtual sharpen::RaftVoteForResponse NviExtractVoteResponse(const sharpen::Mail &mail) const override;
+        virtual sharpen::Optional<sharpen::RaftVoteForResponse> NviExtractVoteResponse(const sharpen::Mail &mail) const override;
     public:
     
         explicit RaftMailExtractor(std::uint32_t magic) noexcept;

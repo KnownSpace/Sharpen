@@ -45,7 +45,7 @@ sharpen::RaftMailType sharpen::RaftMailExtractor::NviGetMailType(const sharpen::
     return form.GetType();
 }
 
-sharpen::RaftVoteForRequest sharpen::RaftMailExtractor::NviExtractVoteRequest(const sharpen::Mail &mail) const
+sharpen::Optional<sharpen::RaftVoteForRequest> sharpen::RaftMailExtractor::NviExtractVoteRequest(const sharpen::Mail &mail) const
 {
     assert(mail.Header().GetSize() == sizeof(sharpen::GenericMailHeader));
     const sharpen::GenericMailHeader &header{mail.Header().As<sharpen::GenericMailHeader>()};
@@ -55,23 +55,31 @@ sharpen::RaftVoteForRequest sharpen::RaftMailExtractor::NviExtractVoteRequest(co
     assert(form.GetType() == sharpen::RaftMailType::VoteRequest);
     if(form.GetType() != sharpen::RaftMailType::VoteRequest)
     {
-        throw std::invalid_argument{"unexpected mail"};
+        return sharpen::EmptyOpt;
     }
     if(!form.CheckMagic())
     {
-        throw sharpen::CorruptedDataError{"corrupted vote request mail"};
+        return sharpen::EmptyOpt;
     }
     if(!form.CheckContent(content.GetSlice()))
     {
-        throw sharpen::CorruptedDataError{"corrupted vote request mail"};
+        return sharpen::EmptyOpt;
     }
     sharpen::RaftVoteForRequest request;
-    sharpen::BinarySerializator::LoadFrom(request,content);
+    try
+    {
+        sharpen::BinarySerializator::LoadFrom(request,content);
+    }
+    catch(const sharpen::CorruptedDataError &error)
+    {
+        (void)error;
+        return sharpen::EmptyOpt;
+    }
     return request;
 }
 
 
-sharpen::RaftVoteForResponse sharpen::RaftMailExtractor::NviExtractVoteResponse(const sharpen::Mail &mail) const
+sharpen::Optional<sharpen::RaftVoteForResponse> sharpen::RaftMailExtractor::NviExtractVoteResponse(const sharpen::Mail &mail) const
 {
     assert(mail.Header().GetSize() == sizeof(sharpen::GenericMailHeader));
     const sharpen::GenericMailHeader &header{mail.Header().As<sharpen::GenericMailHeader>()};
@@ -81,17 +89,25 @@ sharpen::RaftVoteForResponse sharpen::RaftMailExtractor::NviExtractVoteResponse(
     assert(form.GetType() == sharpen::RaftMailType::VoteResponse);
     if(form.GetType() != sharpen::RaftMailType::VoteResponse)
     {
-        throw std::invalid_argument{"unexpected mail"};
+        return sharpen::EmptyOpt;
     }
     if(!form.CheckMagic())
     {
-        throw sharpen::CorruptedDataError{"corrupted vote response mail"};
+        return sharpen::EmptyOpt;
     }
     if(!form.CheckContent(content.GetSlice()))
     {
-        throw sharpen::CorruptedDataError{"corrupted vote response mail"};
+        return sharpen::EmptyOpt;
     }
     sharpen::RaftVoteForResponse response;
-    sharpen::BinarySerializator::LoadFrom(response,content);
+    try
+    {
+        sharpen::BinarySerializator::LoadFrom(response,content);
+    }
+    catch(const sharpen::CorruptedDataError &error)
+    {
+        (void)error;
+        return sharpen::EmptyOpt;
+    }
     return response;
 }
