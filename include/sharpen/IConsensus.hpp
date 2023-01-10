@@ -8,10 +8,11 @@
 #include "ILogStorage.hpp"
 #include "IMailReceiver.hpp"
 #include "AwaitableFuture.hpp"
+#include "IMailReceiver.hpp"
 
 namespace sharpen
 {
-    class IConsensus:public sharpen::IMailReceiver
+    class IConsensus
     {
     private:
         using Self = sharpen::IConsensus;
@@ -24,6 +25,8 @@ namespace sharpen
 
         //return the last index of log batch
         virtual std::uint64_t NviWrite(std::unique_ptr<sharpen::ILogBatch> logs) = 0;
+
+        virtual sharpen::Mail NviGenerateResponse(sharpen::Mail request) = 0;
     public:
 
         IConsensus() noexcept = default;
@@ -93,6 +96,19 @@ namespace sharpen
                 return false;
             }
             return this->NviIsConsensusMail(mail);
+        }
+
+        virtual sharpen::IMailReceiver &GetReceiver() noexcept = 0;
+
+        virtual const sharpen::IMailReceiver &GetReceiver() const noexcept = 0;
+
+        inline sharpen::Mail GenerateResponse(sharpen::Mail request)
+        {
+            if(!request.Empty() && this->IsConsensusMail(request))
+            {
+                return this->NviGenerateResponse(std::move(request));
+            }
+            return sharpen::Mail{};
         }
     };   
 }
