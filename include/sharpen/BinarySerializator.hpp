@@ -12,6 +12,7 @@
 #include "IntOps.hpp"
 #include "Optional.hpp"
 #include "CorruptedDataError.hpp"
+#include "ByteOrder.hpp"
 
 namespace sharpen
 {
@@ -20,6 +21,20 @@ namespace sharpen
     {
     private:
         using Self = sharpen::BinarySerializator;
+
+        template<typename _T,typename _Check = sharpen::EnableIf<std::is_integral<_T>::value>>
+        static void ToLittleEndian(const char *data,std::size_t size,int)
+        {
+#ifdef SHARPEN_IS_BIG_ENDIAN
+            sharpen::ConvertEndian(data,size);
+#endif
+        }
+
+        template<typename _T>
+        static void ToLittleEndian(const char *data,std::size_t size,...)
+        {
+            //do nothing
+        }
 
         template<typename _T,typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>
         static constexpr std::size_t InternalComputeSize(const _T &obj,...) noexcept
@@ -69,6 +84,12 @@ namespace sharpen
                 throw std::invalid_argument("invalid buffer");
             }
             std::memcpy(&obj,data,sizeof(obj));
+#ifdef SHARPEN_IS_BIG_ENDIAN
+            {
+                char *p{reinterpret_cast<char*>(&p)};
+                Self::ToLittleEndian(p,sizeof(obj),0);
+            }
+#endif
             return sizeof(obj);
         }
 
@@ -171,6 +192,11 @@ namespace sharpen
         static std::size_t InternalUnsafeStoreTo(const _T &obj,char *data,...) noexcept
         {
             std::memcpy(data,&obj,sizeof(obj));
+#ifdef SHARPEN_IS_BIG_ENDIAN
+            {
+                Self::ToLiitleEndian(data,sizeof(obj),0);
+            }
+#endif
             return sizeof(obj);
         }
 
