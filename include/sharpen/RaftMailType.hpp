@@ -17,8 +17,16 @@ namespace sharpen
         InstallSnapshotRequest = 5,
         InstallSnapshotResponse = 6,
         PreVoteRequest = 7,
-        PreVoteResponse = 8
+        PreVoteResponse = 8,
+        MaxValue = 9
     };
+
+    constexpr inline static bool IsValiedRaftMailType(std::uint32_t type) noexcept
+    {
+        constexpr std::uint32_t minVal{static_cast<std::uint32_t>(RaftMailType::Unknown)};
+        constexpr std::uint32_t MaxVal{static_cast<std::uint32_t>(RaftMailType::MaxValue)};
+        return type > minVal && type < MaxVal;
+    }
 }
 
 #endif
