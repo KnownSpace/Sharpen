@@ -4,6 +4,7 @@
 
 #include "Mail.hpp"
 #include "RaftVoteForRequest.hpp"
+#include "RaftVoteForResponse.hpp"
 
 namespace sharpen
 {
