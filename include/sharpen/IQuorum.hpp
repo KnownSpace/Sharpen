@@ -77,6 +77,13 @@ namespace sharpen
         {
             return this->NviLookup(actorId) != nullptr;
         }
+
+        virtual std::size_t GetSize() const noexcept = 0;
+
+        inline bool Empty() const noexcept
+        {
+            return !this->GetSize();
+        }
     };
 }
 

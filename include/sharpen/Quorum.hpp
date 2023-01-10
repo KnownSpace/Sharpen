@@ -38,6 +38,11 @@ namespace sharpen
         virtual std::unique_ptr<sharpen::Broadcaster> CreateBroadcaster() const override;
 
         virtual void Remove(std::uint64_t actorId) noexcept override;
+
+        inline virtual std::size_t GetSize() const noexcept override
+        {
+            return this->builders_.size();
+        }
     };
 }
 
