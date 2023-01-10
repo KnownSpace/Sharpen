@@ -62,7 +62,7 @@ namespace sharpen
             std::memcpy(this->data_,other.data_,bytes_);
         }
     
-        Self &operator=(const Self &other) noexcept
+        inline Self &operator=(const Self &other) noexcept
         {
             if (this != std::addressof(other))
             {
@@ -72,7 +72,7 @@ namespace sharpen
             return *this;
         }
     
-        Self &operator=(Self &&other) noexcept
+        inline Self &operator=(Self &&other) noexcept
         {
             if(this != std::addressof(other))
             {
@@ -82,7 +82,7 @@ namespace sharpen
             return *this;
         }
 
-        Self &operator=(_T val) noexcept
+        inline Self &operator=(_T val) noexcept
         {
             this->Set(val);
             return *this;
@@ -90,7 +90,7 @@ namespace sharpen
     
         ~Varint() noexcept = default;
 
-        _T Get() const noexcept
+        inline _T Get() const noexcept
         {
             if(!this->cache_.Exist())
             {
@@ -109,7 +109,7 @@ namespace sharpen
             return this->cache_.Get();
         }
 
-        void Set(_T value) noexcept
+        inline void Set(_T value) noexcept
         {
             if(this->cache_.Exist() && this->cache_.Get() == value)
             {
@@ -118,7 +118,7 @@ namespace sharpen
             this->cache_.Construct(value);
             using UnsignedValue = typename std::make_unsigned<_T>::type;
             UnsignedValue val{static_cast<UnsignedValue>(value)};
-            unsigned char *ite = reinterpret_cast<unsigned char*>(this->data_ + 0);
+            unsigned char *ite = reinterpret_cast<unsigned char*>(this->data_);
             for (;val > mask_; ++ite)
             {
                 *ite = static_cast<unsigned char>(val) | signBit_;
@@ -127,12 +127,12 @@ namespace sharpen
             *ite = static_cast<unsigned char>(val);
         }
 
-        void Set(const sharpen::ByteBuffer &data) noexcept
+        inline void Set(const sharpen::ByteBuffer &data) noexcept
         {
             this->Set(data.Data(),data.GetSize());
         }
 
-        void Set(const char *data,std::size_t size) noexcept
+        inline void Set(const char *data,std::size_t size) noexcept
         {
             this->cache_.Reset();
             size = (std::min)(size,sizeof(this->data_));
@@ -180,7 +180,7 @@ namespace sharpen
             return this->data_;
         }
 
-        std::size_t ComputeSize() const noexcept
+        inline std::size_t ComputeSize() const noexcept
         {
             std::size_t size{1};
             const char *ite = this->data_;
