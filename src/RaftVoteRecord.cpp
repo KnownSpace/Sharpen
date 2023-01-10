@@ -1,6 +1,6 @@
 #include <sharpen/RaftVoteRecord.hpp>
 
-sharpen::RaftVoteRecord::RaftVoteRecord(std::uint64_t term,std::uint64_t actorId)
+sharpen::RaftVoteRecord::RaftVoteRecord(std::uint64_t term,std::uint64_t actorId) noexcept
     :term_(term)
     ,actorId_(actorId)
 {}
