@@ -33,7 +33,7 @@ namespace sharpen
 
         virtual sharpen::Mail BuildVoteRequest(const sharpen::RaftVoteForRequest &request) const = 0;
     
-        virtual sharpen::Mail BuildVoteResponse(const sharpen::RaftVoteForRequest &response) const = 0;
+        virtual sharpen::Mail BuildVoteResponse(const sharpen::RaftVoteForResponse &response) const = 0;
     };
 }
 
