@@ -45,7 +45,7 @@ sharpen::RaftMailType sharpen::RaftMailExtractor::NviGetMailType(const sharpen::
     return form.GetType();
 }
 
-sharpen::Optional<sharpen::RaftVoteForRequest> sharpen::RaftMailExtractor::NviExtractVoteRequest(const sharpen::Mail &mail) const
+sharpen::Optional<sharpen::RaftVoteForRequest> sharpen::RaftMailExtractor::NviExtractVoteRequest(const sharpen::Mail &mail) const noexcept
 {
     assert(mail.Header().GetSize() == sizeof(sharpen::GenericMailHeader));
     const sharpen::GenericMailHeader &header{mail.Header().As<sharpen::GenericMailHeader>()};
@@ -79,7 +79,7 @@ sharpen::Optional<sharpen::RaftVoteForRequest> sharpen::RaftMailExtractor::NviEx
 }
 
 
-sharpen::Optional<sharpen::RaftVoteForResponse> sharpen::RaftMailExtractor::NviExtractVoteResponse(const sharpen::Mail &mail) const
+sharpen::Optional<sharpen::RaftVoteForResponse> sharpen::RaftMailExtractor::NviExtractVoteResponse(const sharpen::Mail &mail) const noexcept
 {
     assert(mail.Header().GetSize() == sizeof(sharpen::GenericMailHeader));
     const sharpen::GenericMailHeader &header{mail.Header().As<sharpen::GenericMailHeader>()};

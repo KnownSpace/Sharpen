@@ -59,7 +59,7 @@ namespace sharpen
         template<typename _T,typename _Check = typename std::enable_if<std::is_standard_layout<_T>::value && sizeof(_T) == formSize>::type>
         inline const _T &Form() const noexcept
         {
-            _T *ptr{reinterpret_cast<const _T*>(this->form_)};
+            const _T *ptr{reinterpret_cast<const _T*>(this->form_)};
             return *ptr;
         }
 

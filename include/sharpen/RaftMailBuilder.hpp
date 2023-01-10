@@ -14,7 +14,7 @@ namespace sharpen
         std::uint32_t magic_;
     public:
     
-        explicit RaftMailBuilder(std::uint32_t magic);
+        explicit RaftMailBuilder(std::uint32_t magic) noexcept;
     
         RaftMailBuilder(const Self &other) noexcept = default;
     
