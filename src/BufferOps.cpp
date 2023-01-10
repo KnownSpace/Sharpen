@@ -102,8 +102,6 @@ unsigned char sharpen::Crc16TableLow[256] =
 
 std::uint16_t sharpen::Crc16(const char *data, std::size_t size) noexcept
 {
-    assert(data);
-    assert(size != 0);
     sharpen::UintUnion<16> crc;
     crc.value_ = 0xFFFF;
     unsigned char index{0};
@@ -119,8 +117,6 @@ std::uint16_t sharpen::Crc16(const char *data, std::size_t size) noexcept
 
 std::uint32_t sharpen::Adler32(const char *data,std::size_t size) noexcept
 {
-    assert(data);
-    assert(size != 0);
     sharpen::UintUnion<32> adler32{};
     adler32.union_.low_ = 1;
     for (const char *end = data + size; data != end; ++data)
