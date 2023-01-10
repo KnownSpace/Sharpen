@@ -32,7 +32,7 @@ sharpen::Mail sharpen::RaftMailBuilder::BuildVoteRequest(const sharpen::RaftVote
     sharpen::BufferWriter writer{content};
     writer.Write(request);
     form.SetChecksum(content.GetSlice());
-    sharpen::GenericMail mail;
+    sharpen::GenericMail mail{this->magic_};
     mail.Form<sharpen::RaftForm>() = form;
     mail.SetContent(std::move(content));
     return mail.AsMail();
@@ -46,7 +46,7 @@ sharpen::Mail sharpen::RaftMailBuilder::BuildVoteResponse(const sharpen::RaftVot
     sharpen::BufferWriter writer{content};
     writer.Write(response);
     form.SetChecksum(content.GetSlice());
-    sharpen::GenericMail mail;
+    sharpen::GenericMail mail{this->magic_};
     mail.Form<sharpen::RaftForm>() = form;
     mail.SetContent(std::move(content));
     return mail.AsMail();
