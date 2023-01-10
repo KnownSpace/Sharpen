@@ -75,7 +75,7 @@ namespace sharpen
         {
             if(!this->IsRaftMail(mail))
             {
-                sharpen::EmptyOpt;
+                return sharpen::EmptyOpt;
             }
             return this->NviExtractVoteResponse(mail);
         }  

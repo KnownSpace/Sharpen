@@ -23,9 +23,7 @@ namespace sharpen
 
     constexpr inline static bool IsValiedRaftMailType(std::uint32_t type) noexcept
     {
-        constexpr std::uint32_t minVal{static_cast<std::uint32_t>(RaftMailType::Unknown)};
-        constexpr std::uint32_t MaxVal{static_cast<std::uint32_t>(RaftMailType::MaxValue)};
-        return type > minVal && type < MaxVal;
+        return type > static_cast<std::uint32_t>(RaftMailType::Unknown) && type < static_cast<std::uint32_t>(RaftMailType::MaxValue);
     }
 }
 
