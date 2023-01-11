@@ -54,7 +54,7 @@ std::size_t sharpen::RaftVoteForRequest::LoadFrom(const char *data,std::size_t s
 {
     if(size < 4)
     {
-        throw sharpen::CorruptedDataError{"corrupted data error"};
+        throw sharpen::CorruptedDataError{"corrupted vote request"};
     }
     std::size_t offset{0};
     sharpen::Varuint64 builder{0};
@@ -62,19 +62,19 @@ std::size_t sharpen::RaftVoteForRequest::LoadFrom(const char *data,std::size_t s
     this->id_ = builder.Get();
     if(size < 3 + offset)
     {
-        throw sharpen::CorruptedDataError{"corrupted data error"};
+        throw sharpen::CorruptedDataError{"corrupted vote request"};
     }
     offset += builder.LoadFrom(data + offset,size - offset);
     this->term_ = builder.Get();
     if(size < 2 + offset)
     {
-        throw sharpen::CorruptedDataError{"corrupted data error"};
+        throw sharpen::CorruptedDataError{"corrupted vote request"};
     }
     offset += builder.LoadFrom(data + offset,size - offset);
     this->lastIndex_ = builder.Get();
     if(size <= offset)
     {
-        throw sharpen::CorruptedDataError{"corrupted data error"};
+        throw sharpen::CorruptedDataError{"corrupted vote request"};
     }
     offset += builder.LoadFrom(data + offset,size - offset);
     this->lastTerm_ = builder.Get();
