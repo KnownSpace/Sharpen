@@ -8,10 +8,11 @@
 
 #include "ByteBuffer.hpp"
 #include "IteratorOps.hpp"
+#include "BinarySerializable.hpp"
 
 namespace sharpen
 {
-    class LogEntries
+    class LogEntries:public sharpen::BinarySerializable<sharpen::LogEntries>
     {
     private:
         using Self = sharpen::LogEntries;
@@ -90,6 +91,12 @@ namespace sharpen
         {
             this->InternalPush(begin,end,0);
         }
+
+        std::size_t ComputeSize() const noexcept;
+
+        std::size_t LoadFrom(const char *data,std::size_t size);
+
+        std::size_t UnsafeStoreTo(char *data) const noexcept;
     };
 }
 

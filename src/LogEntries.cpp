@@ -38,3 +38,26 @@ void sharpen::LogEntries::Reserve(std::size_t size)
     std::size_t newSize{this->GetSize() + size};
     this->logs_.reserve(newSize);
 }
+
+std::size_t sharpen::LogEntries::ComputeSize() const noexcept
+{
+    return sharpen::BinarySerializator::ComputeSize(this->logs_);
+}
+
+std::size_t sharpen::LogEntries::LoadFrom(const char *data,std::size_t size)
+{
+    try
+    {
+        return sharpen::BinarySerializator::LoadFrom(this->logs_,data,size);
+    }
+    catch(const sharpen::CorruptedDataError &rethrow)
+    {
+        throw sharpen::CorruptedDataError{"corrupted log entries"};
+        (void)rethrow;
+    }
+}
+
+std::size_t sharpen::LogEntries::UnsafeStoreTo(char *data) const noexcept
+{
+    return sharpen::BinarySerializator::UnsafeStoreTo(this->logs_,data);
+}
