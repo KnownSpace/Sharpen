@@ -81,7 +81,7 @@ namespace sharpen
         {
             if(size < sizeof(obj))
             {
-                throw std::invalid_argument("invalid buffer");
+                throw sharpen::CorruptedDataError("corrupted binary data");
             }
             std::memcpy(&obj,data,sizeof(obj));
 #ifdef SHARPEN_IS_BIG_ENDIAN
@@ -102,10 +102,6 @@ namespace sharpen
         template<typename _T,typename _Check = decltype(std::declval<std::size_t&>() = Self::InternalLoadFrom(std::declval<_T&>(),nullptr,static_cast<std::size_t>(0),0,0,0,0))>
         static std::size_t InternalLoadFrom(sharpen::Optional<_T> &obj,const char *data,std::size_t size,int,...)
         {
-            if(!size)
-            {
-                throw std::invalid_argument("invalid buffer");
-            }
             std::size_t offset{0};
             bool exist{false};
             std::memcpy(&exist,data,sizeof(exist));
@@ -114,7 +110,7 @@ namespace sharpen
             {
                 if(size == offset)
                 {
-                    throw sharpen::CorruptedDataError("optional data corruption");
+                    throw sharpen::CorruptedDataError("corrupted optional data");
                 }
                 //type should be default constructible
                 obj.Construct();
@@ -132,13 +128,13 @@ namespace sharpen
         {
             if(size < 2)
             {
-                throw std::invalid_argument("invalid buffer");
+                throw sharpen::CorruptedDataError("corrupted pair data");
             }
             std::size_t offset{0};
             offset += Self::LoadFrom(obj.first,data,size);
             if(size == offset)
             {
-                throw sharpen::CorruptedDataError("pair data corruption");
+                throw sharpen::CorruptedDataError("corrupted pair data");
             }
             offset += Self::LoadFrom(obj.second,data + offset,size - offset);
             return offset;
@@ -164,7 +160,7 @@ namespace sharpen
         {
             if(!size)
             {
-                throw std::invalid_argument("buffer cannot be empty");
+                throw sharpen::CorruptedDataError("corrupted container data");
             }
             using ValueType = typename std::remove_reference<decltype(*sharpen::Begin(container))>::type;
             using NoconstValType = typename RemoveConst<ValueType>::Type;
@@ -177,7 +173,7 @@ namespace sharpen
             {
                 if(size <= offset)
                 {
-                    throw sharpen::CorruptedDataError("container data corruption");
+                    throw sharpen::CorruptedDataError("corrupted container data");
                 }
                 //type should be default constructible
                 NoconstValType obj;
