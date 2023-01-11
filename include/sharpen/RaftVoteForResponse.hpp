@@ -11,10 +11,10 @@
 
 namespace sharpen
 {
-    class RaftVoteForResponse
+    class RaftVoteForResponse:public sharpen::BinarySerializable<sharpen::RaftVoteForResponse>
     {
     private:
-        using Self = RaftVoteForResponse;
+        using Self = sharpen::RaftVoteForResponse;
     
         bool status_;
         std::uint64_t term_;
