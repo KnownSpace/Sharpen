@@ -18,6 +18,8 @@ namespace sharpen
         std::uint64_t term_;
         std::uint64_t lastCommitIndex_;
     public:
+
+        RaftHeartbeatResponse() noexcept = default;
     
         explicit RaftHeartbeatResponse(bool status) noexcept;
     
