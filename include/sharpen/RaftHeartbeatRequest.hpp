@@ -20,7 +20,7 @@ namespace sharpen
     
         std::uint64_t term_;
         std::uint64_t leaderId_;
-        std::uint16_t preLogIndex_;
+        std::uint64_t preLogIndex_;
         std::uint64_t preLogTerm_;
         sharpen::LogEntries entries_;
         std::uint64_t leaderCommitIndex_;
