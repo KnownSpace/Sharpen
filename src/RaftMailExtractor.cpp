@@ -68,7 +68,7 @@ sharpen::Optional<sharpen::RaftVoteForRequest> sharpen::RaftMailExtractor::NviEx
     sharpen::RaftVoteForRequest request;
     try
     {
-        sharpen::BinarySerializator::LoadFrom(request,content);
+        request.Unserialize().LoadFrom(content);
     }
     catch(const sharpen::CorruptedDataError &error)
     {
@@ -102,9 +102,75 @@ sharpen::Optional<sharpen::RaftVoteForResponse> sharpen::RaftMailExtractor::NviE
     sharpen::RaftVoteForResponse response;
     try
     {
-        sharpen::BinarySerializator::LoadFrom(response,content);
+        response.Unserialize().LoadFrom(content);
     }
     catch(const sharpen::CorruptedDataError &error)
+    {
+        (void)error;
+        return sharpen::EmptyOpt;
+    }
+    return response;
+}
+
+sharpen::Optional<sharpen::RaftHeartbeatRequest> sharpen::RaftMailExtractor::NviExtractHeartbeatRequest(const sharpen::Mail &mail) const noexcept
+{
+    assert(mail.Header().GetSize() == sizeof(sharpen::GenericMailHeader));
+    const sharpen::GenericMailHeader &header{mail.Header().As<sharpen::GenericMailHeader>()};
+    assert(header.GetMagic() == this->magic_);
+    const sharpen::RaftForm &form{header.Form<sharpen::RaftForm>()};
+    const sharpen::ByteBuffer &content{mail.Content()};
+    assert(form.GetType() == sharpen::RaftMailType::HeartbeatRequest);
+    if(form.GetType() != sharpen::RaftMailType::HeartbeatRequest)
+    {
+        return sharpen::EmptyOpt;
+    }
+    if(!form.CheckMagic())
+    {
+        return sharpen::EmptyOpt;
+    }
+    if(!form.CheckContent(content.GetSlice()))
+    {
+        return sharpen::EmptyOpt;
+    }
+    sharpen::RaftHeartbeatRequest request;
+    try
+    {
+        request.Unserialize().LoadFrom(content);
+    }
+   catch(const sharpen::CorruptedDataError &error)
+    {
+        (void)error;
+        return sharpen::EmptyOpt;
+    }
+    return request;
+}
+
+sharpen::Optional<sharpen::RaftHeartbeatResponse> sharpen::RaftMailExtractor::NviExtractHeartbeatResponse(const sharpen::Mail &mail) const noexcept
+{
+    assert(mail.Header().GetSize() == sizeof(sharpen::GenericMailHeader));
+    const sharpen::GenericMailHeader &header{mail.Header().As<sharpen::GenericMailHeader>()};
+    assert(header.GetMagic() == this->magic_);
+    const sharpen::RaftForm &form{header.Form<sharpen::RaftForm>()};
+    const sharpen::ByteBuffer &content{mail.Content()};
+    assert(form.GetType() == sharpen::RaftMailType::HeartbeatResponse);
+    if(form.GetType() != sharpen::RaftMailType::HeartbeatResponse)
+    {
+        return sharpen::EmptyOpt;
+    }
+    if(!form.CheckMagic())
+    {
+        return sharpen::EmptyOpt;
+    }
+    if(!form.CheckContent(content.GetSlice()))
+    {
+        return sharpen::EmptyOpt;
+    }
+    sharpen::RaftHeartbeatResponse response;
+    try
+    {
+        response.Unserialize().LoadFrom(content);
+    }
+   catch(const sharpen::CorruptedDataError &error)
     {
         (void)error;
         return sharpen::EmptyOpt;
