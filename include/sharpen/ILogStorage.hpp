@@ -18,6 +18,8 @@ namespace sharpen
         virtual sharpen::Optional<std::uint64_t> NviLookupTerm(std::uint64_t index) const = 0;
 
         virtual void NviWrite(std::uint64_t index,sharpen::ByteSlice log) = 0;
+
+        virtual void NviDropUntil(std::uint64_t index) noexcept = 0;
     public:
     
         constexpr static std::uint64_t noneIndex{0};
@@ -68,6 +70,14 @@ namespace sharpen
         inline void Write(std::uint64_t index,const sharpen::ByteBuffer &log)
         {
             this->Write(index,log.GetSlice());
+        }
+
+        inline void DropUntil(std::uint64_t index) noexcept
+        {
+            if(index <= this->GetLastIndex())
+            {
+                this->NviDropUntil(index);
+            }
         }
     };
 }
