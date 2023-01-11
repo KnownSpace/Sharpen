@@ -306,6 +306,8 @@ namespace sharpen
         {
             return sharpen::ByteSlice{this->Data(),this->GetSize()};
         }
+
+        int Printf(const char *format,...) noexcept;
     };
 
     inline bool operator==(const sharpen::ByteBuffer &buffer,const sharpen::ByteSlice &slice) noexcept

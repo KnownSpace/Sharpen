@@ -2,6 +2,8 @@
 
 #include <cstring>
 #include <cassert>
+#include <cstdio>
+#include <cstdarg>
 
 #include <sharpen/Varint.hpp>
 #include <sharpen/CorruptedDataError.hpp>
@@ -299,4 +301,13 @@ sharpen::ByteSlice sharpen::ByteBuffer::GetSlice(ConstIterator begin,ConstIterat
     std::size_t index{sharpen::GetRangeSize(this->Begin(),begin)};
     std::size_t size{sharpen::GetRangeSize(begin,end)};
     return this->GetSlice(index,size);
+}
+
+int sharpen::ByteBuffer::Printf(const char *format,...) noexcept
+{
+    std::va_list args;
+    va_start(args,format);
+    int result{std::vsnprintf(this->Data(),this->GetSize(),format,args)};
+    va_end(args);
+    return result;
 }
