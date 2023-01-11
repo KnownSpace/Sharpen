@@ -28,7 +28,7 @@ namespace sharpen
         std::unordered_map<std::uint64_t,std::unique_ptr<sharpen::IRemoteActor>> actors_;
     public:
     
-        template<typename _Iterator,typename _Check = decltype(std::declval<std::unique_ptr<sharpen::IRemoteActor>>() = std::move(*std::declval<_Iterator>()++))>
+        template<typename _Iterator,typename _Check = decltype(std::declval<std::unique_ptr<sharpen::IRemoteActor>&>() = std::move(*std::declval<_Iterator&>()++))>
         Broadcaster(std::move_iterator<_Iterator> begin,std::move_iterator<_Iterator> end)
             :lock_(nullptr)
             ,sharedMail_(nullptr)
