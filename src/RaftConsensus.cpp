@@ -531,3 +531,8 @@ void sharpen::RaftConsensus::ConfigurateQuorum(std::function<std::unique_ptr<sha
     this->worker_->Invoke(future,&Self::DoConfigurateQuorum,this,std::move(configurater));
     future.Await();
 }
+
+void sharpen::RaftConsensus::NviDropLogsUntil(std::uint64_t index)
+{
+    this->worker_->Submit(&sharpen::ILogStorage::DropUntil,this->logs_.get(),index);
+}

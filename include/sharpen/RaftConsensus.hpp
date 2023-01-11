@@ -113,6 +113,8 @@ namespace sharpen
 
         virtual std::uint64_t NviWrite(std::unique_ptr<sharpen::ILogBatch> logs) override;
 
+        virtual void NviDropLogsUntil(std::uint64_t index) override;
+
         void DoConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(std::unique_ptr<sharpen::IQuorum>)> configurater);
 
         void DoAdvance();

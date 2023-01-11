@@ -27,6 +27,8 @@ namespace sharpen
         virtual std::uint64_t NviWrite(std::unique_ptr<sharpen::ILogBatch> logs) = 0;
 
         virtual sharpen::Mail NviGenerateResponse(sharpen::Mail request) = 0;
+
+        virtual void NviDropLogsUntil(std::uint64_t index) = 0;
     public:
 
         IConsensus() noexcept = default;
@@ -109,6 +111,11 @@ namespace sharpen
                 return this->NviGenerateResponse(std::move(request));
             }
             return sharpen::Mail{};
+        }
+
+        inline void DropLogsUntil(std::uint64_t index)
+        {
+            this->NviDropLogsUntil(index);
         }
     };   
 }
