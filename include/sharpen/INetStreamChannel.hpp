@@ -40,13 +40,13 @@ namespace sharpen
         
         INetStreamChannel(Self &&) noexcept = default;
 
-        virtual void SendFileAsync(sharpen::FileChannelPtr file,std::uint64_t size,std::uint64_t offset,sharpen::Future<void> &future) = 0;
+        virtual void SendFileAsync(sharpen::FileChannelPtr file,std::uint64_t size,std::uint64_t offset,sharpen::Future<std::size_t> &future) = 0;
         
-        virtual void SendFileAsync(sharpen::FileChannelPtr file,sharpen::Future<void> &future) = 0;
+        virtual void SendFileAsync(sharpen::FileChannelPtr file,sharpen::Future<std::size_t> &future) = 0;
 
-        void SendFileAsync(sharpen::FileChannelPtr file,std::uint64_t size,std::uint64_t offset);
+        std::size_t SendFileAsync(sharpen::FileChannelPtr file,std::uint64_t size,std::uint64_t offset);
 
-        void SendFileAsync(sharpen::FileChannelPtr file);
+        std::size_t SendFileAsync(sharpen::FileChannelPtr file);
 
         virtual void AcceptAsync(sharpen::Future<sharpen::NetStreamChannelPtr> &future) = 0;
 

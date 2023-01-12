@@ -75,6 +75,11 @@ void sharpen::WinNetStreamChannel::RequestWrite(const char *buf,std::size_t bufS
         if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
         {
             delete olStruct;
+            if(err == sharpen::ErrorCancel || err == sharpen::ErrorConnectionAborted || err == sharpen::ErrorConnectionReset)
+            {
+                future->Complete(static_cast<std::size_t>(0));
+                return;
+            }
             future->Fail(sharpen::MakeLastErrorPtr());
             return;
         }
@@ -120,6 +125,11 @@ void sharpen::WinNetStreamChannel::RequestRead(char *buf,std::size_t bufSize,sha
         if (err != ERROR_IO_PENDING&& err != ERROR_SUCCESS)
         {
             delete olStruct;
+            if(err == sharpen::ErrorCancel || err == sharpen::ErrorConnectionAborted || err == sharpen::ErrorConnectionReset)
+            {
+                future->Complete(static_cast<std::size_t>(0));
+                return;
+            }
             future->Fail(sharpen::MakeLastErrorPtr());
             return;
         }
@@ -161,12 +171,12 @@ void sharpen::WinNetStreamChannel::OnEvent(sharpen::IoEvent *event)
      }
 }
 
-void sharpen::WinNetStreamChannel::RequestSendFile(sharpen::FileChannelPtr file,std::uint64_t size,std::uint64_t offset,sharpen::Future<void> *future)
+void sharpen::WinNetStreamChannel::RequestSendFile(sharpen::FileChannelPtr file,std::uint64_t size,std::uint64_t offset,sharpen::Future<std::size_t> *future)
 {
     sharpen::WSAOverlappedStruct *olStruct = new (std::nothrow) sharpen::WSAOverlappedStruct();
     if (!olStruct)
     {
-        future->Fail(std::make_exception_ptr(std::bad_alloc()));
+        future->Fail(std::make_exception_ptr(std::bad_alloc{}));
         return;
     }
     //init iocp olStruct
@@ -188,13 +198,18 @@ void sharpen::WinNetStreamChannel::RequestSendFile(sharpen::FileChannelPtr file,
         if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
         {
             delete olStruct;
+            if(err == sharpen::ErrorCancel || err == sharpen::ErrorConnectionAborted || err == sharpen::ErrorConnectionReset)
+            {
+                future->Complete(static_cast<std::size_t>(0));
+                return;
+            }
             future->Fail(sharpen::MakeLastErrorPtr());
             return;
         }
     }
 }
         
-void sharpen::WinNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,sharpen::Future<void> &future)
+void sharpen::WinNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,sharpen::Future<std::size_t> &future)
 {
     this->SendFileAsync(file,file->GetFileSize(),0,future);
 }
@@ -376,7 +391,13 @@ void sharpen::WinNetStreamChannel::HandleReadAndWrite(sharpen::WSAOverlappedStru
     sharpen::Future<std::size_t> *future = reinterpret_cast<sharpen::Future<std::size_t>*>(olStruct.data_);
     if (olStruct.event_.IsErrorEvent())
     {
-        future->Fail(sharpen::MakeLastErrorPtr());
+        sharpen::ErrorCode code{olStruct.event_.GetErrorCode()};
+        if(code == sharpen::ErrorCancel || code == sharpen::ErrorConnectionAborted || code == sharpen::ErrorConnectionRefused)
+        {
+            future->Complete(static_cast<std::size_t>(0));
+            return;
+        }
+        future->Fail(sharpen::MakeSystemErrorPtr(code));
         return;
     }
     future->Complete(olStruct.length_);
@@ -398,13 +419,19 @@ void sharpen::WinNetStreamChannel::HandleAccept(sharpen::WSAOverlappedStruct &ol
 
 void sharpen::WinNetStreamChannel::HandleSendFile(sharpen::WSAOverlappedStruct &olStruct)
 {
-    sharpen::Future<void> *future = reinterpret_cast<sharpen::Future<void>*>(olStruct.data_);
+    sharpen::Future<std::size_t> *future = reinterpret_cast<sharpen::Future<std::size_t>*>(olStruct.data_);
     if (olStruct.event_.IsErrorEvent())
     {
-        future->Fail(sharpen::MakeLastErrorPtr());
+        sharpen::ErrorCode code{olStruct.event_.GetErrorCode()};
+        if(code == sharpen::ErrorCancel || code == sharpen::ErrorConnectionAborted || code == sharpen::ErrorConnectionRefused)
+        {
+            future->Complete(static_cast<std::size_t>(0));
+            return;
+        }
+        future->Fail(sharpen::MakeSystemErrorPtr(code));
         return;
     }
-    future->Complete();
+    future->Complete(olStruct.length_);
 }
 
 void sharpen::WinNetStreamChannel::HandleConnect(sharpen::WSAOverlappedStruct &olStruct)
@@ -450,7 +477,7 @@ void sharpen::WinNetStreamChannel::WriteAsync(const char *buf,std::size_t bufSiz
     this->loop_->RunInLoop(std::bind(&sharpen::WinNetStreamChannel::RequestWrite,this,buf,bufSize,&future));
 }
 
-void sharpen::WinNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,std::uint64_t size,std::uint64_t offset,sharpen::Future<void> &future)
+void sharpen::WinNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,std::uint64_t size,std::uint64_t offset,sharpen::Future<std::size_t> &future)
 {
     if (!this->IsRegistered())
     {

@@ -107,18 +107,18 @@ sharpen::NetStreamChannelPtr sharpen::INetStreamChannel::AcceptAsync()
     return future.Await();
 }
 
-void sharpen::INetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,std::uint64_t size,std::uint64_t offset)
+std::size_t sharpen::INetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,std::uint64_t size,std::uint64_t offset)
 {
-    sharpen::AwaitableFuture<void> future;
+    sharpen::AwaitableFuture<std::size_t> future;
     this->SendFileAsync(file,size,offset,future);
-    future.Await();
+    return future.Await();
 }
 
-void sharpen::INetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file)
+std::size_t sharpen::INetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file)
 {
-    sharpen::AwaitableFuture<void> future;
+    sharpen::AwaitableFuture<std::size_t> future;
     this->SendFileAsync(file,future);
-    future.Await();
+    return future.Await();
 }
 
 void sharpen::INetStreamChannel::Bind(const sharpen::IEndPoint &endpoint)
