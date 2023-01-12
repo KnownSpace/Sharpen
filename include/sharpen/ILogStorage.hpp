@@ -20,6 +20,8 @@ namespace sharpen
         virtual void NviWrite(std::uint64_t index,sharpen::ByteSlice log) = 0;
 
         virtual void NviDropUntil(std::uint64_t index) noexcept = 0;
+
+        virtual void NviTruncateFrom(std::uint64_t index) = 0;
     public:
     
         constexpr static std::uint64_t noneIndex{0};
@@ -77,6 +79,14 @@ namespace sharpen
             if(index <= this->GetLastIndex())
             {
                 this->NviDropUntil(index);
+            }
+        }
+
+        inline void TruncateFrom(std::uint64_t index)
+        {
+            if(index <= this->GetLastIndex())
+            {
+                this->NviTruncateFrom(index);
             }
         }
     };
