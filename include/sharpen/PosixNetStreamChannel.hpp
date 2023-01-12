@@ -87,7 +87,7 @@ namespace sharpen
 
         void RequestWrite(const char *buf,std::size_t bufSize,sharpen::Future<std::size_t> *future);
 
-        void RequestSendFile(sharpen::FileHandle handle,std::uint64_t offset,std::size_t size,sharpen::Future<void> *future);
+        void RequestSendFile(sharpen::FileHandle handle,std::uint64_t offset,std::size_t size,sharpen::Future<std::size_t> *future);
 
         void RequestConnect(const sharpen::IEndPoint &endPoint,sharpen::Future<void> *future);
 
@@ -101,7 +101,7 @@ namespace sharpen
 
         static void CompleteIoCallback(sharpen::EventLoop *loop,sharpen::Future<std::size_t> *future,ssize_t size) noexcept;
 
-        static void CompleteSendFileCallback(sharpen::EventLoop *loop,sharpen::Future<void> *future,void *mem,std::size_t memLen,ssize_t) noexcept;
+        static void CompleteSendFileCallback(sharpen::EventLoop *loop,sharpen::Future<std::size_t> *future,void *mem,std::size_t memLen,ssize_t size) noexcept;
 
         static void CompleteAcceptCallback(sharpen::EventLoop *loop,sharpen::Future<sharpen::NetStreamChannelPtr> *future,sharpen::FileHandle accept) noexcept;
 
@@ -130,9 +130,9 @@ namespace sharpen
 
         virtual void OnEvent(sharpen::IoEvent *event) override;
 
-        virtual void SendFileAsync(sharpen::FileChannelPtr file,std::uint64_t size,std::uint64_t offset,sharpen::Future<void> &future) override;
+        virtual void SendFileAsync(sharpen::FileChannelPtr file,std::uint64_t size,std::uint64_t offset,sharpen::Future<std::size_t> &future) override;
         
-        virtual void SendFileAsync(sharpen::FileChannelPtr file,sharpen::Future<void> &future) override;
+        virtual void SendFileAsync(sharpen::FileChannelPtr file,sharpen::Future<std::size_t> &future) override;
 
         virtual void AcceptAsync(sharpen::Future<sharpen::NetStreamChannelPtr> &future) override;
 

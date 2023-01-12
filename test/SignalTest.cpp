@@ -70,18 +70,8 @@ public:
             sharpen::Delay(std::chrono::seconds(3));
             channel->Close();
         });
-        std::size_t size{0};
-        sharpen::ErrorCode code{0};
-        try
-        {
-            size = channel->ReadAsync(signals);
-        }
-        catch(const std::system_error &error)
-        {
-            code = sharpen::GetErrorCode(error);
-        }
-        (void)size;
-        return this->Assert(code == sharpen::ErrorBrokenPipe,"code could == ErrorBrokenPipe,but it not");
+        std::size_t size{channel->ReadAsync(signals)};
+        return this->Assert(size == 0,"size could == 0,but it not");
     }
 };
 

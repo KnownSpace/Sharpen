@@ -18,7 +18,9 @@ namespace sharpen
 
         virtual std::uint64_t NviGetId() const noexcept = 0;
 
-        virtual sharpen::Mail NviPost(const sharpen::Mail &mail) = 0;
+        //if there are errors occurred
+        //return a empty mail
+        virtual sharpen::Mail NviPost(const sharpen::Mail &mail) noexcept = 0;
 
         virtual void NviClose() noexcept = 0;
 
@@ -53,7 +55,9 @@ namespace sharpen
             return this->NviClose();
         }
 
-        inline sharpen::Mail Post(const sharpen::Mail &mail)
+        //if there are errors occurred
+        //return a empty mail
+        inline sharpen::Mail Post(const sharpen::Mail &mail) noexcept
         {
             return this->NviPost(mail);
         }

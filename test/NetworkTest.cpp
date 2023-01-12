@@ -101,19 +101,13 @@ public:
         bool status{true};
         for(std::size_t i = 0;i != sizeof(future)/sizeof(*future);++i)
         {
-            try
+            std::size_t size{future[i].Await()};
+            if(size)
             {
-                future[i].Await();
-            }
-            catch(const std::system_error &e)
-            {
-                if(e.code().value() != sharpen::ErrorCancel)
-                {
-                    status = false;
-                }
+                status = false;
             }
         }
-        return this->Assert(status,"All operations should throw ErrorCancel,but it not");
+        return this->Assert(status,"All operations should return 0,but it not");
     }
 };
 
@@ -153,7 +147,7 @@ public:
         char buf[6] = {};
         sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::GetLocalLoopGroup());
         auto r = chd->ReadWithTimeout(timer,std::chrono::seconds(1),buf,sizeof(buf));
-        return this->Assert(!r.Exist(),"r should not exist,but it exist");
+        return this->Assert(r.Get() == 0,"r should == 0,but it not");
     }
 };
 
@@ -197,16 +191,8 @@ public:
             timer->Await(std::chrono::seconds(3));
             chd->Close();
         });
-        bool status{false};
-        try
-        {
-            chd->ReadAsync(buf,sizeof(buf));
-        }
-        catch(const std::system_error &e)
-        {
-            status = e.code().value() == sharpen::ErrorConnectionAborted;
-        }
-        return this->Assert(status,"should throw ErrorConnectionAborted,but it not");
+        std::size_t size{chd->ReadAsync(buf,sizeof(buf))};
+        return this->Assert(size == 0,"size should == 0,but it not");
     }
 };
 
