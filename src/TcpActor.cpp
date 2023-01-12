@@ -3,7 +3,6 @@
 #include <new>
 
 #include <sharpen/RemotePosterOpenError.hpp>
-#include <sharpen/RemotePosterClosedError.hpp>
 #include <sharpen/SingleWorkerGroup.hpp>
 #include <sharpen/YieldOps.hpp>
 #include <sharpen/SystemError.hpp>
@@ -52,7 +51,7 @@ void sharpen::TcpActor::DoPostShared(const sharpen::Mail *mail) noexcept
     }
     else
     {
-        sharpen::RemoteActorStatus status{sharpen::RemoteActorStatus::Closed};
+        status = sharpen::RemoteActorStatus::Closed;
         if(this->status_.exchange(status) != sharpen::RemoteActorStatus::Closed)
         {
             this->poster_->Close();
