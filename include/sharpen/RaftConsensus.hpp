@@ -111,6 +111,8 @@ namespace sharpen
 
         virtual void NviReceive(sharpen::Mail mail,std::uint64_t actorId) override;
 
+        std::uint64_t DoWrite(sharpen::ILogBatch *rawLogs);
+
         virtual std::uint64_t NviWrite(std::unique_ptr<sharpen::ILogBatch> logs) override;
 
         virtual void NviDropLogsUntil(std::uint64_t index) override;

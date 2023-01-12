@@ -536,3 +536,25 @@ void sharpen::RaftConsensus::NviDropLogsUntil(std::uint64_t index)
 {
     this->worker_->Submit(&sharpen::ILogStorage::DropUntil,this->logs_.get(),index);
 }
+
+std::uint64_t sharpen::RaftConsensus::NviWrite(std::unique_ptr<sharpen::ILogBatch> logs)
+{
+    assert(logs != nullptr);
+    assert(this->worker_ != nullptr);
+    sharpen::AwaitableFuture<std::uint64_t> future;
+    this->worker_->Invoke(future,&Self::DoWrite,this,logs.release());
+    return future.Await();
+}
+
+std::uint64_t sharpen::RaftConsensus::DoWrite(sharpen::ILogBatch *rawLogs)
+{
+    std::unique_ptr<sharpen::ILogBatch> logs{rawLogs};
+    assert(logs != nullptr);
+    std::uint64_t index{this->logs_->GetLastIndex()};
+    for(std::size_t i = 0;i != logs->GetSize();++i)
+    {
+        this->logs_->Write(index + i,logs->Get(index));
+    }
+    index += logs->GetSize();
+    return index;
+}
