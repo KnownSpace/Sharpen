@@ -14,6 +14,10 @@ namespace sharpen
     protected:
 
         virtual std::uint64_t NviGetId() const noexcept = 0;
+
+        virtual void NviPost(sharpen::Mail mail) = 0;
+
+        virtual void NviPostShared(const sharpen::Mail &mail) = 0;
     public:
     
         IRemoteActor() noexcept = default;
@@ -33,9 +37,21 @@ namespace sharpen
             return *this;
         }
 
-        virtual void Post(sharpen::Mail mail) = 0;
+        inline void Post(sharpen::Mail mail)
+        {
+            if(!mail.Empty())
+            {
+                this->NviPost(std::move(mail));
+            }
+        }
 
-        virtual void PostShared(const sharpen::Mail &mail) = 0;
+        inline void PostShared(const sharpen::Mail &mail)
+        {
+            if(!mail.Empty())
+            {
+                this->NviPostShared(mail);
+            }
+        }
 
         virtual sharpen::RemoteActorStatus GetStatus() const noexcept = 0;
 

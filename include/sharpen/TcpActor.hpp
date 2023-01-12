@@ -35,6 +35,10 @@ namespace sharpen
             assert(this->poster_);
             return this->poster_->GetId();
         }
+
+        virtual void NviPost(sharpen::Mail mail) override;
+
+        virtual void NviPostShared(const sharpen::Mail &mail) override;
     public:
     
         TcpActor(sharpen::IFiberScheduler &scheduler,sharpen::IMailReceiver &receiver,std::shared_ptr<sharpen::IMailParserFactory> parserFactory,std::unique_ptr<sharpen::IRemotePoster> poster);
@@ -45,10 +49,6 @@ namespace sharpen
         {
             return *this;
         }
-        
-        virtual void Post(sharpen::Mail mail) override;
-
-        virtual void PostShared(const sharpen::Mail &mail) override;
 
         inline virtual sharpen::RemoteActorStatus GetStatus() const noexcept override
         {

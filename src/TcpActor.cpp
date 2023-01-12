@@ -41,26 +41,22 @@ void sharpen::TcpActor::DoPostShared(const sharpen::Mail *mail) noexcept
             return;
         }
     }
-    sharpen::Mail response;
-    try
+    sharpen::Mail response{this->poster_->Post(*mail)};
+    if(!response.Empty())
     {
-        response = this->poster_->Post(*mail);
         sharpen::RemoteActorStatus expectedStatus{sharpen::RemoteActorStatus::InProgress};
         if(this->status_.compare_exchange_strong(expectedStatus,sharpen::RemoteActorStatus::Opened))
         {
             this->receiver_->Receive(std::move(response),this->GetId());
         }
     }
-    catch(const sharpen::RemotePosterClosedError &ignore)
+    else
     {
-        //cancel by operator
-        (void)ignore;
-        return;
-    }
-    catch(const std::exception &ignore)
-    {
-        assert(!ignore.what() && "fail to post or receive mail");
-        (void)ignore;
+        sharpen::RemoteActorStatus status{sharpen::RemoteActorStatus::Closed};
+        if(this->status_.exchange(status) != sharpen::RemoteActorStatus::Closed)
+        {
+            this->poster_->Close();
+        }
     }
 }
 
@@ -78,12 +74,12 @@ void sharpen::TcpActor::Cancel() noexcept
     }
 }
 
-void sharpen::TcpActor::Post(sharpen::Mail mail)
+void sharpen::TcpActor::NviPost(sharpen::Mail mail)
 {
     this->worker_->Submit(&Self::DoPost,this,std::move(mail));
 }
 
-void sharpen::TcpActor::PostShared(const sharpen::Mail &mail)
+void sharpen::TcpActor::NviPostShared(const sharpen::Mail &mail)
 {
     this->worker_->Submit(&Self::DoPostShared,this,&mail);
 }

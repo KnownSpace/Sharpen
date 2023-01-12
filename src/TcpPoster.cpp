@@ -72,7 +72,7 @@ void sharpen::TcpPoster::NviOpen(std::unique_ptr<sharpen::IMailParser> parser)
     }
 }
 
-sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail)
+sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail) noexcept
 {
     sharpen::NetStreamChannelPtr channel{nullptr};
     {
@@ -82,59 +82,34 @@ sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail)
     }
     if(!channel)
     {
-        //already closed
-        throw sharpen::RemotePosterClosedError{"poster already closed"};
+        return sharpen::Mail{};
     }
     //post mail
-    try
+    std::size_t size{0};
+    size = channel->WriteAsync(mail.Header());
+    if(!size)
     {
-        channel->WriteAsync(mail.Header());
-        if(!mail.Content().Empty())
-        {
-            channel->WriteAsync(mail.Content());
-        }
+        return sharpen::Mail{};
     }
-    catch(const std::system_error &error)
+    if(!mail.Content().Empty())
     {
-       sharpen::ErrorCode code{sharpen::GetErrorCode(error)};
-        if(code != sharpen::ErrorCancel 
-                    && code != sharpen::ErrorConnectionAborted 
-                    && code != sharpen::ErrorConnectionReset)
+        size = channel->WriteAsync(mail.Content());
+        if(!size)
         {
-            throw;
+            return sharpen::Mail{};
         }
-        throw sharpen::RemotePosterClosedError{"poster is closed by operator or peer"};
     }
     //receive mail
     sharpen::ByteBuffer buffer{4096};
     sharpen::Mail response;
     while (!this->parser_->Completed())
     {
-        std::size_t sz{0};
-        try
+        size = channel->ReadAsync(buffer);
+        if(!size)
         {
-            sz = channel->ReadAsync(buffer);
+            return sharpen::Mail{};
         }
-        catch(const std::system_error &error)
-        {
-            sharpen::ErrorCode code{sharpen::GetErrorCode(error)};
-            if(code != sharpen::ErrorCancel 
-                    && code != sharpen::ErrorConnectionAborted 
-                    && code != sharpen::ErrorConnectionReset)
-            {
-                throw;
-            }
-            throw sharpen::RemotePosterClosedError{"poster is closed by operator or peer"};
-        }
-        catch(const std::exception&)
-        {
-            throw;   
-        }
-        if(!sz)
-        {
-            throw sharpen::RemotePosterClosedError{"poster already closed"};
-        }
-        sharpen::ByteSlice slice{buffer.Data(),sz};
+        sharpen::ByteSlice slice{buffer.Data(),size};
         this->parser_->Parse(slice);
     }
     response = this->parser_->PopCompletedMail();

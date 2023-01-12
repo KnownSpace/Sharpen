@@ -25,7 +25,7 @@ namespace sharpen
 
         virtual std::uint64_t NviGetId() const noexcept override;
 
-        virtual sharpen::Mail NviPost(const sharpen::Mail &mail) override;
+        virtual sharpen::Mail NviPost(const sharpen::Mail &mail) noexcept override;
 
         virtual void NviClose() noexcept override;
 
