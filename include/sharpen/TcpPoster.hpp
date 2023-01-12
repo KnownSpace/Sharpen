@@ -5,7 +5,6 @@
 #include "IRemotePoster.hpp"
 #include "IEndPoint.hpp"
 #include "ITcpSteamFactory.hpp"
-#include "RemotePosterClosedError.hpp"
 #include "RemotePosterOpenError.hpp"
 #include "IMailParser.hpp"
 #include "Noncopyable.hpp"
