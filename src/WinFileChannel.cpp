@@ -65,6 +65,11 @@ void sharpen::WinFileChannel::RequestWrite(const char *buf,std::size_t bufSize,s
         if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
         {
             delete olStruct;
+            if(err == ERROR_HANDLE_EOF || err == sharpen::ErrorCancel)
+            {
+                future->Complete(static_cast<std::size_t>(0));
+                return;
+            }
             future->Fail(sharpen::MakeLastErrorPtr());
         }
     }
@@ -110,6 +115,11 @@ void sharpen::WinFileChannel::RequestRead(char *buf,std::size_t bufSize,std::uin
         if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
         {
             delete olStruct;
+            if(err == ERROR_HANDLE_EOF || err == sharpen::ErrorCancel)
+            {
+                future->Complete(static_cast<std::size_t>(0));
+                return;
+            }
             future->Fail(sharpen::MakeLastErrorPtr());
             return;
         }
@@ -141,7 +151,13 @@ void sharpen::WinFileChannel::OnEvent(sharpen::IoEvent *event)
     MyFuturePtr future = reinterpret_cast<MyFuturePtr>(ev->data_);
     if (event->IsErrorEvent())
     {
-        future->Fail(sharpen::MakeSystemErrorPtr(event->GetErrorCode()));
+        sharpen::ErrorCode code{event->GetErrorCode()};
+        if(code == ERROR_HANDLE_EOF || code == sharpen::ErrorCancel)
+        {
+            future->Complete(static_cast<std::size_t>(0));
+            return;
+        }
+        future->Fail(sharpen::MakeSystemErrorPtr(code));
         return;
     }
     future->Complete(ev->length_);
