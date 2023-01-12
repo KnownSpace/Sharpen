@@ -61,7 +61,13 @@ void sharpen::WinPipeSignalChannel::OnEvent(sharpen::IoEvent *event)
     sharpen::Future<std::size_t> *future = reinterpret_cast<sharpen::Future<std::size_t>*>(ev->data_);
     if(event->IsErrorEvent())
     {
-        future->Fail(sharpen::MakeSystemErrorPtr(event->GetErrorCode()));
+        sharpen::ErrorCode code{event->GetErrorCode()};
+        if(code == sharpen::ErrorBrokenPipe || code == sharpen::ErrorCancel)
+        {
+            future->Complete(static_cast<std::size_t>(0));
+            return;
+        }
+        future->Fail(sharpen::MakeSystemErrorPtr(code));
         return;
     }
     future->Complete(ev->length_);
@@ -89,6 +95,11 @@ void sharpen::WinPipeSignalChannel::RequestRead(char *sigs,std::size_t size,shar
         if(err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
         {
             delete olStruct;
+            if(err == sharpen::ErrorBrokenPipe || err == sharpen::ErrorCancel)
+            {
+                future->Complete(static_cast<std::size_t>(0));
+                return;
+            }
             future->Fail(sharpen::MakeLastErrorPtr());
             return;
         }
