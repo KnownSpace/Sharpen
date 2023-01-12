@@ -58,6 +58,11 @@ void sharpen::WinOutputPipeChannel::RequestWrite(const char *buf,std::size_t buf
         if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
         {
             delete olStruct;
+            if(err == sharpen::ErrorBrokenPipe || err == sharpen::ErrorCancel)
+            {
+                future->Complete(static_cast<std::size_t>(0));
+                return;
+            }
             future->Fail(sharpen::MakeLastErrorPtr());
             return;
         }
@@ -89,7 +94,13 @@ void sharpen::WinOutputPipeChannel::OnEvent(sharpen::IoEvent *event)
     sharpen::Future<std::size_t> *future = reinterpret_cast<sharpen::Future<std::size_t>*>(ev->data_);
     if (event->IsErrorEvent())
     {
-        future->Fail(sharpen::MakeSystemErrorPtr(event->GetErrorCode()));
+        sharpen::ErrorCode code{event->GetErrorCode()};
+        if(code == sharpen::ErrorCancel || code == sharpen::ErrorBrokenPipe)
+        {
+            future->Complete(static_cast<std::size_t>(0));
+            return;
+        }
+        future->Fail(sharpen::MakeSystemErrorPtr(code));
         return;
     }
     future->Complete(ev->length_);
