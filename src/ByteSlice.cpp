@@ -1,5 +1,7 @@
 #include <sharpen/ByteSlice.hpp>
 
+#include <sharpen/Varint.hpp>
+
 sharpen::ByteSlice &sharpen::ByteSlice::operator=(Self &&other) noexcept
 {
     if(this != std::addressof(other))
@@ -75,4 +77,35 @@ sharpen::ByteSlice::ConstReverseIterator sharpen::ByteSlice::ReverseFind(char e)
         ++begin;
     }
     return begin;
+}
+
+std::size_t sharpen::ByteSlice::ComputeSize() const noexcept
+{
+    std::size_t offset{0};
+    sharpen::Varuint64 builder{this->GetSize()};
+    offset += builder.ComputeSize();
+    offset += this->GetSize();
+    return offset;
+}
+
+std::size_t sharpen::ByteSlice::UnsafeStoreTo(char *data) const noexcept
+{
+    std::size_t offset{0};
+    sharpen::Varuint64 builder{this->GetSize()};
+    std::size_t size{builder.ComputeSize()};
+    std::memcpy(data,builder.Data(),size);
+    offset += size;
+    std::memcpy(data + offset,this->Data(),this->GetSize());
+    offset += this->GetSize();
+    return offset;
+}
+
+std::size_t sharpen::ByteSlice::StoreTo(char *data,std::size_t size) const
+{
+    std::size_t needSize{this->ComputeSize()};
+    if(needSize > size)
+    {
+        throw std::invalid_argument("buffer too small");
+    }
+    return this->UnsafeStoreTo(data);
 }

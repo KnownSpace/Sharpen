@@ -200,6 +200,12 @@ namespace sharpen
             assert(this->GetSize() == sizeof(_T));
             return *reinterpret_cast<const _T*>(this->Data());
         }
+
+        std::size_t ComputeSize() const noexcept;
+
+        std::size_t UnsafeStoreTo(char *data) const noexcept;
+
+        std::size_t StoreTo(char *data,std::size_t size) const;
     };   
 }
 
