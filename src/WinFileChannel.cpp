@@ -65,7 +65,7 @@ void sharpen::WinFileChannel::RequestWrite(const char *buf,std::size_t bufSize,s
         if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
         {
             delete olStruct;
-            if(err == ERROR_HANDLE_EOF || err == sharpen::ErrorCancel)
+            if(err == ERROR_HANDLE_EOF)
             {
                 future->Complete(static_cast<std::size_t>(0));
                 return;
@@ -115,7 +115,7 @@ void sharpen::WinFileChannel::RequestRead(char *buf,std::size_t bufSize,std::uin
         if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
         {
             delete olStruct;
-            if(err == ERROR_HANDLE_EOF || err == sharpen::ErrorCancel)
+            if(err == ERROR_HANDLE_EOF)
             {
                 future->Complete(static_cast<std::size_t>(0));
                 return;
@@ -152,7 +152,7 @@ void sharpen::WinFileChannel::OnEvent(sharpen::IoEvent *event)
     if (event->IsErrorEvent())
     {
         sharpen::ErrorCode code{event->GetErrorCode()};
-        if(code == ERROR_HANDLE_EOF || code == sharpen::ErrorCancel)
+        if(code == ERROR_HANDLE_EOF)
         {
             future->Complete(static_cast<std::size_t>(0));
             return;

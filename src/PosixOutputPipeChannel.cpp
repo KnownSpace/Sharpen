@@ -100,7 +100,13 @@ void sharpen::PosixOutputPipeChannel::CompleteWriteCallback(sharpen::EventLoop *
 {
     if(size == -1)
     {
-        loop->RunInLoopSoon(std::bind(&sharpen::Future<std::size_t>::Fail,future,sharpen::MakeLastErrorPtr()));
+        sharpen::ErrorCode code{sharpen::GetLastError()};
+        if(code == sharpen::ErrorCancel || code == sharpen::ErrorBrokenPipe)
+        {
+            loop->RunInLoopSoon(std::bind(&sharpen::Future<std::size_t>::CompleteForBind,future,static_cast<std::size_t>(0)));
+            return;
+        }
+                loop->RunInLoopSoon(std::bind(&sharpen::Future<std::size_t>::Fail,future,sharpen::MakeSystemErrorPtr(code)));
         return;
     }
     loop->RunInLoopSoon(std::bind(&sharpen::Future<std::size_t>::CompleteForBind,future,static_cast<std::size_t>(size)));

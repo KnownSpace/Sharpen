@@ -276,7 +276,7 @@ void sharpen::PosixNetStreamChannel::RequestWrite(const char *buf,std::size_t bu
     this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::TryWrite,this,buf,bufSize,std::move(cb)));
 }
 
-void sharpen::PosixNetStreamChannel::RequestSendFile(sharpen::FileHandle handle,std::uint64_t offset,std::size_t size,sharpen::Future<void> *future)
+void sharpen::PosixNetStreamChannel::RequestSendFile(sharpen::FileHandle handle,std::uint64_t offset,std::size_t size,sharpen::Future<std::size_t> *future)
 {
     std::size_t memSize = size;
     std::size_t over = offset % 4096;
@@ -298,7 +298,7 @@ void sharpen::PosixNetStreamChannel::RequestSendFile(sharpen::FileHandle handle,
     }
     std::uintptr_t p = reinterpret_cast<std::uintptr_t>(mem);
     p += over;
-    using FnPtr = void (*)(sharpen::EventLoop *,sharpen::Future<void> *,void *,std::size_t,ssize_t);
+    using FnPtr = void (*)(sharpen::EventLoop *,sharpen::Future<std::size_t> *,void *,std::size_t,ssize_t);
     Callback cb = std::bind(static_cast<FnPtr>(&sharpen::PosixNetStreamChannel::CompleteSendFileCallback),this->loop_,future,mem,memSize,std::placeholders::_1);
     this->loop_->RunInLoop(std::bind(&sharpen::PosixNetStreamChannel::TryWrite,this,reinterpret_cast<const char*>(p),size,std::move(cb)));
 }
@@ -346,7 +346,13 @@ void sharpen::PosixNetStreamChannel::CompleteIoCallback(sharpen::EventLoop *loop
 {
     if (size == -1)
     {
-        loop->RunInLoopSoon(std::bind(&sharpen::Future<std::size_t>::Fail,future,sharpen::MakeLastErrorPtr()));
+        sharpen::ErrorCode code{sharpen::GetLastError()};
+        if(code == sharpen::ErrorCancel || code == sharpen::ErrorConnectionAborted || code == sharpen::ErrorConnectionReset)
+        {
+            loop->RunInLoopSoon(std::bind(&sharpen::Future<std::size_t>::CompleteForBind,future,static_cast<std::size_t>(0)));
+            return;
+        }
+        loop->RunInLoopSoon(std::bind(&sharpen::Future<std::size_t>::Fail,future,sharpen::MakeSystemErrorPtr(code)));
         return;
     }
     loop->RunInLoopSoon(std::bind(&sharpen::Future<std::size_t>::CompleteForBind,future,static_cast<std::size_t>(size)));
@@ -362,15 +368,20 @@ void sharpen::PosixNetStreamChannel::CompletePollCallback(sharpen::EventLoop *lo
     loop->RunInLoopSoon(std::bind(&sharpen::Future<void>::CompleteForBind,future));
 }
 
-void sharpen::PosixNetStreamChannel::CompleteSendFileCallback(sharpen::EventLoop *loop,sharpen::Future<void> *future,void *mem,std::size_t memLen,ssize_t size) noexcept
+void sharpen::PosixNetStreamChannel::CompleteSendFileCallback(sharpen::EventLoop *loop,sharpen::Future<std::size_t> *future,void *mem,std::size_t memLen,ssize_t size) noexcept
 {
     ::munmap(mem,memLen);
     if (size == -1)
     {
-        loop->RunInLoopSoon(std::bind(&sharpen::Future<void>::Fail,future,sharpen::MakeLastErrorPtr()));
+        sharpen::ErrorCode code{sharpen::GetLastError()};
+        if(code == sharpen::ErrorCancel || code == sharpen::ErrorConnectionAborted || code == sharpen::ErrorConnectionReset)
+        {
+            loop->RunInLoopSoon(std::bind(&sharpen::Future<std::size_t>::CompleteForBind,future,static_cast<std::size_t>(0)));
+        }
+        loop->RunInLoopSoon(std::bind(&sharpen::Future<std::size_t>::Fail,future,sharpen::MakeLastErrorPtr()));
         return;
     }
-    loop->RunInLoopSoon(std::bind(&sharpen::Future<void>::CompleteForBind,future));
+    loop->RunInLoopSoon(std::bind(&sharpen::Future<std::size_t>::CompleteForBind,future,static_cast<std::size_t>(size)));
 }
 
 void sharpen::PosixNetStreamChannel::CompleteAcceptCallback(sharpen::EventLoop *loop,sharpen::Future<sharpen::NetStreamChannelPtr> *future,sharpen::FileHandle accept) noexcept
@@ -434,7 +445,7 @@ void sharpen::PosixNetStreamChannel::OnEvent(sharpen::IoEvent *event)
     }
 }
 
-void sharpen::PosixNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file, std::uint64_t size, std::uint64_t offset, sharpen::Future<void> &future)
+void sharpen::PosixNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file, std::uint64_t size, std::uint64_t offset, sharpen::Future<std::size_t> &future)
 {
     if (!this->IsRegistered())
     {
@@ -443,7 +454,7 @@ void sharpen::PosixNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,
     this->RequestSendFile(file->GetHandle(),offset,size,&future);
 }
 
-void sharpen::PosixNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file, sharpen::Future<void> &future)
+void sharpen::PosixNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file, sharpen::Future<std::size_t> &future)
 {
     this->SendFileAsync(file,file->GetFileSize(),0,future);
 }
