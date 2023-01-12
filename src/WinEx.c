@@ -8,7 +8,7 @@
 
 BOOL CreatePipeEx(OUT LPHANDLE lpReadPipe,OUT LPHANDLE lpWritePipe,IN LPSECURITY_ATTRIBUTES lpPipeAttributes,IN DWORD nSize,DWORD dwReadMode,DWORD dwWriteMode)
 {
-    static volatile long PipeSerialNumber;
+    static volatile long PipeSerialNumber = 0;
 
     HANDLE ReadPipeHandle,WritePipeHandle;
     DWORD dwError;
