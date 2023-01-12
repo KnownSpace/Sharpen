@@ -140,7 +140,8 @@ void sharpen::WalStatusMap::Load()
                 }
                 break;
             default:
-                throw std::logic_error{"unknow tag"};
+                this->channel_->Truncate(offset);
+                break;
             }
         }
     }
@@ -193,7 +194,7 @@ void sharpen::WalStatusMap::NviWrite(sharpen::ByteBuffer key,sharpen::ByteBuffer
         if(result)
         {
             std::size_t contentSize{this->contentSize_};
-            if(this->offset_ >= contentSize*limitFactor_)
+            if(contentSize && this->offset_ >= contentSize*limitFactor_)
             {
                 this->RebuildFile();
                 return;
@@ -212,6 +213,7 @@ void sharpen::WalStatusMap::NviWrite(sharpen::ByteBuffer key,sharpen::ByteBuffer
                 this->channel_->Truncate(this->offset_);
                 sharpen::ThrowSystemError(sharpen::ErrorIo);
             }
+            this->channel_->Flush();
             this->offset_ += sz;
         }
     }
@@ -244,6 +246,7 @@ void sharpen::WalStatusMap::NviRemove(const sharpen::ByteBuffer &key)
                 this->channel_->Truncate(this->offset_);
                 sharpen::ThrowSystemError(sharpen::ErrorIo);
             }
+            this->channel_->Flush();
             this->offset_ += sz;
         }
     }
