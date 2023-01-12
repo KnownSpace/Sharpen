@@ -57,7 +57,7 @@ bool sharpen::WalLogStorage::Insert(std::uint64_t index,sharpen::ByteBuffer log)
     return true;
 }
 
-bool sharpen::WalLogStorage::Erase(std::uint64_t index)
+bool sharpen::WalLogStorage::Erase(std::uint64_t index) noexcept
 {
     auto ite = this->logs_.find(index);
     if(ite != this->logs_.end())
@@ -190,7 +190,7 @@ void sharpen::WalLogStorage::RebuildFile()
     this->contentSize_ = this->ComputeContentSize();
 }
 
-sharpen::Optional<sharpen::ByteBuffer> sharpen::WalLogStorage::NviLookup(std::uint64_t index) const noexcept
+sharpen::Optional<sharpen::ByteBuffer> sharpen::WalLogStorage::NviLookup(std::uint64_t index) const
 {
     auto ite = this->logs_.find(index);
     if(ite != this->logs_.end())
@@ -215,12 +215,11 @@ void sharpen::WalLogStorage::NviWrite(std::uint64_t index,sharpen::ByteSlice log
         sharpen::Varuint64 builder{index};
         std::size_t pairSize{builder.ComputeSize() + log.ComputeSize()+ sizeof(std::uint8_t)};
         std::uint8_t tag{writeTag_};
-        sharpen::ByteBuffer buf{pairSize};
+        buf.ExtendTo(pairSize);
         sharpen::BufferWriter writer{buf};
         writer.Write(tag);
         writer.Write(index);
         writer.Write(log);
-        std::uint64_t offset{this->offset_};
         std::size_t sz{this->channel_->WriteAsync(buf,this->offset_)};
         assert(sz == buf.GetSize());
         if(sz != buf.GetSize())
@@ -297,8 +296,6 @@ void sharpen::WalLogStorage::NviTruncateFrom(std::uint64_t index)
     }
     std::size_t contentSize{this->contentSize_};
     contentSize -= size;
-    std::size_t contentSize{this->contentSize_};
-    contentSize -= size;
     if(this->offset_ >= contentSize*limitFactor_)
     {
         for(auto begin = this->logs_.begin(),end = this->logs_.end(); begin != end && begin->first >= index; ++begin)
@@ -333,7 +330,7 @@ void sharpen::WalLogStorage::NviTruncateFrom(std::uint64_t index)
     this->offset_ += sz;
 }
 
-std::uint64_t sharpen::WalLogStorage::GetLastIndex() const noexcept
+std::uint64_t sharpen::WalLogStorage::GetLastIndex() const
 {
     std::uint64_t index{0};
     if(!this->logs_.empty())

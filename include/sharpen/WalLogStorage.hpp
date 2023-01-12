@@ -43,7 +43,7 @@ namespace sharpen
 
         virtual sharpen::Optional<sharpen::ByteBuffer> NviLookup(std::uint64_t index) const override;
 
-        virtual sharpen::Optional<std::uint64_t> NviLookupTerm(std::uint64_t index) const noexcept;
+        virtual sharpen::Optional<std::uint64_t> NviLookupTerm(std::uint64_t index) const;
 
         virtual void NviWrite(std::uint64_t index,sharpen::ByteSlice log) override;
 
