@@ -21,7 +21,7 @@ namespace sharpen
         
         constexpr static std::uint8_t removeTag_{1};
 
-        constexpr static std::size_t limitFactor_{2};
+        constexpr static std::size_t limitFactor_{3};
         
         std::string name_;
         std::string tempName_;
