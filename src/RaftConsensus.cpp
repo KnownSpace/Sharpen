@@ -288,9 +288,11 @@ sharpen::Mail sharpen::RaftConsensus::OnVoteRequest(const sharpen::RaftVoteForRe
             //set true if logs up-to-date current logs
             if((request.GetLastIndex() >= lastIndex) || (request.GetLastIndex() == lastIndex && request.GetTerm() >= lastTerm))
             {
+                //save vote record
                 vote.SetActorId(request.GetId());
                 vote.SetTerm(this->GetTerm());
                 this->SetVote(vote);
+                //set status to true
                 response.SetStatus(true);
             }
         }
