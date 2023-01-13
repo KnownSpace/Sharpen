@@ -5,6 +5,26 @@ sharpen::RaftVoteRecord::RaftVoteRecord(std::uint64_t term,std::uint64_t actorId
     ,actorId_(actorId)
 {}
 
+sharpen::RaftVoteRecord::RaftVoteRecord(Self &&other) noexcept
+    :term_(other.term_)
+    ,actorId_(other.actorId_)
+{
+    other.term_ = 0;
+    other.actorId_ = 0;
+}
+
+sharpen::RaftVoteRecord &sharpen::RaftVoteRecord::operator=(Self &&other) noexcept
+{
+    if(this != std::addressof(other))
+    {
+        this->term_ = other.term_;
+        this->actorId_ = other.actorId_;
+        other.term_ = 0;
+        other.actorId_ = 0;
+    }
+    return *this;
+}
+
 std::size_t sharpen::RaftVoteRecord::ComputeSize() const noexcept
 {
     return sizeof(this->term_) + sizeof(this->actorId_);
