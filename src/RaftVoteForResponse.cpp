@@ -52,6 +52,7 @@ std::size_t sharpen::RaftVoteForResponse::LoadFrom(const char *data,std::size_t 
     }
     sharpen::Varuint64 builder{0};
     offset += builder.LoadFrom(data + offset,size - offset);
+    this->term_ = builder.Get();
     return offset;
 }
 

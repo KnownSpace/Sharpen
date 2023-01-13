@@ -268,6 +268,7 @@ sharpen::Mail sharpen::RaftConsensus::OnVoteRequest(const sharpen::RaftVoteForRe
         //if already vote in current term
         if(vote.GetTerm() == this->GetTerm())
         {
+            assert(vote.GetTerm() != 0);
             //set true if voteid == id
             if(vote.GetActorId() == request.GetId())
             {
