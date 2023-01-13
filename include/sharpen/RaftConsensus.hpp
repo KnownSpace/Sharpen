@@ -117,7 +117,7 @@ namespace sharpen
 
         virtual void NviDropLogsUntil(std::uint64_t index) override;
 
-        void DoConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(std::unique_ptr<sharpen::IQuorum>)> configurater);
+        void DoConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum*)> configurater);
 
         void DoAdvance();
 
@@ -174,9 +174,9 @@ namespace sharpen
             return *this->quorum_;
         }
 
-        void ConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(std::unique_ptr<sharpen::IQuorum>)> configurater);
+        void ConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum*)> configurater);
 
-        template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<std::unique_ptr<sharpen::IQuorum>,_Fn,std::unique_ptr<sharpen::IQuorum>,_Args...>::Value>>
+        template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<std::unique_ptr<sharpen::IQuorum>,_Fn,sharpen::IQuorum*,_Args...>::Value>>
         inline void ConfigurateQuorum(_Fn &&fn,_Args &&...args)
         {
             std::function<std::unique_ptr<sharpen::IQuorum>(std::unique_ptr<sharpen::IQuorum>)> config{std::bind(std::forward<_Fn>(fn),std::placeholders::_1,std::forward<_Args>(args)...)};

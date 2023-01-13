@@ -513,10 +513,10 @@ const sharpen::ILogStorage &sharpen::RaftConsensus::ImmutableLogs() const noexce
     return *this->logs_;
 }
 
-void sharpen::RaftConsensus::DoConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(std::unique_ptr<sharpen::IQuorum>)> configurater)
+void sharpen::RaftConsensus::DoConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum*)> configurater)
 {
     std::unique_ptr<sharpen::IQuorum> quorum{std::move(this->quorum_)};
-    this->quorum_ = configurater(std::move(quorum));
+    this->quorum_ = configurater(quorum.release());
     assert(this->quorum_ != nullptr);
     //release broadcaster
     if(this->quorumBroadcaster_)
@@ -525,7 +525,7 @@ void sharpen::RaftConsensus::DoConfigurateQuorum(std::function<std::unique_ptr<s
     }
 }
 
-void sharpen::RaftConsensus::ConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(std::unique_ptr<sharpen::IQuorum>)> configurater)
+void sharpen::RaftConsensus::ConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum*)> configurater)
 {
     sharpen::AwaitableFuture<void> future;
     this->worker_->Invoke(future,&Self::DoConfigurateQuorum,this,std::move(configurater));
