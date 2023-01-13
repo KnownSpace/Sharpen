@@ -286,7 +286,7 @@ sharpen::Mail sharpen::RaftConsensus::OnVoteRequest(const sharpen::RaftVoteForRe
                 lastTerm = lastTermOpt.Get();
             }
             //set true if logs up-to-date current logs
-            if((request.GetLastIndex() > lastIndex) || (request.GetLastIndex() == lastIndex && request.GetTerm() >= lastTerm))
+            if((request.GetLastIndex() >= lastIndex) || (request.GetLastIndex() == lastIndex && request.GetTerm() >= lastTerm))
             {
                 response.SetStatus(true);
             }
