@@ -122,7 +122,7 @@ void sharpen::WinNetStreamChannel::RequestRead(char *buf,std::size_t bufSize,sha
     if (r != TRUE)
     {
         sharpen::ErrorCode err = sharpen::GetLastError();
-        if (err != ERROR_IO_PENDING&& err != ERROR_SUCCESS)
+        if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
         {
             delete olStruct;
             if(err == sharpen::ErrorCancel || err == sharpen::ErrorConnectionAborted || err == sharpen::ErrorConnectionReset)
@@ -392,7 +392,9 @@ void sharpen::WinNetStreamChannel::HandleReadAndWrite(sharpen::WSAOverlappedStru
     if (olStruct.event_.IsErrorEvent())
     {
         sharpen::ErrorCode code{olStruct.event_.GetErrorCode()};
-        if(code == sharpen::ErrorCancel || code == sharpen::ErrorConnectionAborted || code == sharpen::ErrorConnectionRefused)
+        if(code == sharpen::ErrorCancel 
+            || code == sharpen::ErrorConnectionAborted 
+            || code == sharpen::ErrorConnectionReset)
         {
             future->Complete(static_cast<std::size_t>(0));
             return;

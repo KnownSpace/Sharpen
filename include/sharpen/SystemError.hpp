@@ -34,7 +34,7 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorIsConnected = WSAEISCONN;
     constexpr sharpen::ErrorCode ErrorIo = ERROR_IO_DEVICE;
     constexpr sharpen::ErrorCode ErrorToManyFiles = ERROR_TOO_MANY_OPEN_FILES;
-    constexpr sharpen::ErrorCode ErrorConnectionReset = ERROR_NETNAME_DELETED;
+    constexpr sharpen::ErrorCode ErrorConnectionReset = WSAECONNRESET;
     constexpr sharpen::ErrorCode ErrorNameTooLong = ERROR_FILENAME_EXCED_RANGE;
     constexpr sharpen::ErrorCode ErrorOutOfMemory = ERROR_OUTOFMEMORY;
     constexpr sharpen::ErrorCode ErrorFunctionNotImplemented = ERROR_NOT_SUPPORTED;
