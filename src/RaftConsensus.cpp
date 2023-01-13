@@ -558,3 +558,9 @@ std::uint64_t sharpen::RaftConsensus::DoWrite(sharpen::ILogBatch *rawLogs)
     index += logs->GetSize();
     return index;
 }
+
+std::unique_ptr<sharpen::ILogBatch> sharpen::RaftConsensus::CreateLogBatch() const
+{
+    //TODO 
+    return nullptr;
+}
