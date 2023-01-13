@@ -52,7 +52,7 @@ namespace sharpen
 
         inline sharpen::RaftMailType GetMailType(const sharpen::Mail &mail) const noexcept
         {
-            if(this->IsRaftMail(mail))
+            if(!this->IsRaftMail(mail))
             {
                 return sharpen::RaftMailType::Unknown;
             }
