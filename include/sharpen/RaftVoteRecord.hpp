@@ -26,7 +26,7 @@ namespace sharpen
     
         RaftVoteRecord(const Self &other) noexcept = default;
     
-        RaftVoteRecord(Self &&other) noexcept = default;
+        RaftVoteRecord(Self &&other) noexcept;
     
         inline Self &operator=(const Self &other) noexcept
         {
