@@ -179,7 +179,7 @@ namespace sharpen
         template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<std::unique_ptr<sharpen::IQuorum>,_Fn,sharpen::IQuorum*,_Args...>::Value>>
         inline void ConfigurateQuorum(_Fn &&fn,_Args &&...args)
         {
-            std::function<std::unique_ptr<sharpen::IQuorum>(std::unique_ptr<sharpen::IQuorum>)> config{std::bind(std::forward<_Fn>(fn),std::placeholders::_1,std::forward<_Args>(args)...)};
+            std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum*)> config{std::bind(std::forward<_Fn>(fn),std::placeholders::_1,std::forward<_Args>(args)...)};
             this->ConfigurateQuorum(config);
         }
 
