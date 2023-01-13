@@ -94,17 +94,18 @@ namespace sharpen
         {
             if(!this->cache_.Exist())
             {
-                _T value{0};
+                using UnsignedValue = typename std::make_unsigned<_T>::type;
+                UnsignedValue value{0};
                 const char *ite = this->data_;
                 std::size_t counter{0};
                 while (*ite & signBit_)
                 {
-                    value |= static_cast<_T>((*ite & mask_)) << 7*counter;
+                    value |= static_cast<UnsignedValue>((*ite & mask_)) << 7*counter;
                     ite += 1;
                     counter += 1;
                 }
-                value  |= static_cast<_T>((*ite & mask_)) << 7*counter;
-                this->cache_.Construct(value);
+                value  |= static_cast<UnsignedValue>((*ite & mask_)) << 7*counter;
+                this->cache_.Construct(static_cast<_T>(value));
             }
             return this->cache_.Get();
         }
