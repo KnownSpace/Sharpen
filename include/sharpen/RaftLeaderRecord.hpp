@@ -7,6 +7,7 @@
 #include <utility>
 #include <atomic>
 
+
 #include "Optional.hpp"
 
 namespace sharpen
@@ -17,7 +18,7 @@ namespace sharpen
         using Self = sharpen::RaftLeaderRecord;
     
         std::atomic_uint64_t term_;
-        std::atomic_uint64_t leaderId_;
+        std::uint64_t leaderId_;
     public:
     
         RaftLeaderRecord() noexcept;
@@ -47,24 +48,7 @@ namespace sharpen
             return *this;
         }
 
-        inline std::uint64_t GetTerm() const noexcept
-        {
-            return this->term_;
-        }
-
-        bool ExistLeader() const noexcept
-        {
-            return this->term_ != 0;
-        }
-
-        inline sharpen::Optional<std::uint64_t> GetLeaderId() const noexcept
-        {
-            if(!this->ExistLeader())
-            {
-                return sharpen::EmptyOpt;
-            }
-            return this->leaderId_;
-        }
+        sharpen::Optional<std::pair<std::uint64_t,std::uint64_t>> GetRecord() const noexcept;
 
         void Flush(std::uint64_t term,std::uint64_t leaderId) noexcept;
     };
