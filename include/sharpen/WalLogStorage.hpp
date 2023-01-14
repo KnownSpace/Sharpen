@@ -7,6 +7,7 @@
 #include "IFileChannel.hpp"
 #include "ILogStorage.hpp"
 #include "IRaftLogExtractor.hpp"
+#include "AsyncRwLock.hpp"
 
 namespace sharpen
 {
@@ -26,6 +27,7 @@ namespace sharpen
         std::string tempName_;
         sharpen::FileChannelPtr channel_;
         sharpen::IEventLoopGroup *loopGroup_;
+        std::unique_ptr<sharpen::AsyncRwLock> lock_;
         Logs logs_;
         std::uint64_t offset_;
         std::size_t contentSize_;
