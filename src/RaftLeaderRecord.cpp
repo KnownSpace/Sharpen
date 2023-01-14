@@ -5,7 +5,7 @@ sharpen::RaftLeaderRecord::RaftLeaderRecord() noexcept
     ,leaderId_(0)
 {}
 
-sharpen::RaftLeaderRecord(const Self &other) noexcept
+sharpen::RaftLeaderRecord::RaftLeaderRecord(const Self &other) noexcept
     :term_(other.term_.load())
     ,leaderId_(other.leaderId_.load())
 {}
