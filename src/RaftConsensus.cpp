@@ -7,16 +7,18 @@
 #include <sharpen/BufferReader.hpp>
 #include <sharpen/SystemError.hpp>
 
-sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,bool isLearner,sharpen::IFiberScheduler &scheduler)
+sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,const sharpen::RaftOption &option,sharpen::IFiberScheduler &scheduler)
     :scheduler_(&scheduler)
     ,id_(id)
     ,statusMap_(std::move(statusMap))
     ,logs_(std::move(logs))
+    ,option_(option)
     ,term_(0)
     ,commitIndex_(0)
     ,vote_(0,0)
     ,role_(sharpen::RaftRole::Follower)
     ,electionRecord_(0,0)
+    ,leaderRecord_(0,0)
     ,waiters_()
     ,advancedCount_(0)
     ,mailBuilder_(nullptr)
@@ -39,14 +41,15 @@ sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::
     this->LoadTerm();
     this->LoadCommitIndex();
     this->LoadVoteFor();
-    if(isLearner)
+    //set learner if need
+    if(this->option_.IsLearner())
     {
         this->role_ = sharpen::RaftRole::Learner;
     }
 }
 
-sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,bool isLearner)
-    :Self{id,std::move(statusMap),std::move(logs),isLearner,sharpen::GetLocalScheduler()}
+sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,const sharpen::RaftOption &option)
+    :Self{id,std::move(statusMap),std::move(logs),option,sharpen::GetLocalScheduler()}
 {}
 
 sharpen::Optional<std::uint64_t> sharpen::RaftConsensus::LoadUint64(sharpen::ByteSlice key)
@@ -480,7 +483,7 @@ void sharpen::RaftConsensus::RaiseElection()
     request.SetTerm(term);
     //broadcast vote request
     sharpen::Mail mail{this->mailBuilder_->BuildVoteRequest(request)};
-    this->quorumBroadcaster_->Broadcast(mail);
+    this->quorumBroadcaster_->Broadcast(std::move(mail));
 }
 
 void sharpen::RaftConsensus::DoAdvance()
@@ -503,7 +506,7 @@ void sharpen::RaftConsensus::DoAdvance()
         break;
     default:
         //unkown role
-        std::terminate();
+        //do nothing
         break;
     }
 }
@@ -531,7 +534,7 @@ void sharpen::RaftConsensus::DoConfigurateQuorum(std::function<std::unique_ptr<s
     }
 }
 
-void sharpen::RaftConsensus::ConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum*)> configurater)
+void sharpen::RaftConsensus::NviConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum*)> configurater)
 {
     sharpen::AwaitableFuture<void> future;
     this->worker_->Invoke(future,&Self::DoConfigurateQuorum,this,std::move(configurater));
@@ -569,4 +572,9 @@ std::unique_ptr<sharpen::ILogBatch> sharpen::RaftConsensus::CreateLogBatch() con
 {
     //TODO 
     return nullptr;
+}
+
+sharpen::Optional<std::uint64_t> sharpen::RaftConsensus::GetWriterId() const noexcept
+{
+    return this->leaderRecord_.GetLeaderId();
 }

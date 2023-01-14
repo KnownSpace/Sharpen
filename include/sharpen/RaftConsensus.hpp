@@ -19,6 +19,8 @@
 #include "RaftVoteRecord.hpp"
 #include "RaftElectionRecord.hpp"
 #include "ConsensusWaiter.hpp"
+#include "RaftOption.hpp"
+#include "RaftLeaderRecord.hpp"
 
 namespace sharpen
 {
@@ -36,14 +38,19 @@ namespace sharpen
         std::unique_ptr<sharpen::IStatusMap> statusMap_;
         //storage logs
         std::unique_ptr<sharpen::ILogStorage> logs_;
+        //raft option
+        sharpen::RaftOption option_;
         //cache
-        std::uint64_t term_;
+        std::atomic_uint64_t term_;
         std::uint64_t commitIndex_;
         sharpen::RaftVoteRecord vote_;
         //role
         std::atomic<sharpen::RaftRole> role_;
         //election record
         sharpen::RaftElectionRecord electionRecord_;
+        //leader record
+        //thread safty
+        sharpen::RaftLeaderRecord leaderRecord_;
         
         //waiters
         std::priority_queue<sharpen::ConsensusWaiter> waiters_;
@@ -111,6 +118,8 @@ namespace sharpen
 
         virtual void NviReceive(sharpen::Mail mail,std::uint64_t actorId) override;
 
+        virtual void NviConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum*)> configurater) override;
+
         std::uint64_t DoWrite(sharpen::ILogBatch *rawLogs);
 
         virtual std::uint64_t NviWrite(std::unique_ptr<sharpen::ILogBatch> logs) override;
@@ -133,9 +142,9 @@ namespace sharpen
 
         constexpr static sharpen::ByteSlice lastAppiledKey{"lastAppiled",11};
 
-        RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,bool isLearner);
+        RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,const sharpen::RaftOption &option);
 
-        RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,bool isLearner,sharpen::IFiberScheduler &scheduler);
+        RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,const sharpen::RaftOption &option,sharpen::IFiberScheduler &scheduler);
     
         virtual ~RaftConsensus() noexcept = default;
     
@@ -168,20 +177,13 @@ namespace sharpen
             return *this;
         }
 
-        inline const sharpen::IQuorum &ImmutableQuorum() const noexcept
-        {
-            assert(this->quorum_ != nullptr);
-            return *this->quorum_;
-        }
+        // inline const sharpen::IQuorum &ImmutableQuorum() const noexcept
+        // {
+        //     assert(this->quorum_ != nullptr);
+        //     return *this->quorum_;
+        // }
 
-        void ConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum*)> configurater);
-
-        template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<std::unique_ptr<sharpen::IQuorum>,_Fn,sharpen::IQuorum*,_Args...>::Value>>
-        inline void ConfigurateQuorum(_Fn &&fn,_Args &&...args)
-        {
-            std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum*)> config{std::bind(std::forward<_Fn>(fn),std::placeholders::_1,std::forward<_Args>(args)...)};
-            this->ConfigurateQuorum(config);
-        }
+        virtual sharpen::Optional<std::uint64_t> GetWriterId() const noexcept override;
 
         // void ConfigurateLearners(std::function<void(sharpen::IQuorum&)> configurater);
 

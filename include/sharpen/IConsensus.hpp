@@ -9,6 +9,7 @@
 #include "IMailReceiver.hpp"
 #include "AwaitableFuture.hpp"
 #include "IMailReceiver.hpp"
+#include "IQuorum.hpp"
 
 namespace sharpen
 {
@@ -29,6 +30,8 @@ namespace sharpen
         virtual sharpen::Mail NviGenerateResponse(sharpen::Mail request) = 0;
 
         virtual void NviDropLogsUntil(std::uint64_t index) = 0;
+
+        virtual void NviConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum*)> configurater);
     public:
 
         IConsensus() noexcept = default;
@@ -117,6 +120,23 @@ namespace sharpen
         {
             this->NviDropLogsUntil(index);
         }
+
+        inline void ConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum*)> configurater)
+        {
+            if(configurater)
+            {
+                this->NviConfigurateQuorum(std::move(configurater));
+            }
+        }
+
+        template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<std::unique_ptr<sharpen::IQuorum>,_Fn,sharpen::IQuorum*,_Args...>::Value>>
+        inline void ConfigurateQuorum(_Fn &&fn,_Args &&...args)
+        {
+            std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum*)> config{std::bind(std::forward<_Fn>(fn),std::placeholders::_1,std::forward<_Args>(args)...)};
+            this->ConfigurateQuorum(std::move(config));
+        }
+
+        virtual sharpen::Optional<std::uint64_t> GetWriterId() const noexcept = 0;
     };   
 }
 
