@@ -576,14 +576,10 @@ std::unique_ptr<sharpen::ILogBatch> sharpen::RaftConsensus::CreateLogBatch() con
 
 sharpen::Optional<std::uint64_t> sharpen::RaftConsensus::GetWriterId() const noexcept
 {
-    auto recordOpt{this->leaderRecord_.GetRecord()};
-    if(recordOpt.Exist())
+    std::pair<std::uint64_t,std::uint64_t> record{this->leaderRecord_.GetRecord()};
+    if(record.first == this->GetTerm())
     {
-        std::pair<std::uint64_t,std::uint64_t> record{recordOpt.Get()};
-        if(record.first == this->GetTerm())
-        {
-            return record.second;
-        }
+        return record.second;
     }
     return sharpen::EmptyOpt;
 }

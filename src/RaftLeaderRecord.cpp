@@ -7,7 +7,7 @@ sharpen::RaftLeaderRecord::RaftLeaderRecord() noexcept
 
 sharpen::RaftLeaderRecord::RaftLeaderRecord(const Self &other) noexcept
     :term_(other.term_.load())
-    ,leaderId_(other.leaderId_)
+    ,leaderId_(other.leaderId_.load())
 {}
 
 sharpen::RaftLeaderRecord::RaftLeaderRecord(std::uint64_t term,std::uint64_t leaderId) noexcept
@@ -17,7 +17,7 @@ sharpen::RaftLeaderRecord::RaftLeaderRecord(std::uint64_t term,std::uint64_t lea
 
 sharpen::RaftLeaderRecord::RaftLeaderRecord(Self &&other) noexcept
     :term_(other.term_.load())
-    ,leaderId_(other.leaderId_)
+    ,leaderId_(other.leaderId_.load())
 {
     other.term_ = 0;
     other.leaderId_ = 0;
@@ -28,32 +28,22 @@ sharpen::RaftLeaderRecord &sharpen::RaftLeaderRecord::operator=(Self &&other) no
     if(this != std::addressof(other))
     {
         this->term_ = other.term_.load();
-        this->leaderId_ = other.leaderId_;
+        this->leaderId_ = other.leaderId_.load();
         other.term_ = 0;
         other.leaderId_ = 0;
     }
     return *this;
 }
 
-sharpen::Optional<std::pair<std::uint64_t,std::uint64_t>> sharpen::RaftLeaderRecord::GetRecord() const noexcept
+std::pair<std::uint64_t,std::uint64_t> sharpen::RaftLeaderRecord::GetRecord() const noexcept
 {
     std::uint64_t term{this->term_.load(std::memory_order::memory_order_acquire)};
-    if(!term)
-    {
-        return sharpen::EmptyOpt;
-    }
-    return {term,this->leaderId_};
+    std::uint64_t leaderId{this->leaderId_.load(std::memory_order::memory_order_relaxed)};
+    return {term,leaderId};
 }
 
 void sharpen::RaftLeaderRecord::Flush(std::uint64_t term,std::uint64_t leaderId) noexcept
 {
-    //set term to be zero
-    //then other threads could not acquire
-    //outdated leader id
-    this->term_.store(0,std::memory_order::memory_order_seq_cst);
-    //set leader id
-    this->leaderId_ = leaderId;
-    //release leader id
-    //now it could be acquired by other threads
+    this->leaderId_.store(leaderId,std::memory_order::memory_order_relaxed);
     this->term_.store(term,std::memory_order::memory_order_release);
 }

@@ -18,7 +18,7 @@ namespace sharpen
         using Self = sharpen::RaftLeaderRecord;
     
         std::atomic_uint64_t term_;
-        std::uint64_t leaderId_;
+        std::atomic_uint64_t leaderId_;
     public:
     
         RaftLeaderRecord() noexcept;
@@ -48,7 +48,7 @@ namespace sharpen
             return *this;
         }
 
-        sharpen::Optional<std::pair<std::uint64_t,std::uint64_t>> GetRecord() const noexcept;
+        std::pair<std::uint64_t,std::uint64_t> GetRecord() const noexcept;
 
         void Flush(std::uint64_t term,std::uint64_t leaderId) noexcept;
     };
