@@ -32,7 +32,7 @@ void sharpen::SuspendProcess(std::uint32_t processId)
                     ::CloseHandle(thrd);
                 }
             }
-            te.dwSize = sizeof(te);
+            te.dwSize = static_cast<DWORD>(sizeof(te));
         } while(Thread32Next(snapshot,&te));
     }
     ::CloseHandle(snapshot);
@@ -67,7 +67,7 @@ void sharpen::ResumeProcess(std::uint32_t processId)
                     ::CloseHandle(thrd);
                 }
             }
-            te.dwSize = sizeof(te);
+            te.dwSize = static_cast<DWORD>(sizeof(te));
         } while(Thread32Next(snapshot,&te));
     }
     ::CloseHandle(snapshot);   
