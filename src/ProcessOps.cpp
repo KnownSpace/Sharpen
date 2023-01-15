@@ -23,7 +23,7 @@ void sharpen::SuspendProcess(std::uint32_t processId)
     {
         do
         {
-            if(te.dwSize >= FIELD_OFFSET(THREADENTRY32,th32OwnerProcessID) + sizeof(te.th32OwnerProcessID))
+            if(te.th32OwnerProcessID == processId && te.dwSize >= FIELD_OFFSET(THREADENTRY32,th32OwnerProcessID) + sizeof(te.th32OwnerProcessID))
             {
                 HANDLE thrd = ::OpenThread(THREAD_SUSPEND_RESUME,FALSE,te.th32ThreadID);
                 if(thrd != nullptr)
