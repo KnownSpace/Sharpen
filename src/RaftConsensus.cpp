@@ -256,6 +256,7 @@ sharpen::Mail sharpen::RaftConsensus::OnVoteRequest(const sharpen::RaftVoteForRe
     sharpen::RaftVoteForResponse response;
     response.SetStatus(false);
     response.SetTerm(this->GetTerm());
+    bool changed{false};
     //if term >= current term
     if(this->quorum_->Exist(request.GetId()) && request.GetTerm() >= this->GetTerm())
     {
@@ -265,6 +266,16 @@ sharpen::Mail sharpen::RaftConsensus::OnVoteRequest(const sharpen::RaftVoteForRe
             std::uint64_t newTerm{request.GetTerm()};
             this->SetTerm(newTerm);
             response.SetTerm(newTerm);
+            sharpen::RaftRole role{sharpen::RaftRole::Follower};
+            assert(this->role_ != sharpen::RaftRole::Learner);
+            if(this->role_ != sharpen::RaftRole::Learner)
+            {
+                role = this->role_.exchange(role);
+                if(role == sharpen::RaftRole::Leader)
+                {
+                    changed = true;
+                }
+            }
         }
         //check vote record
         sharpen::RaftVoteRecord vote{this->GetVote()};
@@ -300,6 +311,10 @@ sharpen::Mail sharpen::RaftConsensus::OnVoteRequest(const sharpen::RaftVoteForRe
                 response.SetStatus(true);
             }
         }
+    }
+    if(changed)
+    {
+        this->OnStatusChanged();
     }
     //return response
     sharpen::Mail mail{this->mailBuilder_->BuildVoteResponse(response)};
@@ -356,6 +371,21 @@ void sharpen::RaftConsensus::OnVoteResponse(const sharpen::RaftVoteForResponse &
 {
     (void)actorId;
     assert(this->quorum_);
+    if(response.GetTerm() > this->GetTerm())
+    {
+        this->SetTerm(response.GetTerm());
+        assert(this->role_ != sharpen::RaftRole::Learner);
+        if(this->role_ != sharpen::RaftRole::Learner)
+        {
+            sharpen::RaftRole role{sharpen::RaftRole::Follower};
+            role = this->role_.exchange(role);
+            if(role == sharpen::RaftRole::Leader)
+            {
+                this->OnStatusChanged();
+            }
+        }
+        return;
+    }
     std::uint64_t electionTerm{this->electionRecord_.GetTerm()};
     //check term
     if(electionTerm == response.GetTerm())
@@ -498,7 +528,14 @@ void sharpen::RaftConsensus::DoAdvance()
         break;
     case sharpen::RaftRole::Follower:
         {
-            this->RaiseElection();
+            if(!this->option_.EnablePrevote())
+            {
+                this->RaiseElection();
+            }
+            else
+            {
+                //TODO prevote
+            }
         }
         break;
     case sharpen::RaftRole::Learner:
