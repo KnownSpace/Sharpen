@@ -32,7 +32,14 @@ public:
         channel->Register(sharpen::GetLocalLoopGroup());
         char str[] = "hello";
         std::size_t size = channel->WriteAsync(str,sizeof(str) - 1,0);
-        channel->FlushAsync();
+        try
+        {
+            channel->FlushAsync();
+        }
+        catch(const std::system_error& e)
+        {
+            std::printf("%s:%d",e.what(),e.code().value());
+        }
         return this->Assert(size == sizeof(str) - 1,"size should == sizeof(str) - 1,but it not");
     }
 };
