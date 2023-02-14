@@ -313,7 +313,7 @@ void sharpen::PosixFileChannel::DoFlushAsync(sharpen::Future<void> *future)
     struct io_uring_sqe sqe;
     std::memset(&sqe,0,sizeof(sqe));
     sqe.opcode = IORING_OP_FSYNC;
-    st->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Read);
+    st->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Flush);
     sqe.user_data = reinterpret_cast<std::uint64_t>(st);
     sqe.fd = this->handle_;
     this->queue_->SubmitIoRequest(sqe);
