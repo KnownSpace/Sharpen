@@ -71,14 +71,15 @@ void sharpen::CowStatusMap::Save()
             }
             offset += sz;
         }
-        channel->Flush();
+        channel->FlushAsync();
         channel->Close();
     }
     else
     {
         //trunc the file
         sharpen::FileChannelPtr channel{sharpen::OpenFileChannel(this->tempName_.c_str(),sharpen::FileAccessMethod::Write,sharpen::FileOpenMethod::CreateNew)};
-        (void)channel;
+        channel->Register(*this->loopGroup_);
+        channel->FlushAsync();
         channel->Close();
     }
     sharpen::RenameFile(this->tempName_.c_str(),this->name_.c_str());

@@ -155,9 +155,9 @@ void sharpen::WalStatusMap::RebuildFile()
     assert(!this->tempName_.empty());
     sharpen::FileChannelPtr channel{sharpen::OpenFileChannel(this->tempName_.c_str(),sharpen::FileAccessMethod::Write,sharpen::FileOpenMethod::CreateNew)};
     std::uint64_t offset{0};
+    channel->Register(*this->loopGroup_);
     if(!this->map_.empty())
     {
-        channel->Register(*this->loopGroup_);
         sharpen::ByteBuffer buf{4096};
         for(auto begin = this->map_.begin(),end = this->map_.end(); begin != end; ++begin)
         {
@@ -174,8 +174,8 @@ void sharpen::WalStatusMap::RebuildFile()
             }
             offset += sz;
         }
-        channel->Flush();
     }
+    channel->FlushAsync();
     channel->Close();
     this->channel_->Close();
     sharpen::RenameFile(this->tempName_.c_str(),this->name_.c_str());
@@ -213,7 +213,7 @@ void sharpen::WalStatusMap::NviWrite(sharpen::ByteBuffer key,sharpen::ByteBuffer
                 this->channel_->Truncate(this->offset_);
                 sharpen::ThrowSystemError(sharpen::ErrorIo);
             }
-            this->channel_->Flush();
+            this->channel_->FlushAsync();
             this->offset_ += sz;
         }
     }
@@ -246,7 +246,7 @@ void sharpen::WalStatusMap::NviRemove(const sharpen::ByteBuffer &key)
                 this->channel_->Truncate(this->offset_);
                 sharpen::ThrowSystemError(sharpen::ErrorIo);
             }
-            this->channel_->Flush();
+            this->channel_->FlushAsync();
             this->offset_ += sz;
         }
     }

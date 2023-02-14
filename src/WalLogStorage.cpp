@@ -166,9 +166,9 @@ void sharpen::WalLogStorage::RebuildFile()
     assert(!this->tempName_.empty());
     sharpen::FileChannelPtr channel{sharpen::OpenFileChannel(this->tempName_.c_str(),sharpen::FileAccessMethod::Write,sharpen::FileOpenMethod::CreateNew)};
     std::uint64_t offset{0};
+    channel->Register(*this->loopGroup_);
     if(!this->logs_.empty())
     {
-        channel->Register(*this->loopGroup_);
         sharpen::ByteBuffer buf{4096};
         for(auto begin = this->logs_.begin(),end = this->logs_.end(); begin != end; ++begin)
         {
@@ -186,8 +186,8 @@ void sharpen::WalLogStorage::RebuildFile()
             }
             offset += sz;
         }
-        channel->Flush();
     }
+    channel->FlushAsync();
     channel->Close();
     this->channel_->Close();
     sharpen::RenameFile(this->tempName_.c_str(),this->name_.c_str());
@@ -241,7 +241,7 @@ void sharpen::WalLogStorage::NviWrite(std::uint64_t index,sharpen::ByteSlice log
                 this->channel_->Truncate(this->offset_);
                 sharpen::ThrowSystemError(sharpen::ErrorIo);
             }
-            this->channel_->Flush();
+            this->channel_->FlushAsync();
             this->offset_ += sz;
         }
     }
@@ -294,7 +294,7 @@ void sharpen::WalLogStorage::NviDropUntil(std::uint64_t index) noexcept
             this->channel_->Truncate(this->offset_);
             return;
         }
-        this->channel_->Flush();
+        this->channel_->FlushAsync();
         this->contentSize_ = contentSize;
         this->offset_ += sz;
     }
@@ -347,7 +347,7 @@ void sharpen::WalLogStorage::NviTruncateFrom(std::uint64_t index)
             this->channel_->Truncate(this->offset_);
             sharpen::ThrowSystemError(sharpen::ErrorIo);
         }
-        this->channel_->Flush();
+        this->channel_->FlushAsync();
         this->contentSize_ = contentSize;
         this->offset_ += sz;
     }
