@@ -19,11 +19,12 @@
 #include <sharpen/EpollSelector.hpp>
 #endif
 
-sharpen::PosixFileChannel::PosixFileChannel(sharpen::FileHandle handle)
+sharpen::PosixFileChannel::PosixFileChannel(sharpen::FileHandle handle,bool syncWrite)
     :MyBase()
 #ifdef SHARPEN_HAS_IOURING
     ,queue_(nullptr)
 #endif
+    ,syncWrite_(syncWrite)
 {
     assert(handle != -1);
     this->handle_ = handle;
@@ -63,6 +64,25 @@ sharpen::IoUringStruct *sharpen::PosixFileChannel::InitStruct(void *buf,std::siz
     st->event_.SetData(st);
     return st;
 }
+
+sharpen::IoUringStruct *sharpen::PosixFileChannel::InitStruct(sharpen::Future<void> *future)
+{
+    sharpen::IoUringStruct *st = new (std::nothrow) sharpen::IoUringStruct();
+    if(!st)
+    {
+        return nullptr;
+    }
+    st->channel_ = this->shared_from_this();
+    st->data_ = future;
+    st->length_ = 0;
+    st->vec_.iov_base = nullptr;
+    st->vec_.iov_len = 0;
+    st->event_.SetChannel(this->shared_from_this());
+    st->event_.SetEvent(sharpen::IoEvent::EventTypeEnum::None);
+    st->event_.SetData(st);
+    return st;
+}
+
 #endif
 
 void sharpen::PosixFileChannel::DoWrite(const char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> *future)
@@ -181,13 +201,24 @@ void sharpen::PosixFileChannel::OnEvent(sharpen::IoEvent *event)
 #ifdef SHARPEN_HAS_IOURING
     assert(this->queue_);
     std::unique_ptr<sharpen::IoUringStruct> st{reinterpret_cast<sharpen::IoUringStruct*>(event->GetData())};
-    sharpen::Future<std::size_t> *future = reinterpret_cast<sharpen::Future<std::size_t>*>(st->data_);
+    if(event->IsReadEvent() || event->IsWriteEvent())
+    {
+        sharpen::Future<std::size_t> *future = reinterpret_cast<sharpen::Future<std::size_t>*>(st->data_);
+        if(event->IsErrorEvent())
+        {
+            future->Fail(sharpen::MakeSystemErrorPtr(event->GetErrorCode()));
+            return;
+        }
+        future->Complete(st->length_);
+        return;
+    }
+    sharpen::Future<void> *future = reinterpret_cast<sharpen::Future<void>*>(st->data_);
     if(event->IsErrorEvent())
     {
         future->Fail(sharpen::MakeSystemErrorPtr(event->GetErrorCode()));
         return;
     }
-    future->Complete(st->length_);
+    future->Complete();
 #else
     //do nothing
     (void)event;
@@ -242,10 +273,69 @@ void sharpen::PosixFileChannel::Truncate(std::uint64_t size)
 
 void sharpen::PosixFileChannel::Flush()
 {
+    //if we use sync write flag
+    //skip flush system call
+    if(this->syncWrite_)
+    {
+        return;
+    }
     if(::fsync(this->handle_) == -1)
     {
         sharpen::ThrowLastError();
     }
+}
+
+void sharpen::PosixFileChannel::NormalFlush(sharpen::Future<void> *future)
+{
+    if(::fsync(this->handle_) == -1)
+    {
+        future->Fail(sharpen::MakeLastErrorPtr());
+        return;
+    }
+    future->Complete();
+}
+
+void sharpen::PosixFileChannel::DoFlushAsync(sharpen::Future<void> *future)
+{
+    assert(future != nullptr);
+#ifdef SHARPEN_HAS_IOURING
+    if(!this->queue_)
+    {
+        this->NormalFlush(future);
+        return;
+    }
+    auto *st = this->InitStruct(future);
+    if(!st)
+    {
+        future->Fail(std::make_exception_ptr(std::bad_alloc()));
+        return;
+    }
+    struct io_uring_sqe sqe;
+    std::memset(&sqe,0,sizeof(sqe));
+    sqe.opcode = IORING_OP_FSYNC;
+    st->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Read);
+    sqe.user_data = reinterpret_cast<std::uint64_t>(st);
+    sqe.fd = this->handle_;
+    this->queue_->SubmitIoRequest(sqe);
+#else
+    this->NormalFlush(future);
+#endif
+}
+
+void sharpen::PosixFileChannel::FlushAsync(sharpen::Future<void> &future)
+{
+    //if we use sync write flag
+    //skip flush system call
+    if(this->syncWrite_)
+    {
+        future.Complete();
+        return;
+    }
+    if (!this->IsRegistered())
+    {
+        throw std::logic_error("should register to a loop first");
+    }
+    this->loop_->RunInLoopSoon(std::bind(&Self::DoFlushAsync,this,&future));
 }
 
 void sharpen::PosixFileChannel::Allocate(std::uint64_t offset,std::size_t size)

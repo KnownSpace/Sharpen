@@ -51,6 +51,10 @@ namespace sharpen
 
         virtual void Flush() = 0;
 
+        virtual void FlushAsync(sharpen::Future<void> &future) = 0;
+
+        void FlushAsync();
+
         virtual void Allocate(std::uint64_t offset,std::size_t size) = 0;
 
         virtual void Deallocate(std::uint64_t offset,std::size_t size) = 0;

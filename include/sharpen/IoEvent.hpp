@@ -44,7 +44,11 @@ namespace sharpen
                 //send file
                 Sendfile = 256,
                 //poll
-                Poll = 512
+                Poll = 512,
+
+                //io_uring only
+                //flush
+                Flush = 1024
             };
         };
         

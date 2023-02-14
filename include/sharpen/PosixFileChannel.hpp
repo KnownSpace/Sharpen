@@ -30,16 +30,24 @@ namespace sharpen
         void DoRead(char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> *future);
 
         void DoWrite(const char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> *future);
-    
+
 #ifdef SHARPEN_HAS_IOURING
         
         sharpen::IoUringStruct *InitStruct(void *buf,std::size_t bufSize,sharpen::Future<std::size_t> *future);
 
+        sharpen::IoUringStruct *InitStruct(sharpen::Future<void> *future);
+
         sharpen::IoUringQueue *queue_;
 #endif
+
+        void NormalFlush(sharpen::Future<void> *future);
+
+        void DoFlushAsync(sharpen::Future<void> *future);
+
+        bool syncWrite_;
     public:
 
-        explicit PosixFileChannel(sharpen::FileHandle handle);
+        explicit PosixFileChannel(sharpen::FileHandle handle,bool syncWrite);
 
         virtual ~PosixFileChannel() noexcept = default;
 
@@ -64,6 +72,8 @@ namespace sharpen
         virtual void Truncate(std::uint64_t size) override;
 
         virtual void Flush() override;
+
+        virtual void FlushAsync(sharpen::Future<void> &future) override;
 
         virtual void Allocate(std::uint64_t offset,std::size_t size) override;
 

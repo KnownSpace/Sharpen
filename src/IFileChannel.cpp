@@ -48,6 +48,7 @@ sharpen::FileChannelPtr sharpen::OpenFileChannel(const char *filename,sharpen::F
         std::logic_error("unknow open method");
     }
     DWORD ioFlag{FILE_FLAG_OVERLAPPED};
+    bool syncWrite{false};
     switch (io)
     {
     case sharpen::FileIoMethod::Normal:
@@ -57,14 +58,25 @@ sharpen::FileChannelPtr sharpen::OpenFileChannel(const char *filename,sharpen::F
         break;
     case sharpen::FileIoMethod::Sync:
         ioFlag |= FILE_FLAG_WRITE_THROUGH;
+        syncWrite = true;
         break;
     case sharpen::FileIoMethod::DirectAndSync:
         ioFlag |= FILE_FLAG_NO_BUFFERING | FILE_FLAG_WRITE_THROUGH;
+        syncWrite = true;
         break;
     default:
         throw std::logic_error("unknow open method");
         break;
     }
+#ifndef SHARPEN_NOT_WIN_AUTOSYNC
+    //FlushFileBuffers() doesn't have an async version
+    //use FILE_FLAG_WRITE_THROUGH for get maximum asynchronous performance
+    if(accessModel & GENERIC_WRITE)
+    {
+        ioFlag |= FILE_FLAG_WRITE_THROUGH;
+        syncWrite = true;
+    }
+#endif
     //create file
     sharpen::FileHandle handle = ::CreateFileA(filename,accessModel,FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE,nullptr,openModel,ioFlag,nullptr);
     if (handle == INVALID_HANDLE_VALUE)
@@ -73,7 +85,7 @@ sharpen::FileChannelPtr sharpen::OpenFileChannel(const char *filename,sharpen::F
     }
     try
     {
-        channel = std::make_shared<sharpen::WinFileChannel>(handle);
+        channel = std::make_shared<sharpen::WinFileChannel>(handle,syncWrite);
     }
     catch(const std::exception& rethrow)
     {
@@ -115,6 +127,7 @@ sharpen::FileChannelPtr sharpen::OpenFileChannel(const char *filename,sharpen::F
     default:
         throw std::logic_error("unknow open method");
     }
+    bool syncWrite{false};
     switch (io)
     {
     case sharpen::FileIoMethod::Normal:
@@ -124,9 +137,11 @@ sharpen::FileChannelPtr sharpen::OpenFileChannel(const char *filename,sharpen::F
         break;
     case sharpen::FileIoMethod::Sync:
         ioFlag = O_SYNC;
+        syncWrite = true;
         break;
     case sharpen::FileIoMethod::DirectAndSync:
         ioFlag = O_DIRECT | O_SYNC;
+        syncWrite = true;
         break;
     default:
         throw std::logic_error("unknow io method");
@@ -147,7 +162,7 @@ sharpen::FileChannelPtr sharpen::OpenFileChannel(const char *filename,sharpen::F
     }
     try
     {
-        channel = std::make_shared<sharpen::PosixFileChannel>(handle);
+        channel = std::make_shared<sharpen::PosixFileChannel>(handle,syncWrite);
     }
     catch(const std::exception& rethrow)
     {
@@ -173,5 +188,12 @@ std::size_t sharpen::IFileChannel::ZeroMemoryAsync(std::size_t size,std::uint64_
 {
     sharpen::AwaitableFuture<std::size_t> future;
     this->ZeroMemoryAsync(future,size,offset);
+    return future.Await();
+}
+
+void sharpen::IFileChannel::FlushAsync()
+{
+    sharpen::AwaitableFuture<void> future;
+    this->FlushAsync(future);
     return future.Await();
 }

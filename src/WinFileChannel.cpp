@@ -4,6 +4,7 @@
 
 #include <cstring>
 #include <cassert>
+#include <functional>
 
 #include <Windows.h>
 #include <io.h>
@@ -13,9 +14,10 @@
 
 sharpen::Optional<bool> sharpen::WinFileChannel::supportSparseFile_{sharpen::EmptyOpt};
 
-sharpen::WinFileChannel::WinFileChannel(sharpen::FileHandle handle)
+sharpen::WinFileChannel::WinFileChannel(sharpen::FileHandle handle,bool syncWrite)
     :Mybase()
     ,sparesFile_(false)
+    ,syncWrite_(syncWrite)
 {
     assert(handle != INVALID_HANDLE_VALUE);
     this->handle_ = handle;
@@ -222,10 +224,43 @@ void sharpen::WinFileChannel::Truncate(std::uint64_t size)
 
 void sharpen::WinFileChannel::Flush()
 {
+    //if we use sync write flag
+    //skip flush system call
+    if(this->syncWrite_)
+    {
+        return;
+    }
     if (::FlushFileBuffers(this->handle_) == FALSE)
     {
         sharpen::ThrowLastError();
     }
+}
+
+void sharpen::WinFileChannel::DoFlushAsync(sharpen::Future<void> *future)
+{
+    assert(future != nullptr);
+    if(::FlushFileBuffers(this->handle_) == FALSE)
+    {
+        future->Fail(sharpen::MakeLastErrorPtr());
+        return;
+    }
+    future->Complete();
+}
+
+void sharpen::WinFileChannel::FlushAsync(sharpen::Future<void> &future)
+{
+    //if we use sync write flag
+    //skip flush system call
+    if(this->syncWrite_)
+    {
+        future.Complete();
+        return;
+    }
+    if (!this->IsRegistered())
+    {
+        throw std::logic_error("should register to a loop first");
+    }
+    this->loop_->RunInLoop(std::bind(&Self::DoFlushAsync,this,&future));
 }
 
 bool sharpen::WinFileChannel::SupportSparseFile(const char *rootName) noexcept

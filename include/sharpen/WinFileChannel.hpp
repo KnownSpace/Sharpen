@@ -31,15 +31,18 @@ namespace sharpen
 
         bool sparesFile_;
 
+        bool syncWrite_;
+
         void InitOverlappedStruct(sharpen::IocpOverlappedStruct &event,std::uint64_t offset);
 
         void RequestWrite(const char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> *future);
 
         void RequestRead(char *buf,std::size_t bufSize,std::uint64_t offset,sharpen::Future<std::size_t> *future);
 
+        void DoFlushAsync(sharpen::Future<void> *future);
     public:
 
-        explicit WinFileChannel(sharpen::FileHandle handle);
+        explicit WinFileChannel(sharpen::FileHandle handle,bool syncWrite);
 
         virtual ~WinFileChannel() noexcept = default;
 
@@ -64,6 +67,8 @@ namespace sharpen
         virtual void Truncate(std::uint64_t size) override;
         
         virtual void Flush() override;
+
+        virtual void FlushAsync(sharpen::Future<void> &future) override;
 
         void EnableSparesFile();
 
