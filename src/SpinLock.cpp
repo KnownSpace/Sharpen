@@ -16,10 +16,16 @@
 #endif
 #endif
 
+sharpen::SpinLock::SpinLock() noexcept
+    :acquireCount_(0)
+    ,releaseCount_(0)
+{}
+
 void sharpen::SpinLock::lock() noexcept
 {
     std::size_t i{0};
-    while (this->flag_.test_and_set())
+    std::uint64_t count{this->acquireCount_.fetch_add(1,std::memory_order::memory_order_acq_rel)};
+    while (count != this->releaseCount_.load(std::memory_order::memory_order_acquire))
     {
         SHARPEN_PAUSE;
         ++i;
@@ -33,12 +39,15 @@ void sharpen::SpinLock::lock() noexcept
 
 void sharpen::SpinLock::unlock() noexcept
 {
-    this->flag_.clear();
+    this->releaseCount_.fetch_add(1,std::memory_order::memory_order_acq_rel);
 }
 
-bool sharpen::SpinLock::TryLock()
+bool sharpen::SpinLock::TryLock() noexcept
 {
-    return !this->flag_.test_and_set();
+    std::uint64_t count{this->acquireCount_.load(std::memory_order::memory_order_acquire)};
+    std::uint64_t expectedCount{count};
+    count += 1;
+    return this->acquireCount_.compare_exchange_strong(expectedCount,count,std::memory_order::memory_order_acq_rel);
 }
 
 #ifdef SHARPEN_PAUSE

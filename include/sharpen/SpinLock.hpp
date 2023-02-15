@@ -13,11 +13,11 @@ namespace sharpen
     class SpinLock:public sharpen::Noncopyable,public sharpen::Nonmovable
     {
     private:
-        using Flag = std::atomic_flag;
 
-        Flag flag_;
+        std::atomic_uint64_t acquireCount_;
+        std::atomic_uint64_t releaseCount_;
     public:
-        SpinLock() noexcept = default;
+        SpinLock() noexcept;
 
         //use by stl
         void lock() noexcept;
@@ -35,9 +35,9 @@ namespace sharpen
             this->unlock();
         }
 
-        bool TryLock();
+        bool TryLock() noexcept;
 
-        inline bool try_lock()
+        inline bool try_lock() noexcept
         {
             return this->TryLock();
         }
