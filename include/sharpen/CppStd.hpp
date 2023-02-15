@@ -24,4 +24,5 @@
 #define SHARPEN_CPP_STANDARD 20
 #endif
 
+#undef SHARPEN_CPP_STANDARD_MACRO
 #endif
