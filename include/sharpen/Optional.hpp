@@ -8,6 +8,11 @@
 #include <stdexcept>
 
 #include "NoexceptIf.hpp"
+#include "CppStd.hpp"
+
+#if SHARPEN_CPP_STANDARD >= 17
+#include <optional>
+#endif
 
 namespace sharpen
 {
@@ -321,6 +326,17 @@ namespace sharpen
             :Base(std::move(other))
         {}
 
+#if SHARPEN_CPP_STANDARD >= 17
+        Optional(std::optional<_T> stdOpt) noexcept
+            :Base(sharpen::EmptyOpt)
+        {
+            if(stdOpt.has_value())
+            {
+                this->Construct(std::move(stdOpt.value()));
+            }
+        }
+#endif
+
         template<typename ..._Args,typename _Check = decltype(_T{std::declval<_Args>()...})>
         Optional(_Args &&...args) SHARPEN_NOEXCEPT_IF(_T{std::declval<_Args>()...})
             :Base(std::forward<_Args>(args)...)
@@ -347,6 +363,18 @@ namespace sharpen
             Base::operator=(empty);
             return *this;
         }
+
+#if SHARPEN_CPP_STANDARD >= 17
+        inline Self &operator=(std::optional<_T> stdOpt) noexcept
+        {
+            Base::operator=(sharpen::EmptyOpt);
+            if(stdOpt.has_value())
+            {
+                Base::operator=(std::move(stdOpt.value()));
+            }
+            return *this;
+        }
+#endif
     
         ~Optional() noexcept = default;
     
@@ -354,6 +382,17 @@ namespace sharpen
         {
             return *this;
         }
+
+#if SHARPEN_CPP_STANDARD >= 17
+        std::optional<_T> ReleaseStdOptional() noexcept
+        {
+            if(this->Exist())
+            {
+                return std::move(this->Get());
+            }
+            return std::nullopt;
+        }
+#endif
     };
 }
 
