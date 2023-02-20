@@ -21,6 +21,7 @@
 #include "ConsensusWaiter.hpp"
 #include "RaftOption.hpp"
 #include "RaftLeaderRecord.hpp"
+#include "RaftHeartbeatMailProvider.hpp"
 
 namespace sharpen
 {
@@ -29,6 +30,8 @@ namespace sharpen
     private:
         using Self = sharpen::RaftConsensus;
     
+        static constexpr std::size_t reversedWaitersSize_{16};
+
         //scheduler
         sharpen::IFiberScheduler *scheduler_;
 
@@ -53,8 +56,8 @@ namespace sharpen
         sharpen::RaftLeaderRecord leaderRecord_;
         
         //waiters
-        std::priority_queue<sharpen::ConsensusWaiter> waiters_;
-        std::atomic_uint64_t advancedCount_;
+        std::vector<sharpen::Future<std::uint64_t>*> waiters_;
+        std::uint64_t advancedCount_;
 
         //mail builder
         std::unique_ptr<sharpen::IRaftMailBuilder> mailBuilder_;
@@ -67,8 +70,8 @@ namespace sharpen
         //quorum broadcaster
         std::unique_ptr<sharpen::Broadcaster> quorumBroadcaster_;
         // std::unique_ptr<sharpen::Broadcaster> learnerBroadcaster_;
-        
-        std::map<std::uint64_t,std::uint64_t> nextIndex_;
+
+        std::unique_ptr<sharpen::RaftHeartbeatMailProvider> heartbeatProvider_;
 
         //must be last member
         //single fiber worker
@@ -102,15 +105,15 @@ namespace sharpen
 
         void RaiseElection();
 
-        void NotifyWaiter(sharpen::ConsensusWaiter waiter) noexcept;
-
         sharpen::Mail OnVoteRequest(const sharpen::RaftVoteForRequest &request);
 
         void OnVoteResponse(const sharpen::RaftVoteForResponse &response,std::uint64_t actorId);
 
-        void DoStatusChanged(std::uint64_t advancedCount,sharpen::ConsensusWaiter waiter);
+        void NotifyWaiter(sharpen::Future<std::uint64_t> *future) noexcept;
 
-        virtual void NviStatusChanged(sharpen::Future<std::uint64_t> &future,std::uint64_t minIndex) override;
+        void DoWaitNextConsensus(std::uint64_t advancedCount,sharpen::Future<std::uint64_t> *waiter);
+
+        virtual void NviWaitNextConsensus(sharpen::Future<std::uint64_t> &future,std::uint64_t advancedCount) override;
 
         virtual bool NviIsConsensusMail(const sharpen::Mail &mail) const noexcept;
 
@@ -153,9 +156,9 @@ namespace sharpen
             return *this;
         }
 
-        void SetMailBuilder(std::unique_ptr<sharpen::IRaftMailBuilder> builder) noexcept;
+        void PrepareMailBuilder(std::unique_ptr<sharpen::IRaftMailBuilder> builder) noexcept;
 
-        void SetMailExtractor(std::unique_ptr<sharpen::IRaftMailExtractor> extractor) noexcept;
+        void PrepareMailExtractor(std::unique_ptr<sharpen::IRaftMailExtractor> extractor) noexcept;
 
         virtual void Advance() override;
 

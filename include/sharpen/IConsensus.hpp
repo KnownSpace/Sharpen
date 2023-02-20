@@ -19,12 +19,12 @@ namespace sharpen
         using Self = sharpen::IConsensus;
     protected:
 
-        //return current index
-        virtual void NviStatusChanged(sharpen::Future<std::uint64_t> &future,std::uint64_t minIndex) = 0;
+        //returns current advanced count
+        virtual void NviWaitNextConsensus(sharpen::Future<std::uint64_t> &future,std::uint64_t advancedCount) = 0;
     
         virtual bool NviIsConsensusMail(const sharpen::Mail &mail) const noexcept = 0;
 
-        //return the last index of log batch
+        //returns the last index of log batch
         virtual std::uint64_t NviWrite(std::unique_ptr<sharpen::ILogBatch> logs) = 0;
 
         virtual sharpen::Mail NviGenerateResponse(sharpen::Mail request) = 0;
@@ -68,27 +68,24 @@ namespace sharpen
 
         virtual bool Changable() const = 0;
 
-        inline void StatusChanged(sharpen::Future<std::uint64_t> &future,std::uint64_t minIndex)
+        //use it like:
+        //std::uint64_t count{0};
+        //while(1)
+        //{
+        //  count = consensus.WaitNextConsensus(count);  
+        //}
+
+        //returns current advanced count
+        inline void WaitNextConsensus(std::uint64_t advancedCount,sharpen::Future<std::uint64_t> &future)
         {
-            this->NviStatusChanged(future,minIndex);
+            this->NviWaitNextConsensus(future,advancedCount);
         }
 
-        inline void StatusChanged(sharpen::Future<std::uint64_t> &future)
-        {
-            this->NviStatusChanged(future,sharpen::ILogStorage::noneIndex);
-        }
-
-        inline std::uint64_t StatusChanged(std::uint64_t minIndex)
+        //returns current advanced count
+        inline std::uint64_t WaitNextConsensus(std::uint64_t advancedCount)
         {
             sharpen::AwaitableFuture<std::uint64_t> future;
-            this->NviStatusChanged(future,minIndex);
-            return future.Await();
-        }
-
-        inline std::uint64_t StatusChanged()
-        {
-             sharpen::AwaitableFuture<std::uint64_t> future;
-            this->NviStatusChanged(future,sharpen::ILogStorage::noneIndex);
+            this->NviWaitNextConsensus(future,advancedCount);
             return future.Await();
         }
 

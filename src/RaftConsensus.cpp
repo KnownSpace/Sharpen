@@ -25,6 +25,7 @@ sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::
     ,mailExtractor_(nullptr)
     ,quorum_(nullptr)
     ,quorumBroadcaster_(nullptr)
+    ,heartbeatProvider_(nullptr)
     ,worker_(nullptr)
 {
     assert(this->id_ != 0);
@@ -46,6 +47,8 @@ sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::
     {
         this->role_ = sharpen::RaftRole::Learner;
     }
+    //reserve waiter
+    this->waiters_.reserve(Self::reversedWaitersSize_);
 }
 
 sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,const sharpen::RaftOption &option)
@@ -197,13 +200,13 @@ void sharpen::RaftConsensus::EnsureConfig() const
     }
 }
 
-void sharpen::RaftConsensus::SetMailBuilder(std::unique_ptr<sharpen::IRaftMailBuilder> builder) noexcept
+void sharpen::RaftConsensus::PrepareMailBuilder(std::unique_ptr<sharpen::IRaftMailBuilder> builder) noexcept
 {
     assert(builder != nullptr && this->mailBuilder_ == nullptr);
     this->mailBuilder_ = std::move(builder);
 }
 
-void sharpen::RaftConsensus::SetMailExtractor(std::unique_ptr<sharpen::IRaftMailExtractor> extractor) noexcept
+void sharpen::RaftConsensus::PrepareMailExtractor(std::unique_ptr<sharpen::IRaftMailExtractor> extractor) noexcept
 {
     assert(extractor != nullptr && this->mailExtractor_ == nullptr);
     this->mailExtractor_ = std::move(extractor);
@@ -215,30 +218,22 @@ bool sharpen::RaftConsensus::NviIsConsensusMail(const sharpen::Mail &mail) const
     return this->mailExtractor_->IsRaftMail(mail);
 }
 
-void sharpen::RaftConsensus::DoStatusChanged(std::uint64_t advancedCount,sharpen::ConsensusWaiter waiter)
+void sharpen::RaftConsensus::DoWaitNextConsensus(std::uint64_t advancedCount,sharpen::Future<std::uint64_t> *waiter)
 {
-    //load advanced count
-    std::uint64_t currentCount{this->advancedCount_.load()};
-    //if advanced while waiting
-    //notify waiter
-    if(currentCount != advancedCount)
+    if(advancedCount != this->advancedCount_)
     {
         this->NotifyWaiter(waiter);
     }
     else
     {
-        this->waiters_.emplace(waiter);
+        this->waiters_.emplace_back(waiter);
     }
 }
 
-void sharpen::RaftConsensus::NviStatusChanged(sharpen::Future<std::uint64_t> &future,std::uint64_t minIndex)
+void sharpen::RaftConsensus::NviWaitNextConsensus(sharpen::Future<std::uint64_t> &future,std::uint64_t advancedCount)
 {
     assert(this->worker_ != nullptr);
-    //record current advanced count
-    std::uint64_t advancedCount{this->advancedCount_.load()};
-    //pack waiter
-    sharpen::ConsensusWaiter waiter{minIndex,future};
-    this->worker_->Submit(&Self::DoStatusChanged,this,advancedCount,waiter);
+    this->worker_->Submit(&Self::DoWaitNextConsensus,this,advancedCount,&future);
 }
 
 void sharpen::RaftConsensus::EnsureBroadcaster()
@@ -321,12 +316,11 @@ sharpen::Mail sharpen::RaftConsensus::OnVoteRequest(const sharpen::RaftVoteForRe
     return mail;
 }
 
-void sharpen::RaftConsensus::NotifyWaiter(sharpen::ConsensusWaiter waiter) noexcept
+void sharpen::RaftConsensus::NotifyWaiter(sharpen::Future<std::uint64_t> *waiter) noexcept
 {
-    std::uint64_t index{this->GetCommitIndex()};
     try
     {
-        waiter.Future().Complete(index);
+        waiter->Complete(this->advancedCount_);
     }
     catch(const std::system_error &error)
     {
@@ -350,21 +344,16 @@ void sharpen::RaftConsensus::NotifyWaiter(sharpen::ConsensusWaiter waiter) noexc
 
 void sharpen::RaftConsensus::OnStatusChanged()
 {
-    //increase advanced count
-    this->advancedCount_ += 1;
     //load current commit index
     std::uint64_t index{this->GetCommitIndex()};
     //check if waiter is non-empty
-    //and there are waiter's index <= current commit index
-    while (!this->waiters_.empty() && this->waiters_.top().GetIndex() <= index)
+    for(auto begin = this->waiters_.begin(),end = this->waiters_.end(); begin != end; ++begin)
     {
-        //get first waiter
-        sharpen::ConsensusWaiter waiter{this->waiters_.top()};
-        //pop from waiters
-        this->waiters_.pop();
-        //notify waiter
+        sharpen::Future<std::uint64_t> *waiter{*begin};
         this->NotifyWaiter(waiter);
     }
+    this->waiters_.clear();
+    this->waiters_.reserve(Self::reversedWaitersSize_);
 }
 
 void sharpen::RaftConsensus::OnVoteResponse(const sharpen::RaftVoteForResponse &response,std::uint64_t actorId)
@@ -525,6 +514,25 @@ void sharpen::RaftConsensus::DoAdvance()
     {
     case sharpen::RaftRole::Leader:
         //TODO:Hearbeat
+        if(!this->heartbeatProvider_->Empty())
+        {
+            this->heartbeatProvider_->PrepareCommitIndex(this->GetCommitIndex());
+            this->heartbeatProvider_->PrepareTerm(this->GetTerm());
+            sharpen::Optional<std::uint64_t> syncIndex{this->heartbeatProvider_->GetSynchronizedIndex()};
+            if(syncIndex.Exist())
+            {
+                sharpen::Mail mail{this->heartbeatProvider_->ProvideSynchronizedMail()};
+                this->quorumBroadcaster_->Broadcast(std::move(mail));
+            }
+            else
+            {
+                this->quorumBroadcaster_->Broadcast(*this->heartbeatProvider_);
+            }
+        }
+        else
+        {
+
+        }
         break;
     case sharpen::RaftRole::Follower:
         {
@@ -551,6 +559,15 @@ void sharpen::RaftConsensus::DoAdvance()
 void sharpen::RaftConsensus::Advance()
 {
     this->EnsureConfig();
+    if(!this->heartbeatProvider_)
+    {
+        sharpen::RaftHeartbeatMailProvider *provider{new (std::nothrow) sharpen::RaftHeartbeatMailProvider{this->id_,*this->mailBuilder_,*this->logs_}};
+        if(!provider)
+        {
+            throw std::bad_alloc{};
+        }
+        this->heartbeatProvider_.reset(provider);
+    }
     this->worker_->Submit(&Self::DoAdvance,this);
 }
 
