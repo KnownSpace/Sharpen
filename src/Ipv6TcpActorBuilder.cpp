@@ -63,17 +63,17 @@ sharpen::Ipv6TcpActorBuilder &sharpen::Ipv6TcpActorBuilder::operator=(Self &&oth
     return *this;
 }
 
-void sharpen::Ipv6TcpActorBuilder::SetRemote(const sharpen::Ipv6EndPoint &remote) noexcept
+void sharpen::Ipv6TcpActorBuilder::PrepareRemote(const sharpen::Ipv6EndPoint &remote) noexcept
 {
     this->remote_ = remote;
 }
 
-void sharpen::Ipv6TcpActorBuilder::SetReceiver(sharpen::IMailReceiver &receiver) noexcept
+void sharpen::Ipv6TcpActorBuilder::PrepareReceiver(sharpen::IMailReceiver &receiver) noexcept
 {
     this->receiver_ = &receiver;
 }
 
-void sharpen::Ipv6TcpActorBuilder::SetParserFactory(std::shared_ptr<sharpen::IMailParserFactory> parserFactory) noexcept
+void sharpen::Ipv6TcpActorBuilder::PrepareParserFactory(std::shared_ptr<sharpen::IMailParserFactory> parserFactory) noexcept
 {
     this->parserFactory_ = std::move(parserFactory);
 }

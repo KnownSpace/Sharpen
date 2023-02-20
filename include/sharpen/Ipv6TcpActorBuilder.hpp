@@ -58,11 +58,11 @@ namespace sharpen
             return *this;
         }
 
-        void SetRemote(const sharpen::Ipv6EndPoint &remote) noexcept;
+        void PrepareRemote(const sharpen::Ipv6EndPoint &remote) noexcept;
 
-        void SetReceiver(sharpen::IMailReceiver &receiver) noexcept;
+        void PrepareReceiver(sharpen::IMailReceiver &receiver) noexcept;
 
-        void SetParserFactory(std::shared_ptr<sharpen::IMailParserFactory> parserFactory) noexcept;
+        void PrepareParserFactory(std::shared_ptr<sharpen::IMailParserFactory> parserFactory) noexcept;
 
         virtual std::unique_ptr<sharpen::IRemoteActor> Build() const override;
 

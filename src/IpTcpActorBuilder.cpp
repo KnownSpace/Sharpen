@@ -52,17 +52,17 @@ sharpen::IpTcpActorBuilder &sharpen::IpTcpActorBuilder::operator=(Self &&other) 
     return *this;
 }
 
-void sharpen::IpTcpActorBuilder::SetRemote(const sharpen::IpEndPoint &remote) noexcept
+void sharpen::IpTcpActorBuilder::PrepareRemote(const sharpen::IpEndPoint &remote) noexcept
 {
     this->remote_ = remote;
 }
 
-void sharpen::IpTcpActorBuilder::SetReceiver(sharpen::IMailReceiver &receiver) noexcept
+void sharpen::IpTcpActorBuilder::PrepareReceiver(sharpen::IMailReceiver &receiver) noexcept
 {
     this->receiver_ = &receiver;
 }
 
-void sharpen::IpTcpActorBuilder::SetParserFactory(std::shared_ptr<sharpen::IMailParserFactory> parserFactory) noexcept
+void sharpen::IpTcpActorBuilder::PrepareParserFactory(std::shared_ptr<sharpen::IMailParserFactory> parserFactory) noexcept
 {
     this->parserFactory_ = std::move(parserFactory);
 }
