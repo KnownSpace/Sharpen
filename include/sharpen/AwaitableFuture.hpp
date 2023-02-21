@@ -102,23 +102,14 @@ namespace sharpen
 
         virtual void ExecuteCallback(sharpen::FutureState state) override
         {
-            bool notify{false};
+            // bool notify{false};
             typename MyBase::Callback cb;
             sharpen::FiberPtr fiber{nullptr};
             {
                 std::unique_lock<sharpen::SpinLock> lock{this->GetCompleteLock()};
-                if(this->GetWaiters() != 0)
-                {
-                    this->SetWaiters(0);
-                    notify = true;
-                }
                 std::swap(cb,this->GetCallback());
                 std::swap(fiber,this->awaiter_);
                 this->SetState(state);
-            }
-            if(notify)
-            {
-                this->NotifyAll();
             }
             if(cb)
             {
