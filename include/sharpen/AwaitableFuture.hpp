@@ -50,7 +50,7 @@ namespace sharpen
 
         AwaitableFuture(Self &&other) noexcept = default;
 
-        Self &operator=(Self &&other) noexcept
+        inline Self &operator=(Self &&other) noexcept
         {
             if(this != std::addressof(other))
             {
@@ -63,7 +63,7 @@ namespace sharpen
 
         virtual ~AwaitableFuture() noexcept = default;
 
-        void WaitAsync()
+        inline void WaitAsync()
         {
             sharpen::FiberPtr current = sharpen::Fiber::GetCurrentFiber();
             sharpen::IFiberScheduler *scheduler = current->GetScheduler();
@@ -92,7 +92,7 @@ namespace sharpen
             }
         }
 
-        auto Await() -> decltype(this->Get())
+        inline auto Await() -> decltype(this->Get())
         {
             this->WaitAsync();
             return this->Get();

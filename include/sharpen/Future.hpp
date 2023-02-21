@@ -10,6 +10,7 @@
 #include <new>
 #include <cstdint>
 #include <cstddef>
+#include <thread>
 
 #include "SpinLock.hpp"
 #include "Optional.hpp"
@@ -105,13 +106,9 @@ namespace sharpen
 
         void Wait() const
         {
-            // std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
-            // while(this->IsPending() && !this->value_.Exist() && !this->error_)
             while(this->IsPending())
             {
-                // lock.unlock();
                 std::this_thread::yield();
-                // lock.lock();
             }
         }
 
@@ -296,12 +293,9 @@ namespace sharpen
 
         inline void Wait() const
         {
-            // std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
             while(this->IsPending())
             {
-                // lock.unlock();
                 std::this_thread::yield();
-                // lock.lock();
             }
         }
 
