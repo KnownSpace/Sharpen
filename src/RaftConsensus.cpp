@@ -344,8 +344,6 @@ void sharpen::RaftConsensus::NotifyWaiter(sharpen::Future<std::uint64_t> *waiter
 
 void sharpen::RaftConsensus::OnStatusChanged()
 {
-    //load current commit index
-    std::uint64_t index{this->GetCommitIndex()};
     //check if waiter is non-empty
     for(auto begin = this->waiters_.begin(),end = this->waiters_.end(); begin != end; ++begin)
     {

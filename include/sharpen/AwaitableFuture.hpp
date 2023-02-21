@@ -100,9 +100,8 @@ namespace sharpen
 
     protected:
 
-        virtual void ExecuteCallback(sharpen::FutureState state) override
+        inline virtual void ExecuteCallback(sharpen::FutureState state) override
         {
-            // bool notify{false};
             typename MyBase::Callback cb;
             sharpen::FiberPtr fiber{nullptr};
             {
