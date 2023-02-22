@@ -2,8 +2,10 @@
 #ifndef _SHARPEN_ILOGBATCH_HPP
 #define _SHARPEN_ILOGBATCH_HPP
 
+#include <memory>
+
 #include "ByteBuffer.hpp"
-#include "ConsensusChanges.hpp"
+#include "IConsensusChanges.hpp"
 
 namespace sharpen
 {
@@ -33,15 +35,15 @@ namespace sharpen
 
         virtual void Append(sharpen::ByteBuffer log) = 0;
 
-        virtual void PrepareChanges(sharpen::ConsensusChanges changes) = 0;
-
-        virtual void ApplyChanges(sharpen::ConsensusChanges changes) = 0;
+        virtual std::unique_ptr<sharpen::IConsensusChanges> CreateChanges() = 0;
 
         virtual std::size_t GetSize() const noexcept = 0;
 
         virtual sharpen::ByteBuffer &Get(std::size_t index) = 0;
 
         virtual const sharpen::ByteBuffer &Get(std::size_t index) const = 0;
+
+        virtual void Reverse(std::size_t size);
     };   
 }
 
