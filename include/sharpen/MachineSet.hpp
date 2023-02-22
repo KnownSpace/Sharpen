@@ -94,7 +94,7 @@ namespace sharpen
 
         bool Empty() const noexcept;
 
-        void Clear() const noexcept;
+        void Clear() noexcept;
     };
 }
 

@@ -30,7 +30,7 @@ bool sharpen::MachineSet::Empty() const noexcept
     return this->map_.empty();
 }
 
-void sharpen::MachineSet::Clear() const noexcept
+void sharpen::MachineSet::Clear() noexcept
 {
     this->map_.clear();
 }
