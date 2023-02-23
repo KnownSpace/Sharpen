@@ -35,7 +35,7 @@ bool sharpen::RaftConsensusChanges::Insertable() const noexcept
 {
     assert(this->logBatch_);
     //only apply one machine at once
-    return this->mode_ != sharpen::RaftConsensusChanges::Mode::Apply || this->insertSet_.GetSize() <= 1;
+    return this->mode_ != sharpen::RaftConsensusChanges::Mode::Apply || this->insertSet_.GetSize() < 1;
 }
 
 bool sharpen::RaftConsensusChanges::Removeable() const noexcept
