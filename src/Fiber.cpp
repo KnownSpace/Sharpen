@@ -22,7 +22,7 @@ sharpen::Fiber::Fiber() noexcept
     :handle_(nullptr)
     ,stack_()
     ,task_()
-    ,callback_()
+    ,callback_(nullptr)
     ,inited_(false)
     ,scheduler_(nullptr)
 {}
@@ -37,7 +37,7 @@ void sharpen::Fiber::Release() noexcept
     this->stack_.Release();
 }
 
-void sharpen::Fiber::Switch()
+void sharpen::Fiber::Switch() noexcept
 {
     if(!this->inited_)
     {
@@ -47,7 +47,7 @@ void sharpen::Fiber::Switch()
     ::ontop_fcontext(this->handle_,this,&sharpen::Fiber::SaveCurrentAndSwitch);
 }
 
-void sharpen::Fiber::Switch(const sharpen::FiberPtr &callback)
+void sharpen::Fiber::Switch(sharpen::Fiber *callback) noexcept
 {
     this->callback_ = callback;
     this->Switch();
@@ -67,12 +67,12 @@ sharpen::FiberPtr sharpen::Fiber::GetCurrentFiber()
     {
         sharpen::FiberPtr fiber = std::make_shared<sharpen::Fiber>();
         fiber->inited_ = true;
-        sharpen::Fiber::currentFiber_ = fiber;
+        sharpen::Fiber::currentFiber_ = std::move(fiber);
     }
     return sharpen::Fiber::currentFiber_;
 }
 
-void sharpen::Fiber::FiberEntry(transfer_t from)
+void sharpen::Fiber::FiberEntry(transfer_t from) noexcept
 {
     from = ::jump_fcontext(from.fctx,nullptr);
     sharpen::Fiber *fiber = reinterpret_cast<sharpen::Fiber *>(from.data);
@@ -97,15 +97,7 @@ void sharpen::Fiber::FiberEntry(transfer_t from)
         assert(ignore.what() == nullptr && "an exception occured in event loop");
         (void)ignore;
     }
-    sharpen::Fiber *cb{nullptr};
-    {
-        sharpen::FiberPtr tmp{fiber->callback_.lock()};
-        fiber->callback_.reset();
-        if(tmp)
-        {
-            cb = tmp.get();
-        }
-    }
+    sharpen::Fiber *cb{fiber->callback_};
     if(cb)
     {
         cb->Switch();

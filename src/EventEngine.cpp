@@ -127,7 +127,7 @@ void sharpen::EventEngine::ProcessFiber(sharpen::FiberPtr fiber)
     try
     {
         sharpen::FiberPtr current = sharpen::Fiber::GetCurrentFiber();
-        fiber->Switch(current);
+        fiber->Switch(current.get());
     }
     catch(const std::bad_alloc &fault)
     {

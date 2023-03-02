@@ -40,7 +40,7 @@ namespace sharpen
     private:
         using Handle = fcontext_t;
         using Task = std::function<void()>;
-        using Callback = std::weak_ptr<sharpen::Fiber>;
+        using Callback = sharpen::Fiber*;
 
         //fcontext
         Handle handle_;
@@ -62,7 +62,7 @@ namespace sharpen
 
         thread_local static FiberPtr currentFiber_;
 
-        static void FiberEntry(transfer_t from);
+        static void FiberEntry(transfer_t from) noexcept;
 
         static transfer_t SaveCurrentAndSwitch(transfer_t from);
 
@@ -72,9 +72,9 @@ namespace sharpen
 
         ~Fiber() noexcept;
 
-        void Switch();
+        void Switch() noexcept;
 
-        void Switch(const sharpen::FiberPtr &callback);
+        void Switch(sharpen::Fiber *callback) noexcept;
 
         static sharpen::FiberPtr GetCurrentFiber();
 
