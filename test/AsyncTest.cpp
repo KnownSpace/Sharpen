@@ -10,6 +10,7 @@
 #include <sharpen/TimerOps.hpp>
 #include <sharpen/AsyncNagleBarrier.hpp>
 #include <sharpen/YieldOps.hpp>
+#include <sharpen/FiberLocal.hpp>
 
 #include <simpletest/TestRunner.hpp>
 
@@ -212,6 +213,39 @@ public:
     }
 };
 
+class FiberLocalTest:public simpletest::ITypenamedTest<FiberLocalTest>
+{
+private:
+    using Self = FiberLocalTest;
+
+public:
+
+    FiberLocalTest() noexcept = default;
+
+    ~FiberLocalTest() noexcept = default;
+
+    inline const Self &Const() const noexcept
+    {
+        return *this;
+    }
+
+    inline virtual simpletest::TestResult Run() noexcept
+    {
+        sharpen::FiberLocal<std::uint64_t> local;
+        local.New(static_cast<std::uint64_t>(1));
+        auto result = sharpen::Async([&local]()
+        {
+            local.New(static_cast<std::uint64_t>(0));
+            return Self::Assert(*local.Lookup() == 0,"*local.Lookup() should = 0,but not");
+        })->Await();
+        if(result.Fail())
+        {
+            return result;
+        }
+        return this->Assert(*local.Lookup() == 1,"*local.Lookup() should = 1,but not");
+    }
+};
+
 static int Test()
 {
     constexpr std::size_t workerGroupJobs{256*1024};
@@ -222,6 +256,7 @@ static int Test()
     runner.Register<WorkerGroupTest>(new (std::nothrow) sharpen::FixedWorkerGroup{*sharpen::GetLocalSchedulerPtr()},workerGroupJobs);
     runner.Register<WorkerGroupTest>(new (std::nothrow) sharpen::SingleWorkerGroup{*sharpen::GetLocalSchedulerPtr()},workerGroupJobs);
     runner.Register<WorkerGroupTest>(new (std::nothrow) sharpen::DynamicWorkerGroup{*sharpen::GetLocalSchedulerPtr()},workerGroupJobs);
+    runner.Register<FiberLocalTest>();
     return runner.Run();
 }
 

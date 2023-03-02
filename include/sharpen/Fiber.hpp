@@ -10,6 +10,7 @@
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "TypeTraits.hpp"
+#include "FiberLocalStorage.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -59,12 +60,15 @@ namespace sharpen
 
         //scheduler
         sharpen::IFiberScheduler *scheduler_;
+        
+        //local storage
+        sharpen::FiberLocalStorage localStorage_;
 
         thread_local static FiberPtr currentFiber_;
 
         static void FiberEntry(transfer_t from) noexcept;
 
-        static transfer_t SaveCurrentAndSwitch(transfer_t from);
+        static transfer_t SaveCurrentAndSwitch(transfer_t from) noexcept;
 
         void InitFiber();
     public:
@@ -76,7 +80,7 @@ namespace sharpen
 
         void Switch(sharpen::Fiber *callback) noexcept;
 
-        static sharpen::FiberPtr GetCurrentFiber();
+        static sharpen::FiberPtr GetCurrentFiber() noexcept;
 
         static sharpen::IFiberScheduler *GetCurrentFiberSceduler() noexcept;
 
@@ -94,6 +98,18 @@ namespace sharpen
             fiber->task_ = std::move(std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...));
             return fiber;
         }
+
+        inline sharpen::FiberLocalStorage &LocalStorage() noexcept
+        {
+            return this->localStorage_;
+        }
+        
+        inline const sharpen::FiberLocalStorage &LocalStorage() const noexcept
+        {
+            return this->localStorage_;
+        }
+
+        static sharpen::FiberLocalStorage &GetLocalStorage() noexcept;
     };
 
     extern sharpen::IFiberScheduler *GetLocalSchedulerPtr() noexcept;

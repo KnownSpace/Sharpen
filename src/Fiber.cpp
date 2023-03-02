@@ -25,6 +25,7 @@ sharpen::Fiber::Fiber() noexcept
     ,callback_(nullptr)
     ,inited_(false)
     ,scheduler_(nullptr)
+    ,localStorage_()
 {}
 
 sharpen::Fiber::~Fiber() noexcept
@@ -53,7 +54,7 @@ void sharpen::Fiber::Switch(sharpen::Fiber *callback) noexcept
     this->Switch();
 }
 
-transfer_t sharpen::Fiber::SaveCurrentAndSwitch(transfer_t from)
+transfer_t sharpen::Fiber::SaveCurrentAndSwitch(transfer_t from) noexcept
 {
     sharpen::Fiber::GetCurrentFiber()->handle_ = from.fctx;
     sharpen::Fiber *current = reinterpret_cast<sharpen::Fiber *>(from.data);
@@ -61,7 +62,7 @@ transfer_t sharpen::Fiber::SaveCurrentAndSwitch(transfer_t from)
     return from;
 }
 
-sharpen::FiberPtr sharpen::Fiber::GetCurrentFiber()
+sharpen::FiberPtr sharpen::Fiber::GetCurrentFiber() noexcept
 {
     if(!sharpen::Fiber::currentFiber_)
     {
@@ -70,6 +71,17 @@ sharpen::FiberPtr sharpen::Fiber::GetCurrentFiber()
         sharpen::Fiber::currentFiber_ = std::move(fiber);
     }
     return sharpen::Fiber::currentFiber_;
+}
+
+sharpen::FiberLocalStorage &sharpen::Fiber::GetLocalStorage() noexcept
+{
+    if(!sharpen::Fiber::currentFiber_)
+    {
+        sharpen::FiberPtr fiber = std::make_shared<sharpen::Fiber>();
+        fiber->inited_ = true;
+        sharpen::Fiber::currentFiber_ = std::move(fiber);
+    }
+    return sharpen::Fiber::currentFiber_->LocalStorage();
 }
 
 void sharpen::Fiber::FiberEntry(transfer_t from) noexcept
