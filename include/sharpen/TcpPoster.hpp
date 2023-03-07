@@ -8,6 +8,7 @@
 #include "RemotePosterOpenError.hpp"
 #include "IMailParser.hpp"
 #include "Noncopyable.hpp"
+#include "IWorkerGroup.hpp"
 
 namespace sharpen
 {
@@ -21,17 +22,24 @@ namespace sharpen
         std::unique_ptr<sharpen::IEndPoint> remoteEndpoint_;
         std::unique_ptr<sharpen::IMailParser> parser_;
         std::shared_ptr<sharpen::ITcpSteamFactory> factory_;
+        std::unique_ptr<sharpen::IWorkerGroup> pipelineWorker_;
 
         virtual std::uint64_t NviGetId() const noexcept override;
 
         virtual sharpen::Mail NviPost(const sharpen::Mail &mail) noexcept override;
 
+        virtual void NviPostAsync(sharpen::Future<sharpen::Mail> &future,const sharpen::Mail &mail) noexcept;
+
         virtual void NviClose() noexcept override;
 
         virtual void NviOpen(std::unique_ptr<sharpen::IMailParser> parser) override;
+
+        sharpen::Mail Receive(sharpen::NetStreamChannelPtr channel);
     public:
     
         TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::shared_ptr<sharpen::ITcpSteamFactory> factory);
+
+        TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::shared_ptr<sharpen::ITcpSteamFactory> factory,std::unique_ptr<sharpen::IWorkerGroup> worker);
         
         TcpPoster(Self &&other) noexcept = default;
 

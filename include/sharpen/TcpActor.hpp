@@ -24,7 +24,8 @@ namespace sharpen
         std::unique_ptr<sharpen::IRemotePoster> poster_;
         std::atomic<sharpen::RemoteActorStatus> status_;
         std::shared_ptr<sharpen::IMailParserFactory> parserFactory_;
-        std::unique_ptr<sharpen::IWorkerGroup> worker_;
+        std::unique_ptr<sharpen::IWorkerGroup> postWorker_;
+        std::unique_ptr<sharpen::IWorkerGroup> receiveWorker_;
 
         void DoPostShared(const sharpen::Mail *mail) noexcept;
 
@@ -39,9 +40,15 @@ namespace sharpen
         virtual void NviPost(sharpen::Mail mail) override;
 
         virtual void NviPostShared(const sharpen::Mail &mail) override;
+
+        void DoReceive(sharpen::Mail mail) noexcept;
+
+        void Receive(sharpen::AwaitableFuture<sharpen::Mail> *futurePtr) noexcept;
     public:
     
         TcpActor(sharpen::IFiberScheduler &scheduler,sharpen::IMailReceiver &receiver,std::shared_ptr<sharpen::IMailParserFactory> parserFactory,std::unique_ptr<sharpen::IRemotePoster> poster);
+
+        TcpActor(sharpen::IFiberScheduler &scheduler,sharpen::IMailReceiver &receiver,std::shared_ptr<sharpen::IMailParserFactory> parserFactory,std::unique_ptr<sharpen::IRemotePoster> poster,bool enablePipeline);
     
         virtual ~TcpActor() noexcept;
     
