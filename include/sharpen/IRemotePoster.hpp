@@ -22,13 +22,7 @@ namespace sharpen
         //return a empty mail
         virtual sharpen::Mail NviPost(const sharpen::Mail &mail) noexcept = 0;
 
-        //if there are errors occurred
-        //return a empty mail
-        inline virtual void NviPostAsync(sharpen::Future<sharpen::Mail> &future,const sharpen::Mail &mail) noexcept
-        {
-            sharpen::Mail response{this->NviPost(mail)};
-            future.Complete(std::move(response));
-        }
+        virtual void NviPost(const sharpen::Mail &mail,std::function<void(sharpen::Mail)> cb) noexcept = 0;
 
         virtual void NviClose() noexcept = 0;
 
@@ -67,14 +61,15 @@ namespace sharpen
         //return a empty mail
         inline sharpen::Mail Post(const sharpen::Mail &mail) noexcept
         {
+            assert(!mail.Empty());
             return this->NviPost(mail);
         }
 
-        //if there are errors occurred
-        //return a empty mail
-        inline void PostAsync(sharpen::Future<sharpen::Mail> &future,const sharpen::Mail &mail) noexcept
+        void Post(const sharpen::Mail &mail,std::function<void(sharpen::Mail)> cb) noexcept
         {
-            return this->NviPostAsync(future,mail);
+            assert(!mail.Empty());
+            assert(cb);
+            return this->NviPost(mail,std::move(cb));
         }
 
         inline std::uint64_t GetId() const noexcept

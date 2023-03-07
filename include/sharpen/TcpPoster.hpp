@@ -28,13 +28,15 @@ namespace sharpen
 
         virtual sharpen::Mail NviPost(const sharpen::Mail &mail) noexcept override;
 
-        virtual void NviPostAsync(sharpen::Future<sharpen::Mail> &future,const sharpen::Mail &mail) noexcept;
+        virtual void NviPost(const sharpen::Mail &mail,std::function<void(sharpen::Mail)> cb) noexcept;
 
         virtual void NviClose() noexcept override;
 
         virtual void NviOpen(std::unique_ptr<sharpen::IMailParser> parser) override;
 
-        sharpen::Mail Receive(sharpen::NetStreamChannelPtr channel);
+        sharpen::Mail DoReceive(sharpen::NetStreamChannelPtr channel) noexcept;
+
+        void Receive(sharpen::NetStreamChannelPtr channel,std::function<void(sharpen::Mail)> cb) noexcept;
     public:
     
         TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::shared_ptr<sharpen::ITcpSteamFactory> factory);

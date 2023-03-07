@@ -73,7 +73,7 @@ void sharpen::TcpPoster::NviOpen(std::unique_ptr<sharpen::IMailParser> parser)
     }
 }
 
-sharpen::Mail sharpen::TcpPoster::Receive(sharpen::NetStreamChannelPtr channel)
+sharpen::Mail sharpen::TcpPoster::DoReceive(sharpen::NetStreamChannelPtr channel) noexcept
 {
     std::size_t size{0};
     sharpen::ByteBuffer buffer{4096};
@@ -92,7 +92,13 @@ sharpen::Mail sharpen::TcpPoster::Receive(sharpen::NetStreamChannelPtr channel)
     return response;
 }
 
-void sharpen::TcpPoster::NviPostAsync(sharpen::Future<sharpen::Mail> &future,const sharpen::Mail &mail) noexcept
+void sharpen::TcpPoster::Receive(sharpen::NetStreamChannelPtr channel,std::function<void(sharpen::Mail)> cb) noexcept
+{
+    sharpen::Mail response{this->DoReceive(channel)};
+    cb(std::move(response));
+}
+
+void sharpen::TcpPoster::NviPost(const sharpen::Mail &mail,std::function<void(sharpen::Mail)> cb) noexcept
 {
     sharpen::NetStreamChannelPtr channel{nullptr};
     {
@@ -102,7 +108,7 @@ void sharpen::TcpPoster::NviPostAsync(sharpen::Future<sharpen::Mail> &future,con
     }
     if(!channel)
     {
-        future.Complete();
+        cb(sharpen::Mail{});
         return;
     }
     //post mail
@@ -110,7 +116,7 @@ void sharpen::TcpPoster::NviPostAsync(sharpen::Future<sharpen::Mail> &future,con
     size = channel->WriteAsync(mail.Header());
     if(!size)
     {
-        future.Complete();
+        cb(sharpen::Mail{});
         return;
     }
     if(!mail.Content().Empty())
@@ -118,19 +124,19 @@ void sharpen::TcpPoster::NviPostAsync(sharpen::Future<sharpen::Mail> &future,con
         size = channel->WriteAsync(mail.Content());
         if(!size)
         {
-            future.Complete();
+            cb(sharpen::Mail{});
             return;
         }
     }
     //receive mail
     if(!this->pipelineWorker_)
     {
-        sharpen::Mail response{this->Receive(std::move(channel))};
-        future.Complete(std::move(response));
+        sharpen::Mail response{this->DoReceive(std::move(channel))};
+        cb(std::move(response));
         return;
     }
     //pipeline model
-    this->pipelineWorker_->Invoke(future,&Self::Receive,this,std::move(channel));
+    this->pipelineWorker_->Submit(&Self::Receive,this,std::move(channel),std::move(cb));
 }
 
 sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail) noexcept
@@ -161,7 +167,7 @@ sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail) noexcept
         }
     }
     //receive mail
-    sharpen::Mail response{this->Receive(std::move(channel))};
+    sharpen::Mail response{this->DoReceive(std::move(channel))};
     return response;
 }
 
@@ -200,6 +206,7 @@ sharpen::TcpPoster &sharpen::TcpPoster::operator=(Self &&other) noexcept
         this->remoteEndpoint_ = std::move(other.remoteEndpoint_);
         this->parser_ = std::move(other.parser_);
         this->factory_ = std::move(other.factory_);
+        this->pipelineWorker_ = std::move(other.pipelineWorker_);
     }
     return *this;
 }
