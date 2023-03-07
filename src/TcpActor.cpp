@@ -27,13 +27,6 @@ void sharpen::TcpActor::DoReceive(sharpen::Mail response) noexcept
     }
 }
 
-void sharpen::TcpActor::Receive(sharpen::AwaitableFuture<sharpen::Mail> *futurePtr) noexcept
-{
-    std::unique_ptr<sharpen::AwaitableFuture<sharpen::Mail>> future{futurePtr};
-    sharpen::Mail response{future->Await()};
-    this->DoReceive(response);
-}
-
 void sharpen::TcpActor::DoPostShared(const sharpen::Mail *mail) noexcept
 {
     assert(mail);
@@ -68,15 +61,8 @@ void sharpen::TcpActor::DoPostShared(const sharpen::Mail *mail) noexcept
             return;
         }
     }
-    if(this->receiveWorker_)
+    if(this->pipelineCb_)
     {
-        std::unique_ptr<sharpen::AwaitableFuture<sharpen::Mail>> future;
-        future.reset(new (std::nothrow) sharpen::AwaitableFuture<sharpen::Mail>{});
-        if(!future)
-        {
-            //bad alloc
-            std::terminate();
-        }
         status = sharpen::RemoteActorStatus::Opened;
         if(!this->status_.compare_exchange_strong(status,sharpen::RemoteActorStatus::InProgress))
         {
@@ -85,8 +71,7 @@ void sharpen::TcpActor::DoPostShared(const sharpen::Mail *mail) noexcept
                 return;
             }
         }
-        this->poster_->PostAsync(*future,*mail);
-        this->receiveWorker_->Submit(&Self::Receive,this,future.release());
+        return this->poster_->Post(*mail,this->pipelineCb_);
     }
     sharpen::Mail response{this->poster_->Post(*mail)};
     this->DoReceive(std::move(response));
@@ -125,8 +110,8 @@ sharpen::TcpActor::TcpActor(sharpen::IFiberScheduler &scheduler,sharpen::IMailRe
     ,poster_(std::move(poster))
     ,status_(sharpen::RemoteActorStatus::Closed)
     ,parserFactory_(std::move(factory))
+    ,pipelineCb_()
     ,postWorker_(nullptr)
-    ,receiveWorker_(nullptr)
 {
     assert(this->parserFactory_);
     assert(this->poster_);
@@ -138,12 +123,7 @@ sharpen::TcpActor::TcpActor(sharpen::IFiberScheduler &scheduler,sharpen::IMailRe
     this->postWorker_.reset(worker);
     if(enablePipeline)
     {
-        worker = new (std::nothrow) sharpen::SingleWorkerGroup{scheduler};
-        if(!worker)
-        {
-            throw std::bad_alloc{};
-        }
-        this->receiveWorker_.reset(worker);
+        this->pipelineCb_ = std::bind(&Self::DoReceive,this,std::placeholders::_1);
     }
 }
 
