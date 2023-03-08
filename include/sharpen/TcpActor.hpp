@@ -21,10 +21,10 @@ namespace sharpen
         using Self = sharpen::TcpActor;
     
         sharpen::IMailReceiver *receiver_;
-        std::unique_ptr<sharpen::IRemotePoster> poster_;
         std::atomic<sharpen::RemoteActorStatus> status_;
         std::shared_ptr<sharpen::IMailParserFactory> parserFactory_;
         std::function<void(sharpen::Mail)> pipelineCb_;
+        std::unique_ptr<sharpen::IRemotePoster> poster_;
         std::unique_ptr<sharpen::IWorkerGroup> postWorker_;
 
         void DoPostShared(const sharpen::Mail *mail) noexcept;

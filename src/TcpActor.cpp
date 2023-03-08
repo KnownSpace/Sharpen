@@ -107,10 +107,10 @@ sharpen::TcpActor::TcpActor(sharpen::IFiberScheduler &scheduler,sharpen::IMailRe
 
 sharpen::TcpActor::TcpActor(sharpen::IFiberScheduler &scheduler,sharpen::IMailReceiver &receiver,std::shared_ptr<sharpen::IMailParserFactory> factory,std::unique_ptr<sharpen::IRemotePoster> poster,bool enablePipeline)
     :receiver_(&receiver)
-    ,poster_(std::move(poster))
     ,status_(sharpen::RemoteActorStatus::Closed)
     ,parserFactory_(std::move(factory))
     ,pipelineCb_()
+    ,poster_(std::move(poster))
     ,postWorker_(nullptr)
 {
     assert(this->parserFactory_);
