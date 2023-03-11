@@ -16,7 +16,7 @@ namespace sharpen
     
         std::uint8_t status_;
         std::uint64_t term_;
-        std::uint64_t lastCommitIndex_;
+        std::uint64_t matchIndex_;
     public:
 
         RaftHeartbeatResponse() noexcept = default;
@@ -66,14 +66,14 @@ namespace sharpen
             this->term_ = term;
         }
 
-        inline std::uint64_t GetLastCommitIndex() const noexcept
+        inline std::uint64_t GetMatchIndex() const noexcept
         {
-            return this->lastCommitIndex_;
+            return this->matchIndex_;
         }
 
-        inline void SetLastCommitIndex(std::uint64_t lastCommitIndex) noexcept
+        inline void SetMatchIndex(std::uint64_t lastCommitIndex) noexcept
         {
-            this->lastCommitIndex_ = lastCommitIndex;
+            this->matchIndex_ = lastCommitIndex;
         }
 
         std::size_t ComputeSize() const noexcept;

@@ -5,17 +5,17 @@
 sharpen::RaftHeartbeatResponse::RaftHeartbeatResponse(bool status) noexcept
     :status_(static_cast<std::uint8_t>(status))
     ,term_(0)
-    ,lastCommitIndex_(0)
+    ,matchIndex_(0)
 {}
 
 sharpen::RaftHeartbeatResponse::RaftHeartbeatResponse(Self &&other) noexcept
     :status_(other.status_)
     ,term_(other.term_)
-    ,lastCommitIndex_(other.lastCommitIndex_)
+    ,matchIndex_(other.matchIndex_)
 {
     other.status_ = 0;
     other.term_ = 0;
-    other.lastCommitIndex_ = 0;
+    other.matchIndex_ = 0;
 }
 
 sharpen::RaftHeartbeatResponse &sharpen::RaftHeartbeatResponse::operator=(Self &&other) noexcept
@@ -24,10 +24,10 @@ sharpen::RaftHeartbeatResponse &sharpen::RaftHeartbeatResponse::operator=(Self &
     {
         this->status_ = other.status_;
         this->term_ = other.term_;
-        this->lastCommitIndex_ = other.lastCommitIndex_;
+        this->matchIndex_ = other.matchIndex_;
         other.status_ = 0;
         other.term_ = 0;
-        other.lastCommitIndex_ = 0;
+        other.matchIndex_ = 0;
     }
     return *this;
 }
@@ -37,7 +37,7 @@ std::size_t sharpen::RaftHeartbeatResponse::ComputeSize() const noexcept
     std::size_t size{sizeof(this->status_)};
     sharpen::Varuint64 builder{this->term_};
     size += builder.ComputeSize();
-    builder.Set(this->lastCommitIndex_);
+    builder.Set(this->matchIndex_);
     size += builder.ComputeSize();
     return size;
 }
@@ -62,7 +62,7 @@ std::size_t sharpen::RaftHeartbeatResponse::LoadFrom(const char *data,std::size_
         throw sharpen::CorruptedDataError{"corrupted heartbeat response"};
     }
     offset += sharpen::BinarySerializator::LoadFrom(builder,data + offset,size - offset);
-    this->lastCommitIndex_ = builder.Get();
+    this->matchIndex_ = builder.Get();
     return offset;
 }
 
@@ -72,7 +72,7 @@ std::size_t sharpen::RaftHeartbeatResponse::UnsafeStoreTo(char *data) const noex
     offset += sharpen::BinarySerializator::UnsafeStoreTo(this->status_,data + offset);
     sharpen::Varuint64 builder{this->term_};
     offset += sharpen::BinarySerializator::UnsafeStoreTo(builder,data + offset);
-    builder.Set(this->lastCommitIndex_);
+    builder.Set(this->matchIndex_);
     offset += sharpen::BinarySerializator::UnsafeStoreTo(builder,data + offset);
     return offset;
 }
