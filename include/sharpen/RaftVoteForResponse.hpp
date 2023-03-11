@@ -20,7 +20,7 @@ namespace sharpen
         std::uint64_t term_;
     public:
     
-        RaftVoteForResponse() noexcept = default;
+        RaftVoteForResponse() noexcept;
 
         RaftVoteForResponse(bool status,std::uint64_t term) noexcept;
     

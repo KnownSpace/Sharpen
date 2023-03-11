@@ -22,7 +22,7 @@ namespace sharpen
         std::uint64_t lastTerm_;
     public:
     
-        RaftVoteForRequest() noexcept = default;
+        RaftVoteForRequest() noexcept;
 
         RaftVoteForRequest(std::uint64_t id,std::uint64_t term,std::uint64_t lastIndex,std::uint64_t lastTerm) noexcept;
     

@@ -2,6 +2,11 @@
 
 #include <sharpen/Varint.hpp>
 
+sharpen::RaftVoteForResponse::RaftVoteForResponse() noexcept
+    :status_(false)
+    ,term_(0)
+{}
+
 sharpen::RaftVoteForResponse::RaftVoteForResponse(bool status,std::uint64_t term) noexcept
     :status_(status)
     ,term_(term)

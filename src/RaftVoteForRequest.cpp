@@ -2,6 +2,13 @@
 
 #include <sharpen/Varint.hpp>
 
+sharpen::RaftVoteForRequest::RaftVoteForRequest() noexcept
+    :id_(0)
+    ,term_(0)
+    ,lastIndex_(0)
+    ,lastTerm_(0)
+{}
+
 sharpen::RaftVoteForRequest::RaftVoteForRequest(std::uint64_t id,std::uint64_t term,std::uint64_t lastIndex,std::uint64_t lastTerm) noexcept
     :id_(id)
     ,term_(term)
