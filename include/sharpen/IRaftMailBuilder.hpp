@@ -7,6 +7,8 @@
 #include "RaftVoteForResponse.hpp"
 #include "RaftHeartbeatRequest.hpp"
 #include "RaftHeartbeatResponse.hpp"
+#include "RaftPrevoteRequest.hpp"
+#include "RaftPrevoteResponse.hpp"
 
 namespace sharpen
 {
@@ -41,6 +43,10 @@ namespace sharpen
         virtual sharpen::Mail BuildHeartbeatRequest(const sharpen::RaftHeartbeatRequest &request) const = 0;
 
         virtual sharpen::Mail BuildHeartbeatResponse(const sharpen::RaftHeartbeatResponse &response) const = 0;
+
+        virtual sharpen::Mail BuildPrevoteRequest(const sharpen::RaftPrevoteRequest &request) const = 0;
+
+        virtual sharpen::Mail BuildPrevoteResponse(const sharpen::RaftPrevoteResponse &response) const = 0;
     };
 }
 
