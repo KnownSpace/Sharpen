@@ -76,6 +76,8 @@ namespace sharpen
         {
             return this->NviGetId();
         }
+
+        virtual bool Available() const noexcept = 0;
     };
 }
 

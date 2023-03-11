@@ -53,6 +53,8 @@ namespace sharpen
         }
 
         Self &operator=(Self &&other) noexcept;
+
+        virtual bool Available() const noexcept override;
     };
 }
 

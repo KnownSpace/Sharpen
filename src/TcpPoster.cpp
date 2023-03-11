@@ -73,6 +73,14 @@ void sharpen::TcpPoster::NviOpen(std::unique_ptr<sharpen::IMailParser> parser)
     }
 }
 
+bool sharpen::TcpPoster::Available() const noexcept
+{
+    {
+        std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
+        return this->channel_ != nullptr;
+    }
+}
+
 sharpen::Mail sharpen::TcpPoster::DoReceive(sharpen::NetStreamChannelPtr channel) noexcept
 {
     std::size_t size{0};

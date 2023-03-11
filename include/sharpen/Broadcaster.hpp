@@ -24,19 +24,29 @@ namespace sharpen
         using Lock = sharpen::AsyncMutex;
     
         std::unique_ptr<Lock> lock_;
-        std::unique_ptr<sharpen::Mail> sharedMail_;
+        std::size_t index_;
+        std::size_t pipelineLength_;
+        std::vector<sharpen::Mail> sharedMails_;
         std::unordered_map<std::uint64_t,std::unique_ptr<sharpen::IRemoteActor>> actors_;
+
+        sharpen::Mail *GetNextSharedMail() noexcept;
     public:
     
         template<typename _Iterator,typename _Check = decltype(std::declval<std::unique_ptr<sharpen::IRemoteActor>&>() = std::move(*std::declval<_Iterator&>()++))>
         Broadcaster(std::move_iterator<_Iterator> begin,std::move_iterator<_Iterator> end)
+            :Self{begin,end,1}
+        {}
+
+        template<typename _Iterator,typename _Check = decltype(std::declval<std::unique_ptr<sharpen::IRemoteActor>&>() = std::move(*std::declval<_Iterator&>()++))>
+        Broadcaster(std::move_iterator<_Iterator> begin,std::move_iterator<_Iterator> end,std::size_t pipeline)
             :lock_(nullptr)
-            ,sharedMail_(nullptr)
+            ,index_(0)
+            ,pipelineLength_(pipeline)
+            ,sharedMails_()
             ,actors_()
         {
             this->lock_.reset(new (std::nothrow) Lock{});
-            this->sharedMail_.reset(new (std::nothrow) sharpen::Mail{});
-            if(!this->lock_ || !this->sharedMail_)
+            if(!this->lock_)
             {
                 throw std::bad_alloc{};
             }
@@ -48,9 +58,15 @@ namespace sharpen
                 this->actors_.emplace(id,std::move(*begin));
                 ++begin;
             }
+            assert(this->pipelineLength_ > 0);
+            this->sharedMails_.resize(this->pipelineLength_);
         }
 
-        Broadcaster(std::unique_ptr<sharpen::IRemoteActor> *actors,std::size_t size);
+        Broadcaster(std::unique_ptr<sharpen::IRemoteActor> *actors,std::size_t size,std::size_t pipeline);
+
+        Broadcaster(std::unique_ptr<sharpen::IRemoteActor> *actors,std::size_t size)
+            :Self{actors,size,1}
+        {}
     
         Broadcaster(Self &&other) noexcept = default;
     
@@ -59,8 +75,12 @@ namespace sharpen
             if(this != std::addressof(other))
             {
                 this->lock_ = std::move(other.lock_);
-                this->sharedMail_ = std::move(other.sharedMail_);
+                this->index_ = other.index_;
+                this->pipelineLength_ = other.pipelineLength_;
+                this->sharedMails_ = std::move(other.sharedMails_);
                 this->actors_ = std::move(other.actors_);
+                other.index_ = 0;
+                other.pipelineLength_ = 0;
             }
             return *this;
         }

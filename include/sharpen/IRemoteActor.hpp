@@ -61,6 +61,8 @@ namespace sharpen
         {
             return this->NviGetId();
         }
+
+        virtual std::size_t GetPipelineCount() const noexcept = 0;
     };
 }
 

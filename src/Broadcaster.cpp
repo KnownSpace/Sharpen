@@ -2,14 +2,15 @@
 
 #include <mutex>
 
-sharpen::Broadcaster::Broadcaster(std::unique_ptr<sharpen::IRemoteActor> *actor,std::size_t size)
+sharpen::Broadcaster::Broadcaster(std::unique_ptr<sharpen::IRemoteActor> *actor,std::size_t size,std::size_t pipeline)
     :lock_(nullptr)
-    ,sharedMail_(nullptr)
+    ,index_(0)
+    ,pipelineLength_(pipeline)
+    ,sharedMails_()
     ,actors_()
 {
     this->lock_.reset(new (std::nothrow) Lock{});
-    this->sharedMail_.reset(new (std::nothrow) sharpen::Mail{});
-    if(!this->lock_ || !this->sharedMail_)
+    if(!this->lock_)
     {
         throw std::bad_alloc{};
     }
@@ -19,6 +20,8 @@ sharpen::Broadcaster::Broadcaster(std::unique_ptr<sharpen::IRemoteActor> *actor,
         std::uint64_t id{actor[i]->GetId()};
         this->actors_.emplace(id,std::move(actor[i]));
     }
+    assert(this->pipelineLength_ > 0);
+    this->sharedMails_.resize(this->pipelineLength_);
 }
 
 void sharpen::Broadcaster::Cancel() noexcept
@@ -26,7 +29,7 @@ void sharpen::Broadcaster::Cancel() noexcept
     for(auto begin = this->actors_.begin(),end = this->actors_.end(); begin != end; ++begin)
     {
         std::unique_ptr<sharpen::IRemoteActor> &actor{begin->second};
-        if(actor->GetStatus() == sharpen::RemoteActorStatus::InProgress)
+        if(actor->GetPipelineCount() == this->pipelineLength_)
         {
             actor->Cancel();
         }
@@ -38,18 +41,28 @@ sharpen::Broadcaster::~Broadcaster() noexcept
     this->Cancel();
 }
 
+sharpen::Mail *sharpen::Broadcaster::GetNextSharedMail() noexcept
+{
+    assert(!this->sharedMails_.empty());
+    std::size_t index{this->index_ % this->sharedMails_.size()};
+    this->index_ += 1;
+    return &this->sharedMails_[index];
+}
+
 void sharpen::Broadcaster::Broadcast(sharpen::Mail mail)
 {
     {
+        assert(this->pipelineLength_ != 0);
         assert(this->lock_);
         std::unique_lock<Lock> lock{*this->lock_};
-        assert(this->sharedMail_);
         this->Cancel();
-        *this->sharedMail_ = std::move(mail);
+        sharpen::Mail *sharedMail{this->GetNextSharedMail()};
+        assert(sharedMail);
+        *sharedMail = std::move(mail);
         for(auto begin = this->actors_.begin(),end = this->actors_.end(); begin != end; ++begin)
         {
             std::unique_ptr<sharpen::IRemoteActor> &actor{begin->second};
-            actor->PostShared(*this->sharedMail_);
+            actor->PostShared(*sharedMail);
         }
     }
 }
@@ -57,6 +70,7 @@ void sharpen::Broadcaster::Broadcast(sharpen::Mail mail)
 void sharpen::Broadcaster::Broadcast(const sharpen::IMailProvider &provider)
 {
     {
+        assert(this->pipelineLength_ != 0);
         assert(this->lock_);
         std::unique_lock<Lock> lock{*this->lock_};
         this->Cancel();
@@ -74,7 +88,7 @@ bool sharpen::Broadcaster::Completed() const noexcept
     for(auto begin = this->actors_.begin(),end = this->actors_.end(); begin != end; ++begin)
     {
         const std::unique_ptr<sharpen::IRemoteActor> &actor{begin->second};
-        if(actor->GetStatus() == sharpen::RemoteActorStatus::InProgress)
+        if(actor->GetPipelineCount())
         {
             return false;
         }

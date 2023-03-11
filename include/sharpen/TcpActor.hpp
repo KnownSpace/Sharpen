@@ -21,7 +21,8 @@ namespace sharpen
         using Self = sharpen::TcpActor;
     
         sharpen::IMailReceiver *receiver_;
-        std::atomic<sharpen::RemoteActorStatus> status_;
+        std::atomic_size_t postCount_;
+        std::atomic_size_t ackCount_;
         std::shared_ptr<sharpen::IMailParserFactory> parserFactory_;
         std::function<void(sharpen::Mail)> pipelineCb_;
         std::unique_ptr<sharpen::IRemotePoster> poster_;
@@ -55,12 +56,11 @@ namespace sharpen
             return *this;
         }
 
-        inline virtual sharpen::RemoteActorStatus GetStatus() const noexcept override
-        {
-            return this->status_;
-        }
+        virtual sharpen::RemoteActorStatus GetStatus() const noexcept override;
 
         virtual void Cancel() noexcept override;
+
+        virtual std::size_t GetPipelineCount() const noexcept;
     };
 }
 
