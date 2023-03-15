@@ -18,6 +18,7 @@ sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::
     ,vote_(0,0)
     ,role_(sharpen::RaftRole::Follower)
     ,electionRecord_(0,0)
+    ,prevoteRecord_()
     ,leaderRecord_(0,0)
     ,waiters_()
     ,advancedCount_(0)
@@ -482,7 +483,16 @@ void sharpen::RaftConsensus::RaisePrevote()
         lastTerm = lastTermOpt.Get();
     }
     //TODO
-    
+    sharpen::RaftPrevoteRequest request;
+    request.SetLastIndex(lastIndex);
+    request.SetLastTerm(lastTerm);
+    {
+        //make gcc happy
+        (void)lastTerm;
+    }
+    this->prevoteRecord_.clear();
+    sharpen::Mail mail{this->mailBuilder_->BuildPrevoteRequest(request)};
+    this->quorumBroadcaster_->Broadcast(std::move(mail));
 }
 
 void sharpen::RaftConsensus::RaiseElection()

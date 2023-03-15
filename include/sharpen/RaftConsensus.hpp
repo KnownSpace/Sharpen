@@ -4,6 +4,7 @@
 
 #include <map>
 #include <queue>
+#include <set>
 
 #include "IConsensus.hpp"
 #include "IStatusMap.hpp"
@@ -51,6 +52,8 @@ namespace sharpen
         std::atomic<sharpen::RaftRole> role_;
         //election record
         sharpen::RaftElectionRecord electionRecord_;
+        std::set<std::uint64_t> prevoteRecord_;
+        
         //leader record
         //thread safty
         sharpen::RaftLeaderRecord leaderRecord_;
