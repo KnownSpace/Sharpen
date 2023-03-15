@@ -398,7 +398,7 @@ sharpen::Mail sharpen::RaftConsensus::DoGenerateResponse(sharpen::Mail request)
     {
    case sharpen::RaftMailType::Unknown:
         break;
-    case sharpen::RaftMailType::PreVoteRequest:
+    case sharpen::RaftMailType::PrevoteRequest:
         break;
     case sharpen::RaftMailType::VoteRequest:
         {
@@ -428,7 +428,7 @@ void sharpen::RaftConsensus::DoReceive(sharpen::Mail mail,std::uint64_t actorId)
     case sharpen::RaftMailType::Unknown:
         //do nothing
         break;
-    case sharpen::RaftMailType::PreVoteResponse:
+    case sharpen::RaftMailType::PrevoteResponse:
         break;
     case sharpen::RaftMailType::VoteResponse:
         {
@@ -464,6 +464,25 @@ sharpen::Mail sharpen::RaftConsensus::NviGenerateResponse(sharpen::Mail request)
     sharpen::AwaitableFuture<sharpen::Mail> future;
     this->worker_->Invoke(future,&Self::DoGenerateResponse,this,std::move(request));
     return future.Await();
+}
+
+void sharpen::RaftConsensus::RaisePrevote()
+{
+    assert(this->mailBuilder_ != nullptr);
+    assert(this->quorumBroadcaster_ != nullptr);
+    assert(this->logs_ != nullptr);
+    //load last index
+    std::uint64_t lastIndex{this->logs_->GetLastIndex()};
+    //load last term
+    sharpen::Optional<std::uint64_t> lastTermOpt{this->logs_->LookupTerm(lastIndex)};
+    assert((lastTermOpt.Exist() && lastIndex != 0) || (!lastTermOpt.Exist() && lastIndex == 0));
+    std::uint64_t lastTerm{0};
+    if(lastTermOpt.Exist())
+    {
+        lastTerm = lastTermOpt.Get();
+    }
+    //TODO
+    
 }
 
 void sharpen::RaftConsensus::RaiseElection()
@@ -540,7 +559,7 @@ void sharpen::RaftConsensus::DoAdvance()
             }
             else
             {
-                //TODO prevote
+                this->RaisePrevote();
             }
         }
         break;

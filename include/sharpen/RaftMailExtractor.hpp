@@ -24,6 +24,10 @@ namespace sharpen
         virtual sharpen::Optional<sharpen::RaftHeartbeatRequest> NviExtractHeartbeatRequest(const sharpen::Mail &mail) const noexcept override;
 
         virtual sharpen::Optional<sharpen::RaftHeartbeatResponse> NviExtractHeartbeatResponse(const sharpen::Mail &mail) const noexcept override;
+
+        virtual sharpen::Optional<sharpen::RaftPrevoteRequest> NviExtractPrevoteRequest(const sharpen::Mail &mail) const noexcept override;
+
+        virtual sharpen::Optional<sharpen::RaftPrevoteResponse> NviExtractPrevoteResponse(const sharpen::Mail &mail) const noexcept override;
     public:
     
         explicit RaftMailExtractor(std::uint32_t magic) noexcept;

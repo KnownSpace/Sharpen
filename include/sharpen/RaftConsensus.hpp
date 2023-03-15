@@ -105,6 +105,8 @@ namespace sharpen
 
         void RaiseElection();
 
+        void RaisePrevote();
+
         sharpen::Mail OnVoteRequest(const sharpen::RaftVoteForRequest &request);
 
         void OnVoteResponse(const sharpen::RaftVoteForResponse &response,std::uint64_t actorId);

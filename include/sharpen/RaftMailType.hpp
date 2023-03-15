@@ -16,8 +16,8 @@ namespace sharpen
         VoteResponse = 4,
         InstallSnapshotRequest = 5,
         InstallSnapshotResponse = 6,
-        PreVoteRequest = 7,
-        PreVoteResponse = 8,
+        PrevoteRequest = 7,
+        PrevoteResponse = 8,
         MaxValue = 9
     };
 

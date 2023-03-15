@@ -79,3 +79,31 @@ sharpen::Mail sharpen::RaftMailBuilder::BuildHeartbeatResponse(const sharpen::Ra
     mail.SetContent(std::move(content));
     return mail.AsMail();
 }
+
+sharpen::Mail sharpen::RaftMailBuilder::BuildPrevoteRequest(const sharpen::RaftPrevoteRequest &request) const
+{
+    std::uint32_t size{sharpen::IntCast<std::uint32_t>(request.ComputeSize())};
+    sharpen::RaftForm form{sharpen::RaftMailType::PrevoteRequest};
+    sharpen::ByteBuffer content{size};
+    sharpen::BufferWriter writer{content};
+    writer.Write(request);
+    form.SetChecksum(content.GetSlice());
+    sharpen::GenericMail mail{this->magic_};
+    mail.Form<sharpen::RaftForm>() = form;
+    mail.SetContent(std::move(content));
+    return mail.AsMail();
+}
+
+sharpen::Mail sharpen::RaftMailBuilder::BuildPrevoteResponse(const sharpen::RaftPrevoteResponse &response) const
+{
+    std::uint32_t size{sharpen::IntCast<std::uint32_t>(response.ComputeSize())};
+    sharpen::RaftForm form{sharpen::RaftMailType::PrevoteResponse};
+    sharpen::ByteBuffer content{size};
+    sharpen::BufferWriter writer{content};
+    writer.Write(response);
+    form.SetChecksum(content.GetSlice());
+    sharpen::GenericMail mail{this->magic_};
+    mail.Form<sharpen::RaftForm>() = form;
+    mail.SetContent(std::move(content));
+    return mail.AsMail();
+}
