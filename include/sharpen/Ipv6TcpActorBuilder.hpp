@@ -25,6 +25,10 @@ namespace sharpen
         std::shared_ptr<sharpen::IMailParserFactory> parserFactory_;
 
         void EnsureConfiguration() const;
+
+        virtual std::unique_ptr<sharpen::IRemoteActor> NviBuild(bool pipeline) const override;
+
+        virtual std::shared_ptr<sharpen::IRemoteActor> NviBuildShared(bool pipeline) const override;
     public:
 
         Ipv6TcpActorBuilder();
@@ -63,10 +67,6 @@ namespace sharpen
         void PrepareReceiver(sharpen::IMailReceiver &receiver) noexcept;
 
         void PrepareParserFactory(std::shared_ptr<sharpen::IMailParserFactory> parserFactory) noexcept;
-
-        virtual std::unique_ptr<sharpen::IRemoteActor> Build() const override;
-
-        virtual std::shared_ptr<sharpen::IRemoteActor> BuildShared() const override;
     };
 }
 

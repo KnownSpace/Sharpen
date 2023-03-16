@@ -13,6 +13,10 @@ namespace sharpen
     private:
         using Self = sharpen::IRemoteActorBuilder;
     protected:
+
+        virtual std::unique_ptr<sharpen::IRemoteActor> NviBuild(bool pipeline) const = 0;
+
+        virtual std::shared_ptr<sharpen::IRemoteActor> NviBuildShared(bool pipeline) const = 0;
     public:
     
         IRemoteActorBuilder() noexcept = default;
@@ -32,9 +36,25 @@ namespace sharpen
             return *this;
         }
 
-        virtual std::unique_ptr<sharpen::IRemoteActor> Build() const = 0;
+        std::unique_ptr<sharpen::IRemoteActor> Build() const
+        {
+            return this->Build(false);
+        }
 
-        virtual std::shared_ptr<sharpen::IRemoteActor> BuildShared() const = 0;
+        std::unique_ptr<sharpen::IRemoteActor> Build(bool pipeline) const
+        {
+            return this->NviBuild(pipeline);
+        }
+
+        std::shared_ptr<sharpen::IRemoteActor> BuildShared() const
+        {
+            return this->BuildShared(false);
+        }
+
+        std::shared_ptr<sharpen::IRemoteActor> BuildShared(bool pipeline) const
+        {
+            return this->NviBuildShared(pipeline);
+        }
     };
 }
 
