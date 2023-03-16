@@ -107,6 +107,10 @@ namespace sharpen
         bool ExistActor(std::uint64_t id) const noexcept;
 
         const sharpen::IRemoteActor *FindActor(std::uint64_t id) const noexcept;
+
+        std::size_t GetPipelineLength() const noexcept;
+
+        bool SupportPipeline() const noexcept;
     };
 }
 

@@ -117,6 +117,11 @@ void sharpen::TcpActor::Drain() noexcept
     }
 }
 
+bool sharpen::TcpActor::SupportPipeline() const noexcept
+{
+    return this->pipelineCb_ != nullptr;
+}
+
 void sharpen::TcpActor::Cancel() noexcept
 {
     std::size_t ackCount{this->ackCount_.load(std::memory_order::memory_order_acquire)};
@@ -172,7 +177,7 @@ sharpen::TcpActor::TcpActor(sharpen::IFiberScheduler &scheduler,sharpen::IMailRe
         throw std::bad_alloc{};
     }
     this->postWorker_.reset(worker);
-    if(enablePipeline)
+    if(enablePipeline && this->poster_->SupportPipeline())
     {
         this->pipelineCb_ = std::bind(&Self::DoReceive,this,std::placeholders::_1);
     }

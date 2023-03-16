@@ -81,6 +81,11 @@ bool sharpen::TcpPoster::Available() const noexcept
     }
 }
 
+bool sharpen::TcpPoster::SupportPipeline() const noexcept
+{
+    return this->pipelineWorker_ != nullptr;
+}
+
 sharpen::Mail sharpen::TcpPoster::DoReceive(sharpen::NetStreamChannelPtr channel) noexcept
 {
     std::size_t size{0};
@@ -188,13 +193,13 @@ sharpen::TcpPoster::TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::
     :Self{std::move(endpoint),std::move(factory),nullptr}
 {}
 
-sharpen::TcpPoster::TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::shared_ptr<sharpen::ITcpSteamFactory> factory,std::unique_ptr<sharpen::IWorkerGroup> worker)
+sharpen::TcpPoster::TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::shared_ptr<sharpen::ITcpSteamFactory> factory,std::unique_ptr<sharpen::IWorkerGroup> pipelineWorker)
     :lock_(nullptr)
     ,channel_(nullptr)
     ,remoteEndpoint_(std::move(endpoint))
     ,parser_(nullptr)
     ,factory_(std::move(factory))
-    ,pipelineWorker_(std::move(worker))
+    ,pipelineWorker_(std::move(pipelineWorker))
 {
     assert(this->factory_);
     assert(this->remoteEndpoint_);

@@ -20,6 +20,8 @@ namespace sharpen
         virtual const sharpen::IRemoteActorBuilder *NviLookup(std::uint64_t actorId) const noexcept = 0;
 
         virtual void NviRegister(std::uint64_t actorId,std::unique_ptr<sharpen::IRemoteActorBuilder> builder) = 0;
+
+        virtual std::unique_ptr<sharpen::Broadcaster> NviCreateBroadcaster(std::size_t pipeline) const = 0;
     public:
     
         IQuorum() noexcept = default;
@@ -39,7 +41,16 @@ namespace sharpen
             return *this;
         }
 
-        virtual std::unique_ptr<sharpen::Broadcaster> CreateBroadcaster() const = 0;
+        std::unique_ptr<sharpen::Broadcaster> CreateBroadcaster() const
+        {
+            return this->CreateBroadcaster(1);
+        }
+
+        std::unique_ptr<sharpen::Broadcaster> CreateBroadcaster(std::size_t pipeline) const
+        {
+            assert(pipeline > 0);
+            return this->NviCreateBroadcaster((std::max)(static_cast<std::size_t>(1),pipeline));
+        }
 
         inline sharpen::IRemoteActorBuilder *Lookup(std::uint64_t actorId)
         {

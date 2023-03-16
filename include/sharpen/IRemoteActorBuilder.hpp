@@ -38,12 +38,12 @@ namespace sharpen
 
         std::unique_ptr<sharpen::IRemoteActor> Build() const
         {
-            return this->Build();
+            return this->NviBuild();
         }
 
         std::shared_ptr<sharpen::IRemoteActor> BuildShared() const
         {
-            return this->BuildShared();
+            return this->NviBuildShared();
         }
     };
 }

@@ -41,7 +41,7 @@ namespace sharpen
     
         TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::shared_ptr<sharpen::ITcpSteamFactory> factory);
 
-        TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::shared_ptr<sharpen::ITcpSteamFactory> factory,std::unique_ptr<sharpen::IWorkerGroup> worker);
+        TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::shared_ptr<sharpen::ITcpSteamFactory> factory,std::unique_ptr<sharpen::IWorkerGroup> pipelineWorker);
         
         TcpPoster(Self &&other) noexcept = default;
 
@@ -55,6 +55,8 @@ namespace sharpen
         Self &operator=(Self &&other) noexcept;
 
         virtual bool Available() const noexcept override;
+
+        virtual bool SupportPipeline() const noexcept override;
     };
 }
 

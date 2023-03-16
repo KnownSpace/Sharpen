@@ -129,3 +129,13 @@ const sharpen::IRemoteActor *sharpen::Broadcaster::FindActor(std::uint64_t actor
     }
     return nullptr;
 }
+
+std::size_t sharpen::Broadcaster::GetPipelineLength() const noexcept
+{
+    return this->pipelineLength_;
+}
+
+bool sharpen::Broadcaster::SupportPipeline() const noexcept
+{
+    return this->pipelineLength_ > 1;
+}

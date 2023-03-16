@@ -9,15 +9,21 @@ sharpen::Quorum &sharpen::Quorum::operator=(Self &&other) noexcept
     return *this;
 }
 
-std::unique_ptr<sharpen::Broadcaster> sharpen::Quorum::CreateBroadcaster() const
+std::unique_ptr<sharpen::Broadcaster> sharpen::Quorum::NviCreateBroadcaster(std::size_t pipeline) const
 {
+    assert(pipeline > 0);
     std::vector<std::unique_ptr<sharpen::IRemoteActor>> actors;
     actors.reserve(this->builders_.size());
     for(auto begin = this->builders_.begin(),end = this->builders_.end(); begin != end; ++begin)
     {
-        actors.emplace_back(begin->second->Build());   
+        std::unique_ptr<sharpen::IRemoteActor> actor{begin->second->Build()};
+        if(pipeline > 1 && !actor->SupportPipeline())
+        {
+            pipeline = 1;
+        }
+        actors.emplace_back(std::move(actor));
     }
-    std::unique_ptr<sharpen::Broadcaster> broadcaster{new (std::nothrow) sharpen::Broadcaster{std::make_move_iterator(actors.begin()),std::make_move_iterator(actors.end())}};
+    std::unique_ptr<sharpen::Broadcaster> broadcaster{new (std::nothrow) sharpen::Broadcaster{std::make_move_iterator(actors.begin()),std::make_move_iterator(actors.end()),pipeline}};
     if(!broadcaster)
     {
         throw std::bad_alloc{};

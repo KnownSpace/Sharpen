@@ -20,6 +20,8 @@ namespace sharpen
         virtual const sharpen::IRemoteActorBuilder *NviLookup(std::uint64_t actorId) const noexcept override;
 
         virtual void NviRegister(std::uint64_t actorId,std::unique_ptr<sharpen::IRemoteActorBuilder> builder) override;
+    
+        virtual std::unique_ptr<sharpen::Broadcaster> NviCreateBroadcaster(std::size_t pipeline) const override;
     public:
     
         Quorum() = default;
@@ -34,8 +36,6 @@ namespace sharpen
         {
             return *this;
         }
-
-        virtual std::unique_ptr<sharpen::Broadcaster> CreateBroadcaster() const override;
 
         virtual void Remove(std::uint64_t actorId) noexcept override;
 

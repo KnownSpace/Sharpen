@@ -78,6 +78,8 @@ namespace sharpen
         }
 
         virtual bool Available() const noexcept = 0;
+
+        virtual bool SupportPipeline() const noexcept = 0;
     };
 }
 
