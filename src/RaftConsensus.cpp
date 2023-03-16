@@ -246,6 +246,30 @@ void sharpen::RaftConsensus::EnsureBroadcaster()
     }
 }
 
+sharpen::Mail sharpen::RaftConsensus::OnPrevoteRequest(const sharpen::RaftPrevoteRequest &request)
+{
+    assert(this->mailBuilder_ != nullptr);
+    sharpen::RaftPrevoteResponse response;
+    response.SetStatus(false);
+    response.SetTerm(this->GetTerm());
+    //get last index and last term
+    std::uint64_t lastIndex{this->logs_->GetLastIndex()};
+    std::uint64_t lastTerm{0};
+    sharpen::Optional<std::uint64_t> lastTermOpt{this->logs_->LookupTerm(lastIndex)};
+    assert((lastTermOpt.Exist() && lastIndex != 0) || (!lastTermOpt.Exist() && lastIndex == 0));
+    if(lastTermOpt.Exist())
+    {
+        lastTerm = lastTermOpt.Get();
+    }
+    if((request.GetLastIndex() > lastIndex) || (request.GetLastIndex() == lastIndex && request.GetLastTerm() >= lastTerm))
+    {
+        response.SetStatus(true);
+    }
+    //return response
+    sharpen::Mail mail{this->mailBuilder_->BuildPrevoteResponse(response)};
+    return mail;
+}
+
 sharpen::Mail sharpen::RaftConsensus::OnVoteRequest(const sharpen::RaftVoteForRequest &request)
 {
     assert(this->mailBuilder_ != nullptr);
@@ -297,7 +321,7 @@ sharpen::Mail sharpen::RaftConsensus::OnVoteRequest(const sharpen::RaftVoteForRe
                 lastTerm = lastTermOpt.Get();
             }
             //set true if logs up-to-date current logs
-            if((request.GetLastIndex() >= lastIndex) || (request.GetLastIndex() == lastIndex && request.GetTerm() >= lastTerm))
+            if((request.GetLastIndex() > lastIndex) || (request.GetLastIndex() == lastIndex && request.GetLastTerm() >= lastTerm))
             {
                 //save vote record
                 vote.SetActorId(request.GetId());
@@ -353,6 +377,11 @@ void sharpen::RaftConsensus::OnStatusChanged()
     }
     this->waiters_.clear();
     this->waiters_.reserve(Self::reversedWaitersSize_);
+}
+
+void sharpen::RaftConsensus::OnPrevoteResponse(const sharpen::RaftPrevoteResponse &response,std::uint64_t actorId)
+{
+    //TODO
 }
 
 void sharpen::RaftConsensus::OnVoteResponse(const sharpen::RaftVoteForResponse &response,std::uint64_t actorId)

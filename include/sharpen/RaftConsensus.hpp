@@ -110,9 +110,15 @@ namespace sharpen
 
         void RaisePrevote();
 
+        //vote
         sharpen::Mail OnVoteRequest(const sharpen::RaftVoteForRequest &request);
 
         void OnVoteResponse(const sharpen::RaftVoteForResponse &response,std::uint64_t actorId);
+
+        //prevote
+        sharpen::Mail OnPrevoteRequest(const sharpen::RaftPrevoteRequest &request);
+
+        void OnPrevoteResponse(const sharpen::RaftPrevoteResponse &response,std::uint64_t actorId);
 
         void NotifyWaiter(sharpen::Future<std::uint64_t> *future) noexcept;
 
