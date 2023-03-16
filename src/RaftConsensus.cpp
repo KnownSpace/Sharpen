@@ -379,10 +379,10 @@ void sharpen::RaftConsensus::OnStatusChanged()
     this->waiters_.reserve(Self::reversedWaitersSize_);
 }
 
-void sharpen::RaftConsensus::OnPrevoteResponse(const sharpen::RaftPrevoteResponse &response,std::uint64_t actorId)
-{
-    //TODO
-}
+// void sharpen::RaftConsensus::OnPrevoteResponse(const sharpen::RaftPrevoteResponse &response,std::uint64_t actorId)
+// {
+//     //TODO
+// }
 
 void sharpen::RaftConsensus::OnVoteResponse(const sharpen::RaftVoteForResponse &response,std::uint64_t actorId)
 {

@@ -96,13 +96,20 @@ void sharpen::TcpActor::Drain() noexcept
     assert(postCount >= ackCount);
     if(ackCount != postCount)
     {
-        this->Cancel();
+        this->poster_->Close();
         //wait for pipeline empty
         ackCount = this->ackCount_.load(std::memory_order::memory_order_acquire);
-        while(ackCount != this->postCount_.load(std::memory_order::memory_order_acquire))
+        std::size_t newPostCount{this->postCount_.load(std::memory_order::memory_order_acquire)};
+        postCount = newPostCount;
+        while(ackCount != newPostCount)
         {
             sharpen::YieldCycle();
             ackCount = this->ackCount_.load(std::memory_order::memory_order_acquire);
+            newPostCount = this->postCount_.load(std::memory_order::memory_order_acquire);
+            if(postCount != newPostCount)
+            {
+                this->poster_->Close();
+            }
         }
     }
 }
@@ -121,7 +128,8 @@ void sharpen::TcpActor::Cancel() noexcept
             this->poster_->Close();
             //wait for pipeline empty
             ackCount = this->ackCount_.load(std::memory_order::memory_order_acquire);
-            while(ackCount != this->postCount_.load(std::memory_order::memory_order_acquire))
+            std::size_t newPostCount{this->postCount_.load(std::memory_order::memory_order_acquire)};
+            while(ackCount < newPostCount)
             {
                 sharpen::YieldCycle();
                 ackCount = this->ackCount_.load(std::memory_order::memory_order_acquire);
