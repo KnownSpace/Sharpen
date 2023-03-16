@@ -6,23 +6,32 @@
 #include <sharpen/SingleWorkerGroup.hpp>
 
 sharpen::IpTcpActorBuilder::IpTcpActorBuilder()
-    :Self{sharpen::IpEndPoint{0,0},sharpen::GetLocalScheduler(),sharpen::GetLocalLoopGroup()}
+    :Self{sharpen::IpEndPoint{0,0},false,sharpen::GetLocalScheduler(),sharpen::GetLocalLoopGroup()}
 {}
 
 sharpen::IpTcpActorBuilder::IpTcpActorBuilder(const sharpen::IpEndPoint &local)
-    :Self{local,sharpen::GetLocalScheduler(),sharpen::GetLocalLoopGroup()}
+    :Self{local,false,sharpen::GetLocalScheduler(),sharpen::GetLocalLoopGroup()}
 {}
 
-sharpen::IpTcpActorBuilder::IpTcpActorBuilder(sharpen::IFiberScheduler &scheduler,sharpen::IEventLoopGroup &loopGroup)
-    :Self{sharpen::IpEndPoint{0,0},scheduler,loopGroup}
+sharpen::IpTcpActorBuilder::IpTcpActorBuilder(bool pipeline)
+    :Self{sharpen::IpEndPoint{0,0},pipeline,sharpen::GetLocalScheduler(),sharpen::GetLocalLoopGroup()}
 {}
 
-sharpen::IpTcpActorBuilder::IpTcpActorBuilder(const sharpen::IpEndPoint &local,sharpen::IFiberScheduler &scheduler,sharpen::IEventLoopGroup &loopGroup)
+sharpen::IpTcpActorBuilder::IpTcpActorBuilder(const sharpen::IpEndPoint &local,bool pipeline)
+    :Self{local,pipeline,sharpen::GetLocalScheduler(),sharpen::GetLocalLoopGroup()}
+{}
+
+sharpen::IpTcpActorBuilder::IpTcpActorBuilder(bool pipeline,sharpen::IFiberScheduler &scheduler,sharpen::IEventLoopGroup &loopGroup)
+    :Self{sharpen::IpEndPoint{0,0},pipeline,scheduler,loopGroup}
+{}
+
+sharpen::IpTcpActorBuilder::IpTcpActorBuilder(const sharpen::IpEndPoint &local,bool pipeline,sharpen::IFiberScheduler &scheduler,sharpen::IEventLoopGroup &loopGroup)
     :remote_()
     ,scheduler_(&scheduler)
     ,factory_(nullptr)
     ,receiver_(nullptr)
     ,parserFactory_(nullptr)
+    ,pipeline_(pipeline)
 {
     this->factory_ = std::make_shared<sharpen::IpTcpStreamFactory>(loopGroup,local);
 }
@@ -33,9 +42,11 @@ sharpen::IpTcpActorBuilder::IpTcpActorBuilder(Self &&other) noexcept
     ,factory_(std::move(other.factory_))
     ,receiver_(other.receiver_)
     ,parserFactory_(std::move(other.parserFactory_))
+    ,pipeline_(other.pipeline_)
 {
     other.scheduler_ = nullptr;
     other.receiver_ = nullptr;
+    other.pipeline_ = false;
 }
 
 sharpen::IpTcpActorBuilder &sharpen::IpTcpActorBuilder::operator=(Self &&other) noexcept
@@ -47,8 +58,10 @@ sharpen::IpTcpActorBuilder &sharpen::IpTcpActorBuilder::operator=(Self &&other) 
         this->factory_ = std::move(other.factory_);
         this->receiver_ = other.receiver_;
         this->parserFactory_ = std::move(other.parserFactory_);
+        this->pipeline_ = other.pipeline_;
         other.scheduler_ = nullptr;
         other.receiver_ = nullptr;
+        other.pipeline_ = false;
     }
     return *this;
 }
@@ -86,7 +99,7 @@ void sharpen::IpTcpActorBuilder::EnsureConfiguration() const
     }
 }
 
-std::unique_ptr<sharpen::IRemoteActor> sharpen::IpTcpActorBuilder::NviBuild(bool pipeline) const
+std::unique_ptr<sharpen::IRemoteActor> sharpen::IpTcpActorBuilder::NviBuild() const
 {
     this->EnsureConfiguration();
     std::unique_ptr<sharpen::IEndPoint> remote{new (std::nothrow) sharpen::IpEndPoint{this->remote_}};
@@ -95,7 +108,7 @@ std::unique_ptr<sharpen::IRemoteActor> sharpen::IpTcpActorBuilder::NviBuild(bool
         throw std::bad_alloc{};
     }
     std::unique_ptr<sharpen::IWorkerGroup> worker{nullptr};
-    if(pipeline)
+    if(this->pipeline_)
     {
         worker.reset(new (std::nothrow) sharpen::SingleWorkerGroup{*this->scheduler_});
         if(!worker)
@@ -108,7 +121,7 @@ std::unique_ptr<sharpen::IRemoteActor> sharpen::IpTcpActorBuilder::NviBuild(bool
     {
         throw std::bad_alloc{};
     }
-    std::unique_ptr<sharpen::IRemoteActor> actor{new (std::nothrow) sharpen::TcpActor{*this->scheduler_,*this->receiver_,this->parserFactory_,std::move(poster),pipeline}};
+    std::unique_ptr<sharpen::IRemoteActor> actor{new (std::nothrow) sharpen::TcpActor{*this->scheduler_,*this->receiver_,this->parserFactory_,std::move(poster),this->pipeline_}};
     if(!actor)
     {
         throw std::bad_alloc{};
@@ -116,7 +129,7 @@ std::unique_ptr<sharpen::IRemoteActor> sharpen::IpTcpActorBuilder::NviBuild(bool
     return actor;
 }
 
-std::shared_ptr<sharpen::IRemoteActor> sharpen::IpTcpActorBuilder::NviBuildShared(bool pipeline) const
+std::shared_ptr<sharpen::IRemoteActor> sharpen::IpTcpActorBuilder::NviBuildShared() const
 {
     this->EnsureConfiguration();
     std::unique_ptr<sharpen::IEndPoint> remote{new (std::nothrow) sharpen::IpEndPoint{this->remote_}};
@@ -125,7 +138,7 @@ std::shared_ptr<sharpen::IRemoteActor> sharpen::IpTcpActorBuilder::NviBuildShare
         throw std::bad_alloc{};
     }
     std::unique_ptr<sharpen::IWorkerGroup> worker{nullptr};
-    if(pipeline)
+    if(this->pipeline_)
     {
         worker.reset(new (std::nothrow) sharpen::SingleWorkerGroup{*this->scheduler_});
         if(!worker)
@@ -138,6 +151,6 @@ std::shared_ptr<sharpen::IRemoteActor> sharpen::IpTcpActorBuilder::NviBuildShare
     {
         throw std::bad_alloc{};
     }
-    std::shared_ptr<sharpen::IRemoteActor> actor{std::make_shared<sharpen::TcpActor>(*this->scheduler_,*this->receiver_,this->parserFactory_,std::move(poster),pipeline)};
+    std::shared_ptr<sharpen::IRemoteActor> actor{std::make_shared<sharpen::TcpActor>(*this->scheduler_,*this->receiver_,this->parserFactory_,std::move(poster),this->pipeline_)};
     return actor;
 }

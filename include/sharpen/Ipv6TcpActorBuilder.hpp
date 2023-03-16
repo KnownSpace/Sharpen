@@ -23,21 +23,26 @@ namespace sharpen
         std::shared_ptr<sharpen::ITcpSteamFactory> factory_;
         sharpen::IMailReceiver *receiver_;
         std::shared_ptr<sharpen::IMailParserFactory> parserFactory_;
+        bool pipeline_;
 
         void EnsureConfiguration() const;
 
-        virtual std::unique_ptr<sharpen::IRemoteActor> NviBuild(bool pipeline) const override;
+        virtual std::unique_ptr<sharpen::IRemoteActor> NviBuild() const override;
 
-        virtual std::shared_ptr<sharpen::IRemoteActor> NviBuildShared(bool pipeline) const override;
+        virtual std::shared_ptr<sharpen::IRemoteActor> NviBuildShared() const override;
     public:
 
         Ipv6TcpActorBuilder();
 
+        explicit Ipv6TcpActorBuilder(bool pipeline);
+
         explicit Ipv6TcpActorBuilder(const sharpen::Ipv6EndPoint &local);
 
-        Ipv6TcpActorBuilder(sharpen::IFiberScheduler &scheduler,sharpen::IEventLoopGroup &loopGroup);
+        explicit Ipv6TcpActorBuilder(const sharpen::Ipv6EndPoint &local,bool pipeline);
 
-        Ipv6TcpActorBuilder(const sharpen::Ipv6EndPoint &local,sharpen::IFiberScheduler &scheduler,sharpen::IEventLoopGroup &loopGroup);
+        Ipv6TcpActorBuilder(bool pipeline,sharpen::IFiberScheduler &scheduler,sharpen::IEventLoopGroup &loopGroup);
+
+        Ipv6TcpActorBuilder(const sharpen::Ipv6EndPoint &local,bool pipeline,sharpen::IFiberScheduler &scheduler,sharpen::IEventLoopGroup &loopGroup);
     
         Ipv6TcpActorBuilder(const Self &other) = default;
     

@@ -23,21 +23,26 @@ namespace sharpen
         std::shared_ptr<sharpen::ITcpSteamFactory> factory_;
         sharpen::IMailReceiver *receiver_;
         std::shared_ptr<sharpen::IMailParserFactory> parserFactory_;
+        bool pipeline_;
 
         void EnsureConfiguration() const;
 
-        virtual std::unique_ptr<sharpen::IRemoteActor> NviBuild(bool pipeline) const override;
+        virtual std::unique_ptr<sharpen::IRemoteActor> NviBuild() const override;
 
-        virtual std::shared_ptr<sharpen::IRemoteActor> NviBuildShared(bool pipeline) const override;
+        virtual std::shared_ptr<sharpen::IRemoteActor> NviBuildShared() const override;
     public:
 
         IpTcpActorBuilder();
 
+        explicit IpTcpActorBuilder(bool pipeline);
+
         explicit IpTcpActorBuilder(const sharpen::IpEndPoint &local);
 
-        IpTcpActorBuilder(sharpen::IFiberScheduler &scheduler,sharpen::IEventLoopGroup &loopGroup);
+        IpTcpActorBuilder(const sharpen::IpEndPoint &local,bool pipeline);
 
-        IpTcpActorBuilder(const sharpen::IpEndPoint &local,sharpen::IFiberScheduler &scheduler,sharpen::IEventLoopGroup &loopGroup);
+        IpTcpActorBuilder(bool pipeline,sharpen::IFiberScheduler &scheduler,sharpen::IEventLoopGroup &loopGroup);
+
+        IpTcpActorBuilder(const sharpen::IpEndPoint &local,bool pipeline,sharpen::IFiberScheduler &scheduler,sharpen::IEventLoopGroup &loopGroup);
     
         IpTcpActorBuilder(const Self &other) = default;
     
