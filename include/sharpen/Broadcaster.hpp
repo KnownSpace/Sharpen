@@ -100,6 +100,8 @@ namespace sharpen
 
         void Cancel() noexcept;
 
+        void Drain() noexcept;
+
         const sharpen::IRemoteActor &GetActor(std::uint64_t id) const;
 
         bool ExistActor(std::uint64_t id) const noexcept;

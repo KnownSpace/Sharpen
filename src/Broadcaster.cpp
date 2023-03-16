@@ -36,6 +36,15 @@ void sharpen::Broadcaster::Cancel() noexcept
     }
 }
 
+void sharpen::Broadcaster::Drain() noexcept
+{
+    for(auto begin = this->actors_.begin(),end = this->actors_.end(); begin != end; ++begin)
+    {
+        std::unique_ptr<sharpen::IRemoteActor> &actor{begin->second};
+        actor->Drain();
+    }
+}
+
 sharpen::Broadcaster::~Broadcaster() noexcept
 {
     this->Cancel();
