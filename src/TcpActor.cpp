@@ -96,19 +96,22 @@ void sharpen::TcpActor::Drain() noexcept
     assert(postCount >= ackCount);
     if(ackCount != postCount)
     {
-        this->poster_->Close();
-        //wait for pipeline empty
-        ackCount = this->ackCount_.load(std::memory_order::memory_order_acquire);
-        std::size_t newPostCount{this->postCount_.load(std::memory_order::memory_order_acquire)};
-        postCount = newPostCount;
-        while(ackCount != newPostCount)
+        if(this->poster_->Available())
         {
-            sharpen::YieldCycle();
+            this->poster_->Close();
+            //wait for pipeline empty
             ackCount = this->ackCount_.load(std::memory_order::memory_order_acquire);
-            newPostCount = this->postCount_.load(std::memory_order::memory_order_acquire);
-            if(postCount != newPostCount)
+            std::size_t newPostCount{this->postCount_.load(std::memory_order::memory_order_acquire)};
+            postCount = newPostCount;
+            while(ackCount != newPostCount)
             {
-                this->poster_->Close();
+                sharpen::YieldCycle();
+                ackCount = this->ackCount_.load(std::memory_order::memory_order_acquire);
+                newPostCount = this->postCount_.load(std::memory_order::memory_order_acquire);
+                if(postCount != newPostCount)
+                {
+                    this->poster_->Close();
+                }
             }
         }
     }
@@ -128,8 +131,8 @@ void sharpen::TcpActor::Cancel() noexcept
             this->poster_->Close();
             //wait for pipeline empty
             ackCount = this->ackCount_.load(std::memory_order::memory_order_acquire);
-            std::size_t newPostCount{this->postCount_.load(std::memory_order::memory_order_acquire)};
-            while(ackCount < newPostCount)
+            postCount = this->postCount_.load(std::memory_order::memory_order_acquire);
+            while(ackCount < postCount)
             {
                 sharpen::YieldCycle();
                 ackCount = this->ackCount_.load(std::memory_order::memory_order_acquire);
