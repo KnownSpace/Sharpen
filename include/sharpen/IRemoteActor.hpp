@@ -63,6 +63,8 @@ namespace sharpen
         }
 
         virtual std::size_t GetPipelineCount() const noexcept = 0;
+
+        virtual void Drain() noexcept = 0;
     };
 }
 

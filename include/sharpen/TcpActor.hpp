@@ -61,6 +61,8 @@ namespace sharpen
         virtual void Cancel() noexcept override;
 
         virtual std::size_t GetPipelineCount() const noexcept;
+
+        virtual void Drain() noexcept override;
     };
 }
 

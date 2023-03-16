@@ -89,6 +89,24 @@ std::size_t sharpen::TcpActor::GetPipelineCount() const noexcept
     return postCount - ackCount;
 }
 
+void sharpen::TcpActor::Drain() noexcept
+{
+    std::size_t ackCount{this->ackCount_.load(std::memory_order::memory_order_acquire)};
+    std::size_t postCount{this->postCount_.load(std::memory_order::memory_order_acquire)};
+    assert(postCount >= ackCount);
+    if(ackCount != postCount)
+    {
+        this->Cancel();
+        //wait for pipeline empty
+        ackCount = this->ackCount_.load(std::memory_order::memory_order_acquire);
+        while(ackCount != this->postCount_.load(std::memory_order::memory_order_acquire))
+        {
+            sharpen::YieldCycle();
+            ackCount = this->ackCount_.load(std::memory_order::memory_order_acquire);
+        }
+    }
+}
+
 void sharpen::TcpActor::Cancel() noexcept
 {
     std::size_t ackCount{this->ackCount_.load(std::memory_order::memory_order_acquire)};
