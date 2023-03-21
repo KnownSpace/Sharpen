@@ -74,7 +74,7 @@ add_library(sharpen::sharpen ALIAS sharpen)
 
 if(MSVC)
     # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /WX")
-    target_compile_options(sharpen PRIVATE /WX)
+    target_compile_options(sharpen PRIVATE /WX /W4)
 else()
     target_compile_options(sharpen PRIVATE -Wall -Wextra -pedantic -Werror -Wimplicit-fallthrough)
 endif()
