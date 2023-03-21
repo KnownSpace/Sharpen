@@ -73,9 +73,9 @@ add_library(sharpen ${src} ${fcontext_src})
 add_library(sharpen::sharpen ALIAS sharpen)
 
 if(MSVC)
-  target_compile_options(sharpen PRIVATE /W4 /WX)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /WX")
 else()
-  target_compile_options(sharpen PRIVATE -Wall -Wextra -pedantic -Werror -Wimplicit-fallthrough)
+    target_compile_options(sharpen PRIVATE -Wall -Wextra -pedantic -Werror -Wimplicit-fallthrough)
 endif()
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
