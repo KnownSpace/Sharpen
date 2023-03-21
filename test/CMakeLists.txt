@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14.0)
+cmake_minimum_required(VERSION 3.15.0)
 
 set(SIMPLETEST_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/lib/simpletest/include/")
 
