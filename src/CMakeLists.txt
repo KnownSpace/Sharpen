@@ -74,7 +74,7 @@ add_library(sharpen::sharpen ALIAS sharpen)
 
 if(MSVC)
     string(REGEX REPLACE "/W[0-4]" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-    if(DEFINED ${SHARPEN_WALL_BY_FLAGS})
+    if(DEFINED SHARPEN_WALL_BY_FLAGS)
         message(WARNING "Use /W4 /WX flags by writing CMAKE_CXX_FLAGS")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /WX")
     else()
