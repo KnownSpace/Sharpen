@@ -23,6 +23,7 @@
 #include "RaftOption.hpp"
 #include "RaftLeaderRecord.hpp"
 #include "RaftHeartbeatMailProvider.hpp"
+#include "RaftPrevoteRecord.hpp"
 
 namespace sharpen
 {
@@ -52,7 +53,7 @@ namespace sharpen
         std::atomic<sharpen::RaftRole> role_;
         //election record
         sharpen::RaftElectionRecord electionRecord_;
-        std::set<std::uint64_t> prevoteRecord_;
+        sharpen::RaftPrevoteRecord prevoteRecord_;
         
         //leader record
         //thread safty
@@ -109,6 +110,8 @@ namespace sharpen
         void RaiseElection();
 
         void RaisePrevote();
+
+        void Abdicate();
 
         //vote
         sharpen::Mail OnVoteRequest(const sharpen::RaftVoteForRequest &request);

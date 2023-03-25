@@ -140,7 +140,7 @@ void sharpen::RaftConsensus::SetUint64(sharpen::ByteSlice key,std::uint64_t valu
 
 std::uint64_t sharpen::RaftConsensus::GetTerm() const noexcept
 {
-    return this->term_;    
+    return this->term_;
 }
 
 void sharpen::RaftConsensus::SetTerm(std::uint64_t term)
@@ -367,6 +367,20 @@ void sharpen::RaftConsensus::NotifyWaiter(sharpen::Future<std::uint64_t> *waiter
     }
 }
 
+void sharpen::RaftConsensus::Abdicate()
+{
+    assert(this->role_ != sharpen::RaftRole::Learner);
+    if(this->role_ != sharpen::RaftRole::Learner)
+    {
+        sharpen::RaftRole role{sharpen::RaftRole::Follower};
+        role = this->role_.exchange(role);
+        if(role == sharpen::RaftRole::Leader)
+        {
+            this->OnStatusChanged();
+        }
+    }
+}
+
 void sharpen::RaftConsensus::OnStatusChanged()
 {
     //check if waiter is non-empty
@@ -379,10 +393,27 @@ void sharpen::RaftConsensus::OnStatusChanged()
     this->waiters_.reserve(Self::reversedWaitersSize_);
 }
 
-// void sharpen::RaftConsensus::OnPrevoteResponse(const sharpen::RaftPrevoteResponse &response,std::uint64_t actorId)
-// {
-//     //TODO
-// }
+void sharpen::RaftConsensus::OnPrevoteResponse(const sharpen::RaftPrevoteResponse &response,std::uint64_t actorId)
+{
+    std::uint64_t term{this->GetTerm()};
+    if(response.GetTerm() > term)
+    {
+        this->SetTerm(response.GetTerm());
+        return this->Abdicate();
+    }
+    if(response.GetStatus())
+    {
+        if(term == this->prevoteRecord_.GetTerm())
+        {
+            assert(response.GetTerm() <= term);
+            this->prevoteRecord_.Receive(actorId);
+            if(this->prevoteRecord_.GetVotes() == this->quorum_->GetMajority())
+            {
+                this->RaiseElection();
+            }
+        }
+    }
+}
 
 void sharpen::RaftConsensus::OnVoteResponse(const sharpen::RaftVoteForResponse &response,std::uint64_t actorId)
 {
@@ -390,18 +421,9 @@ void sharpen::RaftConsensus::OnVoteResponse(const sharpen::RaftVoteForResponse &
     assert(this->quorum_);
     if(response.GetTerm() > this->GetTerm())
     {
+        assert(!response.GetStatus());
         this->SetTerm(response.GetTerm());
-        assert(this->role_ != sharpen::RaftRole::Learner);
-        if(this->role_ != sharpen::RaftRole::Learner)
-        {
-            sharpen::RaftRole role{sharpen::RaftRole::Follower};
-            role = this->role_.exchange(role);
-            if(role == sharpen::RaftRole::Leader)
-            {
-                this->OnStatusChanged();
-            }
-        }
-        return;
+        return this->Abdicate();
     }
     std::uint64_t electionTerm{this->electionRecord_.GetTerm()};
     //check term
@@ -411,10 +433,15 @@ void sharpen::RaftConsensus::OnVoteResponse(const sharpen::RaftVoteForResponse &
         votes += 1;
         this->electionRecord_.SetVotes(votes);
         //check if we could be leader
-        if(votes == this->quorum_->GetSize()/2)
+        if(votes == this->quorum_->GetMajority())
         {
             this->role_ = sharpen::RaftRole::Leader;
             this->OnStatusChanged();
+            //draining pipeline
+            if(this->quorumBroadcaster_)
+            {
+                this->quorumBroadcaster_->Drain();
+            }
         }
     }
 }
@@ -424,11 +451,18 @@ sharpen::Mail sharpen::RaftConsensus::DoGenerateResponse(sharpen::Mail request)
     assert(this->mailExtractor_ != nullptr);
     sharpen::Mail mail;
     sharpen::RaftMailType type{this->mailExtractor_->GetMailType(request)};
-    switch (type)
+    switch(type)
     {
-   case sharpen::RaftMailType::Unknown:
+    case sharpen::RaftMailType::Unknown:
         break;
     case sharpen::RaftMailType::PrevoteRequest:
+        {
+            sharpen::Optional<sharpen::RaftPrevoteRequest> requestOpt{this->mailExtractor_->ExtractPrevoteRequest(mail)};
+            if(requestOpt.Exist())
+            {
+                mail = this->OnPrevoteRequest(requestOpt.Get());
+            }
+        }
         break;
     case sharpen::RaftMailType::VoteRequest:
         {
@@ -453,12 +487,16 @@ void sharpen::RaftConsensus::DoReceive(sharpen::Mail mail,std::uint64_t actorId)
     assert(this->mailExtractor_ != nullptr);
     sharpen::RaftMailType type{this->mailExtractor_->GetMailType(mail)};
     //TODO
-    switch (type)
+    switch(type)
     {
-    case sharpen::RaftMailType::Unknown:
-        //do nothing
-        break;
     case sharpen::RaftMailType::PrevoteResponse:
+        {
+            sharpen::Optional<sharpen::RaftPrevoteResponse> responseOpt{this->mailExtractor_->ExtractPrevoteResponse(mail)};
+            if(responseOpt.Exist())
+            {
+                this->OnPrevoteResponse(responseOpt.Get(),actorId);
+            }
+        }
         break;
     case sharpen::RaftMailType::VoteResponse:
         {
@@ -511,15 +549,11 @@ void sharpen::RaftConsensus::RaisePrevote()
     {
         lastTerm = lastTermOpt.Get();
     }
-    //TODO
     sharpen::RaftPrevoteRequest request;
     request.SetLastIndex(lastIndex);
     request.SetLastTerm(lastTerm);
-    {
-        //make gcc happy
-        (void)lastTerm;
-    }
-    this->prevoteRecord_.clear();
+    std::uint64_t term{this->GetTerm()};
+    this->prevoteRecord_.Flush(term);
     sharpen::Mail mail{this->mailBuilder_->BuildPrevoteRequest(request)};
     this->quorumBroadcaster_->Broadcast(std::move(mail));
 }
@@ -566,10 +600,9 @@ void sharpen::RaftConsensus::DoAdvance()
     assert(this->mailBuilder_ != nullptr);
     //ensure broadcaster
     this->EnsureBroadcaster();
-    switch (this->role_.load())
+    switch(this->role_.load())
     {
     case sharpen::RaftRole::Leader:
-        //TODO:Hearbeat
         if(!this->heartbeatProvider_->Empty())
         {
             this->heartbeatProvider_->PrepareCommitIndex(this->GetCommitIndex());
@@ -584,10 +617,6 @@ void sharpen::RaftConsensus::DoAdvance()
             {
                 this->quorumBroadcaster_->Broadcast(*this->heartbeatProvider_);
             }
-        }
-        else
-        {
-
         }
         break;
     case sharpen::RaftRole::Follower:
@@ -632,7 +661,7 @@ const sharpen::ILogStorage &sharpen::RaftConsensus::ImmutableLogs() const noexce
     return *this->logs_;
 }
 
-void sharpen::RaftConsensus::DoConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum*)> configurater)
+void sharpen::RaftConsensus::DoConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater)
 {
     std::unique_ptr<sharpen::IQuorum> quorum{std::move(this->quorum_)};
     this->quorum_ = configurater(quorum.release());
@@ -644,7 +673,7 @@ void sharpen::RaftConsensus::DoConfigurateQuorum(std::function<std::unique_ptr<s
     }
 }
 
-void sharpen::RaftConsensus::NviConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum*)> configurater)
+void sharpen::RaftConsensus::NviConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater)
 {
     sharpen::AwaitableFuture<void> future;
     this->worker_->Invoke(future,&Self::DoConfigurateQuorum,this,std::move(configurater));
