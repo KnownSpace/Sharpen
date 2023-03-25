@@ -91,6 +91,13 @@ namespace sharpen
 
         virtual std::size_t GetSize() const noexcept = 0;
 
+        inline std::size_t GetMajority() const noexcept
+        {
+            std::size_t size{this->GetSize()};
+            size += 1;
+            return size/2;
+        }
+
         inline bool Empty() const noexcept
         {
             return !this->GetSize();
