@@ -31,7 +31,7 @@ namespace sharpen
 
         virtual void NviDropLogsUntil(std::uint64_t index) = 0;
 
-        virtual void NviConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum*)> configurater);
+        virtual void NviConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum*)> configurater) = 0;
     public:
 
         IConsensus() noexcept = default;

@@ -14,7 +14,7 @@ sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::
     ,logs_(std::move(logs))
     ,option_(option)
     ,term_(0)
-    ,commitIndex_(0)
+    // ,commitIndex_(0)
     ,vote_(0,0)
     ,role_(sharpen::RaftRole::Follower)
     ,electionRecord_(0,0)
@@ -41,7 +41,7 @@ sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::
     this->worker_.reset(worker);
     //load status cache
     this->LoadTerm();
-    this->LoadCommitIndex();
+    // this->LoadCommitIndex();
     this->LoadVoteFor();
     //set learner if need
     if(this->option_.IsLearner())
@@ -117,14 +117,15 @@ void sharpen::RaftConsensus::LoadVoteFor()
     }
 }
 
-void sharpen::RaftConsensus::LoadCommitIndex()
-{
-    sharpen::Optional<std::uint64_t> lastAppiled{this->LoadUint64(lastAppiledKey)};
-    if(lastAppiled.Exist())
-    {
-        this->commitIndex_ = lastAppiled.Get();
-    }
-}
+// void sharpen::RaftConsensus::LoadCommitIndex()
+// {
+//     sharpen::Optional<std::uint64_t> lastAppiled{this->LoadUint64(lastAppiledKey)};
+//     if(lastAppiled.Exist())
+//     {
+//         // this->commitIndex_ = lastAppiled.Get();
+//         this->heartbeatProvider_->PrepareMatchIndexs(lastAppiled.Get());
+//     }
+// }
 
 void sharpen::RaftConsensus::SetUint64(sharpen::ByteSlice key,std::uint64_t value)
 {
@@ -170,10 +171,10 @@ void sharpen::RaftConsensus::SetVote(sharpen::RaftVoteRecord vote)
     this->vote_ = vote;
 }
 
-std::uint64_t sharpen::RaftConsensus::GetCommitIndex() const noexcept
-{
-    return this->commitIndex_;
-}
+// std::uint64_t sharpen::RaftConsensus::GetCommitIndex() const noexcept
+// {
+//     return this->commitIndex_;
+// }
 
 bool sharpen::RaftConsensus::Writable() const
 {
@@ -605,7 +606,7 @@ void sharpen::RaftConsensus::DoAdvance()
     case sharpen::RaftRole::Leader:
         if(!this->heartbeatProvider_->Empty())
         {
-            this->heartbeatProvider_->PrepareCommitIndex(this->GetCommitIndex());
+            // this->heartbeatProvider_->PrepareCommitIndex(this->GetCommitIndex());
             this->heartbeatProvider_->PrepareTerm(this->GetTerm());
             sharpen::Optional<std::uint64_t> syncIndex{this->heartbeatProvider_->GetSynchronizedIndex()};
             if(syncIndex.Exist())

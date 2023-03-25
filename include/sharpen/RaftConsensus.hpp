@@ -47,7 +47,6 @@ namespace sharpen
         sharpen::RaftOption option_;
         //cache
         std::atomic_uint64_t term_;
-        std::uint64_t commitIndex_;
         sharpen::RaftVoteRecord vote_;
         //role
         std::atomic<sharpen::RaftRole> role_;
@@ -87,7 +86,7 @@ namespace sharpen
 
         void LoadTerm();
 
-        void LoadCommitIndex();
+        // void LoadCommitIndex();
 
         void LoadVoteFor();
 
@@ -101,7 +100,7 @@ namespace sharpen
 
         std::uint64_t GetId() const noexcept;
 
-        std::uint64_t GetCommitIndex() const noexcept;
+        // std::uint64_t GetCommitIndex() const noexcept;
 
         void EnsureBroadcaster();
 
