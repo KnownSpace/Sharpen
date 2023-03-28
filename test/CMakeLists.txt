@@ -89,3 +89,10 @@ add_executable(SignalTest "${PROJECT_SOURCE_DIR}/test/SignalTest.cpp")
 target_link_libraries(SignalTest sharpen)
 
 add_test(NAME Signal_Test COMMAND "./SignalTest${extname}")
+
+#Process Test
+add_executable(ProcessTest "${PROJECT_SOURCE_DIR}/test/ProcessTest.cpp")
+
+target_link_libraries(ProcessTest sharpen)
+
+add_test(NAME Process_Test COMMAND "./ProcessTest${extname}")
