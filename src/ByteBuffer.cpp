@@ -311,3 +311,20 @@ int sharpen::ByteBuffer::Printf(const char *format,...) noexcept
     va_end(args);
     return result;
 }
+
+int sharpen::ByteBuffer::Scanf(const char *format,...) noexcept
+{
+    if(this->Empty())
+    {
+        return -1;
+    }
+    if(this->Back() != '\0')
+    {
+        return -1;
+    }
+    std::va_list args;
+    va_start(args,format);
+    int result{std::vsscanf(this->Data(),format,args)};
+    va_end(args);
+    return result;
+}

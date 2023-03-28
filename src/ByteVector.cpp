@@ -5,7 +5,7 @@
 void *sharpen::ByteVector::Alloc(std::size_t size) noexcept
 {
     assert(size);
-    return std::malloc(size);
+    return std::calloc(size,sizeof(char));
 }
 
 void sharpen::ByteVector::Free(void *p) noexcept

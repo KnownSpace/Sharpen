@@ -75,7 +75,7 @@ public:
     }
 };
 
-static int Startup()
+static int Test()
 {
     simpletest::TestRunner runner;
     runner.Register<SignalTest>();
@@ -86,5 +86,5 @@ static int Startup()
 int main(int argc, char const *argv[])
 {
     sharpen::EventEngine &engine{sharpen::EventEngine::SetupSingleThreadEngine()};
-    return engine.StartupWithCode(&Startup);
+    return engine.StartupWithCode(&Test);
 }

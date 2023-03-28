@@ -308,6 +308,8 @@ namespace sharpen
         }
 
         int Printf(const char *format,...) noexcept;
+
+        int Scanf(const char *format,...) noexcept;
     };
 
     inline bool operator==(const sharpen::ByteBuffer &buffer,const sharpen::ByteSlice &slice) noexcept
