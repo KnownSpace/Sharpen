@@ -3,6 +3,7 @@
 #define _SHARPEN_IRAFTSNAPSHOT_HPP
 
 #include "IRaftSnapshotChunk.hpp"
+#include "RaftSnapshotMetadata.hpp"
 
 namespace sharpen
 {
@@ -30,9 +31,7 @@ namespace sharpen
             return *this;
         }
 
-        virtual std::uint64_t GetLastIndex() const noexcept = 0;
-
-        virtual std::uint64_t GetLastTerm() const noexcept = 0;
+        virtual sharpen::RaftSnapshotMetadata GetMetadata() noexcept = 0;
 
         virtual std::unique_ptr<sharpen::IRaftSnapshotChunk> GetChainedChunks() const = 0;
     };

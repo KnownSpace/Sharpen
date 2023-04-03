@@ -31,7 +31,7 @@ namespace sharpen
             return *this;
         }
 
-        virtual bool Forward() = 0;
+        virtual void Forward() = 0;
 
         virtual const char *Data() const noexcept = 0;
 
