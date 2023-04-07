@@ -21,7 +21,7 @@ namespace sharpen
 
         RaftSnapshotMetadata(std::uint64_t lastIndex,std::uint64_t lastTerm) noexcept;
     
-        RaftSnapshotMetadata(const Self &other) noexcept = default;
+        RaftSnapshotMetadata(const Self &other) noexcept;
     
         RaftSnapshotMetadata(Self &&other) noexcept;
     

@@ -15,6 +15,11 @@ sharpen::RaftSnapshotMetadata::RaftSnapshotMetadata(std::uint64_t index,std::uin
     }
 }
 
+sharpen::RaftSnapshotMetadata::RaftSnapshotMetadata(const Self &other) noexcept
+    :lastIndex_(other.lastIndex_)
+    ,lastTerm_(other.lastTerm_)
+{}
+
 sharpen::RaftSnapshotMetadata::RaftSnapshotMetadata(Self &&other) noexcept
     :lastIndex_(other.lastIndex_)
     ,lastTerm_(other.lastTerm_)
