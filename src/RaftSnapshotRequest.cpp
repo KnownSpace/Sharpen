@@ -56,8 +56,7 @@ std::size_t sharpen::RaftSnapshotRequest::LoadFrom(const char *data,std::size_t 
     }
     sharpen::RaftSnapshotMetadata metadata;
     std::size_t offset{0};
-    std::memcpy(reinterpret_cast<void*>(&metadata),data,sizeof(metadata));
-    offset += sizeof(metadata);
+    offset += sharpen::BinarySerializator::LoadFrom(metadata,data,size);
     std::uint8_t last{0};
     std::memcpy(&last,data + offset,sizeof(last));
     offset += sizeof(last);

@@ -83,7 +83,10 @@ namespace sharpen
             {
                 throw sharpen::CorruptedDataError("corrupted binary data");
             }
-            std::memcpy(&obj,data,sizeof(obj));
+            {
+                void *p{static_cast<void*>(&obj)};
+                std::memcpy(p,data,sizeof(obj));
+            }
 #ifdef SHARPEN_IS_BIG_ENDIAN
             {
                 char *p{reinterpret_cast<char*>(&p)};
