@@ -78,6 +78,17 @@ namespace sharpen
         {
             return *this;
         }
+
+        /*
+        Copy Me
+
+        std::size_t ComputeSize() const noexcept;
+
+        std::size_t UnsafeStoreTo(char *data) const noexcept;
+
+        std::size_t LoadFrom(const char *data,std::size_t size);
+        
+        */
     };   
 }
 
