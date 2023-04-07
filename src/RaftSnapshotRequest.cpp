@@ -1,5 +1,11 @@
 #include <sharpen/RaftSnapshotRequest.hpp>
 
+sharpen::RaftSnapshotRequest::RaftSnapshotRequest() noexcept
+    :metadata_(0,0)
+    ,last_(false)
+    ,data_()
+{}
+
 sharpen::RaftSnapshotRequest::RaftSnapshotRequest(sharpen::RaftSnapshotMetadata metadata) noexcept
     :Self{metadata,sharpen::ByteBuffer{}}
 {}

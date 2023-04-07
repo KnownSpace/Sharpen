@@ -5,6 +5,8 @@
 #include <cstdint>
 #include <cstddef>
 
+#include "ByteBuffer.hpp"
+
 namespace sharpen
 {
     class IRaftSnapshotChunk
@@ -33,9 +35,7 @@ namespace sharpen
 
         virtual void Forward() = 0;
 
-        virtual const char *Data() const noexcept = 0;
-
-        virtual std::size_t GetSize() const noexcept = 0;
+        virtual sharpen::ByteBuffer GenerateChunkData() const = 0;
 
         virtual bool Forwardable() const = 0;
     };

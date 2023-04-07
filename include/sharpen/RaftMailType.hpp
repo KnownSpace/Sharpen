@@ -18,6 +18,7 @@ namespace sharpen
         InstallSnapshotResponse = 6,
         PrevoteRequest = 7,
         PrevoteResponse = 8,
+        //use by boundary
         MaxValue = 9
     };
 

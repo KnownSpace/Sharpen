@@ -13,6 +13,8 @@
 #include "RaftHeartbeatResponse.hpp"
 #include "RaftPrevoteRequest.hpp"
 #include "RaftPrevoteResponse.hpp"
+#include "RaftSnapshotRequest.hpp"
+#include "RaftSnapshotResponse.hpp"
 
 namespace sharpen
 {
@@ -37,6 +39,10 @@ namespace sharpen
         virtual sharpen::Optional<sharpen::RaftPrevoteRequest> NviExtractPrevoteRequest(const sharpen::Mail &mail) const noexcept = 0;
 
         virtual sharpen::Optional<sharpen::RaftPrevoteResponse> NviExtractPrevoteResponse(const sharpen::Mail &mail) const noexcept = 0;
+
+        virtual sharpen::Optional<sharpen::RaftSnapshotRequest> NviExtractSnapshotRequest(const sharpen::Mail &mail) const noexcept = 0;
+
+        virtual sharpen::Optional<sharpen::RaftSnapshotResponse> NviExtractSnapshotResponse(const sharpen::Mail &mail) const noexcept = 0;
     public:
     
         IRaftMailExtractor() noexcept = default;
@@ -126,6 +132,24 @@ namespace sharpen
                 return sharpen::EmptyOpt;
             }
             return this->NviExtractPrevoteResponse(mail);
+        }
+
+        inline sharpen::Optional<sharpen::RaftSnapshotRequest> ExtractSnapshotRequest(const sharpen::Mail &mail) const noexcept
+        {
+            if(!this->IsRaftMail(mail))
+            {
+                return sharpen::EmptyOpt;
+            }
+            return this->NviExtractSnapshotRequest(mail);
+        }
+
+        inline sharpen::Optional<sharpen::RaftSnapshotResponse> ExtractSnapshotResponse(const sharpen::Mail &mail) const noexcept
+        {
+            if(!this->IsRaftMail(mail))
+            {
+                return sharpen::EmptyOpt;
+            }
+            return this->NviExtractSnapshotResponse(mail);
         }
     };  
 } 

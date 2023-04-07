@@ -243,3 +243,69 @@ sharpen::Optional<sharpen::RaftPrevoteResponse> sharpen::RaftMailExtractor::NviE
     }
     return response;
 }
+
+sharpen::Optional<sharpen::RaftSnapshotRequest> sharpen::RaftMailExtractor::NviExtractSnapshotRequest(const sharpen::Mail &mail) const noexcept
+{
+    assert(mail.Header().GetSize() == sizeof(sharpen::GenericMailHeader));
+    const sharpen::GenericMailHeader &header{mail.Header().As<sharpen::GenericMailHeader>()};
+    assert(header.GetMagic() == this->magic_);
+    const sharpen::RaftForm &form{header.Form<sharpen::RaftForm>()};
+    const sharpen::ByteBuffer &content{mail.Content()};
+    assert(form.GetType() == sharpen::RaftMailType::InstallSnapshotRequest);
+    if(form.GetType() != sharpen::RaftMailType::InstallSnapshotRequest)
+    {
+        return sharpen::EmptyOpt;
+    }
+    if(!form.CheckMagic())
+    {
+        return sharpen::EmptyOpt;
+    }
+    if(!form.CheckContent(content.GetSlice()))
+    {
+        return sharpen::EmptyOpt;
+    }
+    sharpen::RaftSnapshotRequest request;
+    try
+    {
+        request.Unserialize().LoadFrom(content);
+    }
+    catch(const sharpen::CorruptedDataError &error)
+    {
+        (void)error;
+        return sharpen::EmptyOpt;
+    }
+    return request;
+}
+
+sharpen::Optional<sharpen::RaftSnapshotResponse> sharpen::RaftMailExtractor::NviExtractSnapshotResponse(const sharpen::Mail &mail) const noexcept
+{
+    assert(mail.Header().GetSize() == sizeof(sharpen::GenericMailHeader));
+    const sharpen::GenericMailHeader &header{mail.Header().As<sharpen::GenericMailHeader>()};
+    assert(header.GetMagic() == this->magic_);
+    const sharpen::RaftForm &form{header.Form<sharpen::RaftForm>()};
+    const sharpen::ByteBuffer &content{mail.Content()};
+    assert(form.GetType() == sharpen::RaftMailType::InstallSnapshotResponse);
+    if(form.GetType() != sharpen::RaftMailType::InstallSnapshotResponse)
+    {
+        return sharpen::EmptyOpt;
+    }
+    if(!form.CheckMagic())
+    {
+        return sharpen::EmptyOpt;
+    }
+    if(!form.CheckContent(content.GetSlice()))
+    {
+        return sharpen::EmptyOpt;
+    }
+    sharpen::RaftSnapshotResponse response;
+    try
+    {
+        response.Unserialize().LoadFrom(content);
+    }
+    catch(const sharpen::CorruptedDataError &error)
+    {
+        (void)error;
+        return sharpen::EmptyOpt;
+    }
+    return response;
+}

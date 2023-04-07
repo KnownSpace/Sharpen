@@ -50,6 +50,10 @@ namespace sharpen
         virtual sharpen::Mail BuildPrevoteRequest(const sharpen::RaftPrevoteRequest &request) const override;
 
         virtual sharpen::Mail BuildPrevoteResponse(const sharpen::RaftPrevoteResponse &response) const override;
+
+        virtual sharpen::Mail BuildSnapshotRequest(const sharpen::RaftSnapshotRequest &request) const override;
+
+        virtual sharpen::Mail BuildSnapshotResponse(const sharpen::RaftSnapshotResponse &response) const override;
     };
 }
 

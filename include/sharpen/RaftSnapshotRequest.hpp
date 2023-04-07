@@ -22,6 +22,8 @@ namespace sharpen
         sharpen::ByteBuffer data_;
     public:
     
+        RaftSnapshotRequest() noexcept;
+
         explicit RaftSnapshotRequest(sharpen::RaftSnapshotMetadata metadata) noexcept;
 
         RaftSnapshotRequest(sharpen::RaftSnapshotMetadata metadata,sharpen::ByteBuffer data) noexcept;
