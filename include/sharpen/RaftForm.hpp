@@ -11,6 +11,7 @@
 
 namespace sharpen
 {
+    #pragma pack(push, 1)
     class RaftForm
     {
     private:
@@ -84,6 +85,9 @@ namespace sharpen
 
         bool CheckContent(sharpen::ByteSlice slice) const noexcept;
     };
+    #pragma pack(pop)
+
+    static_assert(sizeof(sharpen::RaftForm) == 16,"sizeof RaftForm must equals with 16");
 }
 
 #endif
