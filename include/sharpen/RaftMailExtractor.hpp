@@ -3,6 +3,7 @@
 #define _SHARPEN_RAFTMAILEXTRACTOR_HPP
 
 #include "IRaftMailExtractor.hpp"
+#include "RaftMailType.hpp"
 
 namespace sharpen
 {
@@ -12,6 +13,8 @@ namespace sharpen
         using Self = sharpen::RaftMailExtractor;
     
         std::uint32_t magic_;
+
+        bool CheckMail(sharpen::RaftMailType expect,const sharpen::Mail &mail) const noexcept;
 
         virtual bool NviIsRaftMail(const sharpen::Mail &mail) const noexcept override;
 
