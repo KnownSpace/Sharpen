@@ -9,6 +9,7 @@
 
 namespace sharpen
 {
+    #pragma pack(push, 1)
     class GenericMailHeader
     {
     private:
@@ -83,7 +84,7 @@ namespace sharpen
             this->magic_ = magic;
         }
     };    
-
+    #pragma pack(pop)
     
     static_assert(sizeof(sharpen::GenericMailHeader) == 24,"sizeof(GenericMailHeader) should be 24");
 }
