@@ -11,6 +11,7 @@
 
 namespace sharpen
 {
+    #pragma pack(push, 1)
     class MultiRaftForm
     {
     private:
@@ -96,6 +97,10 @@ namespace sharpen
 
         bool CheckContent(sharpen::ByteSlice content) const noexcept;
     };
+
+    #pragma pack(pop)
+
+    static_assert(sizeof(sharpen::MultiRaftForm) == 16,"sizeof(MultiRaftForm) must equals with 16");
 }
 
 #endif
