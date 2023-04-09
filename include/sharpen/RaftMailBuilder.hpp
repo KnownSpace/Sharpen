@@ -3,6 +3,7 @@
 #define _SHARPEN_RAFTMAILBUILDER_HPP
 
 #include "IRaftMailBuilder.hpp"
+#include "RaftForm.hpp"
 
 namespace sharpen
 {
@@ -12,6 +13,10 @@ namespace sharpen
         using Self = sharpen::RaftMailBuilder;
     
         std::uint32_t magic_;
+
+        sharpen::RaftForm BuildForm(sharpen::RaftMailType type,const sharpen::ByteBuffer &content) const noexcept;
+
+        sharpen::Mail BuildMail(sharpen::RaftMailType type,sharpen::ByteBuffer content) const noexcept;
     public:
     
         explicit RaftMailBuilder(std::uint32_t magic) noexcept;
