@@ -43,6 +43,8 @@ namespace sharpen
         std::unique_ptr<sharpen::IStatusMap> statusMap_;
         //storage logs
         std::unique_ptr<sharpen::ILogStorage> logs_;
+        //snapshot provider
+        std::unique_ptr<sharpen::IRaftSnapshotProvider> snapshotProvider_;
         //raft option
         sharpen::RaftOption option_;
         //cache
@@ -158,9 +160,9 @@ namespace sharpen
 
         constexpr static sharpen::ByteSlice lastAppiledKey{"lastAppiled",11};
 
-        RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,const sharpen::RaftOption &option);
+        RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,std::unique_ptr<sharpen::IRaftSnapshotProvider> snapshotProvider,const sharpen::RaftOption &option);
 
-        RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,const sharpen::RaftOption &option,sharpen::IFiberScheduler &scheduler);
+        RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,std::unique_ptr<sharpen::IRaftSnapshotProvider> snapshotProvider,const sharpen::RaftOption &option,sharpen::IFiberScheduler &scheduler);
     
         virtual ~RaftConsensus() noexcept = default;
     

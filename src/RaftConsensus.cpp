@@ -7,14 +7,14 @@
 #include <sharpen/BufferReader.hpp>
 #include <sharpen/SystemError.hpp>
 
-sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,const sharpen::RaftOption &option,sharpen::IFiberScheduler &scheduler)
+sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,std::unique_ptr<sharpen::IRaftSnapshotProvider> snapshotProvider,const sharpen::RaftOption &option,sharpen::IFiberScheduler &scheduler)
     :scheduler_(&scheduler)
     ,id_(id)
     ,statusMap_(std::move(statusMap))
     ,logs_(std::move(logs))
+    ,snapshotProvider_(std::move(snapshotProvider))
     ,option_(option)
     ,term_(0)
-    // ,commitIndex_(0)
     ,vote_(0,0)
     ,role_(sharpen::RaftRole::Follower)
     ,electionRecord_(0,0)
@@ -52,8 +52,8 @@ sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::
     this->waiters_.reserve(Self::reversedWaitersSize_);
 }
 
-sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,const sharpen::RaftOption &option)
-    :Self{id,std::move(statusMap),std::move(logs),option,sharpen::GetLocalScheduler()}
+sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,std::unique_ptr<sharpen::IRaftSnapshotProvider> snapshotProvider,const sharpen::RaftOption &option)
+    :Self{id,std::move(statusMap),std::move(logs),std::move(snapshotProvider),option,sharpen::GetLocalScheduler()}
 {}
 
 sharpen::Optional<std::uint64_t> sharpen::RaftConsensus::LoadUint64(sharpen::ByteSlice key)
@@ -647,7 +647,8 @@ void sharpen::RaftConsensus::Advance()
     this->EnsureConfig();
     if(!this->heartbeatProvider_)
     {
-        sharpen::RaftHeartbeatMailProvider *provider{new (std::nothrow) sharpen::RaftHeartbeatMailProvider{this->id_,*this->mailBuilder_,*this->logs_}};
+        assert(this->snapshotProvider_ != nullptr);
+        sharpen::RaftHeartbeatMailProvider *provider{new (std::nothrow) sharpen::RaftHeartbeatMailProvider{this->id_,*this->mailBuilder_,*this->logs_,this->snapshotProvider_.get()}};
         if(!provider)
         {
             throw std::bad_alloc{};

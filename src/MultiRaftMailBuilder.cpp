@@ -36,12 +36,13 @@ sharpen::MultiRaftForm sharpen::MultiRaftMailBuilder::BuildForm(sharpen::RaftMai
     form.SetRaftNumber(this->raftNumber_);
     form.SetType(type);
     form.SetChecksum(content.GetSlice());
+    return form;
 }
 
 sharpen::Mail sharpen::MultiRaftMailBuilder::BuildMail(sharpen::RaftMailType type,sharpen::ByteBuffer content) const noexcept
 {
     sharpen::GenericMail mail{this->magic_};
-    mail.Form<sharpen::MultiRaftForm>() = this->BuildForm(sharpen::RaftMailType::VoteRequest,content);
+    mail.Form<sharpen::MultiRaftForm>() = this->BuildForm(type,content);
     mail.SetContent(std::move(content));
     return mail.AsMail();
 }

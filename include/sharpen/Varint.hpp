@@ -202,7 +202,8 @@ namespace sharpen
         {
             this->Set(data,size);
             std::size_t offset{this->ComputeSize()};
-            assert(data[offset - 1] & signBit_ == 0);
+            //tail-check
+            assert((data[offset - 1] & signBit_) == 0);
             if(data[offset - 1] & signBit_)
             {
                 throw sharpen::CorruptedDataError{"corrupted varint"};

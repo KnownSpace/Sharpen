@@ -1,14 +1,14 @@
 #include <sharpen/RaftHeartbeatMailProvider.hpp>
 
-sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log,sharpen::IRaftSnapshotProvider &snapshotProvider)
+sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log,sharpen::IRaftSnapshotProvider *snapshotProvider)
     :Self{id,builder,log,snapshotProvider,defaultBatchSize_}
 {}
 
-sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log,sharpen::IRaftSnapshotProvider &snapshotProvider,std::uint16_t batchSize)
+sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log,sharpen::IRaftSnapshotProvider *snapshotProvider,std::uint16_t batchSize)
     :id_(id)
     ,builder_(&builder)
     ,logs_(&log)
-    ,snapshotProvider_(&snapshotProvider)
+    ,snapshotProvider_(snapshotProvider)
     ,batchSize_(batchSize)
     ,states_()
     ,term_(0)
@@ -184,6 +184,12 @@ void sharpen::RaftHeartbeatMailProvider::PrepareTerm(std::uint64_t term) noexcep
 
 sharpen::Mail sharpen::RaftHeartbeatMailProvider::ProvideSnapshotRequest(sharpen::RaftReplicatedState *state) const
 {
+    assert(this->snapshotProvider_ != nullptr);
+    if(!this->snapshotProvider_)
+    {
+        //snapshot already disable
+        return sharpen::Mail{};
+    }
     assert(state != nullptr);
     sharpen::IRaftSnapshotChunk *snapshot{state->LookupSnapshot()};
     sharpen::Optional<sharpen::RaftSnapshotMetadata> metadataOpt{state->LookupSnapshotMetadata()};
