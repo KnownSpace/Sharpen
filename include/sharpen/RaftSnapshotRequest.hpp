@@ -17,18 +17,16 @@ namespace sharpen
     private:
         using Self = sharpen::RaftSnapshotRequest;
 
-        sharpen::RaftSnapshotMetadata metadata_;
+        //FIXME
+        std::uint64_t term_;
+        std::uint64_t leaderId_;
+        std::uint64_t offset_;
         bool last_;
+        sharpen::RaftSnapshotMetadata metadata_;
         sharpen::ByteBuffer data_;
     public:
     
         RaftSnapshotRequest() noexcept;
-
-        explicit RaftSnapshotRequest(sharpen::RaftSnapshotMetadata metadata) noexcept;
-
-        RaftSnapshotRequest(sharpen::RaftSnapshotMetadata metadata,sharpen::ByteBuffer data) noexcept;
-
-        RaftSnapshotRequest(sharpen::RaftSnapshotMetadata metadata,sharpen::ByteBuffer data,bool last) noexcept;
     
         RaftSnapshotRequest(const Self &other) = default;
     
@@ -81,6 +79,36 @@ namespace sharpen
         inline void SetLast(bool last) noexcept
         {
             this->last_ = last;
+        }
+
+        inline std::uint64_t GetTerm() const noexcept
+        {
+            return this->term_;
+        }
+
+        inline void SetTerm(std::uint64_t term) noexcept
+        {
+            this->term_ = term;
+        }
+
+        inline std::uint64_t GetLeaderId() const noexcept
+        {
+            return this->leaderId_;
+        }
+
+        inline void SetLeaderId(std::uint64_t leaderId) noexcept
+        {
+            this->leaderId_ = leaderId;
+        }
+
+        inline std::uint64_t GetOffset() const noexcept
+        {
+            return this->offset_;
+        }
+
+        inline void SetOffset(std::uint64_t offset) noexcept
+        {
+            this->offset_ = offset;
         }
 
         std::size_t ComputeSize() const noexcept;
