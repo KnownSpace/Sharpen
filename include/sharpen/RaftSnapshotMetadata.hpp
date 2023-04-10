@@ -6,12 +6,14 @@
 #include <cstddef>
 #include <utility>
 
+#include "BinarySerializable.hpp"
+
 namespace sharpen
 {
-    class RaftSnapshotMetadata
+    class RaftSnapshotMetadata:public sharpen::BinarySerializable<sharpen::RaftSnapshotMetadata>
     {
     private:
-        using Self = RaftSnapshotMetadata;
+        using Self = sharpen::RaftSnapshotMetadata;
     
         std::uint64_t lastIndex_;
         std::uint64_t lastTerm_;
@@ -52,6 +54,12 @@ namespace sharpen
         {
             this->lastTerm_ = term;
         }
+
+        std::size_t ComputeSize() const noexcept;
+
+        std::size_t UnsafeStoreTo(char *data) const noexcept;
+
+        std::size_t LoadFrom(const char *data,std::size_t size);
     };
 }
 

@@ -58,3 +58,43 @@ void sharpen::RaftSnapshotMetadata::SetLastIndex(std::uint64_t index) noexcept
         this->lastTerm_ = 0;
     }
 }
+
+std::size_t sharpen::RaftSnapshotMetadata::ComputeSize() const noexcept
+{
+    sharpen::Varuint64 builder{this->lastIndex_};
+    std::size_t size{builder.ComputeSize()};
+    builder.Set(this->lastTerm_);
+    size += builder.ComputeSize();
+    return size;
+}
+
+std::size_t sharpen::RaftSnapshotMetadata::LoadFrom(const char *data,std::size_t size)
+{
+    std::size_t offset{0};
+    if(size < 2)
+    {
+        throw sharpen::CorruptedDataError{"corrupted raft snapshot metadata"};
+    }
+    sharpen::Varuint64 builder{0};
+    offset += builder.LoadFrom(data,size);
+    std::uint64_t lastIndex{builder.Get()};
+    if(offset == size)
+    {
+        throw sharpen::CorruptedDataError{"corrupted raft snapshot metadata"};
+    }
+    offset += builder.LoadFrom(data + offset,size - offset);
+    std::uint64_t lastTerm{builder.Get()};
+    this->lastIndex_ = lastIndex;
+    this->lastTerm_ = lastTerm;
+    return offset;
+}
+
+std::size_t sharpen::RaftSnapshotMetadata::UnsafeStoreTo(char *data) const noexcept
+{
+    std::size_t offset{0};
+    sharpen::Varuint64 builder{this->lastIndex_};
+    offset += builder.UnsafeStoreTo(data);
+    builder.Set(this->lastTerm_);
+    offset += builder.UnsafeStoreTo(data + offset);
+    return offset;
+}
