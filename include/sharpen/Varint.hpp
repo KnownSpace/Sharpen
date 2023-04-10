@@ -7,6 +7,7 @@
 #include "ByteBuffer.hpp"
 #include "Optional.hpp"
 #include "IntOps.hpp"
+#include "CorruptedDataError.hpp"
 
 namespace sharpen
 {
