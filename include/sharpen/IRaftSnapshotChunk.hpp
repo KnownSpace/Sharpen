@@ -38,6 +38,8 @@ namespace sharpen
         virtual sharpen::ByteBuffer GenerateChunkData() const = 0;
 
         virtual bool Forwardable() const = 0;
+
+        virtual std::uint64_t GetOffset() const noexcept = 0;
     };
 }
 
