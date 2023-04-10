@@ -10,6 +10,7 @@
 #include "ILogStorage.hpp"
 #include "IRaftSnapshotProvider.hpp"
 #include "Noncopyable.hpp"
+#include "RaftReplicatedState.hpp"
 
 namespace sharpen
 {
@@ -18,27 +19,28 @@ namespace sharpen
     private:
         using Self = sharpen::RaftHeartbeatMailProvider;
     
-        static constexpr std::size_t defaultBatchSize_{5};
+        static constexpr std::size_t defaultBatchSize_{8};
 
-        static constexpr std::size_t defaultPipelineLength_{1};
+        // static constexpr std::size_t defaultPipelineLength_{64};
 
         std::uint64_t id_;
         const sharpen::IRaftMailBuilder *builder_;
-        const sharpen::ILogStorage *log_;
-        // sharpen::IRaftSnapshotProvider *snapshotProvider_;
+        const sharpen::ILogStorage *logs_;
+        sharpen::IRaftSnapshotProvider *snapshotProvider_;
+        //max size of each batch
         std::size_t batchSize_;
-        std::size_t pipelineLength_;
-        std::map<std::uint64_t,std::uint64_t> nextIndexs_;
-        std::map<std::uint64_t,std::uint64_t> matchIndexs_;
-        // std::map<std::uint64_t,std::unique_ptr<sharpen::IRaftSnapshot>> snapshots_;
+        mutable std::map<std::uint64_t,sharpen::RaftReplicatedState> states_;
         std::uint64_t term_;
-        // std::uint64_t commitIndex_;
         mutable std::uint64_t commitIndex_;
+
+        sharpen::RaftReplicatedState *LookupMutableState(std::uint64_t actorId) const noexcept;
+
+        sharpen::Mail ProvideSnapshotRequest(sharpen::RaftReplicatedState *state) const;
     public:
     
-        RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log);
+        RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log,sharpen::IRaftSnapshotProvider &snapshotProvider);
 
-        RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log,std::uint16_t batchSize,std::uint16_t pipelineLength);
+        RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log,sharpen::IRaftSnapshotProvider &snapshotProvider,std::uint16_t batchSize);
     
         RaftHeartbeatMailProvider(Self &&other) noexcept;
     
@@ -57,15 +59,19 @@ namespace sharpen
 
         virtual sharpen::Mail Provide(std::uint64_t actorId) const;
 
-        sharpen::Optional<std::uint64_t> LookupIndex(std::uint64_t actorId) const noexcept;
+        const sharpen::RaftReplicatedState *LookupState(std::uint64_t actorId) const noexcept;
 
-        void SetIndex(std::uint64_t actorId,std::uint64_t index);
+        // void SetIndex(std::uint64_t actorId,std::uint64_t index);
+
+        void ForwardIndex(std::uint64_t actorId,std::uint64_t index);
+
+        void BackwardIndex(std::uint64_t actorId,std::uint64_t index);
 
         sharpen::Optional<std::uint64_t> GetSynchronizedIndex() const noexcept;
 
         sharpen::Mail ProvideSynchronizedMail() const;
 
-        void RemoveIndex(std::uint64_t actorId) noexcept;
+        void RemoveState(std::uint64_t actorId) noexcept;
 
         std::size_t GetSize() const noexcept;
 
