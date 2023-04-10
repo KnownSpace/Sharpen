@@ -201,7 +201,13 @@ namespace sharpen
         inline std::size_t LoadFrom(const char *data,std::size_t size)
         {
             this->Set(data,size);
-            return this->ComputeSize();
+            std::size_t offset{this->ComputeSize()};
+            assert(data[offset - 1] & signBit_ == 0);
+            if(data[offset - 1] & signBit_)
+            {
+                throw sharpen::CorruptedDataError{"corrupted varint"};
+            }
+            return offset;
         }
 
         inline std::size_t LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset)
