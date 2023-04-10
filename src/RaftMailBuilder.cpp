@@ -39,7 +39,7 @@ sharpen::Mail sharpen::RaftMailBuilder::BuildMail(sharpen::RaftMailType type,sha
     sharpen::GenericMail mail{this->magic_};
     mail.Form<sharpen::RaftForm>() = this->BuildForm(type,content);
     mail.SetContent(std::move(content));
-    return std::move(mail.AsMail());
+    return mail.ReleaseMail();
 }
 
 sharpen::Mail sharpen::RaftMailBuilder::BuildVoteRequest(const sharpen::RaftVoteForRequest &request) const

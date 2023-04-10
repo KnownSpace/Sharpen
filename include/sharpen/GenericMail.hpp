@@ -72,6 +72,11 @@ namespace sharpen
         {
             return *this;
         }
+
+        inline Base ReleaseMail() noexcept
+        {
+            return std::move(*this);
+        }
     };
 }
 
