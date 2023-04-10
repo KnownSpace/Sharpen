@@ -51,6 +51,8 @@ namespace sharpen
 
         void Forward() noexcept;
 
+        void Forward(std::uint64_t step) noexcept;
+
         void Reset() noexcept;
 
         void ForwardCommitPoint(std::uint64_t index) noexcept;
@@ -59,9 +61,11 @@ namespace sharpen
 
         void SetSnapshot(sharpen::IRaftSnapshot &snapshot);
 
-        const sharpen::IRaftSnapshotChunk *LookupSnapshot() noexcept;
+        const sharpen::IRaftSnapshotChunk *LookupSnapshot() const noexcept;
 
-        sharpen::Optional<sharpen::RaftSnapshotMetadata> LookupSnapshotMetadata() noexcept;
+        sharpen::IRaftSnapshotChunk *LookupSnapshot() noexcept;
+
+        sharpen::Optional<sharpen::RaftSnapshotMetadata> LookupSnapshotMetadata() const noexcept;
     };
 }
 

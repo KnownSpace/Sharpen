@@ -12,10 +12,11 @@ sharpen::RaftReplicatedState::RaftReplicatedState(std::uint64_t matchIndex) noex
     ,snapshot_(nullptr)
 {}
 
-void sharpen::RaftReplicatedState::Forward() noexcept
+void sharpen::RaftReplicatedState::Forward(std::uint64_t step) noexcept
 {
     if(this->snapshot_)
     {
+        assert(step == 1);
         if(this->snapshot_->Forwardable())
         {
             this->snapshot_->Forward();
@@ -29,8 +30,13 @@ void sharpen::RaftReplicatedState::Forward() noexcept
     }
     else
     {
-        this->nextIndex_ += 1;
+        this->nextIndex_ += step;
     }
+}
+
+void sharpen::RaftReplicatedState::Forward() noexcept
+{
+    return this->Forward(1);
 }
 
 void sharpen::RaftReplicatedState::Reset() noexcept
@@ -60,12 +66,17 @@ void sharpen::RaftReplicatedState::SetSnapshot(sharpen::IRaftSnapshot &snapshot)
     this->snapshotMetadata_ = snapshot.GetMetadata();
 }
 
-const sharpen::IRaftSnapshotChunk *sharpen::RaftReplicatedState::LookupSnapshot() noexcept
+const sharpen::IRaftSnapshotChunk *sharpen::RaftReplicatedState::LookupSnapshot() const noexcept
 {
     return this->snapshot_.get();
 }
 
-sharpen::Optional<sharpen::RaftSnapshotMetadata> sharpen::RaftReplicatedState::LookupSnapshotMetadata() noexcept
+sharpen::IRaftSnapshotChunk *sharpen::RaftReplicatedState::LookupSnapshot() noexcept
+{
+    return this->snapshot_.get();
+}
+
+sharpen::Optional<sharpen::RaftSnapshotMetadata> sharpen::RaftReplicatedState::LookupSnapshotMetadata() const noexcept
 {
     if(this->snapshot_)
     {
