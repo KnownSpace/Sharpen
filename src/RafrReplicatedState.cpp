@@ -24,8 +24,8 @@ void sharpen::RaftReplicatedState::Forward(std::uint64_t step) noexcept
         else
         {
             this->snapshot_.reset(nullptr);
-            this->matchIndex_ = this->nextIndex_;
-            this->nextIndex_ = this->snapshotMetadata_.GetLastIndex() + 1;
+            this->matchIndex_ = this->snapshotMetadata_.GetLastIndex();
+            this->nextIndex_ = this->matchIndex_ + 1;
         }
     }
     else
@@ -41,29 +41,36 @@ void sharpen::RaftReplicatedState::Forward() noexcept
 
 void sharpen::RaftReplicatedState::Reset() noexcept
 {
-    this->nextIndex_ = this->matchIndex_;
+    if(this->nextIndex_ > this->matchIndex_ + 1)
+    {
+        this->nextIndex_ = this->matchIndex_ + 1;
+    }
     if(this->snapshot_)
     {
         this->snapshot_.reset(nullptr);
     }
 }
 
-void sharpen::RaftReplicatedState::ForwardCommitPoint(std::uint64_t index) noexcept
+void sharpen::RaftReplicatedState::ForwardMatchPoint(std::uint64_t index) noexcept
 {
     this->matchIndex_ = (std::max)(index,this->matchIndex_);
 }
 
-void sharpen::RaftReplicatedState::BackwardCommitPoint(std::uint64_t index) noexcept
+void sharpen::RaftReplicatedState::BackwardMatchPoint(std::uint64_t index) noexcept
 {
-    this->matchIndex_ = (std::min)(index,this->matchIndex_);
+    if(index < this->matchIndex_)
+    {
+        this->matchIndex_ = index;
+        this->nextIndex_ = this->matchIndex_;
+    }
 }
 
-void sharpen::RaftReplicatedState::SetSnapshot(sharpen::IRaftSnapshot &snapshot)
+void sharpen::RaftReplicatedState::SetSnapshot(sharpen::RaftSnapshot snapshot) noexcept
 {
-    std::unique_ptr<sharpen::IRaftSnapshotChunk> chunk{snapshot.GetChainedChunks()};
+    std::unique_ptr<sharpen::IRaftSnapshotChunk> chunk{snapshot.ReleaseChainedChunks()};
     assert(chunk != nullptr);
     this->snapshot_ = std::move(chunk);
-    this->snapshotMetadata_ = snapshot.GetMetadata();
+    this->snapshotMetadata_ = snapshot.Metadata();
 }
 
 const sharpen::IRaftSnapshotChunk *sharpen::RaftReplicatedState::LookupSnapshot() const noexcept

@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "Noncopyable.hpp"
-#include "IRaftSnapshot.hpp"
+#include "RaftSnapshot.hpp"
 #include "Optional.hpp"
 
 namespace sharpen
@@ -55,11 +55,11 @@ namespace sharpen
 
         void Reset() noexcept;
 
-        void ForwardCommitPoint(std::uint64_t index) noexcept;
+        void ForwardMatchPoint(std::uint64_t index) noexcept;
 
-        void BackwardCommitPoint(std::uint64_t index) noexcept;
+        void BackwardMatchPoint(std::uint64_t index) noexcept;
 
-        void SetSnapshot(sharpen::IRaftSnapshot &snapshot);
+        void SetSnapshot(sharpen::RaftSnapshot snapshot) noexcept;
 
         const sharpen::IRaftSnapshotChunk *LookupSnapshot() const noexcept;
 

@@ -61,11 +61,9 @@ namespace sharpen
 
         const sharpen::RaftReplicatedState *LookupState(std::uint64_t actorId) const noexcept;
 
-        // void SetIndex(std::uint64_t actorId,std::uint64_t index);
+        void ForwardState(std::uint64_t actorId,std::uint64_t index) noexcept;
 
-        void ForwardIndex(std::uint64_t actorId,std::uint64_t index);
-
-        void BackwardIndex(std::uint64_t actorId,std::uint64_t index);
+        void BackwardState(std::uint64_t actorId,std::uint64_t index) noexcept;
 
         sharpen::Optional<std::uint64_t> GetSynchronizedIndex() const noexcept;
 

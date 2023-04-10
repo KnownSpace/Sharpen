@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "IRaftSnapshot.hpp"
+#include "RaftSnapshot.hpp"
 
 namespace sharpen
 {
@@ -32,7 +32,7 @@ namespace sharpen
             return *this;
         }
 
-        virtual std::unique_ptr<sharpen::IRaftSnapshot> GetSnapshot() const = 0;
+        virtual sharpen::RaftSnapshot GetSnapshot() const = 0;
     };   
 }
 

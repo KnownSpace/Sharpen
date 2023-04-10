@@ -253,8 +253,13 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(std::uint64_t actorId)
     sharpen::Optional<std::uint64_t> term{this->logs_->LookupTerm(preIndex)};
     if(!term.Exist())
     {
-        std::unique_ptr<sharpen::IRaftSnapshot> snapshot{this->snapshotProvider_->GetSnapshot()};
-        state->SetSnapshot(*snapshot);
+        assert(this->snapshotProvider_ != nullptr);
+        if(!this->snapshotProvider_)
+        {
+            return sharpen::Mail{};
+        }
+        sharpen::RaftSnapshot snapshot{this->snapshotProvider_->GetSnapshot()};
+        state->SetSnapshot(std::move(snapshot));
         return this->ProvideSnapshotRequest(state);
     }
     if(size)
@@ -266,8 +271,13 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(std::uint64_t actorId)
             sharpen::Optional<sharpen::ByteBuffer> log{this->logs_->Lookup(nextIndex)};
             if(!log.Exist())
             {
-                std::unique_ptr<sharpen::IRaftSnapshot> snapshot{this->snapshotProvider_->GetSnapshot()};
-                state->SetSnapshot(*snapshot);
+                assert(this->snapshotProvider_ != nullptr);
+                if(!this->snapshotProvider_)
+                {
+                    return sharpen::Mail{};
+                }
+                sharpen::RaftSnapshot snapshot{this->snapshotProvider_->GetSnapshot()};
+                state->SetSnapshot(std::move(snapshot));
                 return this->ProvideSnapshotRequest(state);
             }
             request.Entries().Push(std::move(log.Get()));
@@ -284,4 +294,22 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::ProvideSynchronizedMail() cons
     assert(!this->states_.empty());
     std::uint64_t actorId{this->states_.begin()->first};
     return this->Provide(actorId);
+}
+
+void sharpen::RaftHeartbeatMailProvider::ForwardState(std::uint64_t actorId,std::uint64_t index) noexcept
+{
+    sharpen::RaftReplicatedState *state{this->LookupMutableState(actorId)};
+    if(state)
+    {
+        state->ForwardMatchPoint(index);
+    }
+}
+
+void sharpen::RaftHeartbeatMailProvider::BackwardState(std::uint64_t actorId,std::uint64_t index) noexcept
+{
+    sharpen::RaftReplicatedState *state{this->LookupMutableState(actorId)};
+    if(state)
+    {
+        state->BackwardMatchPoint(index);
+    }
 }
