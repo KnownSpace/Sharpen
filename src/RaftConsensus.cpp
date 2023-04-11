@@ -342,6 +342,18 @@ sharpen::Mail sharpen::RaftConsensus::OnVoteRequest(const sharpen::RaftVoteForRe
     return mail;
 }
 
+sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(const sharpen::RaftHeartbeatRequest &request)
+{
+    (void)request;
+    //TODO
+}
+
+sharpen::Mail sharpen::RaftConsensus::OnSnapshotRequest(const sharpen::RaftSnapshotRequest &request)
+{
+    (void)request;
+    //TODO
+}
+
 void sharpen::RaftConsensus::NotifyWaiter(sharpen::Future<void> *waiter) noexcept
 {
     try
@@ -444,6 +456,20 @@ void sharpen::RaftConsensus::OnVoteResponse(const sharpen::RaftVoteForResponse &
             }
         }
     }
+}
+
+void sharpen::RaftConsensus::OnHeartbeatResponse(const sharpen::RaftHeartbeatResponse &response,std::uint64_t actorId)
+{
+    (void)response;
+    (void)actorId;
+    //TODO
+}
+
+void sharpen::RaftConsensus::OnSnapshotResponse(const sharpen::RaftSnapshotResponse &response,std::uint64_t actorId)
+{
+    (void)response;
+    (void)actorId;
+    //TODO
 }
 
 sharpen::Mail sharpen::RaftConsensus::DoGenerateResponse(sharpen::Mail request)
