@@ -17,7 +17,6 @@ namespace sharpen
     private:
         using Self = sharpen::RaftSnapshotRequest;
 
-        //FIXME
         std::uint64_t term_;
         std::uint64_t leaderId_;
         std::uint64_t offset_;

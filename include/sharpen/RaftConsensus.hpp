@@ -31,8 +31,6 @@ namespace sharpen
     {
     private:
         using Self = sharpen::RaftConsensus;
-    
-        static constexpr std::size_t reversedWaitersSize_{16};
 
         //scheduler
         sharpen::IFiberScheduler *scheduler_;
@@ -61,8 +59,9 @@ namespace sharpen
         sharpen::RaftLeaderRecord leaderRecord_;
         
         //waiters
-        std::vector<sharpen::Future<std::uint64_t>*> waiters_;
-        std::uint64_t advancedCount_;
+        std::atomic<sharpen::Future<void>*> waiter_;
+        std::atomic_uint64_t advancedCount_;
+        std::atomic_uint64_t reachAdvancedCount_;
 
         //mail builder
         std::unique_ptr<sharpen::IRaftMailBuilder> mailBuilder_;
@@ -87,8 +86,6 @@ namespace sharpen
         void SetUint64(sharpen::ByteSlice key,std::uint64_t value);
 
         void LoadTerm();
-
-        // void LoadCommitIndex();
 
         void LoadVoteFor();
 
@@ -124,11 +121,9 @@ namespace sharpen
 
         void OnPrevoteResponse(const sharpen::RaftPrevoteResponse &response,std::uint64_t actorId);
 
-        void NotifyWaiter(sharpen::Future<std::uint64_t> *future) noexcept;
+        void NotifyWaiter(sharpen::Future<void> *future) noexcept;
 
-        void DoWaitNextConsensus(std::uint64_t advancedCount,sharpen::Future<std::uint64_t> *waiter);
-
-        virtual void NviWaitNextConsensus(sharpen::Future<std::uint64_t> &future,std::uint64_t advancedCount) override;
+        virtual void NviWaitNextConsensus(sharpen::Future<void> &future) override;
 
         virtual bool NviIsConsensusMail(const sharpen::Mail &mail) const noexcept;
 

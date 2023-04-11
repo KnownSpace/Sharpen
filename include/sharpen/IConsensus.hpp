@@ -20,7 +20,7 @@ namespace sharpen
     protected:
 
         //returns current advanced count
-        virtual void NviWaitNextConsensus(sharpen::Future<std::uint64_t> &future,std::uint64_t advancedCount) = 0;
+        virtual void NviWaitNextConsensus(sharpen::Future<void> &future) = 0;
     
         virtual bool NviIsConsensusMail(const sharpen::Mail &mail) const noexcept = 0;
 
@@ -68,24 +68,18 @@ namespace sharpen
 
         virtual bool Changable() const = 0;
 
-        //use it like:
-        //std::uint64_t count{0};
-        //while(1)
-        //{
-        //  count = consensus.WaitNextConsensus(count);  
-        //}
-
         //returns current advanced count
-        inline void WaitNextConsensus(std::uint64_t advancedCount,sharpen::Future<std::uint64_t> &future)
+        //FIXME:refactor interface
+        inline void WaitNextConsensus(sharpen::Future<void> &future)
         {
-            this->NviWaitNextConsensus(future,advancedCount);
+            this->NviWaitNextConsensus(future);
         }
 
         //returns current advanced count
-        inline std::uint64_t WaitNextConsensus(std::uint64_t advancedCount)
+        inline void WaitNextConsensus()
         {
-            sharpen::AwaitableFuture<std::uint64_t> future;
-            this->NviWaitNextConsensus(future,advancedCount);
+            sharpen::AwaitableFuture<void> future;
+            this->NviWaitNextConsensus(future);
             return future.Await();
         }
 
