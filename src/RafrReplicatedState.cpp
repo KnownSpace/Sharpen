@@ -61,7 +61,7 @@ void sharpen::RaftReplicatedState::BackwardMatchPoint(std::uint64_t index) noexc
     if(index < this->matchIndex_)
     {
         this->matchIndex_ = index;
-        this->nextIndex_ = this->matchIndex_;
+        this->nextIndex_ = this->matchIndex_ + 1;
     }
 }
 

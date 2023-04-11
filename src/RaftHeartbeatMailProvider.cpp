@@ -79,19 +79,6 @@ sharpen::RaftReplicatedState *sharpen::RaftHeartbeatMailProvider::LookupMutableS
     return nullptr;
 }
 
-// void sharpen::RaftHeartbeatMailProvider::SetIndex(std::uint64_t actorId,std::uint64_t index)
-// {
-//     auto ite = this->nextIndexs_.find(actorId);
-//     if(ite != this->nextIndexs_.end())
-//     {
-//         ite->second = index;
-//     }
-//     else
-//     {
-//         this->nextIndexs_.emplace(actorId,index);
-//     }
-// }
-
 void sharpen::RaftHeartbeatMailProvider::RemoveState(std::uint64_t actorId) noexcept
 {
     auto ite = this->states_.find(actorId);
