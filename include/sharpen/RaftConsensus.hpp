@@ -121,6 +121,16 @@ namespace sharpen
 
         void OnPrevoteResponse(const sharpen::RaftPrevoteResponse &response,std::uint64_t actorId);
 
+        //heartbeat
+        sharpen::Mail OnHeartbeatRequest(const sharpen::RaftHeartbeatRequest &request);
+
+        void OnHeartbeatResponse(const sharpen::RaftHeartbeatResponse &response,std::uint64_t actorId);
+
+        //snapshot
+        sharpen::Mail OnSnapshotRequest(const sharpen::RaftSnapshotRequest &request);
+
+        void OnSnapshotResponse(const sharpen::RaftSnapshotResponse &response,std::uint64_t actorId);
+
         void NotifyWaiter(sharpen::Future<void> *future) noexcept;
 
         virtual void NviWaitNextConsensus(sharpen::Future<void> &future) override;

@@ -221,18 +221,6 @@ bool sharpen::RaftConsensus::NviIsConsensusMail(const sharpen::Mail &mail) const
     return this->mailExtractor_->IsRaftMail(mail);
 }
 
-// void sharpen::RaftConsensus::DoWaitNextConsensus(std::uint64_t advancedCount,sharpen::Future<std::uint64_t> *waiter)
-// {
-//     if(advancedCount != this->advancedCount_)
-//     {
-//         this->NotifyWaiter(waiter);
-//     }
-//     else
-//     {
-//         // this->waiters_.emplace_back(waiter);
-//     }
-// }
-
 void sharpen::RaftConsensus::NviWaitNextConsensus(sharpen::Future<void> &future)
 {
     assert(this->worker_ != nullptr);
@@ -461,7 +449,7 @@ void sharpen::RaftConsensus::OnVoteResponse(const sharpen::RaftVoteForResponse &
 sharpen::Mail sharpen::RaftConsensus::DoGenerateResponse(sharpen::Mail request)
 {
     assert(this->mailExtractor_ != nullptr);
-    sharpen::Mail mail;
+    sharpen::Mail response;
     sharpen::RaftMailType type{this->mailExtractor_->GetMailType(request)};
     switch(type)
     {
@@ -469,37 +457,51 @@ sharpen::Mail sharpen::RaftConsensus::DoGenerateResponse(sharpen::Mail request)
         break;
     case sharpen::RaftMailType::PrevoteRequest:
         {
-            sharpen::Optional<sharpen::RaftPrevoteRequest> requestOpt{this->mailExtractor_->ExtractPrevoteRequest(mail)};
+            sharpen::Optional<sharpen::RaftPrevoteRequest> requestOpt{this->mailExtractor_->ExtractPrevoteRequest(request)};
             if(requestOpt.Exist())
             {
-                mail = this->OnPrevoteRequest(requestOpt.Get());
+                response = this->OnPrevoteRequest(requestOpt.Get());
             }
         }
         break;
     case sharpen::RaftMailType::VoteRequest:
         {
-            sharpen::Optional<sharpen::RaftVoteForRequest> requestOpt{this->mailExtractor_->ExtractVoteRequest(mail)};
+            sharpen::Optional<sharpen::RaftVoteForRequest> requestOpt{this->mailExtractor_->ExtractVoteRequest(request)};
             if(requestOpt.Exist())
             {
-                mail = this->OnVoteRequest(requestOpt.Get());
+                response = this->OnVoteRequest(requestOpt.Get());
+            }
+        }
+        break;
+    case sharpen::RaftMailType::HeartbeatRequest:
+        {
+            sharpen::Optional<sharpen::RaftHeartbeatRequest> requestOpt{this->mailExtractor_->ExtractHeartbeatRequest(request)};
+            if(requestOpt.Exist())
+            {
+                response = this->OnHeartbeatRequest(requestOpt.Get());
             }
         }
         break;
     case sharpen::RaftMailType::InstallSnapshotRequest:
+        {
+            sharpen::Optional<sharpen::RaftSnapshotRequest> requestOpt{this->mailExtractor_->ExtractSnapshotRequest(request)};
+            if(requestOpt.Exist())
+            {
+                response = this->OnSnapshotRequest(requestOpt.Get());
+            }
+        }
         break;
     default:
         //do nothing
         break;
     }
-    return mail;
+    return response;
 }
 
 void sharpen::RaftConsensus::DoReceive(sharpen::Mail mail,std::uint64_t actorId)
 {
     assert(this->mailExtractor_ != nullptr);
     sharpen::RaftMailType type{this->mailExtractor_->GetMailType(mail)};
-    //TODO
-    
     switch(type)
     {
     case sharpen::RaftMailType::PrevoteResponse:
@@ -521,8 +523,22 @@ void sharpen::RaftConsensus::DoReceive(sharpen::Mail mail,std::uint64_t actorId)
         }
         break;
     case sharpen::RaftMailType::HeartbeatResponse:
+        {
+            sharpen::Optional<sharpen::RaftHeartbeatResponse> responseOpt{this->mailExtractor_->ExtractHeartbeatResponse(mail)};
+            if(responseOpt.Exist())
+            {
+                this->OnHeartbeatResponse(responseOpt.Get(),actorId);
+            }
+        }
         break;
     case sharpen::RaftMailType::InstallSnapshotResponse:
+        {
+            sharpen::Optional<sharpen::RaftSnapshotResponse> responseOpt{this->mailExtractor_->ExtractSnapshotResponse(mail)};
+            if(responseOpt.Exist())
+            {
+                this->OnSnapshotResponse(responseOpt.Get(),actorId);
+            }
+        }
         break;
     default:
         //do nothing
