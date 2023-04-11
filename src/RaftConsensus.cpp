@@ -262,7 +262,7 @@ sharpen::Mail sharpen::RaftConsensus::OnPrevoteRequest(const sharpen::RaftPrevot
     {
         lastTerm = lastTermOpt.Get();
     }
-    if((request.GetLastIndex() > lastIndex) || (request.GetLastIndex() == lastIndex && request.GetLastTerm() >= lastTerm))
+    if(request.GetLastIndex() >= lastIndex && request.GetLastTerm() >= lastTerm)
     {
         response.SetStatus(true);
     }
@@ -277,7 +277,6 @@ sharpen::Mail sharpen::RaftConsensus::OnVoteRequest(const sharpen::RaftVoteForRe
     sharpen::RaftVoteForResponse response;
     response.SetStatus(false);
     response.SetTerm(this->GetTerm());
-    bool changed{false};
     //if term >= current term
     if(this->quorum_->Exist(request.GetId()) && request.GetTerm() >= this->GetTerm())
     {
@@ -287,16 +286,7 @@ sharpen::Mail sharpen::RaftConsensus::OnVoteRequest(const sharpen::RaftVoteForRe
             std::uint64_t newTerm{request.GetTerm()};
             this->SetTerm(newTerm);
             response.SetTerm(newTerm);
-            sharpen::RaftRole role{sharpen::RaftRole::Follower};
-            assert(this->role_ != sharpen::RaftRole::Learner);
-            if(this->role_ != sharpen::RaftRole::Learner)
-            {
-                role = this->role_.exchange(role);
-                if(role == sharpen::RaftRole::Leader)
-                {
-                    changed = true;
-                }
-            }
+            this->Abdicate();
         }
         //check vote record
         sharpen::RaftVoteRecord vote{this->GetVote()};
@@ -322,7 +312,7 @@ sharpen::Mail sharpen::RaftConsensus::OnVoteRequest(const sharpen::RaftVoteForRe
                 lastTerm = lastTermOpt.Get();
             }
             //set true if logs up-to-date current logs
-            if((request.GetLastIndex() > lastIndex) || (request.GetLastIndex() == lastIndex && request.GetLastTerm() >= lastTerm))
+            if(request.GetLastIndex() >= lastIndex && request.GetLastTerm() >= lastTerm)
             {
                 //save vote record
                 vote.SetActorId(request.GetId());
@@ -333,10 +323,6 @@ sharpen::Mail sharpen::RaftConsensus::OnVoteRequest(const sharpen::RaftVoteForRe
             }
         }
     }
-    if(changed)
-    {
-        this->OnStatusChanged();
-    }
     //return response
     sharpen::Mail mail{this->mailBuilder_->BuildVoteResponse(response)};
     return mail;
@@ -344,8 +330,58 @@ sharpen::Mail sharpen::RaftConsensus::OnVoteRequest(const sharpen::RaftVoteForRe
 
 sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(const sharpen::RaftHeartbeatRequest &request)
 {
-    (void)request;
-    //TODO
+    assert(this->mailBuilder_ != nullptr);
+    assert(this->logs_ != nullptr);
+    sharpen::RaftHeartbeatResponse response;
+    response.SetStatus(false);
+    response.SetTerm(this->GetTerm());
+    if(request.GetTerm() > this->GetTerm())
+    {
+        std::uint64_t newTerm{request.GetTerm()};
+        this->SetTerm(newTerm);
+        response.SetTerm(newTerm);
+        this->Abdicate();
+    }
+    std::uint64_t lastIndex{this->logs_->GetLastIndex()};
+    if(request.GetTerm() == this->GetTerm() && lastIndex >= request.GetPreLogIndex())
+    {
+        sharpen::Optional<std::uint64_t> termOpt{this->logs_->LookupTerm(request.GetPreLogIndex())};
+        if(termOpt.Exist() && termOpt.Get() == request.GetPreLogTerm())
+        {
+            bool check{true};
+            for(std::size_t i = 0;i != request.Entries().GetSize();++i)
+            {
+                std::uint64_t index{request.GetPreLogIndex() + 1 + i};
+                //TODO:check
+                if(check)
+                {
+                    sharpen::Optional<sharpen::ByteBuffer> logOpt{this->logs_->Lookup(index)};
+                    if(logOpt.Exist())
+                    {
+                        if(logOpt.Get() != request.Entries().Get(i))
+                        {
+                            check = false;
+                            this->logs_->TruncateFrom(index);
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                }
+                this->logs_->Write(index,request.Entries().Get(i));
+            }
+            response.SetStatus(true);
+            response.SetMatchIndex(request.GetPreLogIndex() + request.Entries().GetSize());
+        }
+    }
+    if(!response.GetStatus())
+    {
+        //TODO
+        // response.SetMatchIndex((std::min)(lastIndex,request.GetPreLogIndex()));
+    }
+    sharpen::Mail mail{this->mailBuilder_->BuildHeartbeatResponse(response)};
+    return mail;
 }
 
 sharpen::Mail sharpen::RaftConsensus::OnSnapshotRequest(const sharpen::RaftSnapshotRequest &request)
