@@ -24,6 +24,7 @@
 #include "RaftLeaderRecord.hpp"
 #include "RaftHeartbeatMailProvider.hpp"
 #include "RaftPrevoteRecord.hpp"
+#include "IRaftSnapshotInstaller.hpp"
 
 namespace sharpen
 {
@@ -43,11 +44,14 @@ namespace sharpen
         std::unique_ptr<sharpen::ILogStorage> logs_;
         //snapshot provider
         std::unique_ptr<sharpen::IRaftSnapshotProvider> snapshotProvider_;
+        //TODO
+        std::unique_ptr<sharpen::IRaftSnapshotInstaller> snapshotInstaller_;
         //raft option
         sharpen::RaftOption option_;
         //cache
         std::atomic_uint64_t term_;
         sharpen::RaftVoteRecord vote_;
+        std::atomic_uint64_t commitIndex_;
         //role
         std::atomic<sharpen::RaftRole> role_;
         //election record
@@ -87,6 +91,8 @@ namespace sharpen
 
         void LoadTerm();
 
+        void LoadCommitIndex();
+
         void LoadVoteFor();
 
         std::uint64_t GetTerm() const noexcept;
@@ -99,7 +105,11 @@ namespace sharpen
 
         std::uint64_t GetId() const noexcept;
 
-        // std::uint64_t GetCommitIndex() const noexcept;
+        std::uint64_t GetCommitIndex() const noexcept;
+
+        std::uint64_t GetLastIndex() const;
+
+        sharpen::Optional<std::uint64_t> LookupTerm(std::uint64_t index) const;
 
         void EnsureBroadcaster();
 

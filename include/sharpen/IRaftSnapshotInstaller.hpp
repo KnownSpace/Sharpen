@@ -67,6 +67,8 @@ namespace sharpen
         {
             this->NviReset();
         }
+
+        virtual std::uint64_t GetExpectedOffset() const noexcept = 0;
     };    
 }
 
