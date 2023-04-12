@@ -7,12 +7,12 @@
 #include <sharpen/BufferReader.hpp>
 #include <sharpen/SystemError.hpp>
 
-sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,std::unique_ptr<sharpen::IRaftSnapshotProvider> snapshotProvider,const sharpen::RaftOption &option,sharpen::IFiberScheduler &scheduler)
+sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,std::unique_ptr<sharpen::IRaftSnapshotController> snapshotController,const sharpen::RaftOption &option,sharpen::IFiberScheduler &scheduler)
     :scheduler_(&scheduler)
     ,id_(id)
     ,statusMap_(std::move(statusMap))
     ,logs_(std::move(logs))
-    ,snapshotProvider_(std::move(snapshotProvider))
+    ,snapshotController_(std::move(snapshotController))
     ,option_(option)
     ,term_(0)
     ,vote_(0,0)
@@ -52,8 +52,8 @@ sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::
     }
 }
 
-sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,std::unique_ptr<sharpen::IRaftSnapshotProvider> snapshotProvider,const sharpen::RaftOption &option)
-    :Self{id,std::move(statusMap),std::move(logs),std::move(snapshotProvider),option,sharpen::GetLocalScheduler()}
+sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,std::unique_ptr<sharpen::IRaftSnapshotController> snapshotController,const sharpen::RaftOption &option)
+    :Self{id,std::move(statusMap),std::move(logs),std::move(snapshotController),option,sharpen::GetLocalScheduler()}
 {}
 
 sharpen::Optional<std::uint64_t> sharpen::RaftConsensus::LoadUint64(sharpen::ByteSlice key)
@@ -117,6 +117,30 @@ void sharpen::RaftConsensus::LoadVoteFor()
     }
 }
 
+sharpen::IRaftSnapshotInstaller &sharpen::RaftConsensus::GetSnapshotInstaller() noexcept
+{
+    assert(this->snapshotController_ != nullptr);
+    return this->snapshotController_->Installer();
+}
+
+const sharpen::IRaftSnapshotInstaller &sharpen::RaftConsensus::GetSnapshotInstaller() const noexcept
+{
+    assert(this->snapshotController_ != nullptr);
+    return this->snapshotController_->Installer();
+}
+
+sharpen::IRaftSnapshotProvider &sharpen::RaftConsensus::GetSnapshotProvider() noexcept
+{
+    assert(this->snapshotController_ != nullptr);
+    return this->snapshotController_->Provider();
+}
+
+const sharpen::IRaftSnapshotProvider &sharpen::RaftConsensus::GetSnapshotProvider() const noexcept
+{
+    assert(this->snapshotController_ != nullptr);
+    return this->snapshotController_->Provider();
+}
+
 void sharpen::RaftConsensus::LoadCommitIndex()
 {
     sharpen::Optional<std::uint64_t> lastAppiled{this->LoadUint64(lastAppiledKey)};
@@ -124,9 +148,9 @@ void sharpen::RaftConsensus::LoadCommitIndex()
     {
         this->commitIndex_ = lastAppiled.Get();
     }
-    if(this->snapshotInstaller_)
+    if(this->snapshotController_)
     {
-        sharpen::Optional<sharpen::RaftSnapshotMetadata> metadataOpt{this->snapshotInstaller_->GetLastMetadata()};
+        sharpen::Optional<sharpen::RaftSnapshotMetadata> metadataOpt{this->GetSnapshotInstaller().GetLastMetadata()};
         if(metadataOpt.Exist())
         {
             this->commitIndex_ = (std::max)(metadataOpt.Get().GetLastIndex(),this->commitIndex_.load());
@@ -191,9 +215,9 @@ void sharpen::RaftConsensus::SetVote(sharpen::RaftVoteRecord vote)
 std::uint64_t sharpen::RaftConsensus::GetLastIndex() const
 {
     std::uint64_t snapshotIndex{0};
-    if(this->snapshotInstaller_)
+    if(this->snapshotController_)
     {
-        sharpen::Optional<sharpen::RaftSnapshotMetadata> metadataOpt{this->snapshotInstaller_->GetLastMetadata()};
+        sharpen::Optional<sharpen::RaftSnapshotMetadata> metadataOpt{this->GetSnapshotInstaller().GetLastMetadata()};
         if(metadataOpt.Exist())
         {
             snapshotIndex = metadataOpt.Get().GetLastIndex();
@@ -205,9 +229,9 @@ std::uint64_t sharpen::RaftConsensus::GetLastIndex() const
 
 sharpen::Optional<std::uint64_t> sharpen::RaftConsensus::LookupTerm(std::uint64_t index) const
 {
-    if(this->snapshotInstaller_)
+    if(this->snapshotController_)
     {
-        sharpen::Optional<sharpen::RaftSnapshotMetadata> metadataOpt{this->snapshotInstaller_->GetLastMetadata()};
+        sharpen::Optional<sharpen::RaftSnapshotMetadata> metadataOpt{this->GetSnapshotInstaller().GetLastMetadata()};
         if(metadataOpt.Exist() && index == metadataOpt.Get().GetLastIndex())
         {
             return index = metadataOpt.Get().GetLastTerm();
@@ -445,12 +469,12 @@ sharpen::Mail sharpen::RaftConsensus::OnSnapshotRequest(const sharpen::RaftSnaps
         response.SetTerm(newTerm);
         this->Abdicate();
     }
-    if(this->snapshotInstaller_ && this->GetTerm() == request.GetTerm() && this->snapshotInstaller_->GetExpectedOffset() == request.GetOffset())
+    if(this->snapshotController_ && this->GetTerm() == request.GetTerm() && this->GetSnapshotInstaller().GetExpectedOffset() == request.GetOffset())
     {
-        this->snapshotInstaller_->Write(request.GetOffset(),request.Data());
+        this->GetSnapshotInstaller().Write(request.GetOffset(),request.Data());
         if(request.IsLast())
         {
-            this->snapshotInstaller_->Install(request.Metadata());
+            this->GetSnapshotInstaller().Install(request.Metadata());
         }
         response.SetStatus(true);
         if(this->leaderRecord_.GetRecord().first < request.GetTerm())
@@ -813,8 +837,7 @@ void sharpen::RaftConsensus::Advance()
     this->EnsureConfig();
     if(!this->heartbeatProvider_)
     {
-        assert(this->snapshotProvider_ != nullptr);
-        sharpen::RaftHeartbeatMailProvider *provider{new (std::nothrow) sharpen::RaftHeartbeatMailProvider{this->id_,*this->mailBuilder_,*this->logs_,this->snapshotProvider_.get()}};
+        sharpen::RaftHeartbeatMailProvider *provider{new (std::nothrow) sharpen::RaftHeartbeatMailProvider{this->id_,*this->mailBuilder_,*this->logs_,this->snapshotController_.get()}};
         if(!provider)
         {
             throw std::bad_alloc{};
