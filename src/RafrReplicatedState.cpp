@@ -53,7 +53,14 @@ void sharpen::RaftReplicatedState::Reset() noexcept
 
 void sharpen::RaftReplicatedState::ForwardMatchPoint(std::uint64_t index) noexcept
 {
-    this->matchIndex_ = (std::max)(index,this->matchIndex_);
+    if(index > this->matchIndex_)
+    {
+        this->matchIndex_ = index;
+        if(index > this->nextIndex_)
+        {
+            this->nextIndex_ = this->matchIndex_ + 1;
+        }
+    }
 }
 
 void sharpen::RaftReplicatedState::BackwardMatchPoint(std::uint64_t index) noexcept
