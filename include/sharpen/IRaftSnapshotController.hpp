@@ -31,32 +31,22 @@ namespace sharpen
             return *this;
         }
 
-        inline sharpen::IRaftSnapshotInstaller &Installer() noexcept
-        {
-            return *this;
-        }
-
         inline sharpen::IRaftSnapshotProvider &Provider() noexcept
         {
             return *this;
         }
         
         inline const sharpen::IRaftSnapshotProvider &Provider() const noexcept
+        {
+            return *this;
+        }
+
+        inline sharpen::IRaftSnapshotInstaller &Installer() noexcept
         {
             return *this;
         }
         
         inline const sharpen::IRaftSnapshotInstaller &Installer() const noexcept
-        {
-            return *this;
-        }
-
-        inline sharpen::IRaftSnapshotProvider &Provider() noexcept
-        {
-            return *this;
-        }
-        
-        inline const sharpen::IRaftSnapshotProvider &Provider() const noexcept
         {
             return *this;
         }
