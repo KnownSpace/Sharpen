@@ -31,11 +31,13 @@ namespace sharpen
         std::size_t batchSize_;
         mutable std::map<std::uint64_t,sharpen::RaftReplicatedState> states_;
         std::uint64_t term_;
-        mutable std::uint64_t commitIndex_;
+        std::uint64_t commitIndex_;
 
         sharpen::RaftReplicatedState *LookupMutableState(std::uint64_t actorId) const noexcept;
 
         sharpen::Mail ProvideSnapshotRequest(sharpen::RaftReplicatedState *state) const;
+
+        void ReComputeCommitIndex() noexcept;
     public:
     
         RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log,sharpen::IRaftSnapshotProvider *snapshotProvider);
@@ -59,7 +61,11 @@ namespace sharpen
 
         virtual sharpen::Mail Provide(std::uint64_t actorId) const;
 
+        void Register(std::uint64_t actorId);
+
         const sharpen::RaftReplicatedState *LookupState(std::uint64_t actorId) const noexcept;
+
+        sharpen::Optional<std::uint64_t> LookupMatchIndex(std::uint64_t actorId) const noexcept;
 
         void ForwardState(std::uint64_t actorId,std::uint64_t index) noexcept;
 
@@ -74,6 +80,8 @@ namespace sharpen
         std::size_t GetSize() const noexcept;
 
         bool Empty() const noexcept;
+
+        void Clear() noexcept;
 
         std::size_t GetCommitIndex() const noexcept;
     };
