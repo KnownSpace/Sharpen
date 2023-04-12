@@ -475,13 +475,13 @@ sharpen::Mail sharpen::RaftConsensus::OnSnapshotRequest(const sharpen::RaftSnaps
         if(request.IsLast())
         {
             this->GetSnapshotInstaller().Install(request.Metadata());
+            this->commitIndex_ = request.Metadata().GetLastIndex();
         }
         response.SetStatus(true);
         if(this->leaderRecord_.GetRecord().first < request.GetTerm())
         {
             this->leaderRecord_.Flush(request.GetTerm(),request.GetLeaderId());
         }
-        this->commitIndex_ = request.Metadata().GetLastIndex();
         this->OnStatusChanged();
     }
     sharpen::Mail mail{this->mailBuilder_->BuildSnapshotResponse(response)};
