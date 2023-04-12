@@ -399,6 +399,7 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(const sharpen::RaftHear
     sharpen::RaftHeartbeatResponse response;
     response.SetStatus(false);
     response.SetTerm(this->GetTerm());
+    //if term > current term
     if(request.GetTerm() > this->GetTerm())
     {
         std::uint64_t newTerm{request.GetTerm()};
@@ -408,21 +409,33 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(const sharpen::RaftHear
     }
     std::uint64_t lastIndex{this->GetLastIndex()};
     std::uint64_t commitIndex{this->GetCommitIndex()};
-    if(request.GetTerm() == this->GetTerm() && lastIndex >= request.GetPreLogIndex() && request.GetPreLogIndex() >= commitIndex)
+    //last index must >= pre index, so we could check logs
+    //commit index must <= pre index, so we make sure this request is validated
+    if(request.GetTerm() == this->GetTerm() && lastIndex >= request.GetPreLogIndex() && request.GetPreLogIndex() >= commitIndex && this->role_ != sharpen::RaftRole::Leader)
     {
-        sharpen::Optional<std::uint64_t> termOpt{this->LookupTerm(request.GetPreLogIndex())};
-        if(request.GetPreLogIndex() == 0 && !termOpt.Exist())
+        //check pre index & pre term
+        sharpen::Optional<std::uint64_t> termOpt{sharpen::EmptyOpt};
+        if(request.GetPreLogIndex())
+        {
+            this->LookupTerm(request.GetPreLogIndex());
+        }
+        else
         {
             termOpt.Construct(static_cast<std::uint64_t>(0));
         }
+        //if we find the log 
+        //check term of log
         if(termOpt.Exist() && termOpt.Get() == request.GetPreLogTerm())
         {
             bool check{true};
+            //if last index bigger than the last index of leader
+            //truncate the logs, make sure our logs shorter than leader
             if(lastIndex > request.GetPreLogIndex() + request.Entries().GetSize())
             {
                 check = false;
                 this->logs_->TruncateFrom(request.GetPreLogIndex() + 1);
             }
+            //write log to logs and fix conflicts
             for(std::size_t i = 0;i != request.Entries().GetSize();++i)
             {
                 std::uint64_t index{request.GetPreLogIndex() + 1 + i};
@@ -438,17 +451,24 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(const sharpen::RaftHear
                 this->logs_->Write(index,request.Entries().Get(i));
             }
             response.SetStatus(true);
+            //set match index to last index
             response.SetMatchIndex(request.GetPreLogIndex() + request.Entries().GetSize());
+            //flush leader id if we need
             if(this->leaderRecord_.GetRecord().first < request.GetTerm())
             {
                 this->leaderRecord_.Flush(request.GetTerm(),request.GetLeaderId());
             }
+            //set commit index
             this->commitIndex_ = request.GetCommitIndex();
         }
+        //always advance state machine
         this->OnStatusChanged();
     }
     if(!response.GetStatus())
     {
+        //if we failure in some way
+        //set match index to current commit index
+        //then leader could relocate conflict point
         response.SetMatchIndex(commitIndex);
     }
     sharpen::Mail mail{this->mailBuilder_->BuildHeartbeatResponse(response)};
@@ -462,22 +482,32 @@ sharpen::Mail sharpen::RaftConsensus::OnSnapshotRequest(const sharpen::RaftSnaps
     sharpen::RaftSnapshotResponse response;
     response.SetTerm(this->GetTerm());
     response.SetStatus(false);
+    //if term > current term
     if(request.GetTerm() > this->GetTerm())
     {
+        //set new term
         std::uint64_t newTerm{request.GetTerm()};
         this->SetTerm(newTerm);
         response.SetTerm(newTerm);
         this->Abdicate();
     }
-    if(this->snapshotController_ && this->GetTerm() == request.GetTerm() && this->GetSnapshotInstaller().GetExpectedOffset() == request.GetOffset())
+    //if enable snapshot
+    //request.term is up-to-date
+    //check offset
+    if(this->snapshotController_ && this->GetTerm() == request.GetTerm() && this->role_ != sharpen::RaftRole::Leader && this->GetSnapshotInstaller().GetExpectedOffset() == request.GetOffset())
     {
+        //write snapshot chunk
         this->GetSnapshotInstaller().Write(request.GetOffset(),request.Data());
         if(request.IsLast())
         {
+            //if this chunk is last one
+            //install snapshot(could be asynchronous)
             this->GetSnapshotInstaller().Install(request.Metadata());
+            //set commit index to last index of snapshot
             this->commitIndex_ = request.Metadata().GetLastIndex();
         }
         response.SetStatus(true);
+        //flush leader id if we need
         if(this->leaderRecord_.GetRecord().first < request.GetTerm())
         {
             this->leaderRecord_.Flush(request.GetTerm(),request.GetLeaderId());
@@ -516,7 +546,6 @@ void sharpen::RaftConsensus::NotifyWaiter(sharpen::Future<void> *waiter) noexcep
 
 void sharpen::RaftConsensus::Abdicate()
 {
-    assert(this->role_ != sharpen::RaftRole::Learner);
     if(this->role_ != sharpen::RaftRole::Learner)
     {
         sharpen::RaftRole role{sharpen::RaftRole::Follower};
@@ -543,17 +572,23 @@ void sharpen::RaftConsensus::OnStatusChanged()
 void sharpen::RaftConsensus::OnPrevoteResponse(const sharpen::RaftPrevoteResponse &response,std::uint64_t actorId)
 {
     std::uint64_t term{this->GetTerm()};
+    //if term > current term
     if(response.GetTerm() > term)
     {
+        assert(!response.GetStatus());
         this->SetTerm(response.GetTerm());
         return this->Abdicate();
     }
     if(response.GetStatus())
     {
+        //make sure the term that we raise prevote
+        //equals with current term
         if(term == this->prevoteRecord_.GetTerm())
         {
             assert(response.GetTerm() <= term);
             this->prevoteRecord_.Receive(actorId);
+            //if we got a quorum
+            //raise election
             if(this->prevoteRecord_.GetVotes() == this->quorum_->GetMajority())
             {
                 this->RaiseElection();
@@ -584,6 +619,9 @@ void sharpen::RaftConsensus::OnVoteResponse(const sharpen::RaftVoteForResponse &
         {
             this->role_ = sharpen::RaftRole::Leader;
             assert(this->heartbeatProvider_ != nullptr);
+            //set commit index
+            //TODO init provider
+            //register to heartbeat provider
             this->heartbeatProvider_->SetCommitIndex(this->commitIndex_);
             this->OnStatusChanged();
             //draining pipeline
@@ -597,16 +635,50 @@ void sharpen::RaftConsensus::OnVoteResponse(const sharpen::RaftVoteForResponse &
 
 void sharpen::RaftConsensus::OnHeartbeatResponse(const sharpen::RaftHeartbeatResponse &response,std::uint64_t actorId)
 {
-    (void)response;
-    (void)actorId;
-    //TODO
+    assert(this->heartbeatProvider_ != nullptr);
+    //if term > current term
+    //leader abdicate
+    if(response.GetTerm() > this->GetTerm())
+    {
+        assert(!response.GetStatus());
+        this->SetTerm(response.GetTerm());
+        this->Abdicate();
+    }
+    if(response.GetStatus())
+    {
+        //load current commit index
+        std::uint64_t commitIndex{this->GetCommitIndex()};
+        //foward replicated state and recompute commit index
+        this->heartbeatProvider_->ForwardState(actorId,response.GetMatchIndex());
+        //if the commit index forward
+        //notify waiter
+        if(commitIndex != this->GetCommitIndex())
+        {
+            this->OnStatusChanged();
+        }
+    }
+    else
+    {
+        //if we failure
+        //backward replicated state
+        //if match index of response > our match index
+        //do nothing, pipeline will reach it at the end
+        this->heartbeatProvider_->BackwardState(actorId,response.GetMatchIndex());
+    }
 }
 
 void sharpen::RaftConsensus::OnSnapshotResponse(const sharpen::RaftSnapshotResponse &response,std::uint64_t actorId)
 {
+    assert(this->heartbeatProvider_ != nullptr);
+    if(response.GetTerm() > this->GetTerm())
+    {
+        assert(!response.GetStatus());
+        this->SetTerm(response.GetTerm());
+        this->Abdicate();
+    }
+    //nothing we can do
     (void)response;
     (void)actorId;
-    //TODO
 }
 
 sharpen::Mail sharpen::RaftConsensus::DoGenerateResponse(sharpen::Mail request)
