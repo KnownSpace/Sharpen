@@ -13,8 +13,13 @@ namespace sharpen
     private:
         using Self = sharpen::RaftOption;
     
+        static constexpr std::uint32_t maxBatchSize_{16*1024};
+
+        static constexpr std::uint32_t minBatchSize_{1};
+
         bool isLearner_;
         bool enablePrevote_;
+        std::uint32_t batchSize_;
     public:
     
         RaftOption() noexcept;
@@ -61,6 +66,13 @@ namespace sharpen
         {
             this->enablePrevote_ = prevote;
         }
+
+        inline std::uint32_t GetBatchSize() const noexcept
+        {
+            return this->batchSize_;
+        }
+
+        void SetBatchSize(std::uint32_t batchSize) noexcept;
     };
 }
 
