@@ -76,3 +76,13 @@ void sharpen::Quorum::Remove(std::uint64_t actorId) noexcept
         this->builders_.erase(ite);
     }
 }
+
+std::set<std::uint64_t> sharpen::Quorum::GenerateActorsSet() const
+{
+    std::set<std::uint64_t> actors;
+    for(auto begin = this->builders_.begin(),end = this->builders_.end(); begin != end; ++begin)
+    {
+        actors.emplace(begin->first);   
+    }
+    return actors;
+}

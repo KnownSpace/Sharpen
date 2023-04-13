@@ -43,6 +43,8 @@ namespace sharpen
         {
             return this->builders_.size();
         }
+
+        virtual std::set<std::uint64_t> GenerateActorsSet() const override;
     };
 }
 

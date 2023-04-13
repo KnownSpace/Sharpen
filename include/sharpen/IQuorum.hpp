@@ -3,6 +3,7 @@
 #define _SHARPEN_IQUORUMMAP_HPP
 
 #include <cassert>
+#include <set>
 
 #include "IRemoteActorBuilder.hpp"
 #include "Broadcaster.hpp"
@@ -102,6 +103,8 @@ namespace sharpen
         {
             return !this->GetSize();
         }
+
+        virtual std::set<std::uint64_t> GenerateActorsSet() const = 0;
     };
 }
 
