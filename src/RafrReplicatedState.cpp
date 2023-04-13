@@ -39,18 +39,6 @@ void sharpen::RaftReplicatedState::Forward() noexcept
     return this->Forward(1);
 }
 
-void sharpen::RaftReplicatedState::Reset() noexcept
-{
-    if(this->nextIndex_ > this->matchIndex_ + 1)
-    {
-        this->nextIndex_ = this->matchIndex_ + 1;
-    }
-    if(this->snapshot_)
-    {
-        this->snapshot_.reset(nullptr);
-    }
-}
-
 void sharpen::RaftReplicatedState::ForwardMatchPoint(std::uint64_t index) noexcept
 {
     if(index > this->matchIndex_)
@@ -65,7 +53,7 @@ void sharpen::RaftReplicatedState::ForwardMatchPoint(std::uint64_t index) noexce
 
 void sharpen::RaftReplicatedState::BackwardMatchPoint(std::uint64_t index) noexcept
 {
-    if(index < this->matchIndex_)
+    if(index <= this->matchIndex_)
     {
         this->matchIndex_ = index;
         this->nextIndex_ = this->matchIndex_ + 1;

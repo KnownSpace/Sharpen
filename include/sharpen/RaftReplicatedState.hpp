@@ -53,8 +53,6 @@ namespace sharpen
 
         void Forward(std::uint64_t step) noexcept;
 
-        void Reset() noexcept;
-
         void ForwardMatchPoint(std::uint64_t index) noexcept;
 
         void BackwardMatchPoint(std::uint64_t index) noexcept;
