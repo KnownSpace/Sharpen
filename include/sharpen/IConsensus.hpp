@@ -10,7 +10,7 @@
 #include "AwaitableFuture.hpp"
 #include "IMailReceiver.hpp"
 #include "IQuorum.hpp"
-#include "LogWriteResult.hpp"
+#include "WriteLogsResult.hpp"
 
 namespace sharpen
 {
