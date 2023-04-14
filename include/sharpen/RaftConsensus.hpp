@@ -159,9 +159,9 @@ namespace sharpen
 
         virtual void NviConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum*)> configurater) override;
 
-        std::uint64_t DoWrite(sharpen::ILogBatch *rawLogs);
+        sharpen::LogWriteResult DoWrite(const sharpen::LogBatch *logs);
 
-        virtual std::uint64_t NviWrite(std::unique_ptr<sharpen::ILogBatch> logs) override;
+        virtual sharpen::LogWriteResult NviWrite(const sharpen::LogBatch &logs) override;
 
         virtual void NviDropLogsUntil(std::uint64_t index) override;
 
@@ -199,8 +199,6 @@ namespace sharpen
         virtual void Advance() override;
 
         virtual bool Writable() const override;
-
-        virtual std::unique_ptr<sharpen::ILogBatch> CreateLogBatch() const override;
 
         virtual bool Changable() const override;
 

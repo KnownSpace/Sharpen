@@ -909,7 +909,7 @@ void sharpen::RaftConsensus::Advance()
     this->EnsureConfig();
     if(!this->heartbeatProvider_)
     {
-        sharpen::RaftHeartbeatMailProvider *provider{new (std::nothrow) sharpen::RaftHeartbeatMailProvider{this->id_,*this->mailBuilder_,*this->logs_,this->snapshotController_.get()}};
+        sharpen::RaftHeartbeatMailProvider *provider{new (std::nothrow) sharpen::RaftHeartbeatMailProvider{this->id_,*this->mailBuilder_,*this->logs_,this->snapshotController_.get(),this->option_.GetBatchSize()}};
         if(!provider)
         {
             throw std::bad_alloc{};
@@ -934,6 +934,13 @@ void sharpen::RaftConsensus::DoConfigurateQuorum(std::function<std::unique_ptr<s
     {
         this->quorumBroadcaster_.reset(nullptr);
     }
+    //reset heartbeat provider
+    this->heartbeatProvider_->Clear();
+    std::set<std::uint64_t> set{this->quorum_->GenerateActorsSet()};
+    for(auto begin = set.begin(),end = set.end(); begin != end; ++begin)
+    {
+        this->heartbeatProvider_->Register(*begin);   
+    }
 }
 
 void sharpen::RaftConsensus::NviConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater)
@@ -949,32 +956,32 @@ void sharpen::RaftConsensus::NviDropLogsUntil(std::uint64_t index)
     this->worker_->Submit(&sharpen::ILogStorage::DropUntil,this->logs_.get(),index);
 }
 
-std::uint64_t sharpen::RaftConsensus::NviWrite(std::unique_ptr<sharpen::ILogBatch> logs)
+sharpen::LogWriteResult sharpen::RaftConsensus::NviWrite(const sharpen::LogBatch &logs)
 {
-    assert(logs != nullptr);
+    assert(!logs.Empty());
     assert(this->worker_ != nullptr);
     sharpen::AwaitableFuture<std::uint64_t> future;
-    this->worker_->Invoke(future,&Self::DoWrite,this,logs.release());
+    this->worker_->Invoke(future,&Self::DoWrite,this,&logs);
     return future.Await();
 }
 
-std::uint64_t sharpen::RaftConsensus::DoWrite(sharpen::ILogBatch *rawLogs)
+sharpen::LogWriteResult sharpen::RaftConsensus::DoWrite(const sharpen::LogBatch *logs)
 {
-    std::unique_ptr<sharpen::ILogBatch> logs{rawLogs};
     assert(logs != nullptr);
-    std::uint64_t index{this->logs_->GetLastIndex()};
+    assert(!logs->Empty());
+    std::uint64_t lastIndex{this->GetLastIndex()};
+    if(!this->Writable())
+    {
+        return sharpen::LogWriteResult{lastIndex};
+    }
+    //TODO:Term
+    std::uint64_t beginIndex{lastIndex + 1};
     for(std::size_t i = 0;i != logs->GetSize();++i)
     {
-        this->logs_->Write(index + i,logs->Get(index));
+        this->logs_->Write(lastIndex + i,logs->Get(lastIndex));
     }
-    index += logs->GetSize();
-    return index;
-}
-
-std::unique_ptr<sharpen::ILogBatch> sharpen::RaftConsensus::CreateLogBatch() const
-{
-    //TODO 
-    return nullptr;
+    lastIndex += logs->GetSize();
+    return sharpen::LogWriteResult{beginIndex,lastIndex};
 }
 
 sharpen::Optional<std::uint64_t> sharpen::RaftConsensus::GetWriterId() const noexcept

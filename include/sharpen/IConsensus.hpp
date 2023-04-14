@@ -4,12 +4,13 @@
 
 #include <memory>
 
-#include "ILogBatch.hpp"
+#include "LogBatch.hpp"
 #include "ILogStorage.hpp"
 #include "IMailReceiver.hpp"
 #include "AwaitableFuture.hpp"
 #include "IMailReceiver.hpp"
 #include "IQuorum.hpp"
+#include "LogWriteResult.hpp"
 
 namespace sharpen
 {
@@ -24,8 +25,7 @@ namespace sharpen
     
         virtual bool NviIsConsensusMail(const sharpen::Mail &mail) const noexcept = 0;
 
-        //returns the last index of log batch
-        virtual std::uint64_t NviWrite(std::unique_ptr<sharpen::ILogBatch> logs) = 0;
+        virtual sharpen::LogWriteResult NviWrite(const sharpen::LogBatch &logs) = 0;
 
         virtual sharpen::Mail NviGenerateResponse(sharpen::Mail request) = 0;
 
@@ -55,15 +55,9 @@ namespace sharpen
 
         virtual bool Writable() const = 0;
 
-        virtual std::unique_ptr<sharpen::ILogBatch> CreateLogBatch() const = 0;
-
-        inline std::uint64_t Write(std::unique_ptr<sharpen::ILogBatch> logs)
+        inline sharpen::LogWriteResult Write(const sharpen::LogBatch &logs)
         {
-            if(logs != nullptr)
-            {
-                return this->NviWrite(std::move(logs));
-            }
-            return 0;
+            return this->NviWrite(logs);
         }
 
         virtual bool Changable() const = 0;
