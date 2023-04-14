@@ -4,7 +4,7 @@ sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(std::uint64_t id,c
     :Self{id,builder,log,snapshotProvider,defaultBatchSize_}
 {}
 
-sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log,sharpen::IRaftSnapshotProvider *snapshotProvider,std::uint16_t batchSize)
+sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log,sharpen::IRaftSnapshotProvider *snapshotProvider,std::uint32_t batchSize)
     :id_(id)
     ,builder_(&builder)
     ,logs_(&log)

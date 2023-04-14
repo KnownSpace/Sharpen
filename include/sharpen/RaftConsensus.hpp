@@ -19,7 +19,6 @@
 #include "RaftRole.hpp"
 #include "RaftVoteRecord.hpp"
 #include "RaftElectionRecord.hpp"
-#include "ConsensusWaiter.hpp"
 #include "RaftOption.hpp"
 #include "RaftLeaderRecord.hpp"
 #include "RaftHeartbeatMailProvider.hpp"

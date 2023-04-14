@@ -960,7 +960,7 @@ sharpen::WriteLogsResult sharpen::RaftConsensus::NviWrite(const sharpen::LogBatc
 {
     assert(!logs.Empty());
     assert(this->worker_ != nullptr);
-    sharpen::AwaitableFuture<std::uint64_t> future;
+    sharpen::AwaitableFuture<sharpen::WriteLogsResult> future;
     this->worker_->Invoke(future,&Self::DoWrite,this,&logs);
     return future.Await();
 }

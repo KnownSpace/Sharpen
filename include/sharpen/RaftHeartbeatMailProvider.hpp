@@ -42,7 +42,7 @@ namespace sharpen
     
         RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log,sharpen::IRaftSnapshotProvider *snapshotProvider);
 
-        RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log,sharpen::IRaftSnapshotProvider *snapshotProvider,std::uint16_t batchSize);
+        RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log,sharpen::IRaftSnapshotProvider *snapshotProvider,std::uint32_t batchSize);
     
         RaftHeartbeatMailProvider(Self &&other) noexcept;
     
