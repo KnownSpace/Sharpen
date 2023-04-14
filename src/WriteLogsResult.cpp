@@ -1,20 +1,20 @@
-#include <sharpen/LogWriteResult.hpp>
+#include <sharpen/WriteLogsResult.hpp>
 
 #include <cassert>
 
-sharpen::LogWriteResult::LogWriteResult(std::uint64_t lastIndex) noexcept
+sharpen::WriteLogsResult::WriteLogsResult(std::uint64_t lastIndex) noexcept
     :lastIndex_(lastIndex)
     ,beginIndex_(0)
 {}
 
-sharpen::LogWriteResult::LogWriteResult(std::uint64_t lastIndex,std::uint64_t beginIndex) noexcept
+sharpen::WriteLogsResult::WriteLogsResult(std::uint64_t lastIndex,std::uint64_t beginIndex) noexcept
     :lastIndex_(lastIndex)
     ,beginIndex_(beginIndex)
 {
     assert(this->lastIndex_ >= this->beginIndex_);
 }
 
-sharpen::LogWriteResult::LogWriteResult(Self &&other) noexcept
+sharpen::WriteLogsResult::WriteLogsResult(Self &&other) noexcept
     :lastIndex_(other.lastIndex_)
     ,beginIndex_(other.beginIndex_)
 {
@@ -22,7 +22,7 @@ sharpen::LogWriteResult::LogWriteResult(Self &&other) noexcept
     other.beginIndex_ = 0;
 }
 
-sharpen::LogWriteResult &sharpen::LogWriteResult::operator=(const Self &other) noexcept
+sharpen::WriteLogsResult &sharpen::WriteLogsResult::operator=(const Self &other) noexcept
 {
     if(this != std::addressof(other))
     {
@@ -32,7 +32,7 @@ sharpen::LogWriteResult &sharpen::LogWriteResult::operator=(const Self &other) n
     return *this;
 }
 
-sharpen::LogWriteResult &sharpen::LogWriteResult::operator=(Self &&other) noexcept
+sharpen::WriteLogsResult &sharpen::WriteLogsResult::operator=(Self &&other) noexcept
 {
     if(this != std::addressof(other))
     {
@@ -44,17 +44,17 @@ sharpen::LogWriteResult &sharpen::LogWriteResult::operator=(Self &&other) noexce
     return *this;
 }
 
-bool sharpen::LogWriteResult::GetStatus() const noexcept
+bool sharpen::WriteLogsResult::GetStatus() const noexcept
 {
     return this->beginIndex_;
 }
 
-std::uint64_t sharpen::LogWriteResult::GetLastIndex() const noexcept
+std::uint64_t sharpen::WriteLogsResult::GetLastIndex() const noexcept
 {
     return this->lastIndex_;
 }
 
-sharpen::Optional<std::uint64_t> sharpen::LogWriteResult::LookupBeginIndex() const noexcept
+sharpen::Optional<std::uint64_t> sharpen::WriteLogsResult::LookupBeginIndex() const noexcept
 {
     if(this->beginIndex_)
     {
@@ -63,7 +63,7 @@ sharpen::Optional<std::uint64_t> sharpen::LogWriteResult::LookupBeginIndex() con
     return sharpen::EmptyOpt;
 }
 
-std::size_t sharpen::LogWriteResult::GetWrittenSize() const noexcept
+std::size_t sharpen::WriteLogsResult::GetWrittenSize() const noexcept
 {
     if(this->beginIndex_)
     {

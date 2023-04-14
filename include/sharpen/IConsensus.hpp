@@ -25,7 +25,7 @@ namespace sharpen
     
         virtual bool NviIsConsensusMail(const sharpen::Mail &mail) const noexcept = 0;
 
-        virtual sharpen::LogWriteResult NviWrite(const sharpen::LogBatch &logs) = 0;
+        virtual sharpen::WriteLogsResult NviWrite(const sharpen::LogBatch &logs) = 0;
 
         virtual sharpen::Mail NviGenerateResponse(sharpen::Mail request) = 0;
 
@@ -55,7 +55,7 @@ namespace sharpen
 
         virtual bool Writable() const = 0;
 
-        inline sharpen::LogWriteResult Write(const sharpen::LogBatch &logs)
+        inline sharpen::WriteLogsResult Write(const sharpen::LogBatch &logs)
         {
             return this->NviWrite(logs);
         }

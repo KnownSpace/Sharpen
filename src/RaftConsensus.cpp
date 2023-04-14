@@ -956,7 +956,7 @@ void sharpen::RaftConsensus::NviDropLogsUntil(std::uint64_t index)
     this->worker_->Submit(&sharpen::ILogStorage::DropUntil,this->logs_.get(),index);
 }
 
-sharpen::LogWriteResult sharpen::RaftConsensus::NviWrite(const sharpen::LogBatch &logs)
+sharpen::WriteLogsResult sharpen::RaftConsensus::NviWrite(const sharpen::LogBatch &logs)
 {
     assert(!logs.Empty());
     assert(this->worker_ != nullptr);
@@ -965,14 +965,14 @@ sharpen::LogWriteResult sharpen::RaftConsensus::NviWrite(const sharpen::LogBatch
     return future.Await();
 }
 
-sharpen::LogWriteResult sharpen::RaftConsensus::DoWrite(const sharpen::LogBatch *logs)
+sharpen::WriteLogsResult sharpen::RaftConsensus::DoWrite(const sharpen::LogBatch *logs)
 {
     assert(logs != nullptr);
     assert(!logs->Empty());
     std::uint64_t lastIndex{this->GetLastIndex()};
     if(!this->Writable())
     {
-        return sharpen::LogWriteResult{lastIndex};
+        return sharpen::WriteLogsResult{lastIndex};
     }
     //TODO:Term
     std::uint64_t beginIndex{lastIndex + 1};
@@ -981,7 +981,7 @@ sharpen::LogWriteResult sharpen::RaftConsensus::DoWrite(const sharpen::LogBatch 
         this->logs_->Write(lastIndex + i,logs->Get(lastIndex));
     }
     lastIndex += logs->GetSize();
-    return sharpen::LogWriteResult{beginIndex,lastIndex};
+    return sharpen::WriteLogsResult{beginIndex,lastIndex};
 }
 
 sharpen::Optional<std::uint64_t> sharpen::RaftConsensus::GetWriterId() const noexcept

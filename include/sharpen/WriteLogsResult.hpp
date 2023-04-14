@@ -1,6 +1,6 @@
 #pragma once
-#ifndef _SHARPEN_LOGWRITERESULT_HPP
-#define _SHARPEN_LOGWRITERESULT_HPP
+#ifndef _SHARPEN_WRITELOGSRESULT_HPP
+#define _SHARPEN_WRITELOGSRESULT_HPP
 
 #include <cstdint>
 #include <cstddef>
@@ -10,28 +10,28 @@
 
 namespace sharpen
 {
-    class LogWriteResult
+    class WriteLogsResult
     {
     private:
-        using Self = sharpen::LogWriteResult;
+        using Self = sharpen::WriteLogsResult;
     
         std::uint64_t lastIndex_;
         std::uint64_t beginIndex_;
     public:
     
-        explicit LogWriteResult(std::uint64_t lastIndex) noexcept;
+        explicit WriteLogsResult(std::uint64_t lastIndex) noexcept;
 
-        LogWriteResult(std::uint64_t lastIndex,std::uint64_t beginIndex) noexcept;
+        WriteLogsResult(std::uint64_t lastIndex,std::uint64_t beginIndex) noexcept;
     
-        LogWriteResult(const Self &other) noexcept = default;
+        WriteLogsResult(const Self &other) noexcept = default;
     
-        LogWriteResult(Self &&other) noexcept;
+        WriteLogsResult(Self &&other) noexcept;
     
         Self &operator=(const Self &other) noexcept;
     
         Self &operator=(Self &&other) noexcept;
     
-        ~LogWriteResult() noexcept = default;
+        ~WriteLogsResult() noexcept = default;
     
         inline const Self &Const() const noexcept
         {

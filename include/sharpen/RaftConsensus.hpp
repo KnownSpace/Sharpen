@@ -159,9 +159,9 @@ namespace sharpen
 
         virtual void NviConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum*)> configurater) override;
 
-        sharpen::LogWriteResult DoWrite(const sharpen::LogBatch *logs);
+        sharpen::WriteLogsResult DoWrite(const sharpen::LogBatch *logs);
 
-        virtual sharpen::LogWriteResult NviWrite(const sharpen::LogBatch &logs) override;
+        virtual sharpen::WriteLogsResult NviWrite(const sharpen::LogBatch &logs) override;
 
         virtual void NviDropLogsUntil(std::uint64_t index) override;
 
