@@ -14,8 +14,13 @@ namespace sharpen
 
     extern unsigned char Crc16TableLow[256];
 
+    extern std::uint32_t Crc32Table[256];
+
     //CRC16-MODBUS
     extern std::uint16_t Crc16(const char *data, std::size_t size) noexcept;
+
+    //CRC32
+    extern std::uint32_t Crc32(const char *data,std::size_t size) noexcept;
 
     //Adler32
     extern std::uint32_t Adler32(const char *data, std::size_t size) noexcept;
