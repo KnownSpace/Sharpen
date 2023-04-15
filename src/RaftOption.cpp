@@ -1,6 +1,6 @@
 #include <sharpen/RaftOption.hpp>
 
-#include <utility>
+#include <algorithm>
 
 sharpen::RaftOption::RaftOption() noexcept
     :isLearner_(false)
