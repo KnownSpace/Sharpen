@@ -1,13 +1,14 @@
 #include <sharpen/RaftHeartbeatMailProvider.hpp>
 
-sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log,sharpen::IRaftSnapshotProvider *snapshotProvider)
-    :Self{id,builder,log,snapshotProvider,defaultBatchSize_}
+sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log,sharpen::IRaftLogAccesser &logAccesser,sharpen::IRaftSnapshotProvider *snapshotProvider)
+    :Self{id,builder,log,logAccesser,snapshotProvider,defaultBatchSize_}
 {}
 
-sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log,sharpen::IRaftSnapshotProvider *snapshotProvider,std::uint32_t batchSize)
+sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log,sharpen::IRaftLogAccesser &logAccesser,sharpen::IRaftSnapshotProvider *snapshotProvider,std::uint32_t batchSize)
     :id_(id)
     ,builder_(&builder)
     ,logs_(&log)
+    ,logAccesser_(&logAccesser)
     ,snapshotProvider_(snapshotProvider)
     ,batchSize_(batchSize)
     ,states_()
@@ -236,6 +237,18 @@ void sharpen::RaftHeartbeatMailProvider::Register(std::uint64_t actorId)
     }
 }
 
+sharpen::Optional<std::uint64_t> sharpen::RaftHeartbeatMailProvider::LookupTerm(std::uint64_t index) const noexcept
+{
+    assert(this->logAccesser_ != nullptr);
+    assert(this->logs_ != nullptr);
+    sharpen::Optional<sharpen::ByteBuffer> entry{this->logs_->Lookup(index)};
+    if(entry.Exist())
+    {
+        return this->logAccesser_->LookupTerm(entry.Get());
+    }
+    return sharpen::EmptyOpt;
+}
+
 sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(std::uint64_t actorId) const
 {
     assert(this->builder_);
@@ -277,7 +290,7 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(std::uint64_t actorId)
     request.SetLeaderId(this->id_);
     request.SetTerm(this->term_);
     request.SetPreLogIndex(preIndex);
-    sharpen::Optional<std::uint64_t> term{this->logs_->LookupTerm(preIndex)};
+    sharpen::Optional<std::uint64_t> term{this->LookupTerm(preIndex)};
     if(!term.Exist())
     {
         assert(this->snapshotProvider_ != nullptr);

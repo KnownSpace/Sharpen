@@ -3,6 +3,7 @@
 #define _SHARPEN_RAFTHEARTBEATMAILPROVIDER_HPP
 
 #include <map>
+#include <cassert>
 
 #include "IMailProvider.hpp"
 #include "Optional.hpp"
@@ -11,6 +12,7 @@
 #include "IRaftSnapshotProvider.hpp"
 #include "Noncopyable.hpp"
 #include "RaftReplicatedState.hpp"
+#include "IRaftLogAccesser.hpp"
 
 namespace sharpen
 {
@@ -26,6 +28,7 @@ namespace sharpen
         std::uint64_t id_;
         const sharpen::IRaftMailBuilder *builder_;
         const sharpen::ILogStorage *logs_;
+        sharpen::IRaftLogAccesser *logAccesser_;
         sharpen::IRaftSnapshotProvider *snapshotProvider_;
         //max size of each batch
         std::size_t batchSize_;
@@ -38,11 +41,13 @@ namespace sharpen
         sharpen::Mail ProvideSnapshotRequest(sharpen::RaftReplicatedState *state) const;
 
         void ReComputeCommitIndex() noexcept;
+
+        sharpen::Optional<std::uint64_t> LookupTerm(std::uint64_t index) const noexcept;
     public:
     
-        RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log,sharpen::IRaftSnapshotProvider *snapshotProvider);
+        RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log,sharpen::IRaftLogAccesser &logAccesser,sharpen::IRaftSnapshotProvider *snapshotProvider);
 
-        RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log,sharpen::IRaftSnapshotProvider *snapshotProvider,std::uint32_t batchSize);
+        RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log,sharpen::IRaftLogAccesser &logAccesser,sharpen::IRaftSnapshotProvider *snapshotProvider,std::uint32_t batchSize);
     
         RaftHeartbeatMailProvider(Self &&other) noexcept;
     
@@ -84,6 +89,18 @@ namespace sharpen
         void Clear() noexcept;
 
         std::size_t GetCommitIndex() const noexcept;
+
+        inline sharpen::IRaftLogAccesser &LogAccesser() noexcept
+        {
+            assert(this->logAccesser_ != nullptr);
+            return *this->logAccesser_;
+        }
+        
+        inline const sharpen::IRaftLogAccesser &LogAccesser() const noexcept
+        {
+            assert(this->logAccesser_ != nullptr);
+            return *this->logAccesser_;
+        }
     };
 }
 

@@ -6,7 +6,6 @@
 
 #include "IFileChannel.hpp"
 #include "ILogStorage.hpp"
-#include "IRaftLogExtractor.hpp"
 #include "AsyncRwLock.hpp"
 
 namespace sharpen
@@ -31,7 +30,6 @@ namespace sharpen
         Logs logs_;
         std::uint64_t offset_;
         std::size_t contentSize_;
-        std::unique_ptr<sharpen::IRaftLogExtractor> extractor_;
 
         bool Insert(std::uint64_t index,sharpen::ByteBuffer log);
 
@@ -45,8 +43,6 @@ namespace sharpen
 
         virtual sharpen::Optional<sharpen::ByteBuffer> NviLookup(std::uint64_t index) const override;
 
-        virtual sharpen::Optional<std::uint64_t> NviLookupTerm(std::uint64_t index) const;
-
         virtual void NviWrite(std::uint64_t index,sharpen::ByteSlice log) override;
 
         virtual void NviDropUntil(std::uint64_t index) noexcept override;
@@ -54,9 +50,9 @@ namespace sharpen
         virtual void NviTruncateFrom(std::uint64_t index) override;
     public:
     
-        WalLogStorage(std::string name,std::unique_ptr<sharpen::IRaftLogExtractor> extractor);
+        WalLogStorage(std::string name);
 
-        WalLogStorage(sharpen::IEventLoopGroup &loopGroup,std::string name,std::unique_ptr<sharpen::IRaftLogExtractor> extractor);
+        WalLogStorage(sharpen::IEventLoopGroup &loopGroup,std::string name);
     
         WalLogStorage(Self &&other) noexcept;
     

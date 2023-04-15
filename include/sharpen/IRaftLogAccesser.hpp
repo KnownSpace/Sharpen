@@ -63,6 +63,24 @@ namespace sharpen
             return this->GetTerm(logEntry.GetSlice());
         }
 
+        inline sharpen::Optional<std::uint64_t> LookupTerm(sharpen::ByteSlice logEntry) const noexcept
+        {
+            if(this->IsRaftEntry(logEntry))
+            {
+                return this->GetTerm(logEntry);
+            }
+            return sharpen::EmptyOpt;
+        }
+
+        inline sharpen::Optional<std::uint64_t> LookupTerm(const sharpen::ByteBuffer &logEntry) const noexcept
+        {
+            if(this->IsRaftEntry(logEntry))
+            {
+                return this->GetTerm(logEntry);
+            }
+            return sharpen::EmptyOpt;
+        }
+
         inline void SetTerm(sharpen::ByteBuffer &logEntry,std::uint64_t term) const
         {
             assert(this->IsRaftEntry(logEntry));

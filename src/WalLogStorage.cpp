@@ -7,11 +7,11 @@
 #include <sharpen/IteratorOps.hpp>
 #include <sharpen/FileOps.hpp>
 
-sharpen::WalLogStorage::WalLogStorage(std::string name,std::unique_ptr<sharpen::IRaftLogExtractor> extractor)
-    :Self{sharpen::GetLocalLoopGroup(),std::move(name),std::move(extractor)}
+sharpen::WalLogStorage::WalLogStorage(std::string name)
+    :Self{sharpen::GetLocalLoopGroup(),std::move(name)}
 {}
 
-sharpen::WalLogStorage::WalLogStorage(sharpen::IEventLoopGroup &loopGroup,std::string name,std::unique_ptr<sharpen::IRaftLogExtractor> extractor)
+sharpen::WalLogStorage::WalLogStorage(sharpen::IEventLoopGroup &loopGroup,std::string name)
     :name_(std::move(name))
     ,tempName_()
     ,channel_(nullptr)
@@ -20,9 +20,7 @@ sharpen::WalLogStorage::WalLogStorage(sharpen::IEventLoopGroup &loopGroup,std::s
     ,logs_()
     ,offset_(0)
     ,contentSize_(0)
-    ,extractor_(std::move(extractor))
 {
-    assert(this->extractor_ != nullptr);
     assert(!this->name_.empty());
     sharpen::AsyncRwLock *lock{new (std::nothrow) sharpen::AsyncRwLock{}};
     if(!lock)
@@ -367,20 +365,6 @@ std::uint64_t sharpen::WalLogStorage::GetLastIndex() const
     }
 }
 
-sharpen::Optional<std::uint64_t> sharpen::WalLogStorage::NviLookupTerm(std::uint64_t index) const
-{
-    {
-        this->lock_->LockRead();
-        std::unique_lock<sharpen::AsyncRwLock> lock{*this->lock_,std::adopt_lock};
-        auto it = this->logs_.find(index);
-        if(it != this->logs_.end())
-        {
-            return this->extractor_->ExtractTerm(it->second);
-        }
-        return sharpen::EmptyOpt;
-    }
-}
-
 sharpen::WalLogStorage::WalLogStorage(Self &&other) noexcept
     :name_(std::move(other.name_))
     ,tempName_(std::move(other.tempName_))
@@ -390,7 +374,6 @@ sharpen::WalLogStorage::WalLogStorage(Self &&other) noexcept
     ,logs_(std::move(other.logs_))
     ,offset_(other.offset_)
     ,contentSize_(other.contentSize_)
-    ,extractor_(std::move(other.extractor_))
 {
     other.loopGroup_ = nullptr;
     other.offset_ = 0;
@@ -409,7 +392,6 @@ sharpen::WalLogStorage &sharpen::WalLogStorage::operator=(Self &&other) noexcept
         this->logs_ = std::move(other.logs_);
         this->offset_ = other.offset_;
         this->contentSize_ = other.contentSize_;
-        this->extractor_ = std::move(other.extractor_);
         other.loopGroup_ = nullptr;
         other.offset_ = 0;
         other.contentSize_ = 0;

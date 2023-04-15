@@ -7,11 +7,13 @@
 #include <sharpen/BufferReader.hpp>
 #include <sharpen/SystemError.hpp>
 
-sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,std::unique_ptr<sharpen::IRaftSnapshotController> snapshotController,const sharpen::RaftOption &option,sharpen::IFiberScheduler &scheduler)
+
+sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,std::unique_ptr<sharpen::IRaftLogAccesser> logAccesser,std::unique_ptr<sharpen::IRaftSnapshotController> snapshotController,const sharpen::RaftOption &option,sharpen::IFiberScheduler &scheduler)
     :scheduler_(&scheduler)
     ,id_(id)
     ,statusMap_(std::move(statusMap))
     ,logs_(std::move(logs))
+    ,logAccesser_(std::move(logAccesser))
     ,snapshotController_(std::move(snapshotController))
     ,option_(option)
     ,term_(0)
@@ -34,6 +36,7 @@ sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::
     assert(this->id_ != 0);
     assert(this->statusMap_ != nullptr);
     assert(this->logs_ != nullptr);
+    assert(this->logAccesser_ != nullptr);
     //set worker
     sharpen::IWorkerGroup *worker{new (std::nothrow) sharpen::SingleWorkerGroup{*this->scheduler_}};
     if(!worker)
@@ -52,8 +55,8 @@ sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::
     }
 }
 
-sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,std::unique_ptr<sharpen::IRaftSnapshotController> snapshotController,const sharpen::RaftOption &option)
-    :Self{id,std::move(statusMap),std::move(logs),std::move(snapshotController),option,sharpen::GetLocalScheduler()}
+sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,std::unique_ptr<sharpen::IRaftLogAccesser> logAccesser,std::unique_ptr<sharpen::IRaftSnapshotController> snapshotController,const sharpen::RaftOption &option)
+    :Self{id,std::move(statusMap),std::move(logs),std::move(logAccesser),std::move(snapshotController),option,sharpen::GetLocalScheduler()}
 {}
 
 sharpen::Optional<std::uint64_t> sharpen::RaftConsensus::LoadUint64(sharpen::ByteSlice key)
@@ -238,7 +241,7 @@ sharpen::Optional<std::uint64_t> sharpen::RaftConsensus::LookupTerm(std::uint64_
         }
     }
     assert(this->logs_ != nullptr);
-    return this->logs_->LookupTerm(index);
+    return this->LookupTermOfEntry(index);
 }
 
 bool sharpen::RaftConsensus::Writable() const
@@ -309,6 +312,32 @@ void sharpen::RaftConsensus::EnsureBroadcaster()
         assert(this->quorum_ != nullptr);
         this->quorumBroadcaster_ = this->quorum_->CreateBroadcaster();
     }
+}
+
+sharpen::Optional<std::uint64_t> sharpen::RaftConsensus::LookupTermOfEntry(std::uint64_t index) const noexcept
+{
+    assert(index != 0);
+    assert(this->logs_ != nullptr);
+    assert(this->logAccesser_ != nullptr);
+    sharpen::Optional<sharpen::ByteBuffer> entryOpt{this->logs_->Lookup(index)};
+    if(entryOpt.Exist())
+    {
+        return this->logAccesser_->LookupTerm(entryOpt.Get());
+    }
+    return sharpen::EmptyOpt;
+}
+
+bool sharpen::RaftConsensus::CheckEntry(std::uint64_t index,std::uint64_t expectedTerm) const noexcept
+{
+    assert(this->logs_ != nullptr);
+    assert(index != 0);
+    sharpen::Optional<std::uint64_t> termOpt{this->LookupTermOfEntry(index)};
+    if(termOpt.Exist())
+    {
+        std::uint64_t term{termOpt.Get()};
+        return term == expectedTerm;
+    }
+    return false;
 }
 
 sharpen::Mail sharpen::RaftConsensus::OnPrevoteRequest(const sharpen::RaftPrevoteRequest &request)
@@ -396,6 +425,7 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(const sharpen::RaftHear
 {
     assert(this->mailBuilder_ != nullptr);
     assert(this->logs_ != nullptr);
+    assert(this->logAccesser_ != nullptr);
     sharpen::RaftHeartbeatResponse response;
     response.SetStatus(false);
     response.SetTerm(this->GetTerm());
@@ -407,11 +437,21 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(const sharpen::RaftHear
         response.SetTerm(newTerm);
         this->Abdicate();
     }
+    bool validatedEntries{true};
+    //check request entires
+    for(std::size_t i = 0;i != request.Entries().GetSize();++i)
+    {
+        if(!this->logAccesser_->IsRaftEntry(request.Entries().Get(i)))
+        {
+            validatedEntries = false;
+            break;
+        }
+    }
     std::uint64_t lastIndex{this->GetLastIndex()};
     std::uint64_t commitIndex{this->GetCommitIndex()};
     //last index must >= pre index, so we could check logs
     //commit index must <= pre index, so we make sure this request is validated
-    if(request.GetTerm() == this->GetTerm() && lastIndex >= request.GetPreLogIndex() && request.GetPreLogIndex() >= commitIndex && this->role_ != sharpen::RaftRole::Leader)
+    if(validatedEntries && request.GetTerm() == this->GetTerm() && lastIndex >= request.GetPreLogIndex() && request.GetPreLogIndex() >= commitIndex && this->role_ != sharpen::RaftRole::Leader)
     {
         //check pre index & pre term
         sharpen::Optional<std::uint64_t> termOpt{sharpen::EmptyOpt};
@@ -441,7 +481,8 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(const sharpen::RaftHear
                 std::uint64_t index{request.GetPreLogIndex() + 1 + i};
                 if(check)
                 {
-                    if(this->logs_->CheckEntry(index,request.Entries().Get(i)) == sharpen::ILogStorage::CheckResult::Consistent)
+                    std::uint64_t entryTerm{this->logAccesser_->GetTerm(request.Entries().Get(i))};
+                    if(this->CheckEntry(index,entryTerm))
                     {
                         continue;
                     }
@@ -620,8 +661,6 @@ void sharpen::RaftConsensus::OnVoteResponse(const sharpen::RaftVoteForResponse &
             this->role_ = sharpen::RaftRole::Leader;
             assert(this->heartbeatProvider_ != nullptr);
             //set commit index
-            //TODO init provider
-            //register to heartbeat provider
             this->heartbeatProvider_->SetCommitIndex(this->commitIndex_);
             this->OnStatusChanged();
             //draining pipeline
@@ -909,7 +948,9 @@ void sharpen::RaftConsensus::Advance()
     this->EnsureConfig();
     if(!this->heartbeatProvider_)
     {
-        sharpen::RaftHeartbeatMailProvider *provider{new (std::nothrow) sharpen::RaftHeartbeatMailProvider{this->id_,*this->mailBuilder_,*this->logs_,this->snapshotController_.get(),this->option_.GetBatchSize()}};
+        assert(this->logs_ != nullptr);
+        assert(this->logAccesser_ != nullptr);
+        sharpen::RaftHeartbeatMailProvider *provider{new (std::nothrow) sharpen::RaftHeartbeatMailProvider{this->id_,*this->mailBuilder_,*this->logs_,*this->logAccesser_,this->snapshotController_.get(),this->option_.GetBatchSize()}};
         if(!provider)
         {
             throw std::bad_alloc{};
@@ -939,7 +980,7 @@ void sharpen::RaftConsensus::DoConfigurateQuorum(std::function<std::unique_ptr<s
     std::set<std::uint64_t> set{this->quorum_->GenerateActorsSet()};
     for(auto begin = set.begin(),end = set.end(); begin != end; ++begin)
     {
-        this->heartbeatProvider_->Register(*begin);   
+        this->heartbeatProvider_->Register(*begin);
     }
 }
 
@@ -969,6 +1010,7 @@ sharpen::WriteLogsResult sharpen::RaftConsensus::DoWrite(const sharpen::LogBatch
 {
     assert(logs != nullptr);
     assert(!logs->Empty());
+    assert(this->logAccesser_ != nullptr);
     std::uint64_t lastIndex{this->GetLastIndex()};
     if(!this->Writable())
     {
@@ -976,9 +1018,12 @@ sharpen::WriteLogsResult sharpen::RaftConsensus::DoWrite(const sharpen::LogBatch
     }
     //TODO:Term
     std::uint64_t beginIndex{lastIndex + 1};
+    std::uint64_t term{this->GetTerm()};
+    assert(term != 0);
     for(std::size_t i = 0;i != logs->GetSize();++i)
     {
-        this->logs_->Write(lastIndex + i,logs->Get(lastIndex));
+        sharpen::ByteBuffer entry{this->logAccesser_->CreateEntry(logs->Get(i),term)};
+        this->logs_->Write(lastIndex + i,entry);
     }
     lastIndex += logs->GetSize();
     return sharpen::WriteLogsResult{beginIndex,lastIndex};

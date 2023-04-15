@@ -24,6 +24,7 @@
 #include "RaftHeartbeatMailProvider.hpp"
 #include "RaftPrevoteRecord.hpp"
 #include "IRaftSnapshotController.hpp"
+#include "IRaftLogAccesser.hpp"
 
 namespace sharpen
 {
@@ -41,6 +42,7 @@ namespace sharpen
         std::unique_ptr<sharpen::IStatusMap> statusMap_;
         //storage logs
         std::unique_ptr<sharpen::ILogStorage> logs_;
+        std::unique_ptr<sharpen::IRaftLogAccesser> logAccesser_;
         //snapshot provider
         std::unique_ptr<sharpen::IRaftSnapshotController> snapshotController_;
         //raft option
@@ -114,6 +116,10 @@ namespace sharpen
 
         const sharpen::IRaftSnapshotInstaller &GetSnapshotInstaller() const noexcept;
 
+        sharpen::Optional<std::uint64_t> LookupTermOfEntry(std::uint64_t index) const noexcept;
+
+        bool CheckEntry(std::uint64_t index,std::uint64_t expectedTerm) const noexcept;
+
         sharpen::Optional<std::uint64_t> LookupTerm(std::uint64_t index) const;
 
         void EnsureBroadcaster();
@@ -180,9 +186,9 @@ namespace sharpen
 
         constexpr static sharpen::ByteSlice lastAppiledKey{"lastAppiled",11};
 
-        RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,std::unique_ptr<sharpen::IRaftSnapshotController> snapshotController,const sharpen::RaftOption &option);
+        RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,std::unique_ptr<sharpen::IRaftLogAccesser> logAccesser,std::unique_ptr<sharpen::IRaftSnapshotController> snapshotController,const sharpen::RaftOption &option);
 
-        RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,std::unique_ptr<sharpen::IRaftSnapshotController> snapshotController,const sharpen::RaftOption &option,sharpen::IFiberScheduler &scheduler);
+        RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,std::unique_ptr<sharpen::IRaftLogAccesser> logAccesser,std::unique_ptr<sharpen::IRaftSnapshotController> snapshotController,const sharpen::RaftOption &option,sharpen::IFiberScheduler &scheduler);
     
         virtual ~RaftConsensus() noexcept = default;
     
