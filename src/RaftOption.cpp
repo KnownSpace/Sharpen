@@ -1,5 +1,7 @@
 #include <sharpen/RaftOption.hpp>
 
+#include <utility>
+
 sharpen::RaftOption::RaftOption() noexcept
     :isLearner_(false)
     ,enablePrevote_(false)
