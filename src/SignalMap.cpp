@@ -73,13 +73,11 @@ void sharpen::SignalMap::Register(sharpen::FileHandle handle,std::int32_t *sigs,
 
 void sharpen::SignalMap::Raise(std::int32_t sig) const noexcept
 {
-    bool raiseDefault{true};
     {
         std::unique_lock<Lock> lock{this->lock_};
         auto ite = this->map_.find(sig);
         if(ite != this->map_.end())
         {
-            raiseDefault = false;
             for(auto begin = ite->second.begin(),end = ite->second.end(); begin != end; ++begin)
             {
                 std::uint8_t sigBit{static_cast<std::uint8_t>(sig)};
@@ -96,10 +94,6 @@ void sharpen::SignalMap::Raise(std::int32_t sig) const noexcept
     #endif   
             }
         }
-    }
-    if(raiseDefault)
-    {
-        SIG_DFL(sig);
     }
 }
 

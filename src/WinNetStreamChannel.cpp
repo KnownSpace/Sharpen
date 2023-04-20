@@ -216,7 +216,7 @@ void sharpen::WinNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,sh
 
 void sharpen::WinNetStreamChannel::RequestAccept(sharpen::Future<sharpen::NetStreamChannelPtr> *future)
 {
-    static std::atomic<LPFN_ACCEPTEX> AcceptEx = nullptr;
+    static std::atomic<LPFN_ACCEPTEX> AcceptEx{nullptr};
     //get acceptex
     if(AcceptEx == nullptr)
     {
