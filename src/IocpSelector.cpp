@@ -1,3 +1,4 @@
+#include <basetsd.h>
 #include <sharpen/IocpSelector.hpp>
 
 #ifdef SHARPEN_HAS_IOCP
@@ -8,6 +9,7 @@
 #include <cassert>
 #include <limits>
 #include <mutex>
+#include <cstring>
 
 sharpen::IocpSelector::IocpSelector()
     :iocp_()
@@ -45,7 +47,7 @@ void sharpen::IocpSelector::Select(EventVector &events)
     for (std::size_t i = 0; i != count; ++i)
     {
         sharpen::IoCompletionPort::Event &e = this->eventBuf_[i];
-        if (e.lpOverlapped != nullptr && e.lpCompletionKey != NULL)
+        if (e.lpOverlapped != nullptr && e.lpCompletionKey != static_cast<ULONG_PTR>(NULL))
         {
             //get overlapped struct
             sharpen::IocpOverlappedStruct *olStructPtr = CONTAINING_RECORD(e.lpOverlapped,sharpen::IocpOverlappedStruct,ol_);
