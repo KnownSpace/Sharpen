@@ -4,6 +4,9 @@
 
 #include "SystemMacro.hpp"
 
+#include <cstdint>
+#include <cstddef>
+
 #define SHARPEN_LIL_ENDIAN 1234
 #define SHARPEN_BIG_ENDIAN 4321
 

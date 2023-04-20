@@ -9,6 +9,7 @@
 #endif
 
 #include <sharpen/ByteBuffer.hpp>
+#include <sharpen/ByteOrder.hpp>
 
 sharpen::Ipv6EndPoint::Ipv6EndPoint() noexcept
     :addr_()
@@ -142,6 +143,9 @@ std::size_t sharpen::Ipv6EndPoint::LoadFrom(const char *data,std::size_t size)
 #endif
     std::uint16_t port;
     std::memcpy(&port,data + offset,sizeof(port));
+#if (SHARPEN_BYTEORDER != SHARPEN_LIL_ENDIAN)
+    sharpen::ConvertEndian(port);
+#endif
     this->SetPort(port);
     offset += sizeof(port);
     return offset;
@@ -163,6 +167,9 @@ std::size_t sharpen::Ipv6EndPoint::UnsafeStoreTo(char *data) const noexcept
 #else
     std::memcpy(data,this->addr_.sin6_addr.s6_addr,sizeof(this->addr_.sin6_addr.s6_addr));
     offset += sizeof(this->addr_.sin6_addr.s6_addr);
+#endif
+#if (SHARPEN_BYTEORDER != SHARPEN_LIL_ENDIAN)
+    sharpen::ConvertEndian(port);
 #endif
     std::memcpy(data + offset,&port,sizeof(port));
     offset += sizeof(port);

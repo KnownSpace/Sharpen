@@ -1,3 +1,4 @@
+#include "sharpen/ByteOrder.hpp"
 #include <sharpen/IpEndPoint.hpp>
 
 #include <utility>
@@ -142,10 +143,16 @@ std::size_t sharpen::IpEndPoint::LoadFrom(const char *data,std::size_t size)
     std::uint32_t ip{0};
     std::size_t offset{0};
     std::memcpy(&ip,data,sizeof(ip));
+#if (SHARPEN_BYTEORDER != SHARPEN_LIL_ENDIAN)
+    sharpen::ConvertEndian(ip);
+#endif
     this->SetAddr(ip);
     offset += sizeof(ip);
     std::uint16_t port;
     std::memcpy(&port,data + offset,sizeof(port));
+#if (SHARPEN_BYTEORDER != SHARPEN_LIL_ENDIAN)
+    sharpen::ConvertEndian(port);
+#endif
     this->SetPort(port);
     offset += sizeof(port);
     return offset;
@@ -162,8 +169,14 @@ std::size_t sharpen::IpEndPoint::UnsafeStoreTo(char *data) const noexcept
     std::size_t offset{0};
     std::uint32_t ip{this->GetAddr()};
     std::uint16_t port{this->GetPort()};
+#if (SHARPEN_BYTEORDER != SHARPEN_LIL_ENDIAN)
+    sharpen::ConvertEndian(ip);
+#endif
     std::memcpy(data,&ip,sizeof(ip));
     offset += sizeof(ip);
+#if (SHARPEN_BYTEORDER != SHARPEN_LIL_ENDIAN)
+    sharpen::ConvertEndian(port);
+#endif
     std::memcpy(data + offset,&port,sizeof(port));
     offset += sizeof(port);
     return offset;

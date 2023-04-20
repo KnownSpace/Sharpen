@@ -13,9 +13,9 @@ std::size_t sharpen::RaftPrevoteRequest::LoadFrom(const char *data,std::size_t s
     }
     std::uint64_t lastIndex{0};
     std::uint64_t lastTerm{0};
-    std::memcpy(&lastIndex,data,sizeof(this->lastIndex_));
-    std::size_t offset{sizeof(this->lastIndex_)};
-    std::memcpy(&lastTerm,data + offset,sizeof(this->lastTerm_));
+    std::size_t offset{0};
+    offset += sharpen::BinarySerializator::LoadFrom(lastIndex,data,size);
+    offset += sharpen::BinarySerializator::LoadFrom(lastTerm,data + offset,size - offset);
     offset += sizeof(this->lastTerm_);
     this->lastIndex_ = lastIndex;
     this->lastTerm_ = lastTerm;
@@ -25,10 +25,10 @@ std::size_t sharpen::RaftPrevoteRequest::LoadFrom(const char *data,std::size_t s
 std::size_t sharpen::RaftPrevoteRequest::UnsafeStoreTo(char *data) const noexcept
 {
     std::size_t offset{0};
-    std::memcpy(data,&this->lastIndex_,sizeof(this->lastIndex_));
-    offset += sizeof(this->lastIndex_);
-    std::memcpy(data + offset,&this->lastTerm_,sizeof(this->lastTerm_));
-    offset += sizeof(this->lastTerm_);
+    std::uint64_t lastIndex{this->lastIndex_};
+    offset += sharpen::BinarySerializator::UnsafeStoreTo(lastIndex, data);
+    std::uint64_t lastTerm{this->lastTerm_};
+    offset += sharpen::BinarySerializator::UnsafeStoreTo(lastTerm, data + offset);
     return offset;
 }
 

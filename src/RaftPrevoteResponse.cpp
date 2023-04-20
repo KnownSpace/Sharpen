@@ -16,8 +16,7 @@ std::size_t sharpen::RaftPrevoteResponse::LoadFrom(const char *data,std::size_t 
     std::size_t offset{0};
     std::memcpy(&status,data,sizeof(status));
     offset += sizeof(status);
-    std::memcpy(&term,data + offset,sizeof(term));
-    offset += sizeof(term);
+    offset += sharpen::BinarySerializator::LoadFrom(term, data + offset,size - offset);
     this->status_ = status;
     this->term_ = term;
     return offset;
@@ -29,8 +28,8 @@ std::size_t sharpen::RaftPrevoteResponse::UnsafeStoreTo(char *data) const noexce
     std::uint8_t status{this->status_};
     std::memcpy(data,&status,sizeof(status));
     offset += sizeof(status);
-    std::memcpy(data + offset,&this->term_,sizeof(this->term_));
-    offset += sizeof(this->term_);
+    std::uint64_t term{this->term_};
+    offset += sharpen::BinarySerializator::UnsafeStoreTo(term, data + offset);
     return offset;
 }
 
