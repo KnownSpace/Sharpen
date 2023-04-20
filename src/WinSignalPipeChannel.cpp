@@ -9,8 +9,8 @@
 
 sharpen::WinPipeSignalChannel::WinPipeSignalChannel(sharpen::FileHandle reader,sharpen::FileHandle writer,sharpen::SignalMap &map)
     :Base()
-    ,writer_()
     ,map_(&map)
+    ,writer_()
 {
     this->handle_ = reader;
     this->writer_ = writer;

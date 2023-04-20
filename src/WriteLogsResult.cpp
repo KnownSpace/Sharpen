@@ -2,6 +2,8 @@
 
 #include <cassert>
 
+#include <sharpen/IntOps.hpp>
+
 sharpen::WriteLogsResult::WriteLogsResult(std::uint64_t lastIndex) noexcept
     :lastIndex_(lastIndex)
     ,beginIndex_(0)
@@ -67,7 +69,7 @@ std::size_t sharpen::WriteLogsResult::GetWrittenSize() const noexcept
 {
     if(this->beginIndex_)
     {
-        return this->lastIndex_ - this->beginIndex_ + 1;
+        return sharpen::IntCast<std::size_t>(this->lastIndex_ - this->beginIndex_ + 1);
     }
     return 0;
 }

@@ -1,5 +1,7 @@
 #include <sharpen/RaftHeartbeatMailProvider.hpp>
 
+#include <sharpen/IntOps.hpp>
+
 sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log,sharpen::IRaftLogAccesser &logAccesser,sharpen::IRaftSnapshotProvider *snapshotProvider)
     :Self{id,builder,log,logAccesser,snapshotProvider,defaultBatchSize_}
 {}
@@ -281,7 +283,7 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(std::uint64_t actorId)
     //compute logs size
     std::uint64_t size{lastIndex - nextIndex};
     //limit logs <= batchSize
-    size = (std::min)(this->batchSize_,size);
+    size = (std::min)(static_cast<std::uint64_t>(this->batchSize_),size);
     lastIndex = nextIndex + size;
     sharpen::RaftHeartbeatRequest request;
     //get commit index
@@ -305,7 +307,7 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(std::uint64_t actorId)
     if(size)
     {
         //append log entires to request
-        request.Entries().Reserve(size);
+        request.Entries().Reserve(sharpen::IntCast<std::size_t>(size));
         while(nextIndex <= lastIndex)
         {
             sharpen::Optional<sharpen::ByteBuffer> log{this->logs_->Lookup(nextIndex)};

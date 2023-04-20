@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-sharpen::AsyncBarrier::AsyncBarrier(sharpen::BarrierModel model,std::uint64_t counter)
+sharpen::AsyncBarrier::AsyncBarrier(sharpen::BarrierModel model,std::size_t counter)
     :count_(counter)
     ,waiters_()
     ,currentCount_(0)

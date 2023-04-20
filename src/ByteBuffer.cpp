@@ -7,6 +7,7 @@
 
 #include <sharpen/Varint.hpp>
 #include <sharpen/CorruptedDataError.hpp>
+#include <sharpen/IntOps.hpp>
 
 sharpen::ByteBuffer::ByteBuffer(std::size_t size)
     :vector_(size)
@@ -232,7 +233,7 @@ std::size_t sharpen::ByteBuffer::LoadFrom(const char *data,std::size_t size)
     sharpen::Varuint64 builder{data,size};
     std::size_t sz{builder.ComputeSize()};
     offset += sz;
-    sz = builder.Get();
+    sz = sharpen::IntCast<std::size_t>(builder.Get());
     if(sz)
     {
         if (size < offset + sz)

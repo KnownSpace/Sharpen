@@ -88,7 +88,7 @@ namespace sharpen
 
         void Clear() noexcept;
 
-        std::size_t GetCommitIndex() const noexcept;
+        std::uint64_t GetCommitIndex() const noexcept;
 
         inline sharpen::IRaftLogAccesser &LogAccesser() noexcept
         {
