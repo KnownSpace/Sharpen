@@ -177,7 +177,7 @@ namespace sharpen
             return ConstReverseIterator{this->Data()};
         }
 
-        template<typename _Iterator,typename _Check = decltype(std::declval<Self>().Get(0) == *std::declval<_Iterator&>()++)>
+        template<typename _Iterator,typename _Check = decltype(std::declval<char&>() == *std::declval<_Iterator&>()++)>
         inline ConstIterator Search(const _Iterator begin,const _Iterator end) const
         {
             return std::search(this->Begin(),this->End(),begin,end);

@@ -1,4 +1,5 @@
 #pragma once
+#include <utility>
 #ifndef _SHARPEN_BYTEBUFFER_HPP
 #define _SHARPEN_BYTEBUFFER_HPP
 
@@ -102,7 +103,7 @@ namespace sharpen
 
         void Append(const Self &other);
 
-        template<typename _Iterator,typename _Checker = decltype(std::declval<Self>().PushBack(*std::declval<_Iterator>()))>
+        template<typename _Iterator,typename _Checker = decltype(std::declval<char&>() = *std::declval<_Iterator>())>
         void Append(_Iterator begin,_Iterator end)
         {
             this->vector_.Append(begin,end);
@@ -164,13 +165,13 @@ namespace sharpen
 
         ConstReverseIterator ReverseFind(char e) const noexcept;
 
-        template<typename _Iterator,typename _Check = decltype(std::declval<Self>().Get(0) == *std::declval<_Iterator&>()++)>
+        template<typename _Iterator,typename _Check = decltype(std::declval<char&>() == *std::declval<_Iterator&>()++)>
         inline Iterator Search(const _Iterator begin,const _Iterator end)
         {
             return std::search(this->Begin(),this->End(),begin,end);
         }
 
-        template<typename _Iterator,typename _Check = decltype(std::declval<Self>().Get(0) == *std::declval<_Iterator&>()++)>
+        template<typename _Iterator,typename _Check = decltype(std::declval<char&>() == *std::declval<_Iterator&>()++)>
         inline ConstIterator Search(const _Iterator begin,const _Iterator end) const
         {
             return std::search(this->Begin(),this->End(),begin,end);
