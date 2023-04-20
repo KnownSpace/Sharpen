@@ -14,7 +14,6 @@
 #include "IRaftMailExtractor.hpp"
 #include "IMailReceiver.hpp"
 #include "IQuorum.hpp"
-#include "TypeTraits.hpp"
 #include "IWorkerGroup.hpp"
 #include "RaftRole.hpp"
 #include "RaftVoteRecord.hpp"
@@ -156,7 +155,7 @@ namespace sharpen
 
         virtual void NviWaitNextConsensus(sharpen::Future<void> &future) override;
 
-        virtual bool NviIsConsensusMail(const sharpen::Mail &mail) const noexcept;
+        virtual bool NviIsConsensusMail(const sharpen::Mail &mail) const noexcept override;
 
         virtual sharpen::Mail NviGenerateResponse(sharpen::Mail request) override;
 
@@ -209,12 +208,12 @@ namespace sharpen
 
         virtual const sharpen::ILogStorage &ImmutableLogs() const noexcept override;
 
-        inline virtual sharpen::IMailReceiver &GetReceiver() noexcept
+        inline virtual sharpen::IMailReceiver &GetReceiver() noexcept override
         {
             return *this;
         }
 
-        inline virtual const sharpen::IMailReceiver &GetReceiver() const noexcept
+        inline virtual const sharpen::IMailReceiver &GetReceiver() const noexcept override
         {
             return *this;
         }

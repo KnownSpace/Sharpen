@@ -1,9 +1,14 @@
 #pragma once
+#include "sharpen/ByteSlice.hpp"
+#include "sharpen/LogEntries.hpp"
+#include <cstddef>
+#include <utility>
 #ifndef _SHARPEN_ILOGSTORAGE_HPP
 #define _SHARPEN_ILOGSTORAGE_HPP
 
 #include "ByteBuffer.hpp"
 #include "Optional.hpp"
+#include "LogEntries.hpp"
 
 namespace sharpen
 {
@@ -17,6 +22,8 @@ namespace sharpen
         virtual sharpen::Optional<sharpen::ByteBuffer> NviLookup(std::uint64_t index) const = 0;
 
         virtual void NviWrite(std::uint64_t index,sharpen::ByteSlice log) = 0;
+
+        virtual void NviWriteBatch(std::uint64_t beginIndex,sharpen::LogEntries entires) = 0;
 
         virtual void NviDropUntil(std::uint64_t index) noexcept = 0;
 
@@ -63,6 +70,15 @@ namespace sharpen
         inline void Write(std::uint64_t index,const sharpen::ByteBuffer &log)
         {
             this->Write(index,log.GetSlice());
+        }
+
+        inline void WriteBatch(std::uint64_t beginIndex,sharpen::LogEntries entires)
+        {
+            assert(beginIndex != noneIndex);
+            if(!entires.Empty())
+            {
+                this->NviWriteBatch(beginIndex,std::move(entires));
+            }
         }
 
         inline void DropUntil(std::uint64_t index) noexcept

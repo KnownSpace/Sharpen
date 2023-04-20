@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 #ifndef _SHARPEN_RAFTLOGENTRIES_HPP
 #define _SHARPEN_RAFTLOGENTRIES_HPP
 
@@ -51,6 +52,10 @@ namespace sharpen
         LogEntries(const Self &other) = default;
     
         LogEntries(Self &&other) noexcept = default;
+
+        LogEntries(const Self &other,std::size_t offset);
+
+        LogEntries(Self &&other,std::size_t offset) noexcept;
     
         inline Self &operator=(const Self &other)
         {

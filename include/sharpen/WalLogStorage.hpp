@@ -1,4 +1,5 @@
 #pragma once
+#include "sharpen/LogEntries.hpp"
 #ifndef _SHARPEN_WALLOGSTORAGE_HPP
 #define _SHARPEN_WALLOGSTORAGE_HPP
 
@@ -48,6 +49,8 @@ namespace sharpen
         virtual void NviDropUntil(std::uint64_t index) noexcept override;
 
         virtual void NviTruncateFrom(std::uint64_t index) override;
+
+        virtual void NviWriteBatch(std::uint64_t beginIndex,sharpen::LogEntries entries) override;
     public:
     
         WalLogStorage(std::string name);

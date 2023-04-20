@@ -71,9 +71,9 @@ namespace sharpen
             return this->matchIndex_;
         }
 
-        inline void SetMatchIndex(std::uint64_t lastCommitIndex) noexcept
+        inline void SetMatchIndex(std::uint64_t matchIndex) noexcept
         {
-            this->matchIndex_ = lastCommitIndex;
+            this->matchIndex_ = matchIndex;
         }
 
         std::size_t ComputeSize() const noexcept;

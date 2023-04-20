@@ -1,6 +1,39 @@
+#include <cstddef>
 #include <sharpen/LogEntries.hpp>
 
 #include <cassert>
+#include <utility>
+
+sharpen::LogEntries::LogEntries(const Self &other,std::size_t offset)
+    :logs_()
+{
+    assert(other.GetSize() >= offset);
+    if(other.GetSize() > offset)
+    {
+        std::size_t size{other.GetSize() - offset};
+        this->logs_.reserve(size);
+        for(std::size_t i = offset;i != other.GetSize();++i)
+        {
+            this->logs_.emplace_back(other.Get(i));
+        }
+    }
+}
+
+sharpen::LogEntries::LogEntries(Self &&other,std::size_t offset) noexcept
+    :logs_(std::move(other.logs_))
+{
+    assert(this->GetSize() >= offset);
+    if(this->GetSize() > offset)
+    {
+        auto begin = this->logs_.begin() + offset;
+        auto end = this->logs_.end();
+        this->logs_.erase(begin,end);
+    }
+    else 
+    {
+        this->logs_.clear();
+    }
+}
 
 sharpen::LogEntries &sharpen::LogEntries::operator=(Self &&other) noexcept
 {

@@ -1,3 +1,4 @@
+#include "sharpen/LogEntries.hpp"
 #include <sharpen/RaftConsensus.hpp>
 
 #include <cassert>
@@ -6,6 +7,7 @@
 #include <sharpen/BufferWriter.hpp>
 #include <sharpen/BufferReader.hpp>
 #include <sharpen/SystemError.hpp>
+#include <utility>
 
 
 sharpen::RaftConsensus::RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,std::unique_ptr<sharpen::IRaftLogAccesser> logAccesser,std::unique_ptr<sharpen::IRaftSnapshotController> snapshotController,const sharpen::RaftOption &option,sharpen::IFiberScheduler &scheduler)
@@ -467,33 +469,36 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(const sharpen::RaftHear
         //check term of log
         if(termOpt.Exist() && termOpt.Get() == request.GetPreLogTerm())
         {
-            bool check{true};
             //if last index bigger than the last index of leader
             //truncate the logs, make sure our logs shorter than leader
+            bool check{true};
             if(lastIndex > request.GetPreLogIndex() + request.Entries().GetSize())
             {
-                check = false;
                 this->logs_->TruncateFrom(request.GetPreLogIndex() + 1);
+                check = false;
             }
             //write log to logs and fix conflicts
-            for(std::size_t i = 0;i != request.Entries().GetSize();++i)
+            std::size_t offset{0};
+            if(check)
             {
-                std::uint64_t index{request.GetPreLogIndex() + 1 + i};
-                if(check)
+                for(std::size_t i = 0;i != request.Entries().GetSize();++i)
                 {
+                    std::uint64_t index{request.Entries().GetSize() + 1 + i};
                     std::uint64_t entryTerm{this->logAccesser_->GetTerm(request.Entries().Get(i))};
-                    if(this->CheckEntry(index,entryTerm))
+                    if(!this->CheckEntry(index, entryTerm))
                     {
-                        continue;
+                        this->logs_->TruncateFrom(index);
+                        break;
                     }
-                    check = false;
-                    this->logs_->TruncateFrom(index);
+                    offset = i;
                 }
-                this->logs_->Write(index,request.Entries().Get(i));
             }
+            std::uint64_t matchIndex{request.GetPreLogIndex() + request.Entries().GetSize()};
+            sharpen::LogEntries entires{request.Entries(),offset};
+            this->logs_->WriteBatch(request.GetPreLogIndex() + 1 + offset,std::move(entires));
             response.SetStatus(true);
             //set match index to last index
-            response.SetMatchIndex(request.GetPreLogIndex() + request.Entries().GetSize());
+            response.SetMatchIndex(matchIndex);
             //flush leader id if we need
             if(this->leaderRecord_.GetRecord().first < request.GetTerm())
             {

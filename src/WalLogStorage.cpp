@@ -1,3 +1,8 @@
+#include "sharpen/BinarySerializator.hpp"
+#include "sharpen/ByteBuffer.hpp"
+#include "sharpen/LogEntries.hpp"
+#include "sharpen/Varint.hpp"
+#include <cstdint>
 #include <sharpen/WalLogStorage.hpp>
 
 #include <sharpen/EventLoop.hpp>
@@ -227,10 +232,10 @@ void sharpen::WalLogStorage::NviWrite(std::uint64_t index,sharpen::ByteSlice log
             sharpen::Varuint64 builder{index};
             std::size_t pairSize{builder.ComputeSize() + log.ComputeSize()+ sizeof(std::uint8_t)};
             std::uint8_t tag{writeTag_};
-            buf.ExtendTo(pairSize);
+            buf = sharpen::ByteBuffer{pairSize};
             sharpen::BufferWriter writer{buf};
             writer.Write(tag);
-            writer.Write(index);
+            writer.Write(builder);
             writer.Write(log);
             std::size_t sz{this->channel_->WriteAsync(buf,this->offset_)};
             assert(sz == buf.GetSize());
@@ -241,6 +246,53 @@ void sharpen::WalLogStorage::NviWrite(std::uint64_t index,sharpen::ByteSlice log
             }
             this->channel_->FlushAsync();
             this->offset_ += sz;
+        }
+    }
+}
+
+void sharpen::WalLogStorage::NviWriteBatch(std::uint64_t beginIndex,sharpen::LogEntries entries)
+{
+    {
+        std::size_t size{0};
+        for(std::size_t i = 0;i != entries.GetSize();++i)
+        {
+            std::size_t sz{sizeof(std::uint8_t)};
+            std::uint64_t index{i + beginIndex};
+            sharpen::Varuint64 builder{index};
+            sz += sharpen::BinarySerializator::ComputeSize(builder);
+            sz += sharpen::BinarySerializator::ComputeSize(entries.Get(i));
+            size += sz;   
+        }
+        if(size)
+        {
+            this->lock_->LockWrite();
+            std::unique_lock<sharpen::AsyncRwLock> lock{*this->lock_,std::adopt_lock};
+            sharpen::ByteBuffer buf{size};
+            sharpen::BufferWriter writer{buf};
+            for(std::size_t i = 0;i != entries.GetSize();++i)
+            {
+                std::uint64_t index{i + beginIndex};
+                if(this->Insert(index,entries.Get(i)))
+                {
+                    writer.Write(writeTag_);
+                    sharpen::Varuint64 builder{index};
+                    writer.Write(builder);
+                    writer.Write(entries.Get(i));
+                }
+            }
+            size = writer.GetLength();
+            if(size)
+            {
+                std::size_t sz{this->channel_->WriteAsync(buf,this->offset_)};
+                assert(sz == size);
+                if(sz != size)
+                {
+                    this->channel_->Truncate(this->offset_);
+                    sharpen::ThrowSystemError(sharpen::ErrorIo);
+                }
+                this->channel_->FlushAsync();
+                this->offset_ += sz;
+            }
         }
     }
 }
