@@ -1,4 +1,3 @@
-#include <basetsd.h>
 #include <sharpen/IocpSelector.hpp>
 
 #ifdef SHARPEN_HAS_IOCP
