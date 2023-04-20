@@ -1,6 +1,7 @@
 #if (defined (_WIN32)) || (defined (_WIN64))
 
 #include <stdio.h>
+#include <stdint.h>
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -25,17 +26,17 @@ BOOL CreatePipeEx(OUT LPHANDLE lpReadPipe,OUT LPHANDLE lpWritePipe,IN LPSECURITY
     snprintf(PipeNameBuffer,
                   sizeof(PipeNameBuffer),
                   "\\\\.\\Pipe\\RemoteExeAnon.%08x.%08x",
-                  GetCurrentProcessId(),
-                  InterlockedIncrement(&PipeSerialNumber)
+                  (uint32_t)GetCurrentProcessId(),
+                  (uint32_t)InterlockedIncrement(&PipeSerialNumber)
     );
     ReadPipeHandle = CreateNamedPipeA(
         PipeNameBuffer,
         PIPE_ACCESS_INBOUND | dwReadMode,
         PIPE_TYPE_BYTE | PIPE_WAIT,
-        1,             // Number of pipes
-        nSize,         // Out buffer size
-        nSize,         // In buffer size
-        120 * 1000,    // Timeout in ms
+        1,             
+        nSize,         
+        nSize,         
+        120 * 1000,    
         lpPipeAttributes
     );
     if(!ReadPipeHandle)
@@ -45,11 +46,11 @@ BOOL CreatePipeEx(OUT LPHANDLE lpReadPipe,OUT LPHANDLE lpWritePipe,IN LPSECURITY
     WritePipeHandle = CreateFileA(
         PipeNameBuffer,
         GENERIC_WRITE,
-        0,                         // No sharing
+        0,                         
         lpPipeAttributes,
         OPEN_EXISTING,
         FILE_ATTRIBUTE_NORMAL | dwWriteMode,
-        NULL                       // Template file
+        NULL                       
     );
     if(INVALID_HANDLE_VALUE == WritePipeHandle)
     {
