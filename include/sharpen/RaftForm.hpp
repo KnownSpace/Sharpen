@@ -45,43 +45,21 @@ namespace sharpen
             return *this;
         }
 
-        inline sharpen::RaftMailType GetType() const noexcept
-        {
-            if(sharpen::IsValiedRaftMailType(this->type_))
-            {
-                return static_cast<sharpen::RaftMailType>(this->type_);
-            }
-            return sharpen::RaftMailType::Unknown;
-        }
+        sharpen::RaftMailType GetType() const noexcept;
 
-        inline void SetType(sharpen::RaftMailType type) noexcept
-        {
-            this->type_ = static_cast<std::uint32_t>(type);
-        }
+        void SetType(sharpen::RaftMailType type) noexcept;
 
-        inline std::uint16_t GetChecksum() const noexcept
-        {
-            return this->chksum_;
-        }
+        std::uint16_t GetChecksum() const noexcept;
 
-        inline void SetChecksum(std::uint16_t chksum) noexcept
-        {
-            this->chksum_ = chksum;
-        }
+        void SetChecksum(std::uint16_t chksum) noexcept;
 
         void SetChecksum(sharpen::ByteSlice slice) noexcept;
 
         void SetChecksum(const char *data,std::size_t size) noexcept;
 
-        inline std::uint32_t GetMagic() const noexcept
-        {
-            return this->magic_;
-        }
+        std::uint32_t GetMagic() const noexcept;
 
-        inline bool CheckMagic() const noexcept
-        {
-            return this->magic_ == raftMagic;
-        }
+        bool CheckMagic() const noexcept;
 
         bool CheckContent(sharpen::ByteSlice slice) const noexcept;
     };

@@ -64,25 +64,13 @@ namespace sharpen
             return *ptr;
         }
 
-        inline std::uint32_t GetContentSize() const noexcept
-        {
-            return this->contentSize_;
-        }
+        std::uint32_t GetContentSize() const noexcept;
 
-        inline void SetContentSize(std::uint32_t contentSize) noexcept
-        {
-            this->contentSize_ = contentSize;
-        }
+        void SetContentSize(std::uint32_t contentSize) noexcept;
 
-        inline std::uint32_t GetMagic() const noexcept
-        {
-            return this->magic_;
-        }
+        std::uint32_t GetMagic() const noexcept;
 
-        inline void SetMagic(std::uint32_t magic) noexcept
-        {
-            this->magic_ = magic;
-        }
+        void SetMagic(std::uint32_t magic) noexcept;
     };    
     #pragma pack(pop)
     

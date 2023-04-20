@@ -46,29 +46,13 @@ namespace sharpen
             return *this;
         }
 
-        inline sharpen::RaftMailType GetType() const noexcept
-        {
-            if(sharpen::IsValiedRaftMailType(this->type_))
-            {
-                return static_cast<sharpen::RaftMailType>(this->type_);
-            }
-            return sharpen::RaftMailType::Unknown;
-        }
+        sharpen::RaftMailType GetType() const noexcept;
 
-        inline void SetType(sharpen::RaftMailType type) noexcept
-        {
-            this->type_ = static_cast<std::uint32_t>(type);
-        }
+        void SetType(sharpen::RaftMailType type) noexcept;
 
-        inline std::uint16_t GetChecksum() const noexcept
-        {
-            return this->chksum_;
-        }
+        std::uint16_t GetChecksum() const noexcept;
 
-        inline void SetChecksum(std::uint16_t chksum) noexcept
-        {
-            this->chksum_ = chksum;
-        }
+        void SetChecksum(std::uint16_t chksum) noexcept;
 
         void SetChecksum(sharpen::ByteSlice slice) noexcept;
 
@@ -85,15 +69,9 @@ namespace sharpen
             return this->GetMagic() == multiRaftMagic;
         }
 
-        inline std::uint32_t GetRaftNumber() const noexcept
-        {
-            return this->number_;
-        }
+        std::uint32_t GetRaftNumber() const noexcept;
 
-        inline void SetRaftNumber(std::uint32_t number) noexcept
-        {
-            this->number_ = number;
-        }
+        void SetRaftNumber(std::uint32_t number) noexcept;
 
         bool CheckContent(sharpen::ByteSlice content) const noexcept;
     };

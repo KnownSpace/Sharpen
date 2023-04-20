@@ -2,6 +2,9 @@
 
 #include <cstring>
 
+
+#include <sharpen/ByteOrder.hpp>
+
 sharpen::MultiRaftForm::MultiRaftForm() noexcept
     :Self{sharpen::RaftMailType::Unknown}
 {}
@@ -14,15 +17,16 @@ sharpen::MultiRaftForm::MultiRaftForm(sharpen::RaftMailType type,std::uint32_t n
     :magic_()
     ,type_(0)
     ,chksum_(0)
-    ,number_(number)
+    ,number_(0)
 {
+    this->SetRaftNumber(number);
     assert(sizeof(this->magic_) == multiRaftMagic.GetSize());
     std::memcpy(this->magic_,multiRaftMagic.Data(),sizeof(this->magic_));
     if(type == sharpen::RaftMailType::MaxValue)
     {
         type = sharpen::RaftMailType::Unknown;
     }
-    this->type_ = static_cast<std::uint32_t>(type);
+    this->SetType(type);
 }
 
 sharpen::MultiRaftForm::MultiRaftForm(const Self &other) noexcept
@@ -87,5 +91,61 @@ void sharpen::MultiRaftForm::SetChecksum(const char *data,std::size_t size) noex
 
 bool sharpen::MultiRaftForm::CheckContent(sharpen::ByteSlice content) const noexcept
 {
-    return content.Crc16() == this->chksum_;
+    return content.Crc16() == this->GetChecksum();
+}
+
+sharpen::RaftMailType sharpen::MultiRaftForm::GetType() const noexcept
+{
+    std::uint32_t type{this->type_};
+#ifndef SHARPEN_LIL_ENDIAN
+    sharpen::ConvertEndian(type);
+#endif
+    if(sharpen::IsValiedRaftMailType(type))
+    {
+        return static_cast<sharpen::RaftMailType>(this->type_);
+    }
+    return sharpen::RaftMailType::Unknown;
+}
+
+void sharpen::MultiRaftForm::SetType(sharpen::RaftMailType type) noexcept
+{
+    std::uint32_t typeVal{static_cast<std::uint32_t>(type)};
+#ifndef SHARPEN_LIL_ENDIAN
+    sharpen::ConvertEndian(typeVal);
+#endif
+    this->type_ = typeVal;
+}
+
+std::uint16_t sharpen::MultiRaftForm::GetChecksum() const noexcept
+{
+    std::uint16_t chksum{this->chksum_};
+#ifndef SHARPEN_LIL_ENDIAN
+    sharpen::ConvertEndian(chksum);
+#endif
+    return chksum;
+}
+
+void sharpen::MultiRaftForm::SetChecksum(std::uint16_t chksum) noexcept
+{
+#ifndef SHARPEN_LIL_ENDIAN
+    sharpen::ConvertEndian(chksum);
+#endif
+    this->chksum_ = chksum;
+}
+
+std::uint32_t sharpen::MultiRaftForm::GetRaftNumber() const noexcept
+{
+    std::uint32_t raftNumber{this->number_};
+#ifndef SHARPEN_LIL_ENDIAN
+    sharpen::ConvertEndian(raftNumber);
+#endif
+    return raftNumber;
+}
+
+void sharpen::MultiRaftForm::SetRaftNumber(std::uint32_t number) noexcept
+{
+#ifndef SHARPEN_LIL_ENDIAN
+    sharpen::ConvertEndian(number);
+#endif
+    this->number_ = number;
 }

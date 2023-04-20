@@ -2,6 +2,8 @@
 
 #include <cstring>
 
+#include <sharpen/ByteOrder.hpp>
+
 sharpen::RaftForm::RaftForm() noexcept
     :Self{sharpen::RaftMailType::Unknown}
 {}
@@ -16,7 +18,10 @@ sharpen::RaftForm::RaftForm(sharpen::RaftMailType type) noexcept
     {
         type = sharpen::RaftMailType::Unknown;
     }
-    this->type_ = static_cast<std::uint32_t>(type);
+    this->SetType(type);
+#ifndef SHARPEN_IS_LIL_ENDIAN
+    sharpen::ConvertEndian(this->magic_);
+#endif
     std::memset(this->padding_,0,sizeof(this->padding_));
 }
 
@@ -80,5 +85,58 @@ void sharpen::RaftForm::SetChecksum(const char *data,std::size_t size) noexcept
 
 bool sharpen::RaftForm::CheckContent(sharpen::ByteSlice content) const noexcept
 {
-    return content.Crc16() == this->chksum_;
+    return content.Crc16() == this->GetChecksum();
+}
+
+sharpen::RaftMailType sharpen::RaftForm::GetType() const noexcept
+{
+    std::uint32_t type{this->type_};
+#ifndef SHARPEN_LIL_ENDIAN
+    sharpen::ConvertEndian(type);
+#endif
+    if(sharpen::IsValiedRaftMailType(type))
+    {
+        return static_cast<sharpen::RaftMailType>(this->type_);
+    }
+    return sharpen::RaftMailType::Unknown;
+}
+
+void sharpen::RaftForm::SetType(sharpen::RaftMailType type) noexcept
+{
+    std::uint32_t typeVal{static_cast<std::uint32_t>(type)};
+#ifndef SHARPEN_LIL_ENDIAN
+    sharpen::ConvertEndian(typeVal);
+#endif
+    this->type_ = typeVal;
+}
+
+std::uint16_t sharpen::RaftForm::GetChecksum() const noexcept
+{
+    std::uint16_t chksum{this->chksum_};
+#ifndef SHARPEN_LIL_ENDIAN
+    sharpen::ConvertEndian(chksum);
+#endif
+    return chksum;
+}
+
+void sharpen::RaftForm::SetChecksum(std::uint16_t chksum) noexcept
+{
+#ifndef SHARPEN_LIL_ENDIAN
+    sharpen::ConvertEndian(chksum);
+#endif
+    this->chksum_ = chksum;
+}
+
+std::uint32_t sharpen::RaftForm::GetMagic() const noexcept
+{
+    std::uint32_t magic{this->magic_};
+#ifndef SHARPEN_LIL_ENDIAN
+    sharpen::ConvertEndian(magic);
+#endif
+    return magic;
+}
+
+bool sharpen::RaftForm::CheckMagic() const noexcept
+{
+    return this->GetMagic() == raftMagic;
 }
