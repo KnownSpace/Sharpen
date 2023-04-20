@@ -25,7 +25,6 @@ sharpen::IoCompletionPort::~IoCompletionPort() noexcept
 std::uint32_t sharpen::IoCompletionPort::Wait(sharpen::IoCompletionPort::Event *events,std::uint32_t maxEvent,std::uint32_t timeout)
 {
     assert(this->handle_ != NULL);
-    assert(static_cast<DWORD>(maxEvent) >= 0);
     ULONG count{0};
     BOOL r = ::GetQueuedCompletionStatusEx(this->handle_,events,maxEvent,&count,timeout,TRUE);
     if(r == FALSE)

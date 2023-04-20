@@ -50,7 +50,7 @@ void sharpen::FixedWorkerGroup::Entry(std::size_t index) noexcept
     std::function<void()> task;
     while(this->token_.load())
     {
-        task = std::move(this->queue_.Pop());
+        task = this->queue_.Pop();
         if(task)
         {
             sharpen::NonexceptInvoke(task);
