@@ -172,9 +172,9 @@ ForEachMacros:  [ foreach, Q_FOREACH, BOOST_FOREACH ]
 # 对#include进行排序，匹配了某正则表达式的#include拥有对应的优先级，匹配不到的则默认优先级为INT_MAX(优先级越小排序越靠前)，
 #   可以定义负数优先级从而保证某些#include永远在最前面
 IncludeCategories: 
-  - Regex:  '^"(llvm|llvm-c|clang|clang-c)/'
+  - Regex:  '^"(sharpen)/'
     Priority:   2
-  - Regex:  '^(<|"(gtest|isl|json)/)'
+  - Regex:  '^(<|"(simpletest)/)'
     Priority:   3
   - Regex: '^<sys/'
     Priority: 4
