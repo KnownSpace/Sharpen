@@ -1,9 +1,8 @@
 #include <sharpen/TcpPoster.hpp>
 
+#include <sharpen/SystemError.hpp>
 #include <cassert>
 #include <new>
-
-#include <sharpen/SystemError.hpp>
 
 void sharpen::TcpPoster::NviClose() noexcept
 {

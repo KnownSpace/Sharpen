@@ -6,12 +6,11 @@
 
 #ifdef SHARPEN_IS_LINUX
 
-#include <atomic>
-
 #include "IChannel.hpp"
 #include "ITimer.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
+#include <atomic>
 
 #define SHARPEN_HAS_TIMERFD
 

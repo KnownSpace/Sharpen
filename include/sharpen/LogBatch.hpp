@@ -2,9 +2,8 @@
 #ifndef _SHARPEN_LOGBATCH_HPP
 #define _SHARPEN_LOGBATCH_HPP
 
-#include <vector>
-
 #include "ByteBuffer.hpp"
+#include <vector>
 
 namespace sharpen
 {

@@ -2,12 +2,11 @@
 #ifndef _SHARPEN_ASYNCBARRIER_HPP
 #define _SHARPEN_ASYNCBARRIER_HPP
 
+#include "AwaitableFuture.hpp"
+#include "IAsyncBarrier.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <vector>
-
-#include "AwaitableFuture.hpp"
-#include "IAsyncBarrier.hpp"
 
 namespace sharpen
 {

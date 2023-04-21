@@ -3,7 +3,6 @@
 #define _SHARPEN_BYTEORDER_HPP
 
 #include "SystemMacro.hpp"
-
 #include <cstddef>
 #include <cstdint>
 

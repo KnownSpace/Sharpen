@@ -3,14 +3,15 @@
 #define _SHARPEN_EVENTFD_HPP
 
 #include "FileTypeDef.hpp"
-#include "Noncopyable.hpp"
-#include <cstddef>
-#include <cstdint>
 
 // event fd only supported by linux
 #ifdef SHARPEN_IS_LINUX
 
 #define SHARPEN_HAS_EVENTFD
+
+#include "Noncopyable.hpp"
+#include <cstddef>
+#include <cstdint>
 
 namespace sharpen
 {

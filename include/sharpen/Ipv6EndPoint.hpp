@@ -2,9 +2,11 @@
 #ifndef _SHARPEN_IPV6ENDPOINT_HPP
 #define _SHARPEN_IPV6ENDPOINT_HPP
 
-#include <functional>
-#include <stdexcept>
-
+#include "BufferOps.hpp"
+#include "IEndPoint.hpp"
+#include "Noncopyable.hpp"
+#include "Nonmovable.hpp"
+#include "SystemError.hpp"
 #include "SystemMacro.hpp"
 
 #ifdef SHARPEN_IS_NIX
@@ -15,13 +17,10 @@
 #include <WS2tcpip.h>
 #endif
 
-#include "BufferOps.hpp"
-#include "IEndPoint.hpp"
-#include "Noncopyable.hpp"
-#include "Nonmovable.hpp"
-#include "SystemError.hpp"
 #include <cstddef>
 #include <cstdint>
+#include <functional>
+#include <stdexcept>
 
 namespace sharpen
 {

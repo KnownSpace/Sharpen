@@ -2,13 +2,12 @@
 #ifndef _SHARPEN_FIBERLOCALSTORAGE_HPP
 #define _SHARPEN_FIBERLOCALSTORAGE_HPP
 
+#include "Noncopyable.hpp"
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <map>
 #include <memory>
-
-#include "Noncopyable.hpp"
 
 namespace sharpen
 {

@@ -1,12 +1,11 @@
 #include <sharpen/LinuxTimer.hpp>
 #ifdef SHARPEN_HAS_TIMERFD
 
-#include <cassert>
-#include <cstring>
-#include <sys/timerfd.h>
-
 #include <sharpen/EventLoop.hpp>
 #include <sharpen/SystemError.hpp>
+#include <sys/timerfd.h>
+#include <cassert>
+#include <cstring>
 
 sharpen::LinuxTimer::LinuxTimer()
     : MyTimerBase()

@@ -1,15 +1,16 @@
-#include <sharpen/PosixFileChannel.hpp>
-#include <sharpen/WinFileChannel.hpp>
-
-#include <cassert>
+#include <sharpen/IFileChannel.hpp>
 
 #include <sharpen/AwaitableFuture.hpp>
 #include <sharpen/EventLoop.hpp>
+#include <sharpen/PosixFileChannel.hpp>
+#include <sharpen/WinFileChannel.hpp>
 
 #ifdef SHARPEN_IS_NIX
 #include <fcntl.h>
 #include <unistd.h>
 #endif
+
+#include <cassert>
 
 sharpen::FileChannelPtr sharpen::OpenFileChannel(const char *filename,
                                                  sharpen::FileAccessMethod access,

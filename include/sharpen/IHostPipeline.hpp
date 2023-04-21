@@ -2,13 +2,12 @@
 #ifndef _SHARPEN_IHOSTPIPELINE_HPP
 #define _SHARPEN_IHOSTPIPELINE_HPP
 
+#include "IHostPipelineStep.hpp"
+#include "INetStreamChannel.hpp"
 #include <cassert>
 #include <memory>
 #include <new>
 #include <type_traits>
-
-#include "IHostPipelineStep.hpp"
-#include "INetStreamChannel.hpp"
 
 namespace sharpen
 {

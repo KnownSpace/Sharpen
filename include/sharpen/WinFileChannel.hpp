@@ -8,12 +8,11 @@
 
 #define SHARPEN_HAS_WINFILE
 
-#include <mutex>
-
 #include "AwaitableFuture.hpp"
 #include "IFileChannel.hpp"
 #include "IocpSelector.hpp"
 #include "Optional.hpp"
+#include <mutex>
 
 namespace sharpen
 {

@@ -2,12 +2,11 @@
 #ifndef _SHARPEN_YIELDOPS_HPP
 #define _SHARPEN_YIELDOPS_HPP
 
+#include "Fiber.hpp"
+#include "IFiberScheduler.hpp"
 #include <cassert>
 #include <thread>
 #include <utility>
-
-#include "Fiber.hpp"
-#include "IFiberScheduler.hpp"
 
 namespace sharpen
 {

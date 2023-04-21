@@ -2,9 +2,8 @@
 #ifndef _SHARPEN_IRAFTSNAPSHOTPROVIDER_HPP
 #define _SHARPEN_IRAFTSNAPSHOTPROVIDER_HPP
 
-#include <memory>
-
 #include "RaftSnapshot.hpp"
+#include <memory>
 
 namespace sharpen
 {

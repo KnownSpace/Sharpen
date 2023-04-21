@@ -33,7 +33,7 @@ namespace sharpen
     public:
         explicit WinInputPipeChannel(sharpen::FileHandle handle);
 
-        virtual ~WinInputPipeChannel();
+        virtual ~WinInputPipeChannel() noexcept;
 
         virtual void ReadAsync(char *buf,
                                std::size_t bufSize,

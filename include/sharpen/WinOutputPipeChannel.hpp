@@ -31,7 +31,7 @@ namespace sharpen
     public:
         explicit WinOutputPipeChannel(sharpen::FileHandle handle);
 
-        virtual ~WinOutputPipeChannel();
+        virtual ~WinOutputPipeChannel() noexcept;
 
         virtual void WriteAsync(const char *buf,
                                 std::size_t bufSize,

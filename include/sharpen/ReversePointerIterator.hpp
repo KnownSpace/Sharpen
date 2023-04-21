@@ -2,12 +2,11 @@
 #ifndef _SHARPEN_REVERSEPOINTERITERATOR_HPP
 #define _SHARPEN_REVERSEPOINTERITERATOR_HPP
 
-#include <iterator>
-#include <utility>
-
 #include "IteratorTemplate.hpp"
 #include <cstddef>
 #include <cstdint>
+#include <iterator>
+#include <utility>
 
 namespace sharpen
 {

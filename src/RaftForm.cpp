@@ -1,8 +1,7 @@
 #include <sharpen/RaftForm.hpp>
 
-#include <cstring>
-
 #include <sharpen/ByteOrder.hpp>
+#include <cstring>
 
 sharpen::RaftForm::RaftForm() noexcept
     : Self{sharpen::RaftMailType::Unknown}

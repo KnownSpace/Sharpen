@@ -2,15 +2,14 @@
 #ifndef _SHARPEN_FIBER_HPP
 #define _SHARPEN_FIBER_HPP
 
-#include <cassert>
-#include <functional>
-#include <memory>
-
 #include "FiberLocalStorage.hpp"
 #include "MemoryStack.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "TypeTraits.hpp"
+#include <cassert>
+#include <functional>
+#include <memory>
 
 #ifdef __cplusplus
 extern "C"
@@ -103,7 +102,7 @@ namespace sharpen
         static sharpen::FiberPtr MakeFiber(std::size_t stackSize, _Fn &&fn, _Args &&...args)
         {
             sharpen::FiberPtr fiber = std::make_shared<sharpen::Fiber>();
-            fiber->stack_ = std::move(sharpen::MemoryStack(nullptr, stackSize));
+            fiber->stack_ = sharpen::MemoryStack(nullptr, stackSize);
             fiber->task_ =
                 std::move(std::bind(std::forward<_Fn>(fn), std::forward<_Args>(args)...));
             return fiber;

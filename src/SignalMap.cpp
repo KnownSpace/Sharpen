@@ -2,16 +2,15 @@
 
 #include <sharpen/SystemMacro.hpp>
 
-#include <algorithm>
-#include <cassert>
-
-#include <csignal>
-
 #ifdef SHARPEN_IS_WIN
 #include <Windows.h>
 #else
 #include <unistd.h>
 #endif
+
+#include <algorithm>
+#include <cassert>
+#include <csignal>
 
 sharpen::SignalMap::SignalMap()
     : map_()

@@ -2,12 +2,11 @@
 #ifndef _SHARPEN_ASYNCSEMAPHORE_HPP
 #define _SHARPEN_ASYNCSEMAPHORE_HPP
 
-#include <vector>
-
 #include "AwaitableFuture.hpp"
 #include "IAsyncLockable.hpp"
 #include <cstddef>
 #include <cstdint>
+#include <vector>
 
 namespace sharpen
 {

@@ -1,9 +1,8 @@
 #include <sharpen/Epoll.hpp>
 #ifdef SHARPEN_HAS_EPOLL
 
-#include <cassert>
-
 #include <sharpen/SystemError.hpp>
+#include <cassert>
 
 sharpen::Epoll::Epoll()
     : handle_(-1)

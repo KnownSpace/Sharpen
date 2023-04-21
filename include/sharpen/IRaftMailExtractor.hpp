@@ -2,8 +2,6 @@
 #ifndef _SHARPEN_IRAFTMAILEXTRACTOR_HPP
 #define _SHARPEN_IRAFTMAILEXTRACTOR_HPP
 
-#include <stdexcept>
-
 #include "CorruptedDataError.hpp"
 #include "Mail.hpp"
 #include "RaftHeartbeatRequest.hpp"
@@ -15,6 +13,7 @@
 #include "RaftSnapshotResponse.hpp"
 #include "RaftVoteForRequest.hpp"
 #include "RaftVoteForResponse.hpp"
+#include <stdexcept>
 
 namespace sharpen
 {

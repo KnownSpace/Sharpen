@@ -2,10 +2,9 @@
 #ifndef _SHARPEN_ASYNCREADWRITELOCK_HPP
 #define _SHARPEN_ASYNCREADWRITELOCK_HPP
 
+#include "AwaitableFuture.hpp"
 #include <mutex>
 #include <vector>
-
-#include "AwaitableFuture.hpp"
 
 namespace sharpen
 {

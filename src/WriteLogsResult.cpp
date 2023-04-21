@@ -1,8 +1,7 @@
 #include <sharpen/WriteLogsResult.hpp>
 
-#include <cassert>
-
 #include <sharpen/IntOps.hpp>
+#include <cassert>
 
 sharpen::WriteLogsResult::WriteLogsResult(std::uint64_t lastIndex) noexcept
     : lastIndex_(lastIndex)

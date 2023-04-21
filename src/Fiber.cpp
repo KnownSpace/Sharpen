@@ -1,5 +1,5 @@
-#include <cassert>
 #include <sharpen/Fiber.hpp>
+#include <cassert>
 #include <stdexcept>
 
 #include <sharpen/SystemError.hpp>

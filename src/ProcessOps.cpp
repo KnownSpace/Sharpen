@@ -1,5 +1,6 @@
 #include <sharpen/ProcessOps.hpp>
 
+#include <sharpen/SystemError.hpp>
 #include <sharpen/SystemMacro.hpp>
 
 #ifdef SHARPEN_IS_WIN
@@ -8,8 +9,6 @@
 #else
 #include <sys/signal.h>
 #endif
-
-#include <sharpen/SystemError.hpp>
 
 void sharpen::SuspendProcess(std::uint32_t processId)
 {

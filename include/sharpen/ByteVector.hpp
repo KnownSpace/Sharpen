@@ -2,16 +2,15 @@
 #ifndef _SHARPEN_BYTEVECTOR_HPP
 #define _SHARPEN_BYTEVECTOR_HPP
 
+#include "IteratorOps.hpp"
+#include "PointerIterator.hpp"
+#include "ReversePointerIterator.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <stdexcept>
 #include <utility>
-
-#include "IteratorOps.hpp"
-#include "PointerIterator.hpp"
-#include "ReversePointerIterator.hpp"
 
 namespace sharpen
 {

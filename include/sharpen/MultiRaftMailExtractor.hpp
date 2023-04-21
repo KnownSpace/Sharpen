@@ -2,11 +2,10 @@
 #ifndef _SHARPEN_MULTIRAFTMAILEXTRACTOR_HPP
 #define _SHARPEN_MULTIRAFTMAILEXTRACTOR_HPP
 
-#include <cstddef>
-#include <cstdint>
-
 #include "IRaftMailExtractor.hpp"
 #include "RaftMailType.hpp"
+#include <cstddef>
+#include <cstdint>
 
 namespace sharpen
 {

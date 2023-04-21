@@ -2,11 +2,10 @@
 #ifndef _SHARPEN_CONSENSUSWAITER_HPP
 #define _SHARPEN_CONSENSUSWAITER_HPP
 
+#include "Future.hpp"
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
-
-#include "Future.hpp"
 
 namespace sharpen
 {

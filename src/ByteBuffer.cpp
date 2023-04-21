@@ -1,13 +1,12 @@
 #include <sharpen/ByteBuffer.hpp>
 
+#include <sharpen/CorruptedDataError.hpp>
+#include <sharpen/IntOps.hpp>
+#include <sharpen/Varint.hpp>
 #include <cassert>
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
-
-#include <sharpen/CorruptedDataError.hpp>
-#include <sharpen/IntOps.hpp>
-#include <sharpen/Varint.hpp>
 
 sharpen::ByteBuffer::ByteBuffer(std::size_t size)
     : vector_(size)

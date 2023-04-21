@@ -2,12 +2,11 @@
 #ifndef _SHARPEN_RAFTVOTEFORREQUEST_HPP
 #define _SHARPEN_RAFTVOTEFORREQUEST_HPP
 
+#include "BinarySerializable.hpp"
+#include "CorruptedDataError.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <utility>
-
-#include "BinarySerializable.hpp"
-#include "CorruptedDataError.hpp"
 
 namespace sharpen
 {

@@ -5,8 +5,8 @@
 #include <sharpen/SystemError.hpp>
 
 #ifdef SHARPEN_IS_WIN
-#include <Windows.h>
 #include <sharpen/WinEx.h>
+#include <Windows.h>
 #else
 #include <fcntl.h>
 #include <unistd.h>

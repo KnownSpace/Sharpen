@@ -2,14 +2,12 @@
 
 #ifdef SHARPEN_HAS_POSIXSOCKET
 
-#include <algorithm>
-#include <cassert>
-
-#include <sys/mman.h>
-#include <unistd.h>
-
 #include <sharpen/EventLoop.hpp>
 #include <sharpen/SystemError.hpp>
+#include <sys/mman.h>
+#include <unistd.h>
+#include <algorithm>
+#include <cassert>
 
 sharpen::PosixNetStreamChannel::PosixNetStreamChannel(sharpen::FileHandle handle)
     : Mybase()

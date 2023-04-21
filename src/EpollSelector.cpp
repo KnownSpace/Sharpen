@@ -2,12 +2,11 @@
 
 #ifdef SHARPEN_HAS_EPOLL
 
+#include <fcntl.h>
 #include <cassert>
 #include <limits>
 #include <mutex>
 #include <new>
-
-#include <fcntl.h>
 
 sharpen::EpollSelector::EpollSelector()
     : epoll_()

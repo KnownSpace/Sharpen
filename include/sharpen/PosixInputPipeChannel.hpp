@@ -5,12 +5,11 @@
 #include "SystemMacro.hpp"
 #ifdef SHARPEN_IS_NIX
 
-#include <functional>
-
 #include "IInputPipeChannel.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "PosixIoReader.hpp"
+#include <functional>
 
 #define SHARPEN_HAS_POSIXINPUTPIPE
 

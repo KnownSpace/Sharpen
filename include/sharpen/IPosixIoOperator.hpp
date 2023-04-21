@@ -6,16 +6,15 @@
 
 #ifdef SHARPEN_IS_NIX
 
-#include <functional>
-#include <sys/uio.h>
-#include <vector>
-
 #include "FileTypeDef.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "SystemError.hpp"
+#include <sys/uio.h>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
+#include <vector>
 
 namespace sharpen
 {

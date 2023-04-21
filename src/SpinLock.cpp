@@ -1,10 +1,9 @@
 #include <sharpen/SpinLock.hpp>
 
-#include <thread>
-
+#include <sharpen/CompilerInfo.hpp>
 #include <cstddef>
 #include <cstdint>
-#include <sharpen/CompilerInfo.hpp>
+#include <thread>
 
 #ifdef SHARPEN_COMPILER_MSVC
 #define SHARPEN_PAUSE

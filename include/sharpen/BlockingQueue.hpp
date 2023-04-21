@@ -2,17 +2,15 @@
 #ifndef _SHARPEN_BLOCKINGQUEUE_HPP
 #define _SHARPEN_BLOCKINGQUEUE_HPP
 
+#include "Noncopyable.hpp"
+#include "Nonmovable.hpp"
 #include <condition_variable>
+#include <cstddef>
+#include <cstdint>
 #include <deque>
 #include <memory>
 #include <mutex>
 #include <thread>
-
-#include "Noncopyable.hpp"
-#include "Nonmovable.hpp"
-#include "SpinLock.hpp"
-#include <cstddef>
-#include <cstdint>
 
 namespace sharpen
 {
@@ -63,7 +61,7 @@ namespace sharpen
             }
             _T obj{std::move(this->storage_.front())};
             this->storage_.pop_front();
-            return bj;
+            return obj;
         }
 
         template<class _Rep, class _Period>

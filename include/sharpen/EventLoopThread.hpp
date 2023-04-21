@@ -2,9 +2,8 @@
 #ifndef _SHARPEN_EVENTLOOPTHREAD_HPP
 #define _SHARPEN_EVENTLOOPTHREAD_HPP
 
-#include <thread>
-
 #include "EventLoop.hpp"
+#include <thread>
 
 namespace sharpen
 {

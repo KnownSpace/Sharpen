@@ -1,11 +1,10 @@
 #include <sharpen/EventEngine.hpp>
 
-#include <cassert>
-#include <new>
-
 #include <sharpen/ISelector.hpp>
 #include <sharpen/SelectorOps.hpp>
 #include <sharpen/SystemMacro.hpp>
+#include <cassert>
+#include <new>
 
 sharpen::EventEngine::SelfPtr sharpen::EventEngine::engine_;
 

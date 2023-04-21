@@ -2,12 +2,11 @@
 #ifndef _SHARPEN_WORKERGROUP_HPP
 #define _SHARPEN_WORKERGROUP_HPP
 
-#include <vector>
-
 #include "AsyncBlockingQueue.hpp"
 #include "IFiberScheduler.hpp"
 #include "IWorkerGroup.hpp"
 #include "NoexceptInvoke.hpp"
+#include <vector>
 
 namespace sharpen
 {

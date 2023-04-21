@@ -1,10 +1,9 @@
 #include <sharpen/DynamicWorkerGroup.hpp>
 
+#include <sharpen/YieldOps.hpp>
 #include <cassert>
 #include <cstdlib>
 #include <new>
-
-#include <sharpen/YieldOps.hpp>
 
 void sharpen::DynamicWorkerGroup::Entry(sharpen::AwaitableFuture<void> *future) noexcept
 {

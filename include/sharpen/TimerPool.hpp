@@ -2,11 +2,10 @@
 #ifndef _SHARPEN_TIMERPOOL_HPP
 #define _SHARPEN_TIMERPOOL_HPP
 
-#include <mutex>
-#include <vector>
-
 #include "IEventLoopGroup.hpp"
 #include "ITimerPool.hpp"
+#include <mutex>
+#include <vector>
 
 namespace sharpen
 {

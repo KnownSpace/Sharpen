@@ -2,15 +2,14 @@
 #ifndef _SHARPEN_ASYNCNAGLEBARRIER_HPP
 #define _SHARPEN_ASYNCNAGLEBARRIER_HPP
 
-#include <cassert>
-#include <chrono>
-#include <utility>
-#include <vector>
-
 #include "IAsyncBarrier.hpp"
 #include "ITimer.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
+#include <cassert>
+#include <chrono>
+#include <utility>
+#include <vector>
 
 namespace sharpen
 {

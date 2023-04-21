@@ -2,14 +2,13 @@
 #ifndef _SHARPEN_IPTCPACTORBUILDER_HPP
 #define _SHARPEN_IPTCPACTORBUILDER_HPP
 
-#include <stdexcept>
-
 #include "IMailParserFactory.hpp"
 #include "IMailReceiver.hpp"
 #include "IRemoteActor.hpp"
 #include "IRemoteActorBuilder.hpp"
 #include "ITcpSteamFactory.hpp"
 #include "IpEndPoint.hpp"
+#include <stdexcept>
 
 namespace sharpen
 {

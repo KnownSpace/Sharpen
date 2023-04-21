@@ -2,17 +2,16 @@
 #ifndef _SHARPEN_IEVENTLOOP_HPP
 #define _SHARPEN_IEVENTLOOP_HPP
 
-#include <functional>
-#include <memory>
-#include <mutex>
-#include <vector>
-
 #include "Fiber.hpp"
 #include "ISelector.hpp"
 #include "IoEvent.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "SpinLock.hpp"
+#include <functional>
+#include <memory>
+#include <mutex>
+#include <vector>
 
 namespace sharpen
 {

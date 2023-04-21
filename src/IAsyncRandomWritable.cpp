@@ -1,5 +1,6 @@
-#include <sharpen/AwaitableFuture.hpp>
 #include <sharpen/IAsyncRandomWritable.hpp>
+
+#include <sharpen/AwaitableFuture.hpp>
 
 std::size_t sharpen::IAsyncRandomWritable::WriteAsync(const char *buf,
                                                       std::size_t bufSize,

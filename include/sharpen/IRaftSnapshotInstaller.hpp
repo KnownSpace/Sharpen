@@ -2,12 +2,11 @@
 #ifndef _SHARPEN_IRAFTSNAPSHOTINSTALLER_HPP
 #define _SHARPEN_IRAFTSNAPSHOTINSTALLER_HPP
 
-#include <cassert>
-
 #include "ByteBuffer.hpp"
 #include "ByteSlice.hpp"
 #include "Optional.hpp"
 #include "RaftSnapshotMetadata.hpp"
+#include <cassert>
 
 namespace sharpen
 {

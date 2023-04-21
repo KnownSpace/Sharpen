@@ -2,10 +2,9 @@
 #ifndef _SHARPEN_ASYNCMUTEX_HPP
 #define _SHARPEN_ASYNCMUTEX_HPP
 
-#include <vector>
-
 #include "AwaitableFuture.hpp"
 #include "IAsyncLockable.hpp"
+#include <vector>
 
 namespace sharpen
 {

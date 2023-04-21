@@ -2,14 +2,13 @@
 #ifndef _SHARPEN_IPV6TCPACTORBUILDER_HPP
 #define _SHARPEN_IPV6TCPACTORBUILDER_HPP
 
-#include <stdexcept>
-
 #include "IMailParserFactory.hpp"
 #include "IMailReceiver.hpp"
 #include "IRemoteActor.hpp"
 #include "IRemoteActorBuilder.hpp"
 #include "ITcpSteamFactory.hpp"
 #include "Ipv6EndPoint.hpp"
+#include <stdexcept>
 
 namespace sharpen
 {

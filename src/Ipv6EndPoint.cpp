@@ -1,15 +1,15 @@
 #include <sharpen/Ipv6EndPoint.hpp>
 
-#include <cassert>
-#include <cstring>
-#include <utility>
+#include <sharpen/ByteBuffer.hpp>
+#include <sharpen/ByteOrder.hpp>
 
 #ifdef SHARPEN_IS_NIX
 #include <arpa/inet.h>
 #endif
 
-#include <sharpen/ByteBuffer.hpp>
-#include <sharpen/ByteOrder.hpp>
+#include <cassert>
+#include <cstring>
+#include <utility>
 
 sharpen::Ipv6EndPoint::Ipv6EndPoint() noexcept
     : addr_()

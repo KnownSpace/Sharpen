@@ -1,10 +1,9 @@
 #include <sharpen/Dns.hpp>
 
-#include <cstring>
-#include <new>
-
 #include <sharpen/IpEndPoint.hpp>
 #include <sharpen/Ipv6EndPoint.hpp>
+#include <cstring>
+#include <new>
 
 sharpen::DnsResolveResult &sharpen::DnsResolveResult::operator=(Self &&other) noexcept
 {

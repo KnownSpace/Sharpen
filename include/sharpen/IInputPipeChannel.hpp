@@ -2,13 +2,12 @@
 #ifndef _SHARPEN_IINPUTPIPECHANNEL_HPP
 #define _SHARPEN_IINPUTPIPECHANNEL_HPP
 
-#include <cstdio>
-#include <cstring>
-
 #include "AwaitableFuture.hpp"
 #include "ByteBuffer.hpp"
 #include "IAsyncReadable.hpp"
 #include "IChannel.hpp"
+#include <cstdio>
+#include <cstring>
 
 namespace sharpen
 {

@@ -2,10 +2,6 @@
 #ifndef _SHARPEN_RAFTCONSENSUS_HPP
 #define _SHARPEN_RAFTCONSENSUS_HPP
 
-#include <map>
-#include <queue>
-#include <set>
-
 #include "Broadcaster.hpp"
 #include "IConsensus.hpp"
 #include "IMailReceiver.hpp"
@@ -24,6 +20,9 @@
 #include "RaftPrevoteRecord.hpp"
 #include "RaftRole.hpp"
 #include "RaftVoteRecord.hpp"
+#include <map>
+#include <queue>
+#include <set>
 
 namespace sharpen
 {

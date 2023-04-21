@@ -2,14 +2,13 @@
 #ifndef _SHARPEN_TIMEOPS_HPP
 #define _SHARPEN_TIMEOPS_HPP
 
-#include <cassert>
-
 #include "AwaitableFuture.hpp"
 #include "FutureCompletor.hpp"
 #include "IEventLoopGroup.hpp"
 #include "TimerPool.hpp"
 #include "TimerRef.hpp"
 #include "TypeTraits.hpp"
+#include <cassert>
 
 namespace sharpen
 {

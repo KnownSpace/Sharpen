@@ -13,16 +13,13 @@
 
 #ifdef SHARPEN_HAS_IOURING
 
-#include <atomic>
-#include <cstdint>
-
-#include <linux/io_uring.h>
-#include <unistd.h>
-
 #include "EventFd.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "SystemError.hpp"
+#include <linux/io_uring.h>
+#include <unistd.h>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 

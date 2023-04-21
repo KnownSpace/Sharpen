@@ -1,6 +1,6 @@
 #include <sharpen/IChannel.hpp>
-#include <sharpen/IEventLoopGroup.hpp>
 
+#include <sharpen/IEventLoopGroup.hpp>
 #include <sharpen/SystemMacro.hpp>
 
 #ifdef SHARPEN_IS_NIX

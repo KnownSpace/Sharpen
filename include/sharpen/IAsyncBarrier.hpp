@@ -2,9 +2,8 @@
 #ifndef _SHARPEN_IASYNCBARRIER_HPP
 #define _SHARPEN_IASYNCBARRIER_HPP
 
-#include <cstddef>
-
 #include "BarrierModel.hpp"
+#include <cstddef>
 
 namespace sharpen
 {

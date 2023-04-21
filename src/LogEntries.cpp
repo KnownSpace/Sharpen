@@ -1,7 +1,6 @@
-#include <cstddef>
 #include <sharpen/LogEntries.hpp>
-
 #include <cassert>
+#include <cstddef>
 #include <utility>
 
 sharpen::LogEntries::LogEntries(const Self &other, std::size_t offset)

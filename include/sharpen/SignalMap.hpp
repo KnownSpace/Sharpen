@@ -2,13 +2,12 @@
 #ifndef _SHARPEN_SIGNALMAP_HPP
 #define _SHARPEN_SIGNALMAP_HPP
 
+#include "FileTypeDef.hpp"
+#include "SignalLock.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <map>
 #include <vector>
-
-#include "FileTypeDef.hpp"
-#include "SignalLock.hpp"
 
 namespace sharpen
 {

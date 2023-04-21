@@ -2,11 +2,10 @@
 #ifndef _SHARPEN_IREMOTEACTOR_HPP
 #define _SHARPEN_IREMOTEACTOR_HPP
 
-#include <memory>
-
 #include "Future.hpp"
 #include "IMailParser.hpp"
 #include "Mail.hpp"
+#include <memory>
 
 namespace sharpen
 {

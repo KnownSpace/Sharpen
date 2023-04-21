@@ -7,16 +7,17 @@
 #include "SystemMacro.hpp"
 
 #ifdef SHARPEN_IS_WIN
+
+#include "ByteBuffer.hpp"
+#include "IEndPoint.hpp"
+#include "SystemError.hpp"
+
 #include <ws2tcpip.h>
 #else
 #include <netdb.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #endif
-
-#include "ByteBuffer.hpp"
-#include "IEndPoint.hpp"
-#include "SystemError.hpp"
 
 namespace sharpen
 {

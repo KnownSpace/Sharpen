@@ -2,11 +2,10 @@
 #ifndef _SHARPEN_ITERATOROPS_HPP
 #define _SHARPEN_ITERATOROPS_HPP
 
-#include <type_traits>
-
 #include "NoexceptIf.hpp"
 #include <cstddef>
 #include <cstdint>
+#include <type_traits>
 
 namespace sharpen
 {

@@ -2,6 +2,10 @@
 #ifndef _SHARPEN_BYTESLICE_HPP
 #define _SHARPEN_BYTESLICE_HPP
 
+#include "BufferOps.hpp"
+#include "PointerIterator.hpp"
+#include "ReversePointerIterator.hpp"
+#include "TypeTraits.hpp"
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
@@ -9,11 +13,6 @@
 #include <functional>
 #include <stdexcept>
 #include <utility>
-
-#include "BufferOps.hpp"
-#include "PointerIterator.hpp"
-#include "ReversePointerIterator.hpp"
-#include "TypeTraits.hpp"
 
 namespace sharpen
 {

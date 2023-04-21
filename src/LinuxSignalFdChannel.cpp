@@ -2,11 +2,10 @@
 
 #ifdef SHARPEN_HAS_SIGNALFD
 
-#include <cassert>
-
 #include <sharpen/EventLoop.hpp>
 #include <sharpen/IoEvent.hpp>
 #include <sharpen/SystemError.hpp>
+#include <cassert>
 
 sharpen::LinuxSignalFdChannel::LinuxSignalFdChannel(sharpen::FileHandle handle)
     : Base()

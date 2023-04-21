@@ -1,7 +1,16 @@
 #include <sharpen/Process.hpp>
 
-#include <cassert>
-#include <cstring>
+
+#include <sharpen/PosixInputPipeChannel.hpp>
+#include <sharpen/PosixOutputPipeChannel.hpp>
+#include <sharpen/ProcessOps.hpp>
+#include <sharpen/WinInputPipeChannel.hpp>
+#include <sharpen/WinOutputPipeChannel.hpp>
+#include <sharpen/YieldOps.hpp>
+
+#ifdef SHARPEN_IS_WIN
+#include <sharpen/WinEx.h>
+#endif
 
 #ifdef SHARPEN_IS_WIN
 #include <Windows.h>
@@ -12,17 +21,8 @@
 #include <unistd.h>
 #endif
 
-#include <sharpen/ProcessOps.hpp>
-#include <sharpen/YieldOps.hpp>
-
-#ifdef SHARPEN_IS_WIN
-#include <sharpen/WinEx.h>
-#endif
-
-#include <sharpen/PosixInputPipeChannel.hpp>
-#include <sharpen/PosixOutputPipeChannel.hpp>
-#include <sharpen/WinInputPipeChannel.hpp>
-#include <sharpen/WinOutputPipeChannel.hpp>
+#include <cassert>
+#include <cstring>
 
 #ifdef SHARPEN_IS_WIN
 static HANDLE invalidHandle{INVALID_HANDLE_VALUE};

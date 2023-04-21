@@ -2,12 +2,11 @@
 #ifndef _SHARPEN_STOPWATCHER_HPP
 #define _SHARPEN_STOPWATCHER_HPP
 
-#include <ctime>
-
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include <cstddef>
 #include <cstdint>
+#include <ctime>
 
 namespace sharpen
 {

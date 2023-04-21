@@ -2,12 +2,11 @@
 #ifndef _SHARPEN_FUNCTORHOSTPIPELINE_HPP
 #define _SHARPEN_FUNCTORHOSTPIPELINE_HPP
 
-#include <functional>
-#include <vector>
-
 #include "IHostPipeline.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
+#include <functional>
+#include <vector>
 
 namespace sharpen
 {

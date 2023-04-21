@@ -2,10 +2,9 @@
 #ifndef _SHARPEN_RAFTHEARTBEATRESPONSE_HPP
 #define _SHARPEN_RAFTHEARTBEATRESPONSE_HPP
 
+#include "BinarySerializable.hpp"
 #include <cstddef>
 #include <cstdint>
-
-#include "BinarySerializable.hpp"
 
 namespace sharpen
 {

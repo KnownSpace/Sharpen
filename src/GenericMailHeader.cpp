@@ -1,8 +1,7 @@
 #include <sharpen/GenericMailHeader.hpp>
 
-#include <cstring>
-
 #include <sharpen/ByteOrder.hpp>
+#include <cstring>
 
 sharpen::GenericMailHeader::GenericMailHeader(std::uint32_t magic) noexcept
     : Self(magic, 0)

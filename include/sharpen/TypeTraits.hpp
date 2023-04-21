@@ -2,13 +2,12 @@
 #ifndef _SHARPEN_TYPETRAITS_HPP
 #define _SHARPEN_TYPETRAITS_HPP
 
+#include "CompilerInfo.hpp"
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <type_traits>
-
-#include "CompilerInfo.hpp"
 
 #ifndef SHARPEN_COMPILER_MSVC
 #include <cxxabi.h>
@@ -156,6 +155,7 @@ namespace sharpen
         template<typename _Arg>
         constexpr auto operator()(_Arg &&arg) noexcept -> decltype(Test<_Arg>(0))
         {
+            (void)arg;
             return Test<_Arg>(0);
         }
     };

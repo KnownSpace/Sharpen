@@ -2,14 +2,13 @@
 #ifndef _SHARPEN_RAFTREPLICATEDSTATE_HPP
 #define _SHARPEN_RAFTREPLICATEDSTATE_HPP
 
+#include "Noncopyable.hpp"
+#include "Optional.hpp"
+#include "RaftSnapshot.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <utility>
-
-#include "Noncopyable.hpp"
-#include "Optional.hpp"
-#include "RaftSnapshot.hpp"
 
 namespace sharpen
 {

@@ -2,10 +2,9 @@
 #ifndef _SHARPEN_AWAITABLEFUTURE_HPP
 #define _SHARPEN_AWAITABLEFUTURE_HPP
 
-#include <cassert>
-
 #include "Future.hpp"
 #include "IFiberScheduler.hpp"
+#include <cassert>
 
 namespace sharpen
 {

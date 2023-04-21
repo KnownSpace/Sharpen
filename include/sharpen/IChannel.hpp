@@ -2,12 +2,11 @@
 #ifndef _SHARPEN_ICHANNEL_HPP
 #define _SHARPEN_ICHANNEL_HPP
 
+#include "FileTypeDef.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <memory>
-
-#include "FileTypeDef.hpp"
 
 namespace sharpen
 {

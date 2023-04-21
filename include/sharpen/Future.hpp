@@ -2,6 +2,8 @@
 #ifndef _SHARPEN_FUTURE_HPP
 #define _SHARPEN_FUTURE_HPP
 
+#include "Optional.hpp"
+#include "SpinLock.hpp"
 #include <condition_variable>
 #include <cstddef>
 #include <cstdint>
@@ -11,9 +13,6 @@
 #include <new>
 #include <stdexcept>
 #include <thread>
-
-#include "Optional.hpp"
-#include "SpinLock.hpp"
 
 namespace sharpen
 {

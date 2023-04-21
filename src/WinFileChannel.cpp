@@ -2,15 +2,13 @@
 
 #ifdef SHARPEN_HAS_WINFILE
 
+#include <sharpen/EventLoop.hpp>
+#include <winioctl.h>
+#include <Windows.h>
 #include <cassert>
 #include <cstring>
 #include <functional>
-
-#include <Windows.h>
 #include <io.h>
-#include <winioctl.h>
-
-#include <sharpen/EventLoop.hpp>
 
 sharpen::Optional<bool> sharpen::WinFileChannel::supportSparseFile_{sharpen::EmptyOpt};
 

@@ -2,11 +2,10 @@
 #ifndef _SHARPEN_RAFTSNAPSHOT_HPP
 #define _SHARPEN_RAFTSNAPSHOT_HPP
 
-#include <memory>
-
 #include "IRaftSnapshotChunk.hpp"
 #include "Noncopyable.hpp"
 #include "RaftSnapshotMetadata.hpp"
+#include <memory>
 
 namespace sharpen
 {

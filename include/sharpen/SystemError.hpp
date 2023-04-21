@@ -2,10 +2,9 @@
 #ifndef _SHARPEN_SYSTEMERROR_HPP
 #define _SHARPEN_SYSTEMERROR_HPP
 
+#include "SystemMacro.hpp"
 #include <system_error>
 #include <type_traits>
-
-#include "SystemMacro.hpp"
 
 #ifdef SHARPEN_IS_WIN
 #include <Windows.h>

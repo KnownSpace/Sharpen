@@ -8,10 +8,9 @@
 
 #define SHARPEN_HAS_SIGNALFD
 
+#include "FileTypeDef.hpp"
 #include <sys/signalfd.h>
 #include <unistd.h>
-
-#include "FileTypeDef.hpp"
 
 namespace sharpen
 {

@@ -2,11 +2,10 @@
 #ifndef _SHARPEN_HOSTPIPELINE_HPP
 #define _SHARPEN_HOSTPIPELINE_HPP
 
-#include <vector>
-
 #include "IHostPipeline.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
+#include <vector>
 
 namespace sharpen
 {

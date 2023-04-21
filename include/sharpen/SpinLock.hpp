@@ -2,10 +2,9 @@
 #ifndef _SHARPEN_SPINLOCK_HPP
 #define _SHARPEN_SPINLOCK_HPP
 
-#include <atomic>
-
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
+#include <atomic>
 
 namespace sharpen
 {

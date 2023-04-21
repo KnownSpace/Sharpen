@@ -2,12 +2,11 @@
 #ifndef _SHARPEN_ICONSENSUSCHANGES_HPP
 #define _SHARPEN_ICONSENSUSCHANGES_HPP
 
+#include "ByteBuffer.hpp"
+#include "MachineSet.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <stdexcept>
-
-#include "ByteBuffer.hpp"
-#include "MachineSet.hpp"
 
 namespace sharpen
 {

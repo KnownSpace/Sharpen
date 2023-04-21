@@ -2,12 +2,11 @@
 #ifndef _SHARPEN_ITIMER_HPP
 #define _SHARPEN_ITIMER_HPP
 
+#include "AwaitableFuture.hpp"
+#include "IEventLoopGroup.hpp"
 #include <chrono>
 #include <functional>
 #include <memory>
-
-#include "AwaitableFuture.hpp"
-#include "IEventLoopGroup.hpp"
 
 namespace sharpen
 {

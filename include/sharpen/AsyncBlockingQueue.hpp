@@ -2,9 +2,8 @@
 #ifndef _SHARPEN_ASYNCBLOCKINGQUEUE_HPP
 #define _SHARPEN_ASYNCBLOCKINGQUEUE_HPP
 
-#include <deque>
-
 #include "AsyncSemaphore.hpp"
+#include <deque>
 
 namespace sharpen
 {

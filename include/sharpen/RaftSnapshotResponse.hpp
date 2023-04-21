@@ -2,11 +2,10 @@
 #ifndef _SHARPEN_RAFTSNAPSHOTRESPONSE_HPP
 #define _SHARPEN_RAFTSNAPSHOTRESPONSE_HPP
 
+#include "BinarySerializable.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <utility>
-
-#include "BinarySerializable.hpp"
 
 namespace sharpen
 {

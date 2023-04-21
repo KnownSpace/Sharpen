@@ -2,6 +2,8 @@
 
 #ifdef SHARPEN_IS_WIN
 
+#include <sharpen/Optional.hpp>
+
 #include <Windows.h>
 #elif defined SHARPEN_IS_LINUX
 #include <sys/syscall.h>
@@ -9,8 +11,6 @@
 #else
 #include <pthread.h>
 #endif
-
-#include <sharpen/Optional.hpp>
 
 std::uint32_t sharpen::GetCurrentThreadId() noexcept
 {

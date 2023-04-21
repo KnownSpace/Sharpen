@@ -2,11 +2,10 @@
 #ifndef _SHARPEN_IQUORUMMAP_HPP
 #define _SHARPEN_IQUORUMMAP_HPP
 
-#include <cassert>
-#include <set>
-
 #include "Broadcaster.hpp"
 #include "IRemoteActorBuilder.hpp"
+#include <cassert>
+#include <set>
 
 namespace sharpen
 {

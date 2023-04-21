@@ -2,13 +2,12 @@
 #ifndef _SHARPEN_RAFTLOGENTRIES_HPP
 #define _SHARPEN_RAFTLOGENTRIES_HPP
 
-#include <cassert>
-#include <iterator>
-#include <vector>
-
 #include "BinarySerializable.hpp"
 #include "ByteBuffer.hpp"
 #include "IteratorOps.hpp"
+#include <cassert>
+#include <iterator>
+#include <vector>
 
 namespace sharpen
 {

@@ -1,9 +1,7 @@
 #include <sharpen/MultiRaftForm.hpp>
 
-#include <cstring>
-
-
 #include <sharpen/ByteOrder.hpp>
+#include <cstring>
 
 sharpen::MultiRaftForm::MultiRaftForm() noexcept
     : Self{sharpen::RaftMailType::Unknown}

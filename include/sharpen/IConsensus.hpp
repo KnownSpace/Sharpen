@@ -2,14 +2,13 @@
 #ifndef _SHARPEN_ICONSENSUS_HPP
 #define _SHARPEN_ICONSENSUS_HPP
 
-#include <memory>
-
 #include "AwaitableFuture.hpp"
 #include "ILogStorage.hpp"
 #include "IMailReceiver.hpp"
 #include "IQuorum.hpp"
 #include "LogBatch.hpp"
 #include "WriteLogsResult.hpp"
+#include <memory>
 
 namespace sharpen
 {

@@ -7,7 +7,6 @@
 
 #include "FileTypeDef.hpp"
 #include "Noncopyable.hpp"
-#include "Noncopyable.hpp"
 
 namespace sharpen
 {

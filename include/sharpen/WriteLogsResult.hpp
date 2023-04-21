@@ -2,11 +2,10 @@
 #ifndef _SHARPEN_WRITELOGSRESULT_HPP
 #define _SHARPEN_WRITELOGSRESULT_HPP
 
+#include "Optional.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <utility>
-
-#include "Optional.hpp"
 
 namespace sharpen
 {

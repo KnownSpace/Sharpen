@@ -2,9 +2,8 @@
 #ifndef _SHARPEN_IREMOTEACTORBUILDER_HPP
 #define _SHARPEN_IREMOTEACTORBUILDER_HPP
 
-#include <memory>
-
 #include "IRemoteActor.hpp"
+#include <memory>
 
 namespace sharpen
 {

@@ -2,11 +2,9 @@
 
 #ifdef SHARPEN_HAS_IOURING
 
-#include <cstring>
-
 #include <fcntl.h>
-
 #include <sharpen/IteratorOps.hpp>
+#include <cstring>
 
 sharpen::IoUringQueue::IoUringQueue()
     : IoUringQueue(false)

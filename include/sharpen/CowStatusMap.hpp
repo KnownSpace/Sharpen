@@ -2,13 +2,12 @@
 #ifndef _SHARPEN_COWSTATUSMAP_HPP
 #define _SHARPEN_COWSTATUSMAP_HPP
 
-#include <map>
-#include <string>
-
 #include "AsyncRwLock.hpp"
 #include "IEventLoopGroup.hpp"
 #include "IFileChannel.hpp"
 #include "IStatusMap.hpp"
+#include <map>
+#include <string>
 
 namespace sharpen
 {

@@ -1,9 +1,8 @@
 #include <sharpen/BufferOps.hpp>
 
+#include <sharpen/IntOps.hpp>
 #include <cassert>
 #include <utility>
-
-#include <sharpen/IntOps.hpp>
 
 unsigned char sharpen::Crc16TableHeight[256] = {
     0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,

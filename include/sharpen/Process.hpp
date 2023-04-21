@@ -2,15 +2,14 @@
 #ifndef _SHARPEN_PROCESS_HPP
 #define _SHARPEN_PROCESS_HPP
 
-#include <string>
-#include <vector>
-
 #include "FileTypeDef.hpp"
 #include "IInputPipeChannel.hpp"
 #include "IOutputPipeChannel.hpp"
 #include "SystemError.hpp"
 #include "SystemMacro.hpp"
 #include "TypeTraits.hpp"
+#include <string>
+#include <vector>
 
 namespace sharpen
 {

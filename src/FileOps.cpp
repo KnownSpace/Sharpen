@@ -1,7 +1,6 @@
 #include <sharpen/FileOps.hpp>
 
-#include <cassert>
-#include <cstring>
+#include <sharpen/SystemError.hpp>
 
 #ifdef SHARPEN_IS_WIN
 #include <Windows.h>
@@ -11,7 +10,8 @@
 #include <unistd.h>
 #endif
 
-#include <sharpen/SystemError.hpp>
+#include <cassert>
+#include <cstring>
 
 bool sharpen::AccessFile(const char *name, sharpen::FileAccessMethod model)
 {

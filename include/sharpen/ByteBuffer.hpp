@@ -2,10 +2,9 @@
 #ifndef _SHARPEN_BYTEBUFFER_HPP
 #define _SHARPEN_BYTEBUFFER_HPP
 
-#include <utility>
-
 #include "ByteSlice.hpp"
 #include "ByteVector.hpp"
+#include <utility>
 
 namespace sharpen
 {

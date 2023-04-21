@@ -172,15 +172,25 @@ ForEachMacros:  [ foreach, Q_FOREACH, BOOST_FOREACH ]
 # 对#include进行排序，匹配了某正则表达式的#include拥有对应的优先级，匹配不到的则默认优先级为INT_MAX(优先级越小排序越靠前)，
 #   可以定义负数优先级从而保证某些#include永远在最前面
 IncludeCategories: 
-  - Regex:  '^"(sharpen)/'
-    Priority:   2
-  - Regex:  '^(<|"(simpletest)/)'
-    Priority:   3
-  - Regex: '^<sys/'
+  - Regex:  '^<sharpen/*.hpp$'
+    Priority: 2
+  - Regex: '^<sharpen/*.h$'
+    Priority: 2
+  - Regex:  '^<simpletest/*.hpp$'
+    Priority: 3
+  - Regex: '^<sys/*.h$'
     Priority: 4
-  - Regex: 'Windows.h'
+  - Regex: '^<Windows.h>$'
     Priority: 4
-  - Regex: 'TlHelp32.h'
+  - Regex: '^<TlHelp32.h>$'
+    Priority: 6
+  - Regex: '^<io.h>$'
+    Priority: 6
+  - Regex: '^\"*.hpp$'
+    Priority: 2
+  - Regex: '^\"*.h$'
+    Priority: 2
+  - Regex: '^<[a-z,_]*>$'
     Priority: 5
   - Regex:  '.*'
     Priority:   1

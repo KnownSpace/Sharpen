@@ -2,10 +2,9 @@
 
 #ifdef SHARPEN_HAS_IOURING
 
+#include <sys/mman.h>
 #include <atomic>
 #include <cstring>
-
-#include <sys/mman.h>
 
 sharpen::IoUring::IoUring(std::uint32_t entries,
                           std::uint32_t flags,

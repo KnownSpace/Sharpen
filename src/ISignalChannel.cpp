@@ -1,20 +1,17 @@
 #include <sharpen/ISignalChannel.hpp>
 
+#include <sharpen/AwaitableFuture.hpp>
+#include <sharpen/SystemError.hpp>
 
 #ifdef SHARPEN_IS_WIN
-#include <csignal>
-
-#include <Windows.h>
-
 #include <sharpen/WinEx.h>
+#include <Windows.h>
+#include <csignal>
 #else
 #include <fcntl.h>
 #include <signal.h>
 #include <unistd.h>
 #endif
-
-#include <sharpen/AwaitableFuture.hpp>
-#include <sharpen/SystemError.hpp>
 
 #ifdef SHARPEN_USE_SIGNALFD
 #include <sharpen/LinuxSignalFdChannel.hpp>

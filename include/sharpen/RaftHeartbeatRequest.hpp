@@ -2,13 +2,12 @@
 #ifndef _SHARPEN_RAFTHEARTBEATREQUEST_HPP
 #define _SHARPEN_RAFTHEARTBEATREQUEST_HPP
 
+#include "BinarySerializable.hpp"
+#include "LogEntries.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <utility>
 #include <vector>
-
-#include "BinarySerializable.hpp"
-#include "LogEntries.hpp"
 
 namespace sharpen
 {

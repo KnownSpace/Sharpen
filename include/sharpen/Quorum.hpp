@@ -2,9 +2,8 @@
 #ifndef _SHARPEN_QUORUM_HPP
 #define _SHARPEN_QUORUM_HPP
 
-#include <map>
-
 #include "IQuorum.hpp"
+#include <map>
 
 namespace sharpen
 {

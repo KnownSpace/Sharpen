@@ -1,13 +1,12 @@
 #pragma once
 #ifndef _SHARPEN_ASYNCOPS_HPP
 
-#include <cassert>
-
 #include "AwaitableFuture.hpp"
 #include "FutureCompletor.hpp"
 #include "IteratorOps.hpp"
 #include "TimerPool.hpp"
 #include "TypeTraits.hpp"
+#include <cassert>
 
 namespace sharpen
 {

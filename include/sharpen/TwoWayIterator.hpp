@@ -2,11 +2,10 @@
 #ifndef _SHARPEN_TWOWAYITERATOR_HPP
 #define _SHARPEN_TWOWAYITERATOR_HPP
 
+#include "IteratorTemplate.hpp"
 #include <cassert>
 #include <iterator>
 #include <type_traits>
-
-#include "IteratorTemplate.hpp"
 
 namespace sharpen
 {

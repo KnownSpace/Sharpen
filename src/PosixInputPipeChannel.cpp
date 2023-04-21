@@ -1,10 +1,9 @@
 #include <sharpen/PosixInputPipeChannel.hpp>
 #ifdef SHARPEN_HAS_POSIXINPUTPIPE
 
+#include <sharpen/EventLoop.hpp>
 #include <cassert>
 #include <stdexcept>
-
-#include <sharpen/EventLoop.hpp>
 
 sharpen::PosixInputPipeChannel::PosixInputPipeChannel(sharpen::FileHandle handle)
     : Mybase()

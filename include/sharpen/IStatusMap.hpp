@@ -2,10 +2,9 @@
 #ifndef _SHARPEN_IPERSISTENTMAP_HPP
 #define _SHARPEN_IPERSISTENTMAP_HPP
 
-#include <cassert>
-
 #include "ByteBuffer.hpp"
 #include "Optional.hpp"
+#include <cassert>
 
 namespace sharpen
 {

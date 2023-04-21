@@ -1,10 +1,8 @@
-#include "ByteOrder.hpp"
 #include <sharpen/IpEndPoint.hpp>
 
-#include <cassert>
-#include <utility>
 
 #include <sharpen/ByteBuffer.hpp>
+#include <sharpen/ByteOrder.hpp>
 #include <sharpen/IntOps.hpp>
 #include <sharpen/SystemMacro.hpp>
 
@@ -13,6 +11,9 @@
 #else
 #include <arpa/inet.h>
 #endif
+
+#include <cassert>
+#include <utility>
 
 sharpen::IpEndPoint::IpEndPoint() noexcept
     : addr_()

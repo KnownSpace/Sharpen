@@ -2,9 +2,8 @@
 #ifndef _SHARPEN_FUTURECOMPLETOR_HPP
 #define _SHARPEN_FUTURECOMPLETOR_HPP
 
-#include <cassert>
-
 #include "Future.hpp"
+#include <cassert>
 
 namespace sharpen
 {

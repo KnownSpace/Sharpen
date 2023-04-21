@@ -2,10 +2,9 @@
 #ifndef _SHARPEN_CONSOLEHOSTLIFETIME_HPP
 #define _SHARPEN_CONSOLEHOSTLIFETIME_HPP
 
-#include <stdexcept>
-
 #include "IHostLifetime.hpp"
 #include "ISignalChannel.hpp"
+#include <stdexcept>
 
 namespace sharpen
 {

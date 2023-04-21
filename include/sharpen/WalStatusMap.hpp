@@ -2,12 +2,11 @@
 #ifndef _SHARPEN_WALSTATUSMAP_HPP
 #define _SHARPEN_WALSTATUSMAP_HPP
 
-#include <map>
-#include <string>
-
 #include "AsyncRwLock.hpp"
 #include "IFileChannel.hpp"
 #include "IStatusMap.hpp"
+#include <map>
+#include <string>
 
 namespace sharpen
 {

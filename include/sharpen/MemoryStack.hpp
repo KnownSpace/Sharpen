@@ -2,12 +2,11 @@
 #ifndef _SHARPEN_MEMORYSTACK_HPP
 #define _SHARPEN_MEMORYSTACK_HPP
 
+#include "Noncopyable.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
-
-#include "Noncopyable.hpp"
 
 namespace sharpen
 {

@@ -1,11 +1,10 @@
 #include <sharpen/TcpActor.hpp>
 
-#include <new>
-
 #include <sharpen/RemotePosterOpenError.hpp>
 #include <sharpen/SingleWorkerGroup.hpp>
 #include <sharpen/SystemError.hpp>
 #include <sharpen/YieldOps.hpp>
+#include <new>
 
 void sharpen::TcpActor::DoReceive(sharpen::Mail response) noexcept
 {

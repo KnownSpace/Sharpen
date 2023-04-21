@@ -2,10 +2,9 @@
 #ifndef _SHARPEN_AWAITOPS_HPP
 #define _SHARPEN_AWAITOPS_HPP
 
+#include "AwaitableFuture.hpp"
 #include <tuple>
 #include <type_traits>
-
-#include "AwaitableFuture.hpp"
 
 namespace sharpen
 {
@@ -74,6 +73,8 @@ namespace sharpen
     public:
         static void AwaitAndSet(_Tuple &tuple, sharpen::AwaitableFuture<void> &mainFuture)
         {
+            (void)tuple;
+            (void)mainFuture;
             mainFuture.Await();
         }
     };

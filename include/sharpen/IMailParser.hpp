@@ -2,11 +2,10 @@
 #ifndef _SHARPEN_IMAILPARSER_HPP
 #define _SHARPEN_IMAILPARSER_HPP
 
-#include <memory>
-
 #include "ByteSlice.hpp"
 #include "Mail.hpp"
 #include "MailParseError.hpp"
+#include <memory>
 
 namespace sharpen
 {

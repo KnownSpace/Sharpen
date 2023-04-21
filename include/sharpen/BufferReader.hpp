@@ -2,11 +2,10 @@
 #ifndef _SHARPEN_BUFFERREADER_HPP
 #define _SHARPEN_BUFFERREADER_HPP
 
-#include <cassert>
-
 #include "BinarySerializator.hpp"
 #include "ByteBuffer.hpp"
 #include "Noncopyable.hpp"
+#include <cassert>
 
 namespace sharpen
 {

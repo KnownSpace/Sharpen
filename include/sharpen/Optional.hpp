@@ -2,13 +2,12 @@
 #ifndef _SHARPEN_OPTION_HPP
 #define _SHARPEN_OPTION_HPP
 
+#include "CppStd.hpp"
+#include "NoexceptIf.hpp"
 #include <cstring>
 #include <new>
 #include <stdexcept>
 #include <type_traits>
-
-#include "CppStd.hpp"
-#include "NoexceptIf.hpp"
 
 #if SHARPEN_CPP_STANDARD >= 17
 #include <optional>

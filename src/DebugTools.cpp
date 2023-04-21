@@ -1,9 +1,8 @@
 #include <sharpen/DebugTools.hpp>
 
+#include <sharpen/AsyncMutex.hpp>
 #include <cstdarg>
 #include <mutex>
-
-#include <sharpen/AsyncMutex.hpp>
 
 sharpen::AsyncMutex *sharpen::InternalSyncPrintMutex() noexcept
 {

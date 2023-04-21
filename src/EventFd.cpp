@@ -2,11 +2,11 @@
 
 #ifdef SHARPEN_HAS_EVENTFD
 
-#include <cassert>
-#include <sys/eventfd.h>
-#include <unistd.h>
 
 #include <sharpen/SystemError.hpp>
+#include <sys/eventfd.h>
+#include <unistd.h>
+#include <cassert>
 
 sharpen::EventFd::EventFd(std::uint32_t initVal, int flags)
     : handle_(::eventfd(initVal, flags))

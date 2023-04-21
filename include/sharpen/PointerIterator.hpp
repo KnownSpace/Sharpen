@@ -2,13 +2,12 @@
 #ifndef _SHARPEN_POINTERITERATOR_HPP
 #define _SHARPEN_POINTERITERATOR_HPP
 
-#include <iterator>
-#include <type_traits>
-#include <utility>
-
 #include "IteratorTemplate.hpp"
 #include <cstddef>
 #include <cstdint>
+#include <iterator>
+#include <type_traits>
+#include <utility>
 
 namespace sharpen
 {

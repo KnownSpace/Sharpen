@@ -2,11 +2,10 @@
 #ifndef _SHARPEN_ISELECTOR_HPP
 #define _SHARPEN_ISELECTOR_HPP
 
-#include <memory>
-#include <vector>
-
 #include "FileTypeDef.hpp"
 #include "IoEvent.hpp"
+#include <memory>
+#include <vector>
 
 namespace sharpen
 {

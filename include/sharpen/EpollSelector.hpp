@@ -6,9 +6,6 @@
 
 #ifdef SHARPEN_HAS_EPOLL
 
-#include <map>
-#include <vector>
-
 #include "EpollEventStruct.hpp"
 #include "EventFd.hpp"
 #include "IChannel.hpp"
@@ -17,6 +14,8 @@
 #include "IoUringStruct.hpp"
 #include "Nonmovable.hpp"
 #include "SpinLock.hpp"
+#include <map>
+#include <vector>
 
 namespace sharpen
 {

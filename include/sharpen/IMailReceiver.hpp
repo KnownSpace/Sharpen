@@ -2,11 +2,10 @@
 #ifndef _SHARPEN_IMAILBOX_HPP
 #define _SHARPEN_IMAILBOX_HPP
 
-#include <cassert>
-#include <iterator>
-
 #include "Mail.hpp"
 #include "TypeTraits.hpp"
+#include <cassert>
+#include <iterator>
 
 namespace sharpen
 {

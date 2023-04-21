@@ -3,11 +3,10 @@
 #define _SHARPEN_CONVERTER_HPP
 
 #include <cassert>
-#include <stdexcept>
-#include <type_traits>
-
 #include <cstddef>
 #include <cstdint>
+#include <stdexcept>
+#include <type_traits>
 
 namespace sharpen
 {
@@ -54,6 +53,7 @@ namespace sharpen
                                                        std::is_unsigned<_T>::value>::type>
     constexpr bool InternalIsNegative(const _T &value, int) noexcept
     {
+        (void)value;
         return false;
     }
 

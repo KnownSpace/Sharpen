@@ -2,10 +2,9 @@
 #ifndef _SHARPEN_IRAFTSNAPSHOTCHUNK_HPP
 #define _SHARPEN_IRAFTSNAPSHOTCHUNK_HPP
 
+#include "ByteBuffer.hpp"
 #include <cstddef>
 #include <cstdint>
-
-#include "ByteBuffer.hpp"
 
 namespace sharpen
 {

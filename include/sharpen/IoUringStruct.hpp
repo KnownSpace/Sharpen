@@ -6,9 +6,8 @@
 
 #ifdef SHARPEN_HAS_IOURING
 
-#include <sys/uio.h>
-
 #include "IoEvent.hpp"
+#include <sys/uio.h>
 
 namespace sharpen
 {

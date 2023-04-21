@@ -2,12 +2,11 @@
 #ifndef _SHARPEN_GENERICMAILPARSERFACTORY_HPP
 #define _SHARPEN_GENERICMAILPARSERFACTORY_HPP
 
+#include "IMailParser.hpp"
+#include "IMailParserFactory.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <utility>
-
-#include "IMailParser.hpp"
-#include "IMailParserFactory.hpp"
 
 namespace sharpen
 {

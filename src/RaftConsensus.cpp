@@ -1,12 +1,11 @@
-#include "LogEntries.hpp"
 #include <sharpen/RaftConsensus.hpp>
-
-#include <cassert>
 
 #include <sharpen/BufferReader.hpp>
 #include <sharpen/BufferWriter.hpp>
 #include <sharpen/SingleWorkerGroup.hpp>
 #include <sharpen/SystemError.hpp>
+#include <sharpen/LogEntries.hpp>
+#include <cassert>
 #include <utility>
 
 

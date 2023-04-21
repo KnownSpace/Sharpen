@@ -2,12 +2,11 @@
 #ifndef _SHARPEN_INTOPS_HPP
 #define _SHARPEN_INTOPS_HPP
 
+#include "ByteOrder.hpp"
+#include "TypeTraits.hpp"
 #include <limits>
 #include <stdexcept>
 #include <utility>
-
-#include "ByteOrder.hpp"
-#include "TypeTraits.hpp"
 
 namespace sharpen
 {
@@ -154,6 +153,7 @@ namespace sharpen
                  std::is_unsigned<_From>::value>>
     constexpr inline bool InternalCheckIntCast(_From from, int, int, int, ...)
     {
+        (void)from;
         return true;
     }
 
@@ -165,6 +165,7 @@ namespace sharpen
                                    std::is_same<_To, _From>::value>>
     constexpr inline bool InternalCheckIntCast(_From from, int, int, int, int, ...)
     {
+        (void)from;
         return true;
     }
 

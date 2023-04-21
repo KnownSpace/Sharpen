@@ -2,12 +2,11 @@
 #ifndef _SHARPEN_MACHINESET_HPP
 #define _SHARPEN_MACHINESET_HPP
 
+#include "ByteBuffer.hpp"
+#include "Optional.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <map>
-
-#include "ByteBuffer.hpp"
-#include "Optional.hpp"
 
 namespace sharpen
 {

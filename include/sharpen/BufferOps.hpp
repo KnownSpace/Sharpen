@@ -5,7 +5,6 @@
 #include "TypeTraits.hpp"
 #include <cstddef>
 #include <cstdint>
-
 #include <cstring>
 
 namespace sharpen

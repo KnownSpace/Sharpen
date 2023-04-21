@@ -2,11 +2,10 @@
 #ifndef _SHARPEN_IHOST_HPP
 #define _SHARPEN_IHOST_HPP
 
-#include <cassert>
-#include <memory>
-
 #include "IHostPipeline.hpp"
 #include "TypeTraits.hpp"
+#include <cassert>
+#include <memory>
 
 namespace sharpen
 {

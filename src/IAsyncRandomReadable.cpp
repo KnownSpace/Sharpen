@@ -1,5 +1,6 @@
-#include <sharpen/AwaitableFuture.hpp>
 #include <sharpen/IAsyncRandomReadable.hpp>
+
+#include <sharpen/AwaitableFuture.hpp>
 
 std::size_t sharpen::IAsyncRandomReadable::ReadAsync(char *buf,
                                                      std::size_t bufSize,

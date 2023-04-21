@@ -2,9 +2,9 @@
 
 #ifdef SHARPEN_HAS_WAITABLETIMER
 
+#include <sharpen/SystemError.hpp>
 #include <Windows.h>
 #include <cassert>
-#include <sharpen/SystemError.hpp>
 
 sharpen::WinTimer::WinTimer()
     : Mybase()

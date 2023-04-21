@@ -7,11 +7,10 @@
 
 #define SHARPEN_HAS_IOCP
 
-#include <Windows.h>
-
 #include "FileTypeDef.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
+#include <Windows.h>
 #include <cstddef>
 #include <cstdint>
 

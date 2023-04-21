@@ -1,9 +1,8 @@
 #include <sharpen/IoCompletionPort.hpp>
 #ifdef SHARPEN_HAS_IOCP
 
-#include <cassert>
-
 #include <sharpen/SystemError.hpp>
+#include <cassert>
 
 sharpen::IoCompletionPort::IoCompletionPort()
     : handle_(::CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0))

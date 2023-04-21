@@ -2,8 +2,6 @@
 #ifndef _SHARPEN_TCPPOSTER_HPP
 #define _SHARPEN_TCPPOSTER_HPP
 
-#include <cassert>
-
 #include "AwaitableFuture.hpp"
 #include "IMailParserFactory.hpp"
 #include "IMailReceiver.hpp"
@@ -12,6 +10,7 @@
 #include "IWorkerGroup.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
+#include <cassert>
 
 namespace sharpen
 {
@@ -70,7 +69,7 @@ namespace sharpen
 
         virtual void Cancel() noexcept override;
 
-        virtual std::size_t GetPipelineCount() const noexcept;
+        virtual std::size_t GetPipelineCount() const noexcept override;
 
         virtual void Drain() noexcept override;
 

@@ -2,10 +2,9 @@
 
 #ifdef SHARPEN_HAS_WINSIGNALPIEPECHANNEL
 
+#include <sharpen/EventLoop.hpp>
 #include <cassert>
 #include <cstdio>
-
-#include <sharpen/EventLoop.hpp>
 
 sharpen::WinPipeSignalChannel::WinPipeSignalChannel(sharpen::FileHandle reader,
                                                     sharpen::FileHandle writer,

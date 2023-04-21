@@ -2,11 +2,10 @@
 #ifndef _SHARPEN_FUNCTIONALOPS_HPP
 #define _SHARPEN_FUNCTIONALOPS_HPP
 
+#include "CompilerInfo.hpp"
 #include <cassert>
 #include <type_traits>
 #include <utility>
-
-#include "CompilerInfo.hpp"
 
 #ifdef SHARPEN_COMPILER_MSVC
 #define SHARPEN_THIS_CALL __thiscall

@@ -2,11 +2,10 @@
 #ifndef _SHARPEN_MEMORYPAGE_HPP
 #define _SHARPEN_MEMORYPAGE_HPP
 
-#include <exception>
-#include <stdexcept>
-
 #include "AlignedAlloc.hpp"
 #include "ByteSlice.hpp"
+#include <exception>
+#include <stdexcept>
 
 namespace sharpen
 {

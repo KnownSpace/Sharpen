@@ -6,10 +6,9 @@
 
 #ifdef SHARPEN_HAS_SIGNALFD
 
-#include <deque>
-
 #include "ISignalChannel.hpp"
 #include "SystemError.hpp"
+#include <deque>
 
 namespace sharpen
 {

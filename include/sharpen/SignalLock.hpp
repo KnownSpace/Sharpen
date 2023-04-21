@@ -2,13 +2,12 @@
 #ifndef _SHARPEN_SIGNALLOCK_HPP
 #define _SHARPEN_SIGNALLOCK_HPP
 
-#include <chrono>
-#include <mutex>
-
 #include "IntOps.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "SystemMacro.hpp"
+#include <chrono>
+#include <mutex>
 
 #ifndef SHARPEN_IS_WIN
 #include <signal.h>

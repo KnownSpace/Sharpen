@@ -2,12 +2,11 @@
 #ifndef _SHARPEN_WALLOGSTORAGE_HPP
 #define _SHARPEN_WALLOGSTORAGE_HPP
 
-#include <map>
-
 #include "AsyncRwLock.hpp"
 #include "IFileChannel.hpp"
 #include "ILogStorage.hpp"
 #include "LogEntries.hpp"
+#include <map>
 
 namespace sharpen
 {

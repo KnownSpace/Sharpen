@@ -2,11 +2,10 @@
 #ifndef _SHARPEN_IWORKERGROUP_HPP
 #define _SHARPEN_IWORKERGROUP_HPP
 
-#include <functional>
-
 #include "AwaitableFuture.hpp"
 #include "FutureCompletor.hpp"
 #include "TypeTraits.hpp"
+#include <functional>
 
 namespace sharpen
 {

@@ -2,9 +2,8 @@
 #ifndef _SHARPEN_TIMERREF_HPP
 #define _SHARPEN_TIMERREF_HPP
 
-#include <atomic>
-
 #include "ITimerPool.hpp"
+#include <atomic>
 
 namespace sharpen
 {

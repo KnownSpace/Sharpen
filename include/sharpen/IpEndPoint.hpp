@@ -2,24 +2,23 @@
 #ifndef _SHARPEN_IPENDPOINT_HPP
 #define _SHARPEN_IPENDPOINT_HPP
 
-#include <cstddef>
-#include <cstdint>
-#include <functional>
-#include <stdexcept>
-
-#include "SystemMacro.hpp"
-
-#ifdef SHARPEN_IS_NIX
-#include <netinet/in.h>
-#endif
-
 #include "BufferOps.hpp"
 #include "IEndPoint.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "SystemError.hpp"
+#include "SystemMacro.hpp"
 #include "TypeTraits.hpp"
 
+
+#ifdef SHARPEN_IS_NIX
+#include <netinet/in.h>
+#endif
+
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <stdexcept>
 
 namespace sharpen
 {

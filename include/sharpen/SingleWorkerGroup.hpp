@@ -2,12 +2,11 @@
 #ifndef _SHARPEN_SINGLEWORKERGROUP_HPP
 #define _SHARPEN_SINGLEWORKERGROUP_HPP
 
-#include <functional>
-
 #include "AsyncBlockingQueue.hpp"
 #include "IFiberScheduler.hpp"
 #include "IWorkerGroup.hpp"
 #include "NoexceptInvoke.hpp"
+#include <functional>
 
 namespace sharpen
 {
@@ -45,7 +44,7 @@ namespace sharpen
 
         virtual bool Running() const noexcept override;
 
-        inline virtual std::size_t GetWorkerCount() const noexcept
+        inline virtual std::size_t GetWorkerCount() const noexcept override
         {
             return 1;
         }

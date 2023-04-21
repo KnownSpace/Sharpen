@@ -9,12 +9,11 @@
 
 #define SHARPEN_HAS_EPOLL
 
-#include <sys/epoll.h>
-#include <unistd.h>
-
 #include "FileTypeDef.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
+#include <sys/epoll.h>
+#include <unistd.h>
 #include <cstddef>
 #include <cstdint>
 

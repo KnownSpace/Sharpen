@@ -2,15 +2,13 @@
 
 #ifdef SHARPEN_HAS_WINSOCKET
 
-#include <cassert>
-#include <cstring>
-#include <type_traits>
-
 #include <MSWSock.h>
 #include <WinSock2.h>
-#include <new>
-
 #include <sharpen/EventLoop.hpp>
+#include <cassert>
+#include <cstring>
+#include <new>
+#include <type_traits>
 
 void sharpen::WinNetStreamChannel::InitOverlapped(OVERLAPPED &ol)
 {

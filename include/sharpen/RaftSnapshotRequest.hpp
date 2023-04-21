@@ -2,13 +2,12 @@
 #ifndef _SHARPEN_RAFTSNAPSHOTREQUEST_HPP
 #define _SHARPEN_RAFTSNAPSHOTREQUEST_HPP
 
-#include <cstddef>
-#include <cstdint>
-#include <utility>
-
 #include "BinarySerializable.hpp"
 #include "ByteBuffer.hpp"
 #include "RaftSnapshotMetadata.hpp"
+#include <cstddef>
+#include <cstdint>
+#include <utility>
 
 namespace sharpen
 {

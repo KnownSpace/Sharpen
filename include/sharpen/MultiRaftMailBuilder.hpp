@@ -2,11 +2,10 @@
 #ifndef _SHARPEN_MULTIRAFTMAILBUILDER_HPP
 #define _SHARPEN_MULTIRAFTMAILBUILDER_HPP
 
-#include <cstddef>
-#include <cstdint>
-
 #include "IRaftMailBuilder.hpp"
 #include "MultiRaftForm.hpp"
+#include <cstddef>
+#include <cstdint>
 
 namespace sharpen
 {

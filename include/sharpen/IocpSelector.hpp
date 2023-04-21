@@ -6,14 +6,13 @@
 
 #ifdef SHARPEN_HAS_IOCP
 
-#include <vector>
-
 #include "IChannel.hpp"
 #include "ISelector.hpp"
 #include "IocpOverlappedStruct.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "SpinLock.hpp"
+#include <vector>
 
 namespace sharpen
 {

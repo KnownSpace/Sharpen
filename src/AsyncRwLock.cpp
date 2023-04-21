@@ -1,5 +1,6 @@
-#include <cassert>
 #include <sharpen/AsyncRwLock.hpp>
+
+#include <cassert>
 
 sharpen::AsyncRwLock::AsyncRwLock()
     : state_(sharpen::RwLockState::Free)

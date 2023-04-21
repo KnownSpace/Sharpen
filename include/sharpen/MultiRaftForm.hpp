@@ -2,12 +2,11 @@
 #ifndef _SHARPEN_MULTIRAFTFORM_HPP
 #define _SHARPEN_MULTIRAFTFORM_HPP
 
+#include "ByteSlice.hpp"
+#include "RaftMailType.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <utility>
-
-#include "ByteSlice.hpp"
-#include "RaftMailType.hpp"
 
 namespace sharpen
 {

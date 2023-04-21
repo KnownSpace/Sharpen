@@ -2,12 +2,11 @@
 #ifndef _SHARPEN_CONSOLE_HPP
 #define _SHARPEN_CONSOLE_HPP
 
-#include <cstdio>
-#include <string>
-
 #include "CompilerInfo.hpp"
 #include "Converter.hpp"
 #include "Nonmovable.hpp"
+#include <cstdio>
+#include <string>
 
 namespace sharpen
 {

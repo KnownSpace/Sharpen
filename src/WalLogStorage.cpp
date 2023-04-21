@@ -1,16 +1,15 @@
-#include "BinarySerializator.hpp"
-#include "ByteBuffer.hpp"
-#include "LogEntries.hpp"
-#include "Varint.hpp"
-#include <cstdint>
-#include <sharpen/WalLogStorage.hpp>
-
+#include <sharpen/BinarySerializable.hpp>
 #include <sharpen/BufferReader.hpp>
 #include <sharpen/BufferWriter.hpp>
+#include <sharpen/ByteBuffer.hpp>
 #include <sharpen/EventLoop.hpp>
 #include <sharpen/FileOps.hpp>
 #include <sharpen/IntOps.hpp>
 #include <sharpen/IteratorOps.hpp>
+#include <sharpen/LogEntries.hpp>
+#include <sharpen/Varint.hpp>
+#include <sharpen/WalLogStorage.hpp>
+#include <cstdint>
 
 sharpen::WalLogStorage::WalLogStorage(std::string name)
     : Self{sharpen::GetLocalLoopGroup(), std::move(name)}

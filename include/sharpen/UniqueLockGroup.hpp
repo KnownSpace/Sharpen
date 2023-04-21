@@ -2,14 +2,13 @@
 #ifndef _SHARPEN_UNIQUELOCKGROUP_HPP
 #define _SHARPEN_UNIQUELOCKGROUP_HPP
 
+#include "Noncopyable.hpp"
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <mutex>
 #include <new>
-
-#include "Noncopyable.hpp"
 
 namespace sharpen
 {
@@ -112,7 +111,7 @@ namespace sharpen
                 assert(this->endIndex_ >= endIndex);
                 for (std::size_t i = this->beginIndex_; i != endIndex; ++i)
                 {
-                    td::size_t index{i % this->size_};
+                    std::size_t index{i % this->size_};
                     this->locks_[index].~unique_lock();
                 }
                 this->beginIndex_ = endIndex;

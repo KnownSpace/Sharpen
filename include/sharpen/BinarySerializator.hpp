@@ -2,9 +2,6 @@
 #ifndef _SHARPEN_BINARYSERIALIZATOR_HPP
 #define _SHARPEN_BINARYSERIALIZATOR_HPP
 
-#include <stdexcept>
-#include <vector>
-
 #include "ByteBuffer.hpp"
 #include "ByteOrder.hpp"
 #include "CorruptedDataError.hpp"
@@ -13,6 +10,8 @@
 #include "Optional.hpp"
 #include "TypeTraits.hpp"
 #include "Varint.hpp"
+#include <stdexcept>
+#include <vector>
 
 namespace sharpen
 {
@@ -25,6 +24,8 @@ namespace sharpen
         template<typename _T, typename _Check = sharpen::EnableIf<std::is_integral<_T>::value>>
         static void ToLittleEndian(const char *data, std::size_t size, int)
         {
+            (void)data;
+            (void)size;
 #ifdef SHARPEN_IS_BIG_ENDIAN
             sharpen::ConvertEndian(data, size);
 #endif
@@ -33,6 +34,8 @@ namespace sharpen
         template<typename _T>
         static void ToLittleEndian(const char *data, std::size_t size, ...)
         {
+            (void)data;
+            (void)size;
             // do nothing
         }
 

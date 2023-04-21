@@ -11,9 +11,8 @@
 #include "INetStreamChannel.hpp"
 #include "PosixIoReader.hpp"
 #include "PosixIoWriter.hpp"
-
-#include <atomic>
 #include <sys/uio.h>
+#include <atomic>
 #include <vector>
 
 namespace sharpen

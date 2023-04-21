@@ -1,14 +1,13 @@
 #include <sharpen/WinInputPipeChannel.hpp>
+
 #ifdef SHARPEN_HAS_WININPUTPIPE
 
+#include <sharpen/EventLoop.hpp>
+#include <Windows.h>
 #include <cassert>
 #include <cstring>
 #include <new>
 #include <stdexcept>
-
-#include <Windows.h>
-
-#include <sharpen/EventLoop.hpp>
 
 sharpen::WinInputPipeChannel::WinInputPipeChannel(sharpen::FileHandle handle)
     : Mybase()
