@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "BinarySerializable.hpp"
-#include "ByteBuffer.hpp"
 #include "LogEntries.hpp"
 
 namespace sharpen

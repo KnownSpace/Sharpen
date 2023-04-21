@@ -1,12 +1,12 @@
 #pragma once
-#include "sharpen/FileTypeDef.hpp"
-#include "sharpen/Noncopyable.hpp"
 #ifndef _SHARPEN_DIRECTORY_HPP
 #define _SHARPEN_DIRECTORY_HPP
 
 #include <string>
 #include <utility>
 
+#include "FileTypeDef.hpp"
+#include "Noncopyable.hpp"
 #include "Noncopyable.hpp"
 
 namespace sharpen

@@ -1,7 +1,7 @@
-#include "sharpen/BinarySerializator.hpp"
-#include "sharpen/ByteBuffer.hpp"
-#include "sharpen/LogEntries.hpp"
-#include "sharpen/Varint.hpp"
+#include "BinarySerializator.hpp"
+#include "ByteBuffer.hpp"
+#include "LogEntries.hpp"
+#include "Varint.hpp"
 #include <cstdint>
 #include <sharpen/WalLogStorage.hpp>
 

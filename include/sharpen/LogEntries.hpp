@@ -1,5 +1,4 @@
 #pragma once
-#include <cstddef>
 #ifndef _SHARPEN_RAFTLOGENTRIES_HPP
 #define _SHARPEN_RAFTLOGENTRIES_HPP
 

@@ -1,4 +1,4 @@
-#include "sharpen/ByteOrder.hpp"
+#include "ByteOrder.hpp"
 #include <sharpen/IpEndPoint.hpp>
 
 #include <cassert>

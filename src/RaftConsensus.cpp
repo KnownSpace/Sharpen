@@ -1,4 +1,4 @@
-#include "sharpen/LogEntries.hpp"
+#include "LogEntries.hpp"
 #include <sharpen/RaftConsensus.hpp>
 
 #include <cassert>

@@ -1,5 +1,4 @@
 #pragma once
-#include "sharpen/LogEntries.hpp"
 #ifndef _SHARPEN_WALLOGSTORAGE_HPP
 #define _SHARPEN_WALLOGSTORAGE_HPP
 
@@ -8,6 +7,7 @@
 #include "AsyncRwLock.hpp"
 #include "IFileChannel.hpp"
 #include "ILogStorage.hpp"
+#include "LogEntries.hpp"
 
 namespace sharpen
 {

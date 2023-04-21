@@ -1,14 +1,15 @@
 #pragma once
-#include "sharpen/ByteSlice.hpp"
-#include "sharpen/LogEntries.hpp"
-#include <cstddef>
-#include <utility>
 #ifndef _SHARPEN_ILOGSTORAGE_HPP
 #define _SHARPEN_ILOGSTORAGE_HPP
 
 #include "ByteBuffer.hpp"
 #include "LogEntries.hpp"
 #include "Optional.hpp"
+#include "ByteSlice.hpp"
+#include "LogEntries.hpp"
+
+#include <cstddef>
+#include <utility>
 
 namespace sharpen
 {
