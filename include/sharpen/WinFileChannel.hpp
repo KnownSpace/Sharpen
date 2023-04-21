@@ -8,9 +8,9 @@
 
 #define SHARPEN_HAS_WINFILE
 
-#include "AwaitableFuture.hpp"
+#include "AwaitableFuture.hpp" // IWYU pragma: keep
 #include "IFileChannel.hpp"
-#include "IocpSelector.hpp"
+#include "IocpSelector.hpp" // IWYU pragma: keep
 #include "Optional.hpp"
 #include <mutex>
 

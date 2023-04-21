@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_INTOPS_HPP
 #define _SHARPEN_INTOPS_HPP
 
-#include "ByteOrder.hpp"
+#include "ByteOrder.hpp" // IWYU pragma: keep
 #include "TypeTraits.hpp"
 #include <limits>
 #include <stdexcept>

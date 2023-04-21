@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_LINUXSIGNALFDCHANNEL_HPP
 #define _SHARPEN_LINUXSIGNALFDCHANNEL_HPP
 
-#include "SignalFd.hpp"
+#include "SignalFd.hpp" // IWYU pragma: keep
 
 #ifdef SHARPEN_HAS_SIGNALFD
 

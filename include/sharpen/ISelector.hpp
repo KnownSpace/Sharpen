@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_ISELECTOR_HPP
 #define _SHARPEN_ISELECTOR_HPP
 
-#include "FileTypeDef.hpp"
+#include "FileTypeDef.hpp" // IWYU pragma: keep
 #include "IoEvent.hpp"
 #include <memory>
 #include <vector>

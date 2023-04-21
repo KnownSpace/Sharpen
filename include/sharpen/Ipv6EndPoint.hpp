@@ -4,9 +4,9 @@
 
 #include "BufferOps.hpp"
 #include "IEndPoint.hpp"
-#include "Noncopyable.hpp"
-#include "Nonmovable.hpp"
-#include "SystemError.hpp"
+#include "Noncopyable.hpp" // IWYU pragma: keep
+#include "Nonmovable.hpp" // IWYU pragma: keep
+#include "SystemError.hpp" // IWYU pragma: keep
 #include "SystemMacro.hpp"
 
 #ifdef SHARPEN_IS_NIX

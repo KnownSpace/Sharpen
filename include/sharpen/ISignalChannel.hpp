@@ -5,7 +5,7 @@
 #include "Future.hpp"
 #include "IChannel.hpp"
 #include "SignalBuffer.hpp"
-#include "SignalFd.hpp"
+#include "SignalFd.hpp" // IWYU pragma: keep
 #include "SignalMap.hpp"
 #include <cstddef>
 #include <cstdint>

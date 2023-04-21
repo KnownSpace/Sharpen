@@ -8,10 +8,9 @@
 
 #include "IChannel.hpp"
 #include "ISelector.hpp"
-#include "IocpOverlappedStruct.hpp"
+#include "IocpOverlappedStruct.hpp" // IWYU pragma: keep
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
-#include "SpinLock.hpp"
 #include <vector>
 
 namespace sharpen

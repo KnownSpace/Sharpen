@@ -4,7 +4,7 @@
 
 #include "AsyncRwLock.hpp"
 #include "IEventLoopGroup.hpp"
-#include "IFileChannel.hpp"
+#include "IFileChannel.hpp" // IWYU pragma: keep
 #include "IStatusMap.hpp"
 #include <map>
 #include <string>

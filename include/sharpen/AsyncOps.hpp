@@ -3,8 +3,8 @@
 
 #include "AwaitableFuture.hpp"
 #include "FutureCompletor.hpp"
-#include "IteratorOps.hpp"
-#include "TimerPool.hpp"
+#include "IteratorOps.hpp" // IWYU pragma: export
+#include "TimerPool.hpp" // IWYU pragma: export
 #include "TypeTraits.hpp"
 #include <cassert>
 

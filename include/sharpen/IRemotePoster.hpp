@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_IREMOTEACTOR_HPP
 #define _SHARPEN_IREMOTEACTOR_HPP
 
-#include "Future.hpp"
+#include "Future.hpp" // IWYU pragma: keep
 #include "IMailParser.hpp"
 #include "Mail.hpp"
 #include <memory>

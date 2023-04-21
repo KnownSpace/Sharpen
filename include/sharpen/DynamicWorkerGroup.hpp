@@ -5,7 +5,7 @@
 #include "AsyncBlockingQueue.hpp"
 #include "IFiberScheduler.hpp"
 #include "IWorkerGroup.hpp"
-#include "NoexceptInvoke.hpp"
+#include "NoexceptInvoke.hpp" // IWYU pragma: keep
 #include <functional>
 #include <vector>
 

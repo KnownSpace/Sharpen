@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_POSIXINPUTPIPECHANNEL_HPP
 #define _SHARPEN_POSIXINPUTPIPECHANNEL_HPP
 
-#include "SystemMacro.hpp"
+#include "SystemMacro.hpp" // IWYU pragma: keep
 #ifdef SHARPEN_IS_NIX
 
 #include "IInputPipeChannel.hpp"

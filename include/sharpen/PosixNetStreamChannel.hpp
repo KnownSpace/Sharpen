@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_POSIXNETSTREAMCHANNEL_HPP
 #define _SHARPEN_POSIXNETSTREAMCHANNEL_HPP
 
-#include "SystemMacro.hpp"
+#include "SystemMacro.hpp" // IWYU pragma: keep
 
 #ifdef SHARPEN_IS_NIX
 

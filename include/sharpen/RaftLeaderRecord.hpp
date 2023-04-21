@@ -2,7 +2,6 @@
 #ifndef _SHARPEN_RAFTLEADERRECORD_HPP
 #define _SHARPEN_RAFTLEADERRECORD_HPP
 
-#include "Optional.hpp"
 #include <atomic>
 #include <cstddef>
 #include <cstdint>

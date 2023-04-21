@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_IOURINGSTRUCT_HPP
 #define _SHARPEN_IOURINGSTRUCT_HPP
 
-#include "IoUringQueue.hpp"
+#include "IoUringQueue.hpp" // IWYU pragma: keep
 
 #ifdef SHARPEN_HAS_IOURING
 

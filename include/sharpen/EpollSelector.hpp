@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_EPOLLSELECTOR_HPP
 #define _SHARPEN_EPOLLSELECTOR_HPP
 
-#include "Epoll.hpp"
+#include "Epoll.hpp" // IWYU pragma: keep
 
 #ifdef SHARPEN_HAS_EPOLL
 

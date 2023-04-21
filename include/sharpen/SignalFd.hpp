@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_SIGNALFD_HPP
 #define _SHARPEN_SIGNALFD_HPP
 
-#include "SystemMacro.hpp"
+#include "SystemMacro.hpp" // IWYU pragma: keep
 
 #ifdef SHARPEN_IS_LINUX
 

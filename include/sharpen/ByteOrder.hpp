@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_BYTEORDER_HPP
 #define _SHARPEN_BYTEORDER_HPP
 
-#include "SystemMacro.hpp"
+#include "SystemMacro.hpp" // IWYU pragma: keep
 #include <cstddef>
 #include <cstdint>
 

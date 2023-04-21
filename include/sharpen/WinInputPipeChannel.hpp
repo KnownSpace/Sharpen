@@ -7,7 +7,7 @@
 #ifdef SHARPEN_IS_WIN
 
 #include "IInputPipeChannel.hpp"
-#include "IocpSelector.hpp"
+#include "IocpSelector.hpp" // IWYU pragma: keep
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 

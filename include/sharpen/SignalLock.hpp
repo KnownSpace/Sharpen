@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_SIGNALLOCK_HPP
 #define _SHARPEN_SIGNALLOCK_HPP
 
-#include "IntOps.hpp"
+#include "IntOps.hpp" // IWYU pragma: keep
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "SystemMacro.hpp"

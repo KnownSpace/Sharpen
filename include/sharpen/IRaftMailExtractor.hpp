@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_IRAFTMAILEXTRACTOR_HPP
 #define _SHARPEN_IRAFTMAILEXTRACTOR_HPP
 
-#include "CorruptedDataError.hpp"
+#include "CorruptedDataError.hpp" // IWYU pragma: keep
 #include "Mail.hpp"
 #include "RaftHeartbeatRequest.hpp"
 #include "RaftHeartbeatResponse.hpp"

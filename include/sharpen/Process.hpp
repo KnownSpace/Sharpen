@@ -5,9 +5,9 @@
 #include "FileTypeDef.hpp"
 #include "IInputPipeChannel.hpp"
 #include "IOutputPipeChannel.hpp"
-#include "SystemError.hpp"
-#include "SystemMacro.hpp"
-#include "TypeTraits.hpp"
+#include "SystemError.hpp" // IWYU pragma: keep
+#include "SystemMacro.hpp" // IWYU pragma: keep
+#include "TypeTraits.hpp" // IWYU pragma: keep
 #include <string>
 #include <vector>
 

@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_CONSOLE_HPP
 #define _SHARPEN_CONSOLE_HPP
 
-#include "CompilerInfo.hpp"
+#include "CompilerInfo.hpp" // IWYU pragma: keep
 #include "Converter.hpp"
 #include "Nonmovable.hpp"
 #include <cstdio>

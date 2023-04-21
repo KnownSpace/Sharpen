@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_EVENTFD_HPP
 #define _SHARPEN_EVENTFD_HPP
 
-#include "FileTypeDef.hpp"
+#include "FileTypeDef.hpp" // IWYU pragma: keep
 
 // event fd only supported by linux
 #ifdef SHARPEN_IS_LINUX

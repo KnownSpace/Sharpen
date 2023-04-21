@@ -3,7 +3,7 @@
 #define _SHARPEN_BINARYSERIALIZATOR_HPP
 
 #include "ByteBuffer.hpp"
-#include "ByteOrder.hpp"
+#include "ByteOrder.hpp" // IWYU pragma: keep
 #include "CorruptedDataError.hpp"
 #include "IntOps.hpp"
 #include "IteratorOps.hpp"

@@ -2,8 +2,8 @@
 #ifndef _SHARPEN_IOUTPUTPIPECHANNEL_HPP
 #define _SHARPEN_IOUTPUTPIPECHANNEL_HPP
 
-#include "AwaitableFuture.hpp"
-#include "ByteBuffer.hpp"
+#include "AwaitableFuture.hpp" // IWYU pragma: keep
+#include "ByteBuffer.hpp" // IWYU pragma: keep
 #include "IAsyncWritable.hpp"
 #include "IChannel.hpp"
 #include <cstdio>

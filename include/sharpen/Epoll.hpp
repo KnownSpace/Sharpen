@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_EPOLL_HPP
 #define _SHARPEN_EPOLL_HPP
 
-#include "SystemMacro.hpp"
+#include "SystemMacro.hpp" // IWYU pragma: keep
 
 // epoll is only support by linux
 #ifdef SHARPEN_IS_LINUX

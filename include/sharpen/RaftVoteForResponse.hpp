@@ -3,7 +3,7 @@
 #define _SHARPEN_RAFTVOTEFORRESPONSE_HPP
 
 #include "BinarySerializable.hpp"
-#include "CorruptedDataError.hpp"
+#include "CorruptedDataError.hpp" // IWYU pragma: keep
 #include <cstddef>
 #include <cstdint>
 #include <utility>

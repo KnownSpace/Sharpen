@@ -3,7 +3,7 @@
 #define _SHARPEN_MACHINESET_HPP
 
 #include "ByteBuffer.hpp"
-#include "Optional.hpp"
+#include "Optional.hpp" // IWYU pragma: keep
 #include <cstddef>
 #include <cstdint>
 #include <map>

@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_IENDPOINT_HPP
 #define _SHARPEN_IENDPOINT_HPP
 
-#include "NetTypeDef.hpp"
+#include "NetTypeDef.hpp" // IWYU pragma: keep
 #include "SystemMacro.hpp"
 #include <cstddef>
 #include <cstdint>
