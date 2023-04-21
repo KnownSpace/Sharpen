@@ -4,14 +4,13 @@
 
 #include <memory>
 
-#include "SystemMacro.hpp"
-
-#ifdef SHARPEN_IS_WIN
-
 #include "ByteBuffer.hpp"
 #include "IEndPoint.hpp"
 #include "SystemError.hpp"
+#include "SystemMacro.hpp"
 
+
+#ifdef SHARPEN_IS_WIN
 #include <ws2tcpip.h>
 #else
 #include <netdb.h>

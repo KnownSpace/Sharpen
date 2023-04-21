@@ -1,8 +1,8 @@
 #include <sharpen/ThreadInfo.hpp>
 
-#ifdef SHARPEN_IS_WIN
-
 #include <sharpen/Optional.hpp>
+
+#ifdef SHARPEN_IS_WIN
 
 #include <Windows.h>
 #elif defined SHARPEN_IS_LINUX
