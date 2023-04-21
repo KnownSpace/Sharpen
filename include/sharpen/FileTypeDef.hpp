@@ -7,7 +7,7 @@
 namespace sharpen
 {
 #ifdef SHARPEN_IS_WIN
-    using FileHandle = void*;
+    using FileHandle = void *;
 #else
     using FileHandle = int;
 #endif
@@ -33,6 +33,6 @@ namespace sharpen
         Sync,
         DirectAndSync
     };
-}
+}   // namespace sharpen
 
 #endif

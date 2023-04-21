@@ -8,17 +8,19 @@
 
 namespace sharpen
 {
-    class EventLoopThread:public sharpen::Noncopyable,public sharpen::Nonmovable
+    class EventLoopThread
+        : public sharpen::Noncopyable
+        , public sharpen::Nonmovable
     {
     private:
-
         sharpen::EventLoop loop_;
         std::thread thread_;
 
         void Entry() noexcept;
+
     public:
         explicit EventLoopThread(sharpen::SelectorPtr selector);
-        
+
         ~EventLoopThread() noexcept;
 
         void Join();
@@ -29,7 +31,7 @@ namespace sharpen
 
         sharpen::EventLoop *GetLoop() noexcept;
     };
-    
-}
+
+}   // namespace sharpen
 
 #endif

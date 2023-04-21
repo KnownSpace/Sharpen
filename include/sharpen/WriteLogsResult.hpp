@@ -2,8 +2,8 @@
 #ifndef _SHARPEN_WRITELOGSRESULT_HPP
 #define _SHARPEN_WRITELOGSRESULT_HPP
 
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 #include <utility>
 
 #include "Optional.hpp"
@@ -14,25 +14,25 @@ namespace sharpen
     {
     private:
         using Self = sharpen::WriteLogsResult;
-    
+
         std::uint64_t lastIndex_;
         std::uint64_t beginIndex_;
+
     public:
-    
         explicit WriteLogsResult(std::uint64_t lastIndex) noexcept;
 
-        WriteLogsResult(std::uint64_t lastIndex,std::uint64_t beginIndex) noexcept;
-    
+        WriteLogsResult(std::uint64_t lastIndex, std::uint64_t beginIndex) noexcept;
+
         WriteLogsResult(const Self &other) noexcept = default;
-    
+
         WriteLogsResult(Self &&other) noexcept;
-    
+
         Self &operator=(const Self &other) noexcept;
-    
+
         Self &operator=(Self &&other) noexcept;
-    
+
         ~WriteLogsResult() noexcept = default;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -45,7 +45,7 @@ namespace sharpen
         sharpen::Optional<std::uint64_t> LookupBeginIndex() const noexcept;
 
         std::size_t GetWrittenSize() const noexcept;
-    };    
-}
+    };
+}   // namespace sharpen
 
 #endif

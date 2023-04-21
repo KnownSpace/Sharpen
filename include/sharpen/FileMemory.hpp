@@ -2,15 +2,15 @@
 #ifndef _SHARPEN_FILEMEMORY_HPP
 #define _SHARPEN_FILEMEMORY_HPP
 
-#include <cstdint>
-#include <cstddef>
-#include "Noncopyable.hpp"
 #include "FileTypeDef.hpp"
+#include "Noncopyable.hpp"
 #include "SystemMacro.hpp"
+#include <cstddef>
+#include <cstdint>
 
 namespace sharpen
 {
-    class FileMemory:public sharpen::Noncopyable
+    class FileMemory : public sharpen::Noncopyable
     {
     private:
         using Self = sharpen::FileMemory;
@@ -21,11 +21,10 @@ namespace sharpen
         sharpen::FileHandle file_;
 #endif
     public:
-
 #ifdef SHARPEN_IS_WIN
-        FileMemory(sharpen::FileHandle file,void *address,std::size_t size) noexcept;
+        FileMemory(sharpen::FileHandle file, void *address, std::size_t size) noexcept;
 #else
-        FileMemory(void *address,std::size_t size) noexcept;
+        FileMemory(void *address, std::size_t size) noexcept;
 #endif
 
         FileMemory(Self &&other) noexcept;
@@ -41,7 +40,7 @@ namespace sharpen
         void FlushAndWait() const;
 
         void *ReleaseOwnership() noexcept;
-    }; 
-}
+    };
+}   // namespace sharpen
 
 #endif

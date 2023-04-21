@@ -10,21 +10,21 @@ namespace sharpen
     {
     private:
         using Self = sharpen::IMailParserFactory;
+
     protected:
     public:
-    
         IMailParserFactory() noexcept = default;
-    
+
         IMailParserFactory(const Self &other) noexcept = default;
-    
+
         IMailParserFactory(Self &&other) noexcept = default;
-    
+
         Self &operator=(const Self &other) noexcept = default;
-    
+
         Self &operator=(Self &&other) noexcept = default;
-    
+
         virtual ~IMailParserFactory() noexcept = default;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -32,6 +32,6 @@ namespace sharpen
 
         virtual std::unique_ptr<sharpen::IMailParser> Produce() = 0;
     };
-}
+}   // namespace sharpen
 
 #endif

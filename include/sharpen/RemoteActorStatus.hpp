@@ -9,7 +9,7 @@ namespace sharpen
         Closed,
         Opened,
         InProgress
-    };   
-}
+    };
+}   // namespace sharpen
 
 #endif

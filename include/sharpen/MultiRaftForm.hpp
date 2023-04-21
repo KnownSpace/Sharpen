@@ -2,45 +2,45 @@
 #ifndef _SHARPEN_MULTIRAFTFORM_HPP
 #define _SHARPEN_MULTIRAFTFORM_HPP
 
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 #include <utility>
 
-#include "RaftMailType.hpp"
 #include "ByteSlice.hpp"
+#include "RaftMailType.hpp"
 
 namespace sharpen
 {
-    #pragma pack(push, 1)
+#pragma pack(push, 1)
     class MultiRaftForm
     {
     private:
         using Self = sharpen::MultiRaftForm;
-    
+
         char magic_[6];
         std::uint32_t type_;
         std::uint16_t chksum_;
         std::uint32_t number_;
+
     public:
-    
-        static constexpr sharpen::ByteSlice multiRaftMagic{"mlraft",6};
+        static constexpr sharpen::ByteSlice multiRaftMagic{"mlraft", 6};
 
         MultiRaftForm() noexcept;
 
         explicit MultiRaftForm(sharpen::RaftMailType type) noexcept;
 
-        MultiRaftForm(sharpen::RaftMailType type,std::uint32_t number) noexcept;
-    
+        MultiRaftForm(sharpen::RaftMailType type, std::uint32_t number) noexcept;
+
         MultiRaftForm(const Self &other) noexcept;
-    
+
         MultiRaftForm(Self &&other) noexcept;
-    
+
         Self &operator=(const Self &other) noexcept;
-    
+
         Self &operator=(Self &&other) noexcept;
-    
+
         ~MultiRaftForm() noexcept = default;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -56,11 +56,11 @@ namespace sharpen
 
         void SetChecksum(sharpen::ByteSlice slice) noexcept;
 
-        void SetChecksum(const char *data,std::size_t size) noexcept;
+        void SetChecksum(const char *data, std::size_t size) noexcept;
 
         inline sharpen::ByteSlice GetMagic() const noexcept
         {
-            sharpen::ByteSlice slice{this->magic_,sizeof(this->magic_)};
+            sharpen::ByteSlice slice{this->magic_, sizeof(this->magic_)};
             return slice;
         }
 
@@ -76,9 +76,10 @@ namespace sharpen
         bool CheckContent(sharpen::ByteSlice content) const noexcept;
     };
 
-    #pragma pack(pop)
+#pragma pack(pop)
 
-    static_assert(sizeof(sharpen::MultiRaftForm) == 16,"sizeof(MultiRaftForm) must equals with 16");
-}
+    static_assert(sizeof(sharpen::MultiRaftForm) == 16,
+                  "sizeof(MultiRaftForm) must equals with 16");
+}   // namespace sharpen
 
 #endif

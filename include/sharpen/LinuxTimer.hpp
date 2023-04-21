@@ -8,8 +8,8 @@
 
 #include <atomic>
 
-#include "ITimer.hpp"
 #include "IChannel.hpp"
+#include "ITimer.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 
@@ -17,14 +17,19 @@
 
 namespace sharpen
 {
-    //use timer fd
-    class LinuxTimer:public sharpen::ITimer,public sharpen::IChannel,public sharpen::Noncopyable,public sharpen::Nonmovable
+    // use timer fd
+    class LinuxTimer
+        : public sharpen::ITimer
+        , public sharpen::IChannel
+        , public sharpen::Noncopyable
+        , public sharpen::Nonmovable
     {
     private:
         using Mybase = sharpen::IChannel;
         using MyTimerBase = sharpen::ITimer;
 
-        std::atomic<sharpen::Future<bool>*> future_;
+        std::atomic<sharpen::Future<bool> *> future_;
+
     public:
         LinuxTimer();
 
@@ -32,11 +37,11 @@ namespace sharpen
 
         virtual void OnEvent(sharpen::IoEvent *event) override;
 
-        virtual void WaitAsync(sharpen::Future<bool> &future,std::uint64_t waitMs);
+        virtual void WaitAsync(sharpen::Future<bool> &future, std::uint64_t waitMs);
 
         virtual void Cancel() override;
     };
-}
+}   // namespace sharpen
 
 #endif
 #endif

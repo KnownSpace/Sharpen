@@ -5,13 +5,16 @@
 #include <vector>
 
 #include "AsyncBlockingQueue.hpp"
-#include "NoexceptInvoke.hpp"
-#include "IWorkerGroup.hpp"
 #include "IFiberScheduler.hpp"
+#include "IWorkerGroup.hpp"
+#include "NoexceptInvoke.hpp"
 
 namespace sharpen
 {
-    class FixedWorkerGroup:public sharpen::IWorkerGroup,public sharpen::Noncopyable,public sharpen::Nonmovable
+    class FixedWorkerGroup
+        : public sharpen::IWorkerGroup
+        , public sharpen::Noncopyable
+        , public sharpen::Nonmovable
     {
     private:
         using Self = sharpen::FixedWorkerGroup;
@@ -23,19 +26,20 @@ namespace sharpen
         std::atomic_bool token_;
         sharpen::AsyncBlockingQueue<std::function<void()>> queue_;
         std::vector<sharpen::AwaitableFuture<void>> workers_;
+
     public:
         FixedWorkerGroup();
 
         explicit FixedWorkerGroup(sharpen::IFiberScheduler &scheduler);
 
-        FixedWorkerGroup(sharpen::IFiberScheduler &scheduler,std::size_t workerCount);
-    
+        FixedWorkerGroup(sharpen::IFiberScheduler &scheduler, std::size_t workerCount);
+
         virtual ~FixedWorkerGroup() noexcept
         {
             this->Stop();
             this->Join();
         }
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -54,7 +58,7 @@ namespace sharpen
         {
             return this->workers_.size();
         }
-    };   
-}
+    };
+}   // namespace sharpen
 
 #endif

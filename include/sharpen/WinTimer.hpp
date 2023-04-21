@@ -14,26 +14,30 @@
 #define SHARPEN_HAS_WAITABLETIMER
 namespace sharpen
 {
-     class WinTimer:public sharpen::ITimer,public sharpen::Noncopyable,public sharpen::Nonmovable
-     {
-     private:
-          using Myhandle = void *;
-          using Mybase = sharpen::ITimer;
-          
-          Myhandle handle_;
-          std::atomic<sharpen::Future<bool>*> future_;
+    class WinTimer
+        : public sharpen::ITimer
+        , public sharpen::Noncopyable
+        , public sharpen::Nonmovable
+    {
+    private:
+        using Myhandle = void *;
+        using Mybase = sharpen::ITimer;
 
-          static void WINAPI CompleteFuture(void *arg, DWORD, DWORD);
-     public:
-          WinTimer();
+        Myhandle handle_;
+        std::atomic<sharpen::Future<bool> *> future_;
 
-          virtual ~WinTimer() noexcept;
+        static void WINAPI CompleteFuture(void *arg, DWORD, DWORD);
 
-          virtual void WaitAsync(sharpen::Future<bool> &future, std::uint64_t waitMs) override;
+    public:
+        WinTimer();
 
-          virtual void Cancel() override;
-     };
-}
+        virtual ~WinTimer() noexcept;
+
+        virtual void WaitAsync(sharpen::Future<bool> &future, std::uint64_t waitMs) override;
+
+        virtual void Cancel() override;
+    };
+}   // namespace sharpen
 
 #endif
 #endif

@@ -2,50 +2,50 @@
 #ifndef _SHARPEN_RAFTHEARTBEATREQUEST_HPP
 #define _SHARPEN_RAFTHEARTBEATREQUEST_HPP
 
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 #include <utility>
 #include <vector>
 
+#include "BinarySerializable.hpp"
 #include "ByteBuffer.hpp"
 #include "LogEntries.hpp"
-#include "BinarySerializable.hpp"
 
 namespace sharpen
 {
-    class RaftHeartbeatRequest:public sharpen::BinarySerializable<sharpen::RaftHeartbeatRequest>
+    class RaftHeartbeatRequest : public sharpen::BinarySerializable<sharpen::RaftHeartbeatRequest>
     {
     private:
         using Self = sharpen::RaftHeartbeatRequest;
-    
+
         std::uint64_t term_;
         std::uint64_t leaderId_;
         std::uint64_t preLogIndex_;
         std::uint64_t preLogTerm_;
         sharpen::LogEntries entries_;
         std::uint64_t leaderCommitIndex_;
+
     public:
-    
         RaftHeartbeatRequest() noexcept;
-    
+
         RaftHeartbeatRequest(const Self &other) = default;
-    
+
         RaftHeartbeatRequest(Self &&other) noexcept;
-    
+
         inline Self &operator=(const Self &other)
         {
-            if(this != std::addressof(other))
+            if (this != std::addressof(other))
             {
                 Self tmp{other};
-                std::swap(tmp,*this);
+                std::swap(tmp, *this);
             }
             return *this;
         }
-    
+
         Self &operator=(Self &&other) noexcept;
-    
+
         ~RaftHeartbeatRequest() noexcept = default;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -95,7 +95,7 @@ namespace sharpen
         {
             return this->entries_;
         }
-        
+
         inline const sharpen::LogEntries &Entries() const noexcept
         {
             return this->entries_;
@@ -113,10 +113,10 @@ namespace sharpen
 
         std::size_t ComputeSize() const noexcept;
 
-        std::size_t LoadFrom(const char *data,std::size_t size);
+        std::size_t LoadFrom(const char *data, std::size_t size);
 
         std::size_t UnsafeStoreTo(char *data) const noexcept;
     };
-}
+}   // namespace sharpen
 
 #endif

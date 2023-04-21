@@ -2,11 +2,11 @@
 #ifndef _SHARPEN_UNIQUELOCKGROUP_HPP
 #define _SHARPEN_UNIQUELOCKGROUP_HPP
 
-#include <mutex>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
-#include <cassert>
 #include <cstdlib>
+#include <mutex>
 #include <new>
 
 #include "Noncopyable.hpp"
@@ -14,7 +14,7 @@
 namespace sharpen
 {
     template<typename _Lock>
-    class UniqueLockGroup:public sharpen::Noncopyable
+    class UniqueLockGroup : public sharpen::Noncopyable
     {
     private:
         using Self = sharpen::UniqueLockGroup<_Lock>;
@@ -24,17 +24,17 @@ namespace sharpen
         std::size_t size_;
         std::size_t beginIndex_;
         std::size_t endIndex_;
-    public:
 
+    public:
         explicit UniqueLockGroup(std::size_t size)
-            :locks_(nullptr)
-            ,size_(0)
-            ,beginIndex_(0)
-            ,endIndex_(0)
+            : locks_(nullptr)
+            , size_(0)
+            , beginIndex_(0)
+            , endIndex_(0)
         {
             assert(size);
-            UniqueLock *locks{reinterpret_cast<UniqueLock *>(std::calloc(size,sizeof(*locks)))};
-            if(!locks)
+            UniqueLock *locks{reinterpret_cast<UniqueLock *>(std::calloc(size, sizeof(*locks)))};
+            if (!locks)
             {
                 throw std::bad_alloc{};
             }
@@ -43,10 +43,10 @@ namespace sharpen
         }
 
         UniqueLockGroup(Self &&other) noexcept
-            :locks_(other.locks_)
-            ,size_(other.size_)
-            ,beginIndex_(other.beginIndex_)
-            ,endIndex_(other.endIndex_)
+            : locks_(other.locks_)
+            , size_(other.size_)
+            , beginIndex_(other.beginIndex_)
+            , endIndex_(other.endIndex_)
         {
             other.locks_ = nullptr;
             other.size_ = 0;
@@ -56,10 +56,10 @@ namespace sharpen
 
         inline Self &operator=(Self &&other) noexcept
         {
-            if(this != std::addressof(other))
+            if (this != std::addressof(other))
             {
                 this->Clear();
-                if(this->locks_)
+                if (this->locks_)
                 {
                     std::free(this->locks_);
                 }
@@ -78,7 +78,7 @@ namespace sharpen
         ~UniqueLockGroup() noexcept
         {
             this->Clear();
-            if(this->locks_)
+            if (this->locks_)
             {
                 std::free(this->locks_);
             }
@@ -106,11 +106,11 @@ namespace sharpen
 
         inline void Clear(std::size_t size) noexcept
         {
-            if(this->locks_)
+            if (this->locks_)
             {
                 std::size_t endIndex = this->beginIndex_ + size;
                 assert(this->endIndex_ >= endIndex);
-                for(std::size_t i = this->beginIndex_;i != endIndex;++i)
+                for (std::size_t i = this->beginIndex_; i != endIndex; ++i)
                 {
                     td::size_t index{i % this->size_};
                     this->locks_[index].~unique_lock();
@@ -127,6 +127,6 @@ namespace sharpen
             new (this->locks_ + index) UniqueLock{std::move(lock)};
         }
     };
-}
+}   // namespace sharpen
 
 #endif

@@ -10,21 +10,21 @@ namespace sharpen
     {
     private:
         using Self = sharpen::IHostLifetime;
+
     protected:
     public:
-    
         IHostLifetime() noexcept = default;
-    
+
         IHostLifetime(const Self &other) noexcept = default;
-    
+
         IHostLifetime(Self &&other) noexcept = default;
-    
+
         Self &operator=(const Self &other) noexcept = default;
-    
+
         Self &operator=(Self &&other) noexcept = default;
-    
+
         virtual ~IHostLifetime() noexcept = default;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -34,6 +34,6 @@ namespace sharpen
 
         virtual void Run() = 0;
     };
-}
+}   // namespace sharpen
 
 #endif

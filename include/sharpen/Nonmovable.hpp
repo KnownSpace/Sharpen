@@ -6,6 +6,7 @@ namespace sharpen
     class Nonmovable
     {
         using Self = sharpen::Nonmovable;
+
     public:
         Nonmovable() noexcept = default;
 
@@ -19,7 +20,7 @@ namespace sharpen
 
         ~Nonmovable() noexcept = default;
     };
-    
-}
+
+}   // namespace sharpen
 
 #endif

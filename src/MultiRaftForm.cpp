@@ -6,23 +6,25 @@
 #include <sharpen/ByteOrder.hpp>
 
 sharpen::MultiRaftForm::MultiRaftForm() noexcept
-    :Self{sharpen::RaftMailType::Unknown}
-{}
+    : Self{sharpen::RaftMailType::Unknown}
+{
+}
 
 sharpen::MultiRaftForm::MultiRaftForm(sharpen::RaftMailType type) noexcept
-    :Self{type,0}
-{}
+    : Self{type, 0}
+{
+}
 
-sharpen::MultiRaftForm::MultiRaftForm(sharpen::RaftMailType type,std::uint32_t number) noexcept
-    :magic_()
-    ,type_(0)
-    ,chksum_(0)
-    ,number_(0)
+sharpen::MultiRaftForm::MultiRaftForm(sharpen::RaftMailType type, std::uint32_t number) noexcept
+    : magic_()
+    , type_(0)
+    , chksum_(0)
+    , number_(0)
 {
     this->SetRaftNumber(number);
     assert(sizeof(this->magic_) == multiRaftMagic.GetSize());
-    std::memcpy(this->magic_,multiRaftMagic.Data(),sizeof(this->magic_));
-    if(type == sharpen::RaftMailType::MaxValue)
+    std::memcpy(this->magic_, multiRaftMagic.Data(), sizeof(this->magic_));
+    if (type == sharpen::RaftMailType::MaxValue)
     {
         type = sharpen::RaftMailType::Unknown;
     }
@@ -30,22 +32,22 @@ sharpen::MultiRaftForm::MultiRaftForm(sharpen::RaftMailType type,std::uint32_t n
 }
 
 sharpen::MultiRaftForm::MultiRaftForm(const Self &other) noexcept
-    :magic_()
-    ,type_(other.type_)
-    ,chksum_(other.chksum_)
-    ,number_(other.number_)
+    : magic_()
+    , type_(other.type_)
+    , chksum_(other.chksum_)
+    , number_(other.number_)
 {
-    std::memcpy(this->magic_,other.magic_,sizeof(this->magic_));
+    std::memcpy(this->magic_, other.magic_, sizeof(this->magic_));
 }
 
 sharpen::MultiRaftForm::MultiRaftForm(Self &&other) noexcept
-    :magic_()
-    ,type_(other.type_)
-    ,chksum_(other.chksum_)
-    ,number_(other.number_)
+    : magic_()
+    , type_(other.type_)
+    , chksum_(other.chksum_)
+    , number_(other.number_)
 {
-    std::memcpy(this->magic_,other.magic_,sizeof(this->magic_));
-    std::memset(other.magic_,0,sizeof(other.magic_));
+    std::memcpy(this->magic_, other.magic_, sizeof(this->magic_));
+    std::memset(other.magic_, 0, sizeof(other.magic_));
     other.type_ = 0;
     other.chksum_ = 0;
     other.number_ = 0;
@@ -53,9 +55,9 @@ sharpen::MultiRaftForm::MultiRaftForm(Self &&other) noexcept
 
 sharpen::MultiRaftForm &sharpen::MultiRaftForm::operator=(const Self &other) noexcept
 {
-    if(this != std::addressof(other))
+    if (this != std::addressof(other))
     {
-        std::memcpy(this->magic_,other.magic_,sizeof(this->magic_));
+        std::memcpy(this->magic_, other.magic_, sizeof(this->magic_));
         this->type_ = other.type_;
         this->chksum_ = other.chksum_;
         this->number_ = other.number_;
@@ -65,13 +67,13 @@ sharpen::MultiRaftForm &sharpen::MultiRaftForm::operator=(const Self &other) noe
 
 sharpen::MultiRaftForm &sharpen::MultiRaftForm::operator=(Self &&other) noexcept
 {
-    if(this != std::addressof(other))
+    if (this != std::addressof(other))
     {
-        std::memcpy(this->magic_,other.magic_,sizeof(this->magic_));
+        std::memcpy(this->magic_, other.magic_, sizeof(this->magic_));
         this->type_ = other.type_;
         this->chksum_ = other.chksum_;
         this->number_ = other.number_;
-        std::memset(other.magic_,0,sizeof(other.magic_));
+        std::memset(other.magic_, 0, sizeof(other.magic_));
         other.type_ = 0;
         other.chksum_ = 0;
         other.number_ = 0;
@@ -84,9 +86,9 @@ void sharpen::MultiRaftForm::SetChecksum(sharpen::ByteSlice slice) noexcept
     this->SetChecksum(slice.Crc16());
 }
 
-void sharpen::MultiRaftForm::SetChecksum(const char *data,std::size_t size) noexcept
+void sharpen::MultiRaftForm::SetChecksum(const char *data, std::size_t size) noexcept
 {
-    this->SetChecksum(sharpen::Crc16(data,size));
+    this->SetChecksum(sharpen::Crc16(data, size));
 }
 
 bool sharpen::MultiRaftForm::CheckContent(sharpen::ByteSlice content) const noexcept
@@ -100,7 +102,7 @@ sharpen::RaftMailType sharpen::MultiRaftForm::GetType() const noexcept
 #ifndef SHARPEN_LIL_ENDIAN
     sharpen::ConvertEndian(type);
 #endif
-    if(sharpen::IsValiedRaftMailType(type))
+    if (sharpen::IsValiedRaftMailType(type))
     {
         return static_cast<sharpen::RaftMailType>(this->type_);
     }

@@ -10,16 +10,18 @@
 namespace sharpen
 {
 
-    class SpinLock:public sharpen::Noncopyable,public sharpen::Nonmovable
+    class SpinLock
+        : public sharpen::Noncopyable
+        , public sharpen::Nonmovable
     {
     private:
-
         std::atomic_uint64_t acquireCount_;
         std::atomic_uint64_t releaseCount_;
+
     public:
         SpinLock() noexcept;
 
-        //use by stl
+        // use by stl
         void lock() noexcept;
 
         inline void Lock() noexcept
@@ -27,7 +29,7 @@ namespace sharpen
             this->lock();
         }
 
-        //use by stl
+        // use by stl
         void unlock() noexcept;
 
         inline void Unlock() noexcept
@@ -45,6 +47,6 @@ namespace sharpen
         ~SpinLock() noexcept = default;
     };
 
-} 
+}   // namespace sharpen
 
 #endif

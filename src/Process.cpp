@@ -6,23 +6,23 @@
 #ifdef SHARPEN_IS_WIN
 #include <Windows.h>
 #else
-#include <unistd.h>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <fcntl.h>
+#include <unistd.h>
 #endif
 
-#include <sharpen/YieldOps.hpp>
 #include <sharpen/ProcessOps.hpp>
+#include <sharpen/YieldOps.hpp>
 
 #ifdef SHARPEN_IS_WIN
 #include <sharpen/WinEx.h>
 #endif
 
-#include <sharpen/WinInputPipeChannel.hpp>
-#include <sharpen/WinOutputPipeChannel.hpp>
 #include <sharpen/PosixInputPipeChannel.hpp>
 #include <sharpen/PosixOutputPipeChannel.hpp>
+#include <sharpen/WinInputPipeChannel.hpp>
+#include <sharpen/WinOutputPipeChannel.hpp>
 
 #ifdef SHARPEN_IS_WIN
 static HANDLE invalidHandle{INVALID_HANDLE_VALUE};
@@ -30,38 +30,40 @@ static HANDLE invalidHandle{INVALID_HANDLE_VALUE};
 static constexpr int invalidHandle{-1};
 #endif
 
-sharpen::Process::Process(std::string name,std::string workDirectory,std::vector<std::string> args)
-    :name_(std::move(name))
-    ,workDirectory_(std::move(workDirectory))
-    ,args_(std::move(args))
-    ,handle_(invalidHandle)
-    ,stdin_(invalidHandle)
-    ,stdout_(invalidHandle)
-    ,stderr_(invalidHandle)
+sharpen::Process::Process(std::string name,
+                          std::string workDirectory,
+                          std::vector<std::string> args)
+    : name_(std::move(name))
+    , workDirectory_(std::move(workDirectory))
+    , args_(std::move(args))
+    , handle_(invalidHandle)
+    , stdin_(invalidHandle)
+    , stdout_(invalidHandle)
+    , stderr_(invalidHandle)
 {
     assert(!this->name_.empty());
 }
 
-sharpen::Process::Process(std::string name,std::string workDirectory)
-    :name_(std::move(name))
-    ,workDirectory_(std::move(workDirectory))
-    ,args_()
-    ,handle_(invalidHandle)
-    ,stdin_(invalidHandle)
-    ,stdout_(invalidHandle)
-    ,stderr_(invalidHandle)
+sharpen::Process::Process(std::string name, std::string workDirectory)
+    : name_(std::move(name))
+    , workDirectory_(std::move(workDirectory))
+    , args_()
+    , handle_(invalidHandle)
+    , stdin_(invalidHandle)
+    , stdout_(invalidHandle)
+    , stderr_(invalidHandle)
 {
     assert(!this->name_.empty());
 }
 
 sharpen::Process::Process(Self &&other) noexcept
-    :name_(std::move(other.name_))
-    ,workDirectory_(std::move(other.workDirectory_))
-    ,args_(std::move(other.args_))
-    ,handle_(other.handle_)
-    ,stdin_(other.stdin_)
-    ,stdout_(other.stdout_)
-    ,stderr_(other.stderr_)
+    : name_(std::move(other.name_))
+    , workDirectory_(std::move(other.workDirectory_))
+    , args_(std::move(other.args_))
+    , handle_(other.handle_)
+    , stdin_(other.stdin_)
+    , stdout_(other.stdout_)
+    , stderr_(other.stderr_)
 {
     other.handle_ = invalidHandle;
     other.stdin_ = invalidHandle;
@@ -71,22 +73,22 @@ sharpen::Process::Process(Self &&other) noexcept
 
 void sharpen::Process::ReleaseHandles() noexcept
 {
-    if(this->stdin_ != invalidHandle)
+    if (this->stdin_ != invalidHandle)
     {
         sharpen::CloseFileHandle(this->stdin_);
         this->stdin_ = invalidHandle;
     }
-    if(this->stdout_ != invalidHandle)
+    if (this->stdout_ != invalidHandle)
     {
         sharpen::CloseFileHandle(this->stdout_);
         this->stdout_ = invalidHandle;
     }
-    if(this->stderr_ != invalidHandle)
+    if (this->stderr_ != invalidHandle)
     {
         sharpen::CloseFileHandle(this->stderr_);
         this->stderr_ = invalidHandle;
     }
-    if(this->handle_ != invalidHandle)
+    if (this->handle_ != invalidHandle)
     {
 #ifdef SHARPEN_IS_WIN
         sharpen::CloseFileHandle(this->handle_);
@@ -97,7 +99,7 @@ void sharpen::Process::ReleaseHandles() noexcept
 
 sharpen::Process &sharpen::Process::operator=(Self &&other) noexcept
 {
-    if(this != std::addressof(other))
+    if (this != std::addressof(other))
     {
         this->name_ = std::move(other.name_);
         this->workDirectory_ = std::move(other.workDirectory_);
@@ -124,9 +126,9 @@ void sharpen::Process::WinStart()
 {
 #ifdef SHARPEN_IS_WIN
     std::size_t commandLength{this->name_.size() + 3};
-    for(auto begin = this->args_.begin(),end = this->args_.end(); begin != end; ++begin)
+    for (auto begin = this->args_.begin(), end = this->args_.end(); begin != end; ++begin)
     {
-        if(!begin->empty())
+        if (!begin->empty())
         {
             commandLength += begin->size() + 3;
         }
@@ -134,18 +136,18 @@ void sharpen::Process::WinStart()
     std::string commandArgs;
     commandArgs.resize(commandLength);
     commandArgs[0] = '\"';
-    std::memcpy(const_cast<char*>(commandArgs.data() + 1),this->name_.data(),this->name_.size());
+    std::memcpy(const_cast<char *>(commandArgs.data() + 1), this->name_.data(), this->name_.size());
     commandArgs[this->name_.size() + 1] = '\"';
     commandArgs[this->name_.size() + 2] = ' ';
     std::size_t offset{this->name_.size() + 3};
-    for(auto begin = this->args_.begin(),end = this->args_.end(); begin != end; ++begin)
+    for (auto begin = this->args_.begin(), end = this->args_.end(); begin != end; ++begin)
     {
-        if(!begin->empty())
+        if (!begin->empty())
         {
             char *data{const_cast<char *>(commandArgs.data())};
             data[offset] = '\"';
             offset += 1;
-            std::memcpy(data + offset,begin->data(),begin->size());
+            std::memcpy(data + offset, begin->data(), begin->size());
             offset += begin->size();
             data[offset] = '\"';
             offset += 1;
@@ -156,64 +158,92 @@ void sharpen::Process::WinStart()
     commandArgs.pop_back();
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
-    std::memset(&si,0,sizeof(si));
-    std::memset(&pi,0,sizeof(pi));
+    std::memset(&si, 0, sizeof(si));
+    std::memset(&pi, 0, sizeof(pi));
     si.cb = sizeof(si);
     BOOL inheritHandles{FALSE};
-    if(this->stdin_ != invalidHandle || this->stdout_ != invalidHandle || this->stderr_ != invalidHandle)
+    if (this->stdin_ != invalidHandle || this->stdout_ != invalidHandle ||
+        this->stderr_ != invalidHandle)
     {
         inheritHandles = TRUE;
         si.dwFlags |= STARTF_USESTDHANDLES;
     }
     const char *workDir{nullptr};
-    if(!this->workDirectory_.empty())
+    if (!this->workDirectory_.empty())
     {
         workDir = this->workDirectory_.data();
     }
-    if(this->stdin_ != invalidHandle)
+    if (this->stdin_ != invalidHandle)
     {
         si.hStdInput = this->stdin_;
     }
-    else if(inheritHandles)
+    else if (inheritHandles)
     {
-        sharpen::FileHandle handle = ::CreateFileA("CONIN$",FILE_GENERIC_READ,FILE_SHARE_READ,nullptr,OPEN_EXISTING,FILE_FLAG_OVERLAPPED,nullptr);
-        if(handle == INVALID_HANDLE_VALUE)
+        sharpen::FileHandle handle = ::CreateFileA("CONIN$",
+                                                   FILE_GENERIC_READ,
+                                                   FILE_SHARE_READ,
+                                                   nullptr,
+                                                   OPEN_EXISTING,
+                                                   FILE_FLAG_OVERLAPPED,
+                                                   nullptr);
+        if (handle == INVALID_HANDLE_VALUE)
         {
             sharpen::ThrowLastError();
         }
         this->stdin_ = handle;
         si.hStdInput = handle;
     }
-    if(this->stdout_ != invalidHandle)
+    if (this->stdout_ != invalidHandle)
     {
         si.hStdOutput = this->stdout_;
     }
-    else if(inheritHandles)
+    else if (inheritHandles)
     {
-        sharpen::FileHandle handle = ::CreateFileA("CONOUT$",FILE_GENERIC_WRITE,FILE_SHARE_WRITE,nullptr,OPEN_EXISTING,FILE_FLAG_OVERLAPPED,nullptr);
-        if(handle == INVALID_HANDLE_VALUE)
+        sharpen::FileHandle handle = ::CreateFileA("CONOUT$",
+                                                   FILE_GENERIC_WRITE,
+                                                   FILE_SHARE_WRITE,
+                                                   nullptr,
+                                                   OPEN_EXISTING,
+                                                   FILE_FLAG_OVERLAPPED,
+                                                   nullptr);
+        if (handle == INVALID_HANDLE_VALUE)
         {
             sharpen::ThrowLastError();
         }
         this->stdout_ = handle;
         si.hStdOutput = handle;
     }
-    if(this->stderr_ != invalidHandle)
+    if (this->stderr_ != invalidHandle)
     {
         si.hStdError = this->stderr_;
     }
-    else if(inheritHandles)
+    else if (inheritHandles)
     {
-        sharpen::FileHandle handle = ::CreateFileA("CONOUT$",FILE_GENERIC_WRITE,FILE_SHARE_WRITE,nullptr,OPEN_EXISTING,FILE_FLAG_OVERLAPPED,nullptr);
-        if(handle == INVALID_HANDLE_VALUE)
+        sharpen::FileHandle handle = ::CreateFileA("CONOUT$",
+                                                   FILE_GENERIC_WRITE,
+                                                   FILE_SHARE_WRITE,
+                                                   nullptr,
+                                                   OPEN_EXISTING,
+                                                   FILE_FLAG_OVERLAPPED,
+                                                   nullptr);
+        if (handle == INVALID_HANDLE_VALUE)
         {
             sharpen::ThrowLastError();
         }
         this->stderr_ = handle;
         si.hStdError = handle;
     }
-    char *cmd{const_cast<char*>(commandArgs.c_str())};
-    if(!::CreateProcessA(this->name_.c_str(),cmd,nullptr,nullptr,TRUE,CREATE_NEW_CONSOLE,nullptr,workDir,&si,&pi))
+    char *cmd{const_cast<char *>(commandArgs.c_str())};
+    if (!::CreateProcessA(this->name_.c_str(),
+                          cmd,
+                          nullptr,
+                          nullptr,
+                          TRUE,
+                          CREATE_NEW_CONSOLE,
+                          nullptr,
+                          workDir,
+                          &si,
+                          &pi))
     {
         sharpen::ThrowLastError();
     }
@@ -228,67 +258,67 @@ void sharpen::Process::NixStart()
 {
 #ifdef SHARPEN_IS_NIX
     std::size_t argvSize{2 + this->args_.size()};
-    char **argv = reinterpret_cast<char**>(std::calloc(argvSize,sizeof(char*)));
-    if(!argv)
+    char **argv = reinterpret_cast<char **>(std::calloc(argvSize, sizeof(char *)));
+    if (!argv)
     {
         throw std::bad_alloc{};
     }
-    argv[0] = const_cast<char*>(this->name_.c_str());
+    argv[0] = const_cast<char *>(this->name_.c_str());
     argv[argvSize - 1] = nullptr;
     std::size_t index{1};
-    for(auto begin = this->args_.begin(),end = this->args_.end(); begin != end; ++begin)
+    for (auto begin = this->args_.begin(), end = this->args_.end(); begin != end; ++begin)
     {
-        argv[index] = const_cast<char*>(begin->c_str());
+        argv[index] = const_cast<char *>(begin->c_str());
         index += 1;
     }
     sharpen::FileHandle errorPipes[2];
-    if(::pipe2(errorPipes,O_CLOEXEC) == -1)
+    if (::pipe2(errorPipes, O_CLOEXEC) == -1)
     {
         sharpen::ThrowLastError();
     }
     sharpen::FileHandle readPipe{errorPipes[0]};
     sharpen::FileHandle writePipe{errorPipes[1]};
     pid_t pid{::fork()};
-    if(pid == -1)
+    if (pid == -1)
     {
         sharpen::ThrowLastError();
     }
-    if(!pid)
+    if (!pid)
     {
         ::close(readPipe);
-        if(this->stdin_ != invalidHandle)
+        if (this->stdin_ != invalidHandle)
         {
-            if(::dup2(this->stdin_,STDIN_FILENO) == -1)
+            if (::dup2(this->stdin_, STDIN_FILENO) == -1)
             {
-                ::write(writePipe,&errno,sizeof(errno));
+                ::write(writePipe, &errno, sizeof(errno));
                 std::terminate();
             }
             ::close(this->stdin_);
             this->stdin_ = STDIN_FILENO;
         }
-        if(this->stdout_ != invalidHandle)
+        if (this->stdout_ != invalidHandle)
         {
-            if(::dup2(this->stdout_,STDOUT_FILENO) == -1)
+            if (::dup2(this->stdout_, STDOUT_FILENO) == -1)
             {
-                ::write(writePipe,&errno,sizeof(errno));
+                ::write(writePipe, &errno, sizeof(errno));
                 std::terminate();
             }
             ::close(this->stdout_);
             this->stdout_ = STDOUT_FILENO;
         }
-        if(this->stderr_ != invalidHandle)
+        if (this->stderr_ != invalidHandle)
         {
-            if(::dup2(this->stderr_,STDERR_FILENO) == -1)
+            if (::dup2(this->stderr_, STDERR_FILENO) == -1)
             {
-                ::write(writePipe,&errno,sizeof(errno));
+                ::write(writePipe, &errno, sizeof(errno));
                 std::terminate();
             }
             ::close(this->stderr_);
             this->stderr_ = STDERR_FILENO;
         }
-        if(::execv(this->name_.c_str(),argv) == -1)
+        if (::execv(this->name_.c_str(), argv) == -1)
         {
-            ::write(writePipe,&errno,sizeof(errno));
+            ::write(writePipe, &errno, sizeof(errno));
             std::terminate();
         }
         assert(false && "unreachable");
@@ -302,22 +332,22 @@ void sharpen::Process::NixStart()
     this->stderr_ = invalidHandle;
     ::close(writePipe);
     sharpen::ErrorCode err{0};
-    ssize_t sz{::read(readPipe,&err,sizeof(err))};
-    while(sz == -1 && errno == EINTR)
+    ssize_t sz{::read(readPipe, &err, sizeof(err))};
+    while (sz == -1 && errno == EINTR)
     {
-        sz = ::read(readPipe,&err,sizeof(err));
+        sz = ::read(readPipe, &err, sizeof(err));
     }
-    if(sz != 0)
+    if (sz != 0)
     {
         std::size_t offset{static_cast<std::size_t>(sz)};
-        while(offset != sizeof(err))
+        while (offset != sizeof(err))
         {
-            char *p{reinterpret_cast<char*>(&err)};
-            sz = ::read(readPipe,p + offset,sizeof(err) - offset);
+            char *p{reinterpret_cast<char *>(&err)};
+            sz = ::read(readPipe, p + offset, sizeof(err) - offset);
             assert(sz != 0);
-            while(sz == -1 && errno == EINTR)
+            while (sz == -1 && errno == EINTR)
             {
-                sz = ::read(readPipe,p + offset,sizeof(err) - offset);
+                sz = ::read(readPipe, p + offset, sizeof(err) - offset);
             }
             offset += sz;
         }
@@ -345,14 +375,14 @@ std::int32_t sharpen::Process::WinJoin()
 {
 #ifdef SHARPEN_IS_WIN
     DWORD exitCode{STILL_ACTIVE};
-    if(!::GetExitCodeProcess(this->handle_,&exitCode))
+    if (!::GetExitCodeProcess(this->handle_, &exitCode))
     {
         sharpen::ThrowLastError();
     }
-    while(exitCode == STILL_ACTIVE)
+    while (exitCode == STILL_ACTIVE)
     {
         sharpen::YieldCycle();
-        if(!::GetExitCodeProcess(this->handle_,&exitCode))
+        if (!::GetExitCodeProcess(this->handle_, &exitCode))
         {
             sharpen::ThrowLastError();
         }
@@ -371,17 +401,17 @@ std::int32_t sharpen::Process::NixJoin()
     pid_t pid{0};
     while (!pid)
     {
-        pid = ::waitpid(this->handle_,&status,WNOHANG);
-        while(pid == -1 && sharpen::GetLastError() == EINTR)
+        pid = ::waitpid(this->handle_, &status, WNOHANG);
+        while (pid == -1 && sharpen::GetLastError() == EINTR)
         {
-            pid = ::waitpid(this->handle_,&status,WNOHANG);
+            pid = ::waitpid(this->handle_, &status, WNOHANG);
         }
-        if(!pid)
+        if (!pid)
         {
             sharpen::YieldCycle();
         }
     }
-    if(pid == -1)
+    if (pid == -1)
     {
         sharpen::ThrowLastError();
     }
@@ -406,7 +436,7 @@ std::int32_t sharpen::Process::Join()
 void sharpen::Process::WinKill()
 {
 #ifdef SHARPEN_IS_WIN
-    if(!::TerminateProcess(this->handle_,EXIT_FAILURE))
+    if (!::TerminateProcess(this->handle_, EXIT_FAILURE))
     {
         sharpen::ThrowLastError();
     }
@@ -418,7 +448,7 @@ void sharpen::Process::WinKill()
 void sharpen::Process::NixKill()
 {
 #ifdef SHARPEN_IS_NIX
-    if(::kill(this->handle_,SIGKILL) == -1)
+    if (::kill(this->handle_, SIGKILL) == -1)
     {
         sharpen::ThrowLastError();
     }
@@ -443,7 +473,7 @@ void sharpen::Process::Suspend()
     std::uint32_t processId{0};
 #ifdef SHARPEN_IS_WIN
     processId = ::GetProcessId(this->handle_);
-    if(!processId)
+    if (!processId)
     {
         sharpen::ThrowLastError();
     }
@@ -459,7 +489,7 @@ void sharpen::Process::Resume()
     std::uint32_t processId{0};
 #ifdef SHARPEN_IS_WIN
     processId = ::GetProcessId(this->handle_);
-    if(!processId)
+    if (!processId)
     {
         sharpen::ThrowLastError();
     }
@@ -479,7 +509,7 @@ sharpen::OutputPipeChannelPtr sharpen::Process::RedirectStdin()
     saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
     saAttr.bInheritHandle = TRUE;
     saAttr.lpSecurityDescriptor = nullptr;
-    if(!::CreatePipeEx(&readPipe,&writePipe,&saAttr,0,0,FILE_FLAG_OVERLAPPED))
+    if (!::CreatePipeEx(&readPipe, &writePipe, &saAttr, 0, 0, FILE_FLAG_OVERLAPPED))
     {
         sharpen::ThrowLastError();
     }
@@ -489,7 +519,7 @@ sharpen::OutputPipeChannelPtr sharpen::Process::RedirectStdin()
     {
         channel = std::make_shared<sharpen::WinOutputPipeChannel>(writePipe);
     }
-    catch(const std::bad_alloc&)
+    catch (const std::bad_alloc &)
     {
         sharpen::CloseFileHandle(readPipe);
         sharpen::CloseFileHandle(writePipe);
@@ -499,21 +529,21 @@ sharpen::OutputPipeChannelPtr sharpen::Process::RedirectStdin()
     return channel;
 #else
     sharpen::FileHandle pipes[2];
-    if(::pipe(pipes) == -1)
+    if (::pipe(pipes) == -1)
     {
         sharpen::ThrowLastError();
     }
     sharpen::FileHandle readPipe{pipes[0]};
     sharpen::FileHandle writePipe{pipes[1]};
-    int flags{::fcntl(writePipe,F_GETFL)};
-    if(flags == -1)
+    int flags{::fcntl(writePipe, F_GETFL)};
+    if (flags == -1)
     {
         sharpen::CloseFileHandle(readPipe);
         sharpen::CloseFileHandle(writePipe);
         sharpen::ThrowLastError();
     }
     flags |= O_NONBLOCK | O_CLOEXEC;
-    if(::fcntl(writePipe,F_SETFL,flags) == -1)
+    if (::fcntl(writePipe, F_SETFL, flags) == -1)
     {
         sharpen::CloseFileHandle(readPipe);
         sharpen::CloseFileHandle(writePipe);
@@ -525,7 +555,7 @@ sharpen::OutputPipeChannelPtr sharpen::Process::RedirectStdin()
     {
         channel = std::make_shared<sharpen::PosixOutputPipeChannel>(writePipe);
     }
-    catch(const std::bad_alloc&)
+    catch (const std::bad_alloc &)
     {
         sharpen::CloseFileHandle(readPipe);
         sharpen::CloseFileHandle(writePipe);
@@ -546,7 +576,7 @@ sharpen::InputPipeChannelPtr sharpen::Process::RedirectStdout()
     saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
     saAttr.bInheritHandle = TRUE;
     saAttr.lpSecurityDescriptor = nullptr;
-    if(!::CreatePipeEx(&readPipe,&writePipe,&saAttr,0,FILE_FLAG_OVERLAPPED,0))
+    if (!::CreatePipeEx(&readPipe, &writePipe, &saAttr, 0, FILE_FLAG_OVERLAPPED, 0))
     {
         sharpen::ThrowLastError();
     }
@@ -556,7 +586,7 @@ sharpen::InputPipeChannelPtr sharpen::Process::RedirectStdout()
     {
         channel = std::make_shared<sharpen::WinInputPipeChannel>(readPipe);
     }
-    catch(const std::bad_alloc&)
+    catch (const std::bad_alloc &)
     {
         sharpen::CloseFileHandle(readPipe);
         sharpen::CloseFileHandle(writePipe);
@@ -566,21 +596,21 @@ sharpen::InputPipeChannelPtr sharpen::Process::RedirectStdout()
     return channel;
 #else
     sharpen::FileHandle pipes[2];
-    if(::pipe(pipes) == -1)
+    if (::pipe(pipes) == -1)
     {
         sharpen::ThrowLastError();
     }
     sharpen::FileHandle readPipe{pipes[0]};
     sharpen::FileHandle writePipe{pipes[1]};
-    int flags{::fcntl(readPipe,F_GETFL)};
-    if(flags == -1)
+    int flags{::fcntl(readPipe, F_GETFL)};
+    if (flags == -1)
     {
         sharpen::CloseFileHandle(readPipe);
         sharpen::CloseFileHandle(writePipe);
         sharpen::ThrowLastError();
     }
     flags |= O_NONBLOCK | O_CLOEXEC;
-    if(::fcntl(readPipe,F_SETFL,flags) == -1)
+    if (::fcntl(readPipe, F_SETFL, flags) == -1)
     {
         sharpen::CloseFileHandle(readPipe);
         sharpen::CloseFileHandle(writePipe);
@@ -592,7 +622,7 @@ sharpen::InputPipeChannelPtr sharpen::Process::RedirectStdout()
     {
         channel = std::make_shared<sharpen::PosixInputPipeChannel>(readPipe);
     }
-    catch(const std::bad_alloc&)
+    catch (const std::bad_alloc &)
     {
         sharpen::CloseFileHandle(readPipe);
         sharpen::CloseFileHandle(writePipe);
@@ -613,7 +643,7 @@ sharpen::InputPipeChannelPtr sharpen::Process::RedirectStderr()
     saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
     saAttr.bInheritHandle = TRUE;
     saAttr.lpSecurityDescriptor = nullptr;
-    if(!::CreatePipeEx(&readPipe,&writePipe,&saAttr,0,FILE_FLAG_OVERLAPPED,0))
+    if (!::CreatePipeEx(&readPipe, &writePipe, &saAttr, 0, FILE_FLAG_OVERLAPPED, 0))
     {
         sharpen::ThrowLastError();
     }
@@ -623,7 +653,7 @@ sharpen::InputPipeChannelPtr sharpen::Process::RedirectStderr()
     {
         channel = std::make_shared<sharpen::WinInputPipeChannel>(readPipe);
     }
-    catch(const std::bad_alloc&)
+    catch (const std::bad_alloc &)
     {
         sharpen::CloseFileHandle(readPipe);
         sharpen::CloseFileHandle(writePipe);
@@ -633,21 +663,21 @@ sharpen::InputPipeChannelPtr sharpen::Process::RedirectStderr()
     return channel;
 #else
     sharpen::FileHandle pipes[2];
-    if(::pipe(pipes) == -1)
+    if (::pipe(pipes) == -1)
     {
         sharpen::ThrowLastError();
     }
     sharpen::FileHandle readPipe{pipes[0]};
     sharpen::FileHandle writePipe{pipes[1]};
-    int flags{::fcntl(readPipe,F_GETFL)};
-    if(flags == -1)
+    int flags{::fcntl(readPipe, F_GETFL)};
+    if (flags == -1)
     {
         sharpen::CloseFileHandle(readPipe);
         sharpen::CloseFileHandle(writePipe);
         sharpen::ThrowLastError();
     }
     flags |= O_NONBLOCK | O_CLOEXEC;
-    if(::fcntl(readPipe,F_SETFL,flags) == -1)
+    if (::fcntl(readPipe, F_SETFL, flags) == -1)
     {
         sharpen::CloseFileHandle(readPipe);
         sharpen::CloseFileHandle(writePipe);
@@ -659,7 +689,7 @@ sharpen::InputPipeChannelPtr sharpen::Process::RedirectStderr()
     {
         channel = std::make_shared<sharpen::PosixInputPipeChannel>(readPipe);
     }
-    catch(const std::bad_alloc&)
+    catch (const std::bad_alloc &)
     {
         sharpen::CloseFileHandle(readPipe);
         sharpen::CloseFileHandle(writePipe);

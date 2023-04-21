@@ -14,36 +14,36 @@ namespace sharpen
     {
     private:
         using Self = sharpen::MemoryPage;
-        using ConstPtr = const char*;
-    
+        using ConstPtr = const char *;
+
         static constexpr std::size_t pageSize_{4096};
 
         char *data_;
         std::size_t pageCount_;
+
     public:
-    
         MemoryPage() noexcept;
 
         explicit MemoryPage(std::size_t pageCount);
-    
+
         MemoryPage(const Self &other);
-    
+
         MemoryPage(Self &&other) noexcept;
-    
+
         inline Self &operator=(const Self &other)
         {
-            if(this != std::addressof(other))
+            if (this != std::addressof(other))
             {
                 Self tmp{other};
-                std::swap(tmp,*this);
+                std::swap(tmp, *this);
             }
             return *this;
         }
-    
+
         Self &operator=(Self &&other) noexcept;
-    
+
         ~MemoryPage() noexcept;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -55,7 +55,7 @@ namespace sharpen
         {
             return this->data_;
         }
-        
+
         inline const char *Data() const noexcept
         {
             return this->data_;
@@ -73,7 +73,7 @@ namespace sharpen
             return this->data_[index];
         }
 
-        inline operator char*() noexcept
+        inline operator char *() noexcept
         {
             return this->Data();
         }
@@ -118,13 +118,13 @@ namespace sharpen
             return this->pageCount_;
         }
 
-        sharpen::ByteSlice GetSlice(std::size_t index,std::size_t size) const;
+        sharpen::ByteSlice GetSlice(std::size_t index, std::size_t size) const;
 
         inline sharpen::ByteSlice GetSlice() const noexcept
         {
-            return sharpen::ByteSlice{this->Data(),this->GetSize()};
+            return sharpen::ByteSlice{this->Data(), this->GetSize()};
         }
-    };   
-}
+    };
+}   // namespace sharpen
 
 #endif

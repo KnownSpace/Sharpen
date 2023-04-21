@@ -2,7 +2,7 @@
 
 sharpen::LogBatch &sharpen::LogBatch::operator=(Self &&other) noexcept
 {
-    if(this != std::addressof(other))
+    if (this != std::addressof(other))
     {
         this->entires_ = std::move(other.entires_);
     }

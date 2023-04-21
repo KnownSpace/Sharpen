@@ -8,14 +8,14 @@
 #include <stdlib.h>
 #endif
 
-void *sharpen::AlignedAlloc(std::size_t size,std::size_t alignment) noexcept
+void *sharpen::AlignedAlloc(std::size_t size, std::size_t alignment) noexcept
 {
     assert(size != 0);
 #ifdef SHARPEN_IS_WIN
-    return _aligned_malloc(size,alignment);
+    return _aligned_malloc(size, alignment);
 #else
     void *p = nullptr;
-    int r = posix_memalign(&p,alignment,size);
+    int r = posix_memalign(&p, alignment, size);
     static_cast<void>(r);
     return p;
 #endif

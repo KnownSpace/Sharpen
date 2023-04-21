@@ -28,7 +28,7 @@ namespace sharpen
 
         char internalEventfd_;
     };
-}
+}   // namespace sharpen
 
 #endif
 

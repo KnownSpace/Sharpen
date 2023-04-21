@@ -10,14 +10,17 @@
 
 #include "IChannel.hpp"
 #include "ISelector.hpp"
+#include "IocpOverlappedStruct.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "SpinLock.hpp"
-#include "IocpOverlappedStruct.hpp"
 
 namespace sharpen
 {
-    class IocpSelector:public sharpen::ISelector,public sharpen::Nonmovable,public sharpen::Noncopyable
+    class IocpSelector
+        : public sharpen::ISelector
+        , public sharpen::Nonmovable
+        , public sharpen::Noncopyable
     {
     private:
         using EventBuf = std::vector<sharpen::IoCompletionPort::Event>;
@@ -33,18 +36,17 @@ namespace sharpen
         static bool CheckChannel(sharpen::ChannelPtr &channel) noexcept;
 
     public:
-
         IocpSelector();
 
         ~IocpSelector() noexcept = default;
 
         virtual void Select(EventVector &events) override;
-        
+
         virtual void Notify() override;
-        
+
         virtual void Resister(WeakChannelPtr channel) override;
     };
-}
+}   // namespace sharpen
 
 #endif
 #endif

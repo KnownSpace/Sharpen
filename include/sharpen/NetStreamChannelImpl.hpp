@@ -2,8 +2,8 @@
 #ifndef _SHARPEN_NETSTREAMCHANNELIMPL_HPP
 #define _SHARPEN_NETSTREAMCHANNELIMPL_HPP
 
-#include "WinNetStreamChannel.hpp"
 #include "PosixFileChannel.hpp"
+#include "WinNetStreamChannel.hpp"
 
 namespace sharpen
 {
@@ -11,7 +11,7 @@ namespace sharpen
     using NetStreamChannelImpl = sharpen::WinNetStreamChannel;
 #else
     using NetStreamChannelImpl = sharpen::PosixNetStreamChannel;
-#endif   
-}
+#endif
+}   // namespace sharpen
 
 #endif

@@ -2,17 +2,19 @@
 #ifndef _SHARPEN_IOUTPUTPIPECHANNEL_HPP
 #define _SHARPEN_IOUTPUTPIPECHANNEL_HPP
 
-#include <cstring>
 #include <cstdio>
+#include <cstring>
 
-#include "IChannel.hpp"
-#include "IAsyncWritable.hpp"
 #include "AwaitableFuture.hpp"
 #include "ByteBuffer.hpp"
+#include "IAsyncWritable.hpp"
+#include "IChannel.hpp"
 
 namespace sharpen
 {
-    class IOutputPipeChannel:public sharpen::IChannel,public sharpen::IAsyncWritable
+    class IOutputPipeChannel
+        : public sharpen::IChannel
+        , public sharpen::IAsyncWritable
     {
     private:
         using Self = sharpen::IOutputPipeChannel;
@@ -28,6 +30,6 @@ namespace sharpen
     };
 
     using OutputPipeChannelPtr = std::shared_ptr<sharpen::IOutputPipeChannel>;
-}
+}   // namespace sharpen
 
 #endif

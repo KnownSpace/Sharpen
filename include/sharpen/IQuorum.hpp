@@ -5,8 +5,8 @@
 #include <cassert>
 #include <set>
 
-#include "IRemoteActorBuilder.hpp"
 #include "Broadcaster.hpp"
+#include "IRemoteActorBuilder.hpp"
 
 namespace sharpen
 {
@@ -14,29 +14,32 @@ namespace sharpen
     {
     private:
         using Self = sharpen::IQuorum;
-    protected:
 
+    protected:
         virtual sharpen::IRemoteActorBuilder *NviLookup(std::uint64_t actorId) noexcept = 0;
 
-        virtual const sharpen::IRemoteActorBuilder *NviLookup(std::uint64_t actorId) const noexcept = 0;
+        virtual const sharpen::IRemoteActorBuilder *NviLookup(
+            std::uint64_t actorId) const noexcept = 0;
 
-        virtual void NviRegister(std::uint64_t actorId,std::unique_ptr<sharpen::IRemoteActorBuilder> builder) = 0;
+        virtual void NviRegister(std::uint64_t actorId,
+                                 std::unique_ptr<sharpen::IRemoteActorBuilder> builder) = 0;
 
-        virtual std::unique_ptr<sharpen::Broadcaster> NviCreateBroadcaster(std::size_t pipeline) const = 0;
+        virtual std::unique_ptr<sharpen::Broadcaster> NviCreateBroadcaster(
+            std::size_t pipeline) const = 0;
+
     public:
-    
         IQuorum() noexcept = default;
-    
+
         IQuorum(const Self &other) noexcept = default;
-    
+
         IQuorum(Self &&other) noexcept = default;
-    
+
         Self &operator=(const Self &other) noexcept = default;
-    
+
         Self &operator=(Self &&other) noexcept = default;
-    
+
         virtual ~IQuorum() noexcept = default;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -50,7 +53,7 @@ namespace sharpen
         std::unique_ptr<sharpen::Broadcaster> CreateBroadcaster(std::size_t pipeline) const
         {
             assert(pipeline > 0);
-            return this->NviCreateBroadcaster((std::max)(static_cast<std::size_t>(1),pipeline));
+            return this->NviCreateBroadcaster((std::max)(static_cast<std::size_t>(1), pipeline));
         }
 
         inline sharpen::IRemoteActorBuilder *Lookup(std::uint64_t actorId)
@@ -77,10 +80,11 @@ namespace sharpen
             return *builder;
         }
 
-        inline void Register(std::uint64_t actorId,std::unique_ptr<sharpen::IRemoteActorBuilder> builder)
+        inline void Register(std::uint64_t actorId,
+                             std::unique_ptr<sharpen::IRemoteActorBuilder> builder)
         {
             assert(builder != nullptr);
-            this->NviRegister(actorId,std::move(builder));
+            this->NviRegister(actorId, std::move(builder));
         }
 
         virtual void Remove(std::uint64_t actorId) noexcept = 0;
@@ -96,7 +100,7 @@ namespace sharpen
         {
             std::size_t size{this->GetSize()};
             size += 1;
-            return size/2;
+            return size / 2;
         }
 
         inline bool Empty() const noexcept
@@ -106,6 +110,6 @@ namespace sharpen
 
         virtual std::set<std::uint64_t> GenerateActorsSet() const = 0;
     };
-}
+}   // namespace sharpen
 
 #endif

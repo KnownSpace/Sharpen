@@ -3,8 +3,8 @@
 #define _SHARPEN_WINPIPESIGNALCHANNEL_HPP
 
 #include "ISignalChannel.hpp"
-#include "SystemError.hpp"
 #include "IoEvent.hpp"
+#include "SystemError.hpp"
 
 #ifdef SHARPEN_IS_WIN
 #include "IocpSelector.hpp"
@@ -13,7 +13,10 @@
 
 namespace sharpen
 {
-    class WinPipeSignalChannel:public sharpen::ISignalChannel,public sharpen::Noncopyable,public sharpen::Nonmovable
+    class WinPipeSignalChannel
+        : public sharpen::ISignalChannel
+        , public sharpen::Noncopyable
+        , public sharpen::Nonmovable
     {
     private:
         using Self = sharpen::WinPipeSignalChannel;
@@ -23,7 +26,9 @@ namespace sharpen
 
         sharpen::FileHandle GetReader() const noexcept;
 
-        static void DoClose(sharpen::FileHandle handle,sharpen::FileHandle writer,sharpen::SignalMap *map) noexcept;
+        static void DoClose(sharpen::FileHandle handle,
+                            sharpen::FileHandle writer,
+                            sharpen::SignalMap *map) noexcept;
 
         sharpen::SignalMap *map_;
         sharpen::FileHandle writer_;
@@ -32,22 +37,25 @@ namespace sharpen
 
         void InitOverlappedStruct(sharpen::IocpOverlappedStruct &event);
 
-        void RequestRead(char *sigs,std::size_t size,sharpen::Future<std::size_t> *future);
+        void RequestRead(char *sigs, std::size_t size, sharpen::Future<std::size_t> *future);
+
     public:
-    
-        WinPipeSignalChannel(sharpen::FileHandle reader,sharpen::FileHandle writer,sharpen::SignalMap &map);
-    
+        WinPipeSignalChannel(sharpen::FileHandle reader,
+                             sharpen::FileHandle writer,
+                             sharpen::SignalMap &map);
+
         virtual ~WinPipeSignalChannel() noexcept = default;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
         }
 
-        virtual void ReadAsync(sharpen::SignalBuffer &signals,sharpen::Future<std::size_t> &future) override;
+        virtual void ReadAsync(sharpen::SignalBuffer &signals,
+                               sharpen::Future<std::size_t> &future) override;
 
         virtual void OnEvent(sharpen::IoEvent *event) override;
     };
-}
+}   // namespace sharpen
 #endif
 #endif

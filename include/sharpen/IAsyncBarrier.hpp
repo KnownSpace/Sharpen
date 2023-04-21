@@ -12,21 +12,21 @@ namespace sharpen
     {
     private:
         using Self = sharpen::IAsyncBarrier;
+
     protected:
     public:
-    
         IAsyncBarrier() noexcept = default;
-    
+
         IAsyncBarrier(const Self &other) noexcept = default;
-    
+
         IAsyncBarrier(Self &&other) noexcept = default;
-    
+
         Self &operator=(const Self &other) noexcept = default;
-    
+
         Self &operator=(Self &&other) noexcept = default;
-    
+
         virtual ~IAsyncBarrier() noexcept = default;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -44,7 +44,7 @@ namespace sharpen
         virtual void Reset() noexcept = 0;
 
         virtual sharpen::BarrierModel GetModel() const noexcept = 0;
-    };    
-}
+    };
+}   // namespace sharpen
 
 #endif

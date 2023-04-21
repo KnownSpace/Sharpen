@@ -2,38 +2,38 @@
 #ifndef _SHARPEN_RAFTREPLICATEDSTATE_HPP
 #define _SHARPEN_RAFTREPLICATEDSTATE_HPP
 
-#include <cstdint>
 #include <cstddef>
-#include <utility>
+#include <cstdint>
 #include <memory>
+#include <utility>
 
 #include "Noncopyable.hpp"
-#include "RaftSnapshot.hpp"
 #include "Optional.hpp"
+#include "RaftSnapshot.hpp"
 
 namespace sharpen
 {
-    class RaftReplicatedState:public sharpen::Noncopyable
+    class RaftReplicatedState : public sharpen::Noncopyable
     {
     private:
         using Self = RaftReplicatedState;
-    
+
         std::uint64_t matchIndex_;
         std::uint64_t nextIndex_;
         std::unique_ptr<sharpen::IRaftSnapshotChunk> snapshot_;
         sharpen::RaftSnapshotMetadata snapshotMetadata_;
-    public:
 
+    public:
         RaftReplicatedState() noexcept;
-    
+
         explicit RaftReplicatedState(std::uint64_t matchIndex) noexcept;
-    
+
         RaftReplicatedState(Self &&other) noexcept;
-    
+
         Self &operator=(Self &&other) noexcept;
-    
+
         ~RaftReplicatedState() noexcept = default;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -65,6 +65,6 @@ namespace sharpen
 
         sharpen::Optional<sharpen::RaftSnapshotMetadata> LookupSnapshotMetadata() const noexcept;
     };
-}
+}   // namespace sharpen
 
 #endif

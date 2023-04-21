@@ -3,21 +3,23 @@
 #include <cassert>
 
 sharpen::RaftReplicatedState::RaftReplicatedState() noexcept
-    :Self{0}
-{}
+    : Self{0}
+{
+}
 
 sharpen::RaftReplicatedState::RaftReplicatedState(std::uint64_t matchIndex) noexcept
-    :matchIndex_(matchIndex)
-    ,nextIndex_(matchIndex)
-    ,snapshot_(nullptr)
-{}
+    : matchIndex_(matchIndex)
+    , nextIndex_(matchIndex)
+    , snapshot_(nullptr)
+{
+}
 
 void sharpen::RaftReplicatedState::Forward(std::uint64_t step) noexcept
 {
-    if(this->snapshot_)
+    if (this->snapshot_)
     {
         assert(step == 1);
-        if(this->snapshot_->Forwardable())
+        if (this->snapshot_->Forwardable())
         {
             this->snapshot_->Forward();
         }
@@ -41,10 +43,10 @@ void sharpen::RaftReplicatedState::Forward() noexcept
 
 void sharpen::RaftReplicatedState::ForwardMatchPoint(std::uint64_t index) noexcept
 {
-    if(index > this->matchIndex_)
+    if (index > this->matchIndex_)
     {
         this->matchIndex_ = index;
-        if(index > this->nextIndex_)
+        if (index > this->nextIndex_)
         {
             this->nextIndex_ = this->matchIndex_ + 1;
         }
@@ -53,7 +55,7 @@ void sharpen::RaftReplicatedState::ForwardMatchPoint(std::uint64_t index) noexce
 
 void sharpen::RaftReplicatedState::BackwardMatchPoint(std::uint64_t index) noexcept
 {
-    if(index <= this->matchIndex_)
+    if (index <= this->matchIndex_)
     {
         this->matchIndex_ = index;
         this->nextIndex_ = this->matchIndex_ + 1;
@@ -78,9 +80,10 @@ sharpen::IRaftSnapshotChunk *sharpen::RaftReplicatedState::LookupSnapshot() noex
     return this->snapshot_.get();
 }
 
-sharpen::Optional<sharpen::RaftSnapshotMetadata> sharpen::RaftReplicatedState::LookupSnapshotMetadata() const noexcept
+sharpen::Optional<sharpen::RaftSnapshotMetadata>
+sharpen::RaftReplicatedState::LookupSnapshotMetadata() const noexcept
 {
-    if(this->snapshot_)
+    if (this->snapshot_)
     {
         assert(this->snapshotMetadata_.GetLastIndex() != 0);
         assert(this->snapshotMetadata_.GetLastTerm() != 0);

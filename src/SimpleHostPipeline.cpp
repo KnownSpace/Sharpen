@@ -1,8 +1,8 @@
 #include <sharpen/SimpleHostPipeline.hpp>
 
 sharpen::SimpleHostPipeline::SimpleHostPipeline()
-    :token_(true)
-    ,pipeline_()
+    : token_(true)
+    , pipeline_()
 {
     this->pipeline_.reserve(reservedPipelineSize_);
 }
@@ -14,15 +14,15 @@ sharpen::SimpleHostPipeline::~SimpleHostPipeline() noexcept
 
 void sharpen::SimpleHostPipeline::NviConsume(sharpen::NetStreamChannelPtr channel) noexcept
 {
-    for(auto begin = this->pipeline_.begin(),end = this->pipeline_.end(); begin != end; ++begin)
+    for (auto begin = this->pipeline_.begin(), end = this->pipeline_.end(); begin != end; ++begin)
     {
         sharpen::IHostPipelineStep *step{begin->get()};
         assert(step);
-        sharpen::HostPipelineResult result{step->Consume(*channel,this->token_)};
-        if(result == sharpen::HostPipelineResult::Broken)
+        sharpen::HostPipelineResult result{step->Consume(*channel, this->token_)};
+        if (result == sharpen::HostPipelineResult::Broken)
         {
             break;
-        }   
+        }
     }
 }
 

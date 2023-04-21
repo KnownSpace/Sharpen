@@ -22,6 +22,6 @@ namespace sharpen
         Tcp,
         Udp
     };
-}
+}   // namespace sharpen
 
 #endif

@@ -4,22 +4,25 @@
 
 #include <cassert>
 
-#include "IRemoteActor.hpp"
-#include "IRemotePoster.hpp"
-#include "IMailReceiver.hpp"
-#include "IWorkerGroup.hpp"
-#include "Nonmovable.hpp"
-#include "Noncopyable.hpp"
 #include "AwaitableFuture.hpp"
 #include "IMailParserFactory.hpp"
+#include "IMailReceiver.hpp"
+#include "IRemoteActor.hpp"
+#include "IRemotePoster.hpp"
+#include "IWorkerGroup.hpp"
+#include "Noncopyable.hpp"
+#include "Nonmovable.hpp"
 
 namespace sharpen
 {
-    class TcpActor:public sharpen::IRemoteActor,public sharpen::Noncopyable,public sharpen::Nonmovable
+    class TcpActor
+        : public sharpen::IRemoteActor
+        , public sharpen::Noncopyable
+        , public sharpen::Nonmovable
     {
     private:
         using Self = sharpen::TcpActor;
-    
+
         sharpen::IMailReceiver *receiver_;
         std::atomic_size_t postCount_;
         std::atomic_size_t ackCount_;
@@ -43,14 +46,21 @@ namespace sharpen
         virtual void NviPostShared(const sharpen::Mail &mail) override;
 
         void DoReceive(sharpen::Mail mail) noexcept;
-    public:
-    
-        TcpActor(sharpen::IFiberScheduler &scheduler,sharpen::IMailReceiver &receiver,std::shared_ptr<sharpen::IMailParserFactory> parserFactory,std::unique_ptr<sharpen::IRemotePoster> poster);
 
-        TcpActor(sharpen::IFiberScheduler &scheduler,sharpen::IMailReceiver &receiver,std::shared_ptr<sharpen::IMailParserFactory> parserFactory,std::unique_ptr<sharpen::IRemotePoster> poster,bool enablePipeline);
-    
+    public:
+        TcpActor(sharpen::IFiberScheduler &scheduler,
+                 sharpen::IMailReceiver &receiver,
+                 std::shared_ptr<sharpen::IMailParserFactory> parserFactory,
+                 std::unique_ptr<sharpen::IRemotePoster> poster);
+
+        TcpActor(sharpen::IFiberScheduler &scheduler,
+                 sharpen::IMailReceiver &receiver,
+                 std::shared_ptr<sharpen::IMailParserFactory> parserFactory,
+                 std::unique_ptr<sharpen::IRemotePoster> poster,
+                 bool enablePipeline);
+
         virtual ~TcpActor() noexcept;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -66,6 +76,6 @@ namespace sharpen
 
         virtual bool SupportPipeline() const noexcept override;
     };
-}
+}   // namespace sharpen
 
 #endif

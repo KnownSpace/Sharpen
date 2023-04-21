@@ -5,17 +5,17 @@ std::size_t sharpen::RaftPrevoteRequest::ComputeSize() const noexcept
     return sizeof(this->lastIndex_) + sizeof(this->lastTerm_);
 }
 
-std::size_t sharpen::RaftPrevoteRequest::LoadFrom(const char *data,std::size_t size)
+std::size_t sharpen::RaftPrevoteRequest::LoadFrom(const char *data, std::size_t size)
 {
-    if(size < sizeof(this->lastIndex_) + sizeof(this->lastTerm_))
+    if (size < sizeof(this->lastIndex_) + sizeof(this->lastTerm_))
     {
         throw sharpen::CorruptedDataError{"corrupted prevote request"};
     }
     std::uint64_t lastIndex{0};
     std::uint64_t lastTerm{0};
     std::size_t offset{0};
-    offset += sharpen::BinarySerializator::LoadFrom(lastIndex,data,size);
-    offset += sharpen::BinarySerializator::LoadFrom(lastTerm,data + offset,size - offset);
+    offset += sharpen::BinarySerializator::LoadFrom(lastIndex, data, size);
+    offset += sharpen::BinarySerializator::LoadFrom(lastTerm, data + offset, size - offset);
     offset += sizeof(this->lastTerm_);
     this->lastIndex_ = lastIndex;
     this->lastTerm_ = lastTerm;
@@ -33,13 +33,14 @@ std::size_t sharpen::RaftPrevoteRequest::UnsafeStoreTo(char *data) const noexcep
 }
 
 sharpen::RaftPrevoteRequest::RaftPrevoteRequest() noexcept
-    :lastIndex_(0)
-    ,lastTerm_(0)
-{}
+    : lastIndex_(0)
+    , lastTerm_(0)
+{
+}
 
 sharpen::RaftPrevoteRequest::RaftPrevoteRequest(Self &&other) noexcept
-    :lastIndex_(other.lastIndex_)
-    ,lastTerm_(other.lastTerm_)
+    : lastIndex_(other.lastIndex_)
+    , lastTerm_(other.lastTerm_)
 {
     other.lastIndex_ = 0;
     other.lastTerm_ = 0;
@@ -47,7 +48,7 @@ sharpen::RaftPrevoteRequest::RaftPrevoteRequest(Self &&other) noexcept
 
 sharpen::RaftPrevoteRequest &sharpen::RaftPrevoteRequest::operator=(Self &&other) noexcept
 {
-    if(this != std::addressof(other))
+    if (this != std::addressof(other))
     {
         this->lastIndex_ = other.lastIndex_;
         this->lastTerm_ = other.lastTerm_;

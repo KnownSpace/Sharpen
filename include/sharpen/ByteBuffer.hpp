@@ -3,8 +3,8 @@
 #ifndef _SHARPEN_BYTEBUFFER_HPP
 #define _SHARPEN_BYTEBUFFER_HPP
 
-#include "ByteVector.hpp"
 #include "ByteSlice.hpp"
+#include "ByteVector.hpp"
 
 namespace sharpen
 {
@@ -14,8 +14,9 @@ namespace sharpen
         using Vector = sharpen::ByteVector;
 
         using Self = sharpen::ByteBuffer;
-        
+
         Vector vector_;
+
     public:
         using Iterator = typename Vector::Iterator;
         using ConstIterator = typename Vector::ConstIterator;
@@ -28,7 +29,7 @@ namespace sharpen
 
         explicit ByteBuffer(sharpen::ByteSlice slice);
 
-        ByteBuffer(const char *p,std::size_t size);
+        ByteBuffer(const char *p, std::size_t size);
 
         ByteBuffer(const Self &other) = default;
 
@@ -38,17 +39,17 @@ namespace sharpen
 
         inline Self &operator=(const Self &other)
         {
-            if(this != std::addressof(other))
+            if (this != std::addressof(other))
             {
                 Self tmp{other};
-                std::swap(tmp,*this);
+                std::swap(tmp, *this);
             }
             return *this;
         }
 
         inline Self &operator=(Self &&other) noexcept
         {
-            if(this != std::addressof(other))
+            if (this != std::addressof(other))
             {
                 this->vector_ = std::move(other.vector_);
             }
@@ -73,11 +74,11 @@ namespace sharpen
 
         char Get(std::size_t index) const;
 
-        char GetOrDefault(std::size_t index,char defaultVal) const noexcept;
+        char GetOrDefault(std::size_t index, char defaultVal) const noexcept;
 
         char *Data() noexcept;
 
-        const char* Data() const noexcept;
+        const char *Data() const noexcept;
 
         inline char &operator[](std::size_t index)
         {
@@ -93,29 +94,30 @@ namespace sharpen
 
         void Extend(std::size_t size);
 
-        void Extend(std::size_t size,char defaultValue);
+        void Extend(std::size_t size, char defaultValue);
 
         void ExtendTo(std::size_t size);
 
-        void ExtendTo(std::size_t size,char defaultValue);
+        void ExtendTo(std::size_t size, char defaultValue);
 
-        void Append(const char *p,std::size_t size);
+        void Append(const char *p, std::size_t size);
 
         void Append(const Self &other);
 
-        template<typename _Iterator,typename _Checker = decltype(std::declval<char&>() = *std::declval<_Iterator>())>
-        void Append(_Iterator begin,_Iterator end)
+        template<typename _Iterator,
+                 typename _Checker = decltype(std::declval<char &>() = *std::declval<_Iterator>())>
+        void Append(_Iterator begin, _Iterator end)
         {
-            this->vector_.Append(begin,end);
+            this->vector_.Append(begin, end);
         }
 
         void Erase(std::size_t pos);
 
-        void Erase(std::size_t begin,std::size_t end);
+        void Erase(std::size_t begin, std::size_t end);
 
         void Erase(ConstIterator where);
 
-        void Erase(ConstIterator begin,ConstIterator end);
+        void Erase(ConstIterator begin, ConstIterator end);
 
         inline Iterator Begin() noexcept
         {
@@ -165,16 +167,20 @@ namespace sharpen
 
         ConstReverseIterator ReverseFind(char e) const noexcept;
 
-        template<typename _Iterator,typename _Check = decltype(std::declval<char&>() == *std::declval<_Iterator&>()++)>
-        inline Iterator Search(const _Iterator begin,const _Iterator end)
+        template<typename _Iterator,
+                 typename _Check = decltype(std::declval<char &>() ==
+                                            *std::declval<_Iterator &>()++)>
+        inline Iterator Search(const _Iterator begin, const _Iterator end)
         {
-            return std::search(this->Begin(),this->End(),begin,end);
+            return std::search(this->Begin(), this->End(), begin, end);
         }
 
-        template<typename _Iterator,typename _Check = decltype(std::declval<char&>() == *std::declval<_Iterator&>()++)>
-        inline ConstIterator Search(const _Iterator begin,const _Iterator end) const
+        template<typename _Iterator,
+                 typename _Check = decltype(std::declval<char &>() ==
+                                            *std::declval<_Iterator &>()++)>
+        inline ConstIterator Search(const _Iterator begin, const _Iterator end) const
         {
-            return std::search(this->Begin(),this->End(),begin,end);
+            return std::search(this->Begin(), this->End(), begin, end);
         }
 
         inline void Clear() noexcept
@@ -184,18 +190,19 @@ namespace sharpen
 
         inline std::uint32_t Adler32() const noexcept
         {
-            return sharpen::Adler32(this->Data(),this->GetSize());
+            return sharpen::Adler32(this->Data(), this->GetSize());
         }
 
         inline std::uint16_t Crc16() const noexcept
         {
-            return sharpen::Crc16(this->Data(),this->GetSize());
+            return sharpen::Crc16(this->Data(), this->GetSize());
         }
 
         inline sharpen::ByteBuffer Base64Encode() const
         {
             sharpen::ByteBuffer buf{sharpen::ComputeBase64EncodeSize(this->GetSize())};
-            bool success = sharpen::Base64Encode(buf.Data(),buf.GetSize(),this->Data(),this->GetSize());
+            bool success =
+                sharpen::Base64Encode(buf.Data(), buf.GetSize(), this->Data(), this->GetSize());
             static_cast<void>(success);
             return buf;
         }
@@ -203,14 +210,16 @@ namespace sharpen
         inline sharpen::ByteBuffer Base64Decode() const
         {
             sharpen::ByteBuffer buf{sharpen::ComputeBase64DecodeSize(this->GetSize())};
-            bool success = sharpen::Base64Decode(buf.Data(),buf.GetSize(),this->Data(),this->GetSize());
+            bool success =
+                sharpen::Base64Decode(buf.Data(), buf.GetSize(), this->Data(), this->GetSize());
             static_cast<void>(success);
             return buf;
         }
 
         inline std::int32_t CompareWith(const Self &other) const noexcept
         {
-            return sharpen::BufferCompare(this->Data(),this->GetSize(),other.Data(),other.GetSize());
+            return sharpen::BufferCompare(
+                this->Data(), this->GetSize(), other.Data(), other.GetSize());
         }
 
         inline bool operator>(const Self &other) const noexcept
@@ -245,17 +254,17 @@ namespace sharpen
 
         inline std::uint32_t GetHashCode32() const noexcept
         {
-            return sharpen::BufferHash32(this->Data(),this->GetSize());
+            return sharpen::BufferHash32(this->Data(), this->GetSize());
         }
 
         inline std::uint64_t GetHashCode64() const noexcept
         {
-            return sharpen::BufferHash64(this->Data(),this->GetSize());
+            return sharpen::BufferHash64(this->Data(), this->GetSize());
         }
 
         inline std::size_t GetHashCode() const noexcept
         {
-            return sharpen::BufferHash(this->Data(),this->GetSize());
+            return sharpen::BufferHash(this->Data(), this->GetSize());
         }
 
         inline bool Empty() const noexcept
@@ -263,127 +272,141 @@ namespace sharpen
             return this->vector_.Empty();
         }
 
-        template<typename _T,typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>
+        template<typename _T,
+                 typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>
         inline _T &As() noexcept
         {
             assert(this->GetSize() == sizeof(_T));
-            return *reinterpret_cast<_T*>(this->Data());
+            return *reinterpret_cast<_T *>(this->Data());
         }
 
-        template<typename _T,typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>
+        template<typename _T,
+                 typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>
         inline const _T &As() const noexcept
         {
             assert(this->GetSize() == sizeof(_T));
-            return *reinterpret_cast<const _T*>(this->Data());
+            return *reinterpret_cast<const _T *>(this->Data());
         }
 
         std::size_t ComputeSize() const noexcept;
 
-        std::size_t LoadFrom(const char *data,std::size_t size);
+        std::size_t LoadFrom(const char *data, std::size_t size);
 
-        std::size_t LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset);
+        std::size_t LoadFrom(const sharpen::ByteBuffer &buf, std::size_t offset);
 
         inline std::size_t LoadFrom(const sharpen::ByteBuffer &buf)
         {
-            return this->LoadFrom(buf,0);
+            return this->LoadFrom(buf, 0);
         }
 
         std::size_t UnsafeStoreTo(char *data) const noexcept;
 
-        std::size_t StoreTo(char *data,std::size_t size) const;
+        std::size_t StoreTo(char *data, std::size_t size) const;
 
-        std::size_t StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const;
+        std::size_t StoreTo(sharpen::ByteBuffer &buf, std::size_t offset) const;
 
         inline std::size_t StoreTo(sharpen::ByteBuffer &buf) const
         {
-            return this->StoreTo(buf,0);
+            return this->StoreTo(buf, 0);
         }
 
-        sharpen::ByteSlice GetSlice(std::size_t index,std::size_t size) const;
+        sharpen::ByteSlice GetSlice(std::size_t index, std::size_t size) const;
 
-        sharpen::ByteSlice GetSlice(ConstIterator begin,ConstIterator end) const;
+        sharpen::ByteSlice GetSlice(ConstIterator begin, ConstIterator end) const;
 
         inline sharpen::ByteSlice GetSlice() const noexcept
         {
-            return sharpen::ByteSlice{this->Data(),this->GetSize()};
+            return sharpen::ByteSlice{this->Data(), this->GetSize()};
         }
 
-        int Printf(const char *format,...) noexcept;
+        int Printf(const char *format, ...) noexcept;
 
-        int Scanf(const char *format,...) noexcept;
+        int Scanf(const char *format, ...) noexcept;
     };
 
-    inline bool operator==(const sharpen::ByteBuffer &buffer,const sharpen::ByteSlice &slice) noexcept
+    inline bool operator==(const sharpen::ByteBuffer &buffer,
+                           const sharpen::ByteSlice &slice) noexcept
     {
         return buffer.GetSlice() == slice;
     }
 
-    inline bool operator!=(const sharpen::ByteBuffer &buffer,const sharpen::ByteSlice &slice) noexcept
+    inline bool operator!=(const sharpen::ByteBuffer &buffer,
+                           const sharpen::ByteSlice &slice) noexcept
     {
         return buffer.GetSlice() != slice;
     }
 
-    inline bool operator<(const sharpen::ByteBuffer &buffer,const sharpen::ByteSlice &slice) noexcept
+    inline bool operator<(const sharpen::ByteBuffer &buffer,
+                          const sharpen::ByteSlice &slice) noexcept
     {
         return buffer.GetSlice() < slice;
     }
 
-    inline bool operator>(const sharpen::ByteBuffer &buffer,const sharpen::ByteSlice &slice) noexcept
+    inline bool operator>(const sharpen::ByteBuffer &buffer,
+                          const sharpen::ByteSlice &slice) noexcept
     {
         return buffer.GetSlice() > slice;
     }
 
-    inline bool operator<=(const sharpen::ByteBuffer &buffer,const sharpen::ByteSlice &slice) noexcept
+    inline bool operator<=(const sharpen::ByteBuffer &buffer,
+                           const sharpen::ByteSlice &slice) noexcept
     {
         return buffer.GetSlice() < slice;
     }
 
-    inline bool operator>=(const sharpen::ByteBuffer &buffer,const sharpen::ByteSlice &slice) noexcept
+    inline bool operator>=(const sharpen::ByteBuffer &buffer,
+                           const sharpen::ByteSlice &slice) noexcept
     {
         return buffer.GetSlice() > slice;
     }
 
-    inline bool operator==(const sharpen::ByteSlice &slice,const sharpen::ByteBuffer &buffer) noexcept
+    inline bool operator==(const sharpen::ByteSlice &slice,
+                           const sharpen::ByteBuffer &buffer) noexcept
     {
         return buffer.GetSlice() == slice;
     }
 
-    inline bool operator!=(const sharpen::ByteSlice &slice,const sharpen::ByteBuffer &buffer) noexcept
+    inline bool operator!=(const sharpen::ByteSlice &slice,
+                           const sharpen::ByteBuffer &buffer) noexcept
     {
         return buffer.GetSlice() != slice;
     }
 
-    inline bool operator<(const sharpen::ByteSlice &slice,const sharpen::ByteBuffer &buffer) noexcept
+    inline bool operator<(const sharpen::ByteSlice &slice,
+                          const sharpen::ByteBuffer &buffer) noexcept
     {
         return buffer.GetSlice() < slice;
     }
 
-    inline bool operator>(const sharpen::ByteSlice &slice,const sharpen::ByteBuffer &buffer) noexcept
+    inline bool operator>(const sharpen::ByteSlice &slice,
+                          const sharpen::ByteBuffer &buffer) noexcept
     {
         return buffer.GetSlice() > slice;
     }
 
-    inline bool operator<=(const sharpen::ByteSlice &slice,const sharpen::ByteBuffer &buffer) noexcept
+    inline bool operator<=(const sharpen::ByteSlice &slice,
+                           const sharpen::ByteBuffer &buffer) noexcept
     {
         return buffer.GetSlice() < slice;
     }
 
-    inline bool operator>=(const sharpen::ByteSlice &slice,const sharpen::ByteBuffer &buffer) noexcept
+    inline bool operator>=(const sharpen::ByteSlice &slice,
+                           const sharpen::ByteBuffer &buffer) noexcept
     {
         return buffer.GetSlice() > slice;
     }
-} 
+}   // namespace sharpen
 
 namespace std
 {
     template<>
     struct hash<sharpen::ByteBuffer>
     {
-        inline std::size_t operator()(const sharpen::ByteBuffer& buf) const noexcept
+        inline std::size_t operator()(const sharpen::ByteBuffer &buf) const noexcept
         {
             return buf.GetHashCode();
         }
     };
-}
+}   // namespace std
 
 #endif

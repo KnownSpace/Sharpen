@@ -3,15 +3,16 @@
 #include <algorithm>
 
 sharpen::RaftOption::RaftOption() noexcept
-    :isLearner_(false)
-    ,enablePrevote_(false)
-    ,batchSize_(1)
-{}
+    : isLearner_(false)
+    , enablePrevote_(false)
+    , batchSize_(1)
+{
+}
 
 sharpen::RaftOption::RaftOption(Self &&other) noexcept
-    :isLearner_(other.isLearner_)
-    ,enablePrevote_(other.enablePrevote_)
-    ,batchSize_(other.batchSize_)
+    : isLearner_(other.isLearner_)
+    , enablePrevote_(other.enablePrevote_)
+    , batchSize_(other.batchSize_)
 {
     other.isLearner_ = false;
     other.enablePrevote_ = false;
@@ -20,7 +21,7 @@ sharpen::RaftOption::RaftOption(Self &&other) noexcept
 
 sharpen::RaftOption &sharpen::RaftOption::operator=(Self &&other) noexcept
 {
-    if(this != std::addressof(other))
+    if (this != std::addressof(other))
     {
         this->isLearner_ = other.isLearner_;
         this->enablePrevote_ = other.enablePrevote_;
@@ -34,7 +35,7 @@ sharpen::RaftOption &sharpen::RaftOption::operator=(Self &&other) noexcept
 
 void sharpen::RaftOption::SetBatchSize(std::uint32_t batchSize) noexcept
 {
-    batchSize = (std::max)(Self::minBatchSize_,batchSize);
-    batchSize = (std::min)(Self::maxBatchSize_,batchSize);
+    batchSize = (std::max)(Self::minBatchSize_, batchSize);
+    batchSize = (std::min)(Self::maxBatchSize_, batchSize);
     this->batchSize_ = batchSize;
 }

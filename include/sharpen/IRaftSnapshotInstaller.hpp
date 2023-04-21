@@ -4,10 +4,10 @@
 
 #include <cassert>
 
-#include "RaftSnapshotMetadata.hpp"
-#include "Optional.hpp"
-#include "ByteSlice.hpp"
 #include "ByteBuffer.hpp"
+#include "ByteSlice.hpp"
+#include "Optional.hpp"
+#include "RaftSnapshotMetadata.hpp"
 
 namespace sharpen
 {
@@ -15,45 +15,45 @@ namespace sharpen
     {
     private:
         using Self = sharpen::IRaftSnapshotInstaller;
+
     protected:
-    
-        virtual void NviWrite(std::uint64_t offset,sharpen::ByteSlice snapshotChunk) = 0;
+        virtual void NviWrite(std::uint64_t offset, sharpen::ByteSlice snapshotChunk) = 0;
 
         virtual void NviInstall(sharpen::RaftSnapshotMetadata metadata) = 0;
 
         virtual void NviReset() = 0;
+
     public:
-    
         IRaftSnapshotInstaller() noexcept = default;
-    
+
         IRaftSnapshotInstaller(const Self &other) noexcept = default;
-    
+
         IRaftSnapshotInstaller(Self &&other) noexcept = default;
-    
+
         Self &operator=(const Self &other) noexcept = default;
-    
+
         Self &operator=(Self &&other) noexcept = default;
-    
+
         virtual ~IRaftSnapshotInstaller() noexcept = default;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
         }
 
         virtual sharpen::Optional<sharpen::RaftSnapshotMetadata> GetLastMetadata() const = 0;
-    
-        inline void Write(std::uint64_t offset,sharpen::ByteSlice snapshotChunk)
+
+        inline void Write(std::uint64_t offset, sharpen::ByteSlice snapshotChunk)
         {
-            if(!snapshotChunk.Empty())
+            if (!snapshotChunk.Empty())
             {
-                return this->NviWrite(offset,snapshotChunk);
+                return this->NviWrite(offset, snapshotChunk);
             }
         }
 
-        inline void Write(std::uint64_t offset,const sharpen::ByteBuffer &snapshotChunk)
+        inline void Write(std::uint64_t offset, const sharpen::ByteBuffer &snapshotChunk)
         {
-            return this->Write(offset,snapshotChunk.GetSlice());
+            return this->Write(offset, snapshotChunk.GetSlice());
         }
 
         inline void Install(sharpen::RaftSnapshotMetadata metadata)
@@ -69,7 +69,7 @@ namespace sharpen
         }
 
         virtual std::uint64_t GetExpectedOffset() const noexcept = 0;
-    };    
-}
+    };
+}   // namespace sharpen
 
 #endif

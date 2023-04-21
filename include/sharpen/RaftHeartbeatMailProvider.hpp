@@ -2,25 +2,27 @@
 #ifndef _SHARPEN_RAFTHEARTBEATMAILPROVIDER_HPP
 #define _SHARPEN_RAFTHEARTBEATMAILPROVIDER_HPP
 
-#include <map>
 #include <cassert>
+#include <map>
 
-#include "IMailProvider.hpp"
-#include "Optional.hpp"
-#include "IRaftMailBuilder.hpp"
 #include "ILogStorage.hpp"
+#include "IMailProvider.hpp"
+#include "IRaftLogAccesser.hpp"
+#include "IRaftMailBuilder.hpp"
 #include "IRaftSnapshotProvider.hpp"
 #include "Noncopyable.hpp"
+#include "Optional.hpp"
 #include "RaftReplicatedState.hpp"
-#include "IRaftLogAccesser.hpp"
 
 namespace sharpen
 {
-    class RaftHeartbeatMailProvider:public sharpen::IMailProvider,public sharpen::Noncopyable
+    class RaftHeartbeatMailProvider
+        : public sharpen::IMailProvider
+        , public sharpen::Noncopyable
     {
     private:
         using Self = sharpen::RaftHeartbeatMailProvider;
-    
+
         static constexpr std::size_t defaultBatchSize_{8};
 
         // static constexpr std::size_t defaultPipelineLength_{64};
@@ -30,9 +32,9 @@ namespace sharpen
         const sharpen::ILogStorage *logs_;
         sharpen::IRaftLogAccesser *logAccesser_;
         sharpen::IRaftSnapshotProvider *snapshotProvider_;
-        //max size of each batch
+        // max size of each batch
         std::size_t batchSize_;
-        mutable std::map<std::uint64_t,sharpen::RaftReplicatedState> states_;
+        mutable std::map<std::uint64_t, sharpen::RaftReplicatedState> states_;
         std::uint64_t term_;
         std::uint64_t commitIndex_;
 
@@ -43,18 +45,27 @@ namespace sharpen
         void ReComputeCommitIndex() noexcept;
 
         sharpen::Optional<std::uint64_t> LookupTerm(std::uint64_t index) const noexcept;
-    public:
-    
-        RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log,sharpen::IRaftLogAccesser &logAccesser,sharpen::IRaftSnapshotProvider *snapshotProvider);
 
-        RaftHeartbeatMailProvider(std::uint64_t id,const sharpen::IRaftMailBuilder &builder,const sharpen::ILogStorage &log,sharpen::IRaftLogAccesser &logAccesser,sharpen::IRaftSnapshotProvider *snapshotProvider,std::uint32_t batchSize);
-    
+    public:
+        RaftHeartbeatMailProvider(std::uint64_t id,
+                                  const sharpen::IRaftMailBuilder &builder,
+                                  const sharpen::ILogStorage &log,
+                                  sharpen::IRaftLogAccesser &logAccesser,
+                                  sharpen::IRaftSnapshotProvider *snapshotProvider);
+
+        RaftHeartbeatMailProvider(std::uint64_t id,
+                                  const sharpen::IRaftMailBuilder &builder,
+                                  const sharpen::ILogStorage &log,
+                                  sharpen::IRaftLogAccesser &logAccesser,
+                                  sharpen::IRaftSnapshotProvider *snapshotProvider,
+                                  std::uint32_t batchSize);
+
         RaftHeartbeatMailProvider(Self &&other) noexcept;
-    
+
         Self &operator=(Self &&other) noexcept;
-    
+
         virtual ~RaftHeartbeatMailProvider() noexcept = default;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -72,9 +83,9 @@ namespace sharpen
 
         sharpen::Optional<std::uint64_t> LookupMatchIndex(std::uint64_t actorId) const noexcept;
 
-        void ForwardState(std::uint64_t actorId,std::uint64_t index) noexcept;
+        void ForwardState(std::uint64_t actorId, std::uint64_t index) noexcept;
 
-        void BackwardState(std::uint64_t actorId,std::uint64_t index) noexcept;
+        void BackwardState(std::uint64_t actorId, std::uint64_t index) noexcept;
 
         sharpen::Optional<std::uint64_t> GetSynchronizedIndex() const noexcept;
 
@@ -95,13 +106,13 @@ namespace sharpen
             assert(this->logAccesser_ != nullptr);
             return *this->logAccesser_;
         }
-        
+
         inline const sharpen::IRaftLogAccesser &LogAccesser() const noexcept
         {
             assert(this->logAccesser_ != nullptr);
             return *this->logAccesser_;
         }
     };
-}
+}   // namespace sharpen
 
 #endif

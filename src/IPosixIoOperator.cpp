@@ -6,14 +6,17 @@
 #include <mutex>
 
 sharpen::IPosixIoOperator::IPosixIoOperator()
-    :bufs_()
-    ,pendingBufs_()
-    ,cbs_()
-    ,pendingCbs_()
-    ,mark_(0)
-{}
+    : bufs_()
+    , pendingBufs_()
+    , cbs_()
+    , pendingCbs_()
+    , mark_(0)
+{
+}
 
-void sharpen::IPosixIoOperator::ConvertByteToBufferNumber(std::size_t byteNumber,std::size_t &bufferNumber,std::size_t &lastSize)
+void sharpen::IPosixIoOperator::ConvertByteToBufferNumber(std::size_t byteNumber,
+                                                          std::size_t &bufferNumber,
+                                                          std::size_t &lastSize)
 {
     IoBuffer *bufs = this->GetFirstBuffer();
     assert(bufs != nullptr);
@@ -38,15 +41,15 @@ void sharpen::IPosixIoOperator::FillBufferAndCallback()
         this->bufs_.clear();
         this->cbs_.clear();
         this->MoveMark(0);
-        std::swap(this->bufs_,this->pendingBufs_);
-        std::swap(this->cbs_,this->pendingCbs_);
+        std::swap(this->bufs_, this->pendingBufs_);
+        std::swap(this->cbs_, this->pendingCbs_);
     }
 }
 
 void sharpen::IPosixIoOperator::MoveMark(std::size_t newMark)
 {
     assert(this->bufs_.size() == this->cbs_.size());
-    //assert(this->bufs_.size() >= newMark);
+    // assert(this->bufs_.size() >= newMark);
     this->mark_ = newMark;
 }
 
@@ -95,7 +98,9 @@ sharpen::IPosixIoOperator::Callback *sharpen::IPosixIoOperator::GetFirstCallback
     return nullptr;
 }
 
-void sharpen::IPosixIoOperator::AddPendingTask(char *buf,std::size_t size,sharpen::IPosixIoOperator::Callback cb)
+void sharpen::IPosixIoOperator::AddPendingTask(char *buf,
+                                               std::size_t size,
+                                               sharpen::IPosixIoOperator::Callback cb)
 {
     IoBuffer buffer;
     buffer.iov_base = buf;
@@ -109,19 +114,19 @@ std::size_t sharpen::IPosixIoOperator::GetRemainingSize() const
 {
     assert(this->bufs_.size() == this->cbs_.size());
     assert(this->bufs_.size() >= this->mark_);
-    return  this->bufs_.size() - this->mark_;
+    return this->bufs_.size() - this->mark_;
 }
 
-void sharpen::IPosixIoOperator::Execute(sharpen::FileHandle handle,bool &executed,bool &blocking)
+void sharpen::IPosixIoOperator::Execute(sharpen::FileHandle handle, bool &executed, bool &blocking)
 {
     this->FillBufferAndCallback();
-    this->NviExecute(handle,executed,blocking);
+    this->NviExecute(handle, executed, blocking);
 }
 
 bool sharpen::IPosixIoOperator::IsBlockingError(sharpen::ErrorCode err)
 {
 #ifdef EAGAIN
-    return err == EAGAIN;    
+    return err == EAGAIN;
 #else
     return err == EWOULDBLOCK;
 #endif
@@ -131,7 +136,7 @@ std::size_t sharpen::IPosixIoOperator::ComputePendingSize() const
 {
     std::size_t size{0};
     const IoBuffer *buf = this->GetFirstBuffer();
-    for (size_t i = 0,count = this->GetRemainingSize(); i != count; ++i)
+    for (size_t i = 0, count = this->GetRemainingSize(); i != count; ++i)
     {
         size += buf->iov_len;
     }

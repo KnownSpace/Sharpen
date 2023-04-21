@@ -1,15 +1,15 @@
 #include <sharpen/RaftPrevoteRecord.hpp>
 
 sharpen::RaftPrevoteRecord::RaftPrevoteRecord(Self &&other) noexcept
-    :term_(other.term_)
-    ,votes_(std::move(other.votes_))
+    : term_(other.term_)
+    , votes_(std::move(other.votes_))
 {
     other.term_ = 0;
 }
 
 sharpen::RaftPrevoteRecord &sharpen::RaftPrevoteRecord::operator=(Self &&other) noexcept
 {
-    if(this != std::addressof(other))
+    if (this != std::addressof(other))
     {
         this->term_ = other.term_;
         this->votes_ = std::move(other.votes_);

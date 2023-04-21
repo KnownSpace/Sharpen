@@ -3,24 +3,29 @@
 #include <sharpen/Varint.hpp>
 
 sharpen::RaftVoteForRequest::RaftVoteForRequest() noexcept
-    :id_(0)
-    ,term_(0)
-    ,lastIndex_(0)
-    ,lastTerm_(0)
-{}
+    : id_(0)
+    , term_(0)
+    , lastIndex_(0)
+    , lastTerm_(0)
+{
+}
 
-sharpen::RaftVoteForRequest::RaftVoteForRequest(std::uint64_t id,std::uint64_t term,std::uint64_t lastIndex,std::uint64_t lastTerm) noexcept
-    :id_(id)
-    ,term_(term)
-    ,lastIndex_(lastIndex)
-    ,lastTerm_(lastTerm)
-{}
+sharpen::RaftVoteForRequest::RaftVoteForRequest(std::uint64_t id,
+                                                std::uint64_t term,
+                                                std::uint64_t lastIndex,
+                                                std::uint64_t lastTerm) noexcept
+    : id_(id)
+    , term_(term)
+    , lastIndex_(lastIndex)
+    , lastTerm_(lastTerm)
+{
+}
 
 sharpen::RaftVoteForRequest::RaftVoteForRequest(Self &&other) noexcept
-    :id_(other.id_)
-    ,term_(other.term_)
-    ,lastIndex_(other.lastIndex_)
-    ,lastTerm_(other.lastTerm_)
+    : id_(other.id_)
+    , term_(other.term_)
+    , lastIndex_(other.lastIndex_)
+    , lastTerm_(other.lastTerm_)
 {
     other.id_ = 0;
     other.term_ = 0;
@@ -30,7 +35,7 @@ sharpen::RaftVoteForRequest::RaftVoteForRequest(Self &&other) noexcept
 
 sharpen::RaftVoteForRequest &sharpen::RaftVoteForRequest::operator=(Self &&other) noexcept
 {
-    if(this != std::addressof(other))
+    if (this != std::addressof(other))
     {
         this->id_ = other.id_;
         this->term_ = other.term_;
@@ -57,33 +62,33 @@ std::size_t sharpen::RaftVoteForRequest::ComputeSize() const noexcept
     return size;
 }
 
-std::size_t sharpen::RaftVoteForRequest::LoadFrom(const char *data,std::size_t size)
+std::size_t sharpen::RaftVoteForRequest::LoadFrom(const char *data, std::size_t size)
 {
-    if(size < 4)
+    if (size < 4)
     {
         throw sharpen::CorruptedDataError{"corrupted vote request"};
     }
     std::size_t offset{0};
     sharpen::Varuint64 builder{0};
-    offset += builder.LoadFrom(data,size);
+    offset += builder.LoadFrom(data, size);
     this->id_ = builder.Get();
-    if(size < 3 + offset)
+    if (size < 3 + offset)
     {
         throw sharpen::CorruptedDataError{"corrupted vote request"};
     }
-    offset += builder.LoadFrom(data + offset,size - offset);
+    offset += builder.LoadFrom(data + offset, size - offset);
     this->term_ = builder.Get();
-    if(size < 2 + offset)
+    if (size < 2 + offset)
     {
         throw sharpen::CorruptedDataError{"corrupted vote request"};
     }
-    offset += builder.LoadFrom(data + offset,size - offset);
+    offset += builder.LoadFrom(data + offset, size - offset);
     this->lastIndex_ = builder.Get();
-    if(size <= offset)
+    if (size <= offset)
     {
         throw sharpen::CorruptedDataError{"corrupted vote request"};
     }
-    offset += builder.LoadFrom(data + offset,size - offset);
+    offset += builder.LoadFrom(data + offset, size - offset);
     this->lastTerm_ = builder.Get();
     return offset;
 }

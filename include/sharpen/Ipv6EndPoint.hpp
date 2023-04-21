@@ -15,34 +15,35 @@
 #include <WS2tcpip.h>
 #endif
 
+#include "BufferOps.hpp"
 #include "IEndPoint.hpp"
-#include <cstdint>
-#include <cstddef>
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "SystemError.hpp"
-#include "BufferOps.hpp"
+#include <cstddef>
+#include <cstdint>
 
 namespace sharpen
 {
     class ByteBuffer;
 
-    class Ipv6EndPoint:public sharpen::IEndPoint
+    class Ipv6EndPoint : public sharpen::IEndPoint
     {
     private:
         using Mybase = sharpen::IEndPoint;
         using Self = sharpen::Ipv6EndPoint;
         using Myaddr = sockaddr_in6;
-    
+
         Myaddr addr_;
 
-        static void CopyIn6Addr(in6_addr &dst,const in6_addr &src) noexcept;
+        static void CopyIn6Addr(in6_addr &dst, const in6_addr &src) noexcept;
 
-        static int CompareIn6Addr(const in6_addr &addr1,const in6_addr &addr2) noexcept;
+        static int CompareIn6Addr(const in6_addr &addr1, const in6_addr &addr2) noexcept;
+
     public:
         Ipv6EndPoint() noexcept;
 
-        Ipv6EndPoint(const in6_addr &ip,std::uint16_t port) noexcept;
+        Ipv6EndPoint(const in6_addr &ip, std::uint16_t port) noexcept;
 
         Ipv6EndPoint(const Self &other) noexcept = default;
 
@@ -95,7 +96,7 @@ namespace sharpen
 
         void SetAddr(const in6_addr &addr) noexcept;
 
-        void GetAddrString(char *addrStr,std::size_t size) const;
+        void GetAddrString(char *addrStr, std::size_t size) const;
 
         void SetAddrByString(const char *addrStr);
 
@@ -109,52 +110,52 @@ namespace sharpen
             return sizeof(in6_addr) + sizeof(std::uint16_t);
         }
 
-        std::size_t LoadFrom(const char *data,std::size_t size);
+        std::size_t LoadFrom(const char *data, std::size_t size);
 
-        std::size_t LoadFrom(const sharpen::ByteBuffer &buf,std::size_t offset);
+        std::size_t LoadFrom(const sharpen::ByteBuffer &buf, std::size_t offset);
 
         inline std::size_t LoadFrom(const sharpen::ByteBuffer &buf)
         {
-            return this->LoadFrom(buf,0);
+            return this->LoadFrom(buf, 0);
         }
 
         std::size_t UnsafeStoreTo(char *data) const noexcept;
 
-        std::size_t StoreTo(char *data,std::size_t size) const;
+        std::size_t StoreTo(char *data, std::size_t size) const;
 
-        std::size_t StoreTo(sharpen::ByteBuffer &buf,std::size_t offset) const;
+        std::size_t StoreTo(sharpen::ByteBuffer &buf, std::size_t offset) const;
 
         inline std::size_t StoreTo(sharpen::ByteBuffer &buf) const
         {
-            return this->StoreTo(buf,0);
+            return this->StoreTo(buf, 0);
         }
 
         inline virtual std::uint64_t GetHashCode64() const noexcept override
         {
             char buffer[sizeof(in6_addr) + sizeof(std::uint16_t)] = {};
-            this->GetAddr(*reinterpret_cast<in6_addr*>(buffer));
-            *reinterpret_cast<std::uint16_t*>(buffer + sizeof(in6_addr)) = this->GetPort();
-            return sharpen::BufferHash64(buffer,sizeof(buffer));
+            this->GetAddr(*reinterpret_cast<in6_addr *>(buffer));
+            *reinterpret_cast<std::uint16_t *>(buffer + sizeof(in6_addr)) = this->GetPort();
+            return sharpen::BufferHash64(buffer, sizeof(buffer));
         }
 
         inline virtual std::uint32_t GetHashCode32() const noexcept override
         {
             char buffer[sizeof(in6_addr) + sizeof(std::uint16_t)] = {};
-            this->GetAddr(*reinterpret_cast<in6_addr*>(buffer));
-            *reinterpret_cast<std::uint16_t*>(buffer + sizeof(in6_addr)) = this->GetPort();
-            return sharpen::BufferHash32(buffer,sizeof(buffer));
+            this->GetAddr(*reinterpret_cast<in6_addr *>(buffer));
+            *reinterpret_cast<std::uint16_t *>(buffer + sizeof(in6_addr)) = this->GetPort();
+            return sharpen::BufferHash32(buffer, sizeof(buffer));
         }
 
         inline virtual std::size_t GetHashCode() const noexcept override
         {
             char buffer[sizeof(in6_addr) + sizeof(std::uint16_t)] = {};
-            this->GetAddr(*reinterpret_cast<in6_addr*>(buffer));
-            *reinterpret_cast<std::uint16_t*>(buffer + sizeof(in6_addr)) = this->GetPort();
-            return sharpen::BufferHash(buffer,sizeof(buffer));
+            this->GetAddr(*reinterpret_cast<in6_addr *>(buffer));
+            *reinterpret_cast<std::uint16_t *>(buffer + sizeof(in6_addr)) = this->GetPort();
+            return sharpen::BufferHash(buffer, sizeof(buffer));
         }
     };
-    
-}
+
+}   // namespace sharpen
 
 namespace std
 {
@@ -166,6 +167,6 @@ namespace std
             return endpoint.GetHashCode();
         }
     };
-}
+}   // namespace std
 
 #endif

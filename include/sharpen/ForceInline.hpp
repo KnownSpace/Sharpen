@@ -4,10 +4,10 @@
 
 #include "CompilerInfo.hpp"
 
-//msvc
+// msvc
 #ifdef SHARPEN_COMPILER_MSVC
 #define SHARPEN_FORCEINLINE __forceinline
-//GCC & clang
+// GCC & clang
 #elif defined(SHARPEN_COMPILER_GCC) || defined(SHARPEN_COMPILER_CLANG)
 #define SHARPEN_FORCEINLINE inline __attribute__((__always_inline__))
 #else

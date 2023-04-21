@@ -2,17 +2,19 @@
 #ifndef _SHARPEN_IINPUTPIPECHANNEL_HPP
 #define _SHARPEN_IINPUTPIPECHANNEL_HPP
 
-#include <cstring>
 #include <cstdio>
+#include <cstring>
 
-#include "IChannel.hpp"
-#include "IAsyncReadable.hpp"
 #include "AwaitableFuture.hpp"
 #include "ByteBuffer.hpp"
+#include "IAsyncReadable.hpp"
+#include "IChannel.hpp"
 
 namespace sharpen
 {
-    class IInputPipeChannel:public sharpen::IChannel,public sharpen::IAsyncReadable
+    class IInputPipeChannel
+        : public sharpen::IChannel
+        , public sharpen::IAsyncReadable
     {
     private:
         using Self = sharpen::IInputPipeChannel;
@@ -28,7 +30,7 @@ namespace sharpen
 
         int GetcharAsync();
 
-        std::size_t GetsAsync(char *buf,std::size_t bufSize);
+        std::size_t GetsAsync(char *buf, std::size_t bufSize);
 
         std::string GetsAsync();
     };
@@ -36,6 +38,6 @@ namespace sharpen
     using InputPipeChannelPtr = std::shared_ptr<sharpen::IInputPipeChannel>;
 
     sharpen::InputPipeChannelPtr OpenStdinPipe();
-}
+}   // namespace sharpen
 
 #endif

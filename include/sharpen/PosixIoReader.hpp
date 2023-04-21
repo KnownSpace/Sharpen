@@ -8,19 +8,23 @@
 
 namespace sharpen
 {
-    class PosixIoReader:public sharpen::IPosixIoOperator
+    class PosixIoReader : public sharpen::IPosixIoOperator
     {
     private:
         using Mybase = sharpen::IPosixIoOperator;
+
     protected:
-        virtual void NviExecute(sharpen::FileHandle handle,bool &executed,bool &blocking) override;
+        virtual void NviExecute(sharpen::FileHandle handle,
+                                bool &executed,
+                                bool &blocking) override;
+
     public:
         PosixIoReader() = default;
 
         ~PosixIoReader() noexcept = default;
     };
-    
-}
+
+}   // namespace sharpen
 
 #endif
 

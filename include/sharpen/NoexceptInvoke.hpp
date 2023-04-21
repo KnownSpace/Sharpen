@@ -6,12 +6,13 @@
 
 namespace sharpen
 {
-    //crash if an exception was throw
-    template<typename _Fn,typename ..._Args>
-    inline auto NonexceptInvoke(_Fn &&fn,_Args &&...args) noexcept -> decltype(fn(std::forward<_Args>(args)...))
+    // crash if an exception was throw
+    template<typename _Fn, typename... _Args>
+    inline auto NonexceptInvoke(_Fn &&fn, _Args &&...args) noexcept
+        -> decltype(fn(std::forward<_Args>(args)...))
     {
         return fn(std::forward<_Args>(args)...);
-    }   
-}
+    }
+}   // namespace sharpen
 
 #endif

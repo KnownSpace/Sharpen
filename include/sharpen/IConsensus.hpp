@@ -4,12 +4,11 @@
 
 #include <memory>
 
-#include "LogBatch.hpp"
+#include "AwaitableFuture.hpp"
 #include "ILogStorage.hpp"
 #include "IMailReceiver.hpp"
-#include "AwaitableFuture.hpp"
-#include "IMailReceiver.hpp"
 #include "IQuorum.hpp"
+#include "LogBatch.hpp"
 #include "WriteLogsResult.hpp"
 
 namespace sharpen
@@ -18,11 +17,11 @@ namespace sharpen
     {
     private:
         using Self = sharpen::IConsensus;
-    protected:
 
-        //returns current advanced count
+    protected:
+        // returns current advanced count
         virtual void NviWaitNextConsensus(sharpen::Future<void> &future) = 0;
-    
+
         virtual bool NviIsConsensusMail(const sharpen::Mail &mail) const noexcept = 0;
 
         virtual sharpen::WriteLogsResult NviWrite(const sharpen::LogBatch &logs) = 0;
@@ -31,21 +30,22 @@ namespace sharpen
 
         virtual void NviDropLogsUntil(std::uint64_t index) = 0;
 
-        virtual void NviConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum*)> configurater) = 0;
-    public:
+        virtual void NviConfigurateQuorum(
+            std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater) = 0;
 
+    public:
         IConsensus() noexcept = default;
-    
+
         IConsensus(const Self &other) noexcept = default;
-    
+
         IConsensus(Self &&other) noexcept = default;
-    
+
         Self &operator=(const Self &other) noexcept = default;
-    
+
         Self &operator=(Self &&other) noexcept = default;
-    
+
         virtual ~IConsensus() noexcept = default;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -62,14 +62,14 @@ namespace sharpen
 
         virtual bool Changable() const = 0;
 
-        //returns current advanced count
-        //FIXME:refactor interface
+        // returns current advanced count
+        // FIXME:refactor interface
         inline void WaitNextConsensus(sharpen::Future<void> &future)
         {
             this->NviWaitNextConsensus(future);
         }
 
-        //returns current advanced count
+        // returns current advanced count
         inline void WaitNextConsensus()
         {
             sharpen::AwaitableFuture<void> future;
@@ -81,7 +81,7 @@ namespace sharpen
 
         inline bool IsConsensusMail(const sharpen::Mail &mail) const noexcept
         {
-            if(mail.Empty())
+            if (mail.Empty())
             {
                 return false;
             }
@@ -94,7 +94,7 @@ namespace sharpen
 
         inline sharpen::Mail GenerateResponse(sharpen::Mail request)
         {
-            if(!request.Empty() && this->IsConsensusMail(request))
+            if (!request.Empty() && this->IsConsensusMail(request))
             {
                 return this->NviGenerateResponse(std::move(request));
             }
@@ -106,23 +106,31 @@ namespace sharpen
             this->NviDropLogsUntil(index);
         }
 
-        inline void ConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum*)> configurater)
+        inline void ConfigurateQuorum(
+            std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater)
         {
-            if(configurater)
+            if (configurater)
             {
                 this->NviConfigurateQuorum(std::move(configurater));
             }
         }
 
-        template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<std::unique_ptr<sharpen::IQuorum>,_Fn,sharpen::IQuorum*,_Args...>::Value>>
-        inline void ConfigurateQuorum(_Fn &&fn,_Args &&...args)
+        template<typename _Fn,
+                 typename... _Args,
+                 typename _Check = sharpen::EnableIf<
+                     sharpen::IsCompletedBindableReturned<std::unique_ptr<sharpen::IQuorum>,
+                                                          _Fn,
+                                                          sharpen::IQuorum *,
+                                                          _Args...>::Value>>
+        inline void ConfigurateQuorum(_Fn &&fn, _Args &&...args)
         {
-            std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum*)> config{std::bind(std::forward<_Fn>(fn),std::placeholders::_1,std::forward<_Args>(args)...)};
+            std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> config{std::bind(
+                std::forward<_Fn>(fn), std::placeholders::_1, std::forward<_Args>(args)...)};
             this->ConfigurateQuorum(std::move(config));
         }
 
         virtual sharpen::Optional<std::uint64_t> GetWriterId() const noexcept = 0;
-    };   
-}
+    };
+}   // namespace sharpen
 
 #endif

@@ -10,21 +10,21 @@ namespace sharpen
     {
     private:
         using Self = ITimerPool;
+
     protected:
     public:
-    
         ITimerPool() noexcept = default;
-    
+
         ITimerPool(const Self &other) noexcept = default;
-    
+
         ITimerPool(Self &&other) noexcept = default;
-    
+
         Self &operator=(const Self &other) noexcept = default;
-    
+
         Self &operator=(Self &&other) noexcept = default;
-    
+
         virtual ~ITimerPool() noexcept = default;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -35,7 +35,7 @@ namespace sharpen
         virtual void Reserve(std::size_t size) = 0;
 
         virtual void ReturnTimer(sharpen::TimerPtr &&timer) noexcept = 0;
-    };   
-}
+    };
+}   // namespace sharpen
 
 #endif

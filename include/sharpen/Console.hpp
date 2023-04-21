@@ -5,31 +5,36 @@
 #include <cstdio>
 #include <string>
 
-#include "Converter.hpp"
 #include "CompilerInfo.hpp"
+#include "Converter.hpp"
 #include "Nonmovable.hpp"
 
 namespace sharpen
 {
     template<typename T>
     struct SpecialPrinter
-    {};
-    
-    template<typename _T,typename _IsNum = typename std::enable_if<std::is_integral<_T>::value>::type>
-    struct HexFormat:public sharpen::Nonmovable
+    {
+    };
+
+    template<typename _T,
+             typename _IsNum = typename std::enable_if<std::is_integral<_T>::value>::type>
+    struct HexFormat : public sharpen::Nonmovable
     {
     private:
         using Self = sharpen::HexFormat<_T>;
 
         const _T &val_;
+
     public:
         explicit HexFormat(const _T &val) noexcept
-            :val_(val)
-        {}
+            : val_(val)
+        {
+        }
 
         HexFormat(const Self &other) noexcept
-            :val_(other.val_)
-        {}
+            : val_(other.val_)
+        {
+        }
 
         ~HexFormat() noexcept = default;
 
@@ -38,22 +43,26 @@ namespace sharpen
             return this->val_;
         }
     };
-    
-    template<typename _T,typename _IsNum = typename std::enable_if<std::is_integral<_T>::value>::type>
-    struct DecFormat:public sharpen::Nonmovable
+
+    template<typename _T,
+             typename _IsNum = typename std::enable_if<std::is_integral<_T>::value>::type>
+    struct DecFormat : public sharpen::Nonmovable
     {
     private:
         using Self = sharpen::DecFormat<_T>;
 
         const _T &val_;
+
     public:
         explicit DecFormat(const _T &val) noexcept
-            :val_(val)
-        {}
+            : val_(val)
+        {
+        }
 
         DecFormat(const Self &other) noexcept
-            :val_(other.val_)
-        {}
+            : val_(other.val_)
+        {
+        }
 
         ~DecFormat() noexcept = default;
 
@@ -63,21 +72,25 @@ namespace sharpen
         }
     };
 
-    template<typename _T,typename _IsNum = typename std::enable_if<std::is_integral<_T>::value>::type>
-    struct BinFormat:public sharpen::Nonmovable
+    template<typename _T,
+             typename _IsNum = typename std::enable_if<std::is_integral<_T>::value>::type>
+    struct BinFormat : public sharpen::Nonmovable
     {
     private:
         using Self = sharpen::BinFormat<_T>;
 
         const _T &val_;
+
     public:
         explicit BinFormat(const _T &val) noexcept
-            :val_(val)
-        {}
+            : val_(val)
+        {
+        }
 
         BinFormat(const Self &other) noexcept
-            :val_(other.val_)
-        {}
+            : val_(other.val_)
+        {
+        }
 
         ~BinFormat() noexcept = default;
 
@@ -90,33 +103,33 @@ namespace sharpen
     template<typename _T>
     struct SpecialPrinter<sharpen::HexFormat<_T>>
     {
-        static void Print(FILE *file,const sharpen::HexFormat<_T> &val)
+        static void Print(FILE *file, const sharpen::HexFormat<_T> &val)
         {
             char buf[18] = {0};
-            sharpen::Itoa(val.Value(),16,buf);
-            std::fputs(buf,file);
+            sharpen::Itoa(val.Value(), 16, buf);
+            std::fputs(buf, file);
         }
     };
 
     template<typename _T>
     struct SpecialPrinter<sharpen::DecFormat<_T>>
     {
-        static void Print(FILE *file,const sharpen::DecFormat<_T> &val)
+        static void Print(FILE *file, const sharpen::DecFormat<_T> &val)
         {
             char buf[24] = {0};
-            sharpen::Itoa(val.Value(),8,buf);
-            std::fputs(buf,file);
+            sharpen::Itoa(val.Value(), 8, buf);
+            std::fputs(buf, file);
         }
     };
 
     template<typename _T>
     struct SpecialPrinter<sharpen::BinFormat<_T>>
     {
-        static void Print(FILE *file,const sharpen::BinFormat<_T> &val)
+        static void Print(FILE *file, const sharpen::BinFormat<_T> &val)
         {
             char buf[66] = {0};
-            sharpen::Itoa(val.Value(),2,buf);
-            std::fputs(buf,file);
+            sharpen::Itoa(val.Value(), 2, buf);
+            std::fputs(buf, file);
         }
     };
 
@@ -128,95 +141,116 @@ namespace sharpen
         static void IsCstr(const char *);
 
         static void IsBool(const bool);
+
     public:
-        //T is string
-        template<typename _T,typename _IsStr = decltype(TypePrinter::IsStr(std::declval<_T>())),typename _RawType = typename std::remove_reference<_T>::type,typename _NonCstr = typename std::enable_if<!std::is_pointer<_RawType>::value && !std::is_array<_RawType>::value>::type>
-        static void Print(FILE *file,_T &&str,...)
+        // T is string
+        template<typename _T,
+                 typename _IsStr = decltype(TypePrinter::IsStr(std::declval<_T>())),
+                 typename _RawType = typename std::remove_reference<_T>::type,
+                 typename _NonCstr = typename std::enable_if<!std::is_pointer<_RawType>::value &&
+                                                             !std::is_array<_RawType>::value>::type>
+        static void Print(FILE *file, _T &&str, ...)
         {
-            std::fputs(str.c_str(),file);
+            std::fputs(str.c_str(), file);
         }
 
-        //T is pointer
-        template<typename _T,typename _IsPtr = typename std::enable_if<std::is_pointer<_T>::value>::type>
-        static void Print(FILE *file,_T &&ptr,int,...)
+        // T is pointer
+        template<typename _T,
+                 typename _IsPtr = typename std::enable_if<std::is_pointer<_T>::value>::type>
+        static void Print(FILE *file, _T &&ptr, int, ...)
         {
-            std::fprintf(file,"%p",ptr);
+            std::fprintf(file, "%p", ptr);
         }
 
-        //T is c-style string
-        template<typename _T,typename _IsCstr = decltype(sharpen::TypePrinter::IsCstr(std::declval<_T>()))>
-        static void Print(FILE *file,_T &&str,int,int,...)
+        // T is c-style string
+        template<typename _T,
+                 typename _IsCstr = decltype(sharpen::TypePrinter::IsCstr(std::declval<_T>()))>
+        static void Print(FILE *file, _T &&str, int, int, ...)
         {
             const char *cstr = str;
             if (cstr)
             {
-                std::fputs(cstr,file);
+                std::fputs(cstr, file);
                 return;
             }
-            std::fprintf(file,"%p",cstr);
+            std::fprintf(file, "%p", cstr);
         }
 
-        //T is int or uint
-        template<typename _T,typename _IsNum = typename std::enable_if<std::is_integral<typename std::remove_reference<_T>::type>::value>::type>
-        static void Print(FILE *file,_T &&val,int,int,int,...)
+        // T is int or uint
+        template<typename _T,
+                 typename _IsNum = typename std::enable_if<
+                     std::is_integral<typename std::remove_reference<_T>::type>::value>::type>
+        static void Print(FILE *file, _T &&val, int, int, int, ...)
         {
             char buf[22] = {0};
-            sharpen::Itoa(val,10,buf);
-            std::fputs(buf,file);
+            sharpen::Itoa(val, 10, buf);
+            std::fputs(buf, file);
         }
 
-        //T is float or double
-        template<typename _T,typename _IsFloat = typename std::enable_if<std::is_floating_point<typename std::remove_reference<_T>::type>::value>::type>
-        static void Print(FILE *file,_T &&val,int,int,int,int,...)
+        // T is float or double
+        template<typename _T,
+                 typename _IsFloat = typename std::enable_if<
+                     std::is_floating_point<typename std::remove_reference<_T>::type>::value>::type>
+        static void Print(FILE *file, _T &&val, int, int, int, int, ...)
         {
             const char *format = "%f";
             if (sizeof(val) == sizeof(long double))
             {
                 format = "%Lf";
             }
-            std::fprintf(file,format,val);
+            std::fprintf(file, format, val);
         }
 
-        //T is bool
-        template<typename _T,typename _IsBool = typename std::enable_if<std::is_same<bool,typename std::remove_const<typename std::remove_reference<_T>::type>::type>::value>::type>
-        static void Print(FILE *file,_T &&val,int,int,int,int,int,...)
+        // T is bool
+        template<typename _T,
+                 typename _IsBool = typename std::enable_if<std::is_same<
+                     bool,
+                     typename std::remove_const<typename std::remove_reference<_T>::type>::type>::
+                                                                value>::type>
+        static void Print(FILE *file, _T &&val, int, int, int, int, int, ...)
         {
             const char *str = "true";
             if (!val)
             {
                 str = "false";
             }
-            std::fputs(str,file);
+            std::fputs(str, file);
         }
 
-        //T is char
-        template<typename _T,typename _IsBool = typename std::enable_if<std::is_same<char,typename std::remove_const<typename std::remove_reference<_T>::type>::type>::value>::type>
-        static void Print(FILE *file,_T &&val,int,int,int,int,int,int,...)
+        // T is char
+        template<typename _T,
+                 typename _IsBool = typename std::enable_if<std::is_same<
+                     char,
+                     typename std::remove_const<typename std::remove_reference<_T>::type>::type>::
+                                                                value>::type>
+        static void Print(FILE *file, _T &&val, int, int, int, int, int, int, ...)
         {
-            std::fputc(val,file);
+            std::fputc(val, file);
         }
 
-        //SpecialPrinter
-        template<typename _T,typename _RawType = typename std::remove_reference<_T>::type,typename _HasSpecialPrinter = decltype(&sharpen::SpecialPrinter<_RawType>::Print)>
-        static void Print(FILE *file,_T &&val,int,int,int,int,int,int,int,...)
+        // SpecialPrinter
+        template<typename _T,
+                 typename _RawType = typename std::remove_reference<_T>::type,
+                 typename _HasSpecialPrinter = decltype(&sharpen::SpecialPrinter<_RawType>::Print)>
+        static void Print(FILE *file, _T &&val, int, int, int, int, int, int, int, ...)
         {
-            sharpen::SpecialPrinter<_RawType>::Print(file,std::forward<_T>(val));
+            sharpen::SpecialPrinter<_RawType>::Print(file, std::forward<_T>(val));
         }
     };
-    
 
-    template<typename _T,typename ..._Ts>
+
+    template<typename _T, typename... _Ts>
     struct ConsolePrinter
     {
-        static void Print(_T &&arg,_Ts &&...args)
+        static void Print(_T &&arg, _Ts &&...args)
         {
-            sharpen::TypePrinter::Print(stdout,std::forward<_T>(arg),0,0,0,0,0,0,0);
+            sharpen::TypePrinter::Print(stdout, std::forward<_T>(arg), 0, 0, 0, 0, 0, 0, 0);
             sharpen::ConsolePrinter<_Ts...>::Print(std::forward<_Ts>(args)...);
         }
 
-        static void Perror(_T &&arg,_Ts &&...args)
+        static void Perror(_T &&arg, _Ts &&...args)
         {
-            sharpen::TypePrinter::Print(stderr,std::forward<_T>(arg),0,0,0,0,0,0,0);
+            sharpen::TypePrinter::Print(stderr, std::forward<_T>(arg), 0, 0, 0, 0, 0, 0, 0);
             sharpen::ConsolePrinter<_Ts...>::Print(std::forward<_Ts>(args)...);
         }
     };
@@ -226,48 +260,66 @@ namespace sharpen
     {
         static void Print(_T &&arg)
         {
-            sharpen::TypePrinter::Print(stdout,std::forward<_T>(arg),0,0,0,0,0,0,0);
+            sharpen::TypePrinter::Print(stdout, std::forward<_T>(arg), 0, 0, 0, 0, 0, 0, 0);
         }
 
         static void Perror(_T &&arg)
         {
-            sharpen::TypePrinter::Print(stderr,std::forward<_T>(arg),0,0,0,0,0,0,0);
+            sharpen::TypePrinter::Print(stderr, std::forward<_T>(arg), 0, 0, 0, 0, 0, 0, 0);
         }
     };
-    
-    template<typename _T,typename _Check = decltype(sharpen::TypePrinter::Print(stdout,std::declval<_T>(),0,0,0,0,0,0,0))>
+
+    template<typename _T,
+             typename _Check = decltype(sharpen::TypePrinter::Print(
+                 stdout, std::declval<_T>(), 0, 0, 0, 0, 0, 0, 0))>
     static void PrintCheck(_T &&);
-    
-    template<typename ..._Ts>
+
+    template<typename... _Ts>
     using PrintTest = void;
 
-    template<typename _T,typename ..._Ts,typename _Check = PrintTest<decltype(sharpen::PrintCheck(std::declval<_T>())),decltype(sharpen::PrintCheck(std::declval<_Ts>()))...>>
-    inline void Print(_T &&arg,_Ts &&...args)
+    template<typename _T,
+             typename... _Ts,
+             typename _Check = PrintTest<decltype(sharpen::PrintCheck(std::declval<_T>())),
+                                         decltype(sharpen::PrintCheck(std::declval<_Ts>()))...>>
+    inline void Print(_T &&arg, _Ts &&...args)
     {
-        sharpen::ConsolePrinter<_T,_Ts...>::Print(std::forward<_T>(arg),std::forward<_Ts>(args)...);
+        sharpen::ConsolePrinter<_T, _Ts...>::Print(std::forward<_T>(arg),
+                                                   std::forward<_Ts>(args)...);
     }
 
-    template<typename _T,typename ..._Ts,typename _Check = PrintTest<decltype(sharpen::PrintCheck(std::declval<_T>())),decltype(sharpen::PrintCheck(std::declval<_Ts>()))...>>
-    inline void Println(_T &&arg,_Ts &&...args)
+    template<typename _T,
+             typename... _Ts,
+             typename _Check = PrintTest<decltype(sharpen::PrintCheck(std::declval<_T>())),
+                                         decltype(sharpen::PrintCheck(std::declval<_Ts>()))...>>
+    inline void Println(_T &&arg, _Ts &&...args)
     {
-        sharpen::ConsolePrinter<_T,_Ts...>::Print(std::forward<_T>(arg),std::forward<_Ts>(args)...);
+        sharpen::ConsolePrinter<_T, _Ts...>::Print(std::forward<_T>(arg),
+                                                   std::forward<_Ts>(args)...);
         std::putchar('\n');
     }
 
-    template<typename _T,typename ..._Ts,typename _Check = PrintTest<decltype(sharpen::PrintCheck(std::declval<_T>())),decltype(sharpen::PrintCheck(std::declval<_Ts>()))...>>
-    inline void Perror(_T &&arg,_Ts &&...args)
+    template<typename _T,
+             typename... _Ts,
+             typename _Check = PrintTest<decltype(sharpen::PrintCheck(std::declval<_T>())),
+                                         decltype(sharpen::PrintCheck(std::declval<_Ts>()))...>>
+    inline void Perror(_T &&arg, _Ts &&...args)
     {
-        sharpen::ConsolePrinter<_T,_Ts...>::Perror(std::forward<_T>(arg),std::forward<_Ts>(args)...);
+        sharpen::ConsolePrinter<_T, _Ts...>::Perror(std::forward<_T>(arg),
+                                                    std::forward<_Ts>(args)...);
     }
 
-    template<typename _T,typename ..._Ts,typename _Check = PrintTest<decltype(sharpen::PrintCheck(std::declval<_T>())),decltype(sharpen::PrintCheck(std::declval<_Ts>()))...>>
-    inline void Perrorln(_T &&arg,_Ts &&...args)
+    template<typename _T,
+             typename... _Ts,
+             typename _Check = PrintTest<decltype(sharpen::PrintCheck(std::declval<_T>())),
+                                         decltype(sharpen::PrintCheck(std::declval<_Ts>()))...>>
+    inline void Perrorln(_T &&arg, _Ts &&...args)
     {
-        sharpen::ConsolePrinter<_T,_Ts...>::Perror(std::forward<_T>(arg),std::forward<_Ts>(args)...);
+        sharpen::ConsolePrinter<_T, _Ts...>::Perror(std::forward<_T>(arg),
+                                                    std::forward<_Ts>(args)...);
         std::putchar('\n');
     }
 
     void ClearConsole();
-}
+}   // namespace sharpen
 
 #endif

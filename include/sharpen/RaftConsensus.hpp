@@ -6,86 +6,90 @@
 #include <queue>
 #include <set>
 
-#include "IConsensus.hpp"
-#include "IStatusMap.hpp"
-#include "Noncopyable.hpp"
 #include "Broadcaster.hpp"
-#include "IRaftMailBuilder.hpp"
-#include "IRaftMailExtractor.hpp"
+#include "IConsensus.hpp"
 #include "IMailReceiver.hpp"
 #include "IQuorum.hpp"
+#include "IRaftLogAccesser.hpp"
+#include "IRaftMailBuilder.hpp"
+#include "IRaftMailExtractor.hpp"
+#include "IRaftSnapshotController.hpp"
+#include "IStatusMap.hpp"
 #include "IWorkerGroup.hpp"
+#include "Noncopyable.hpp"
+#include "RaftElectionRecord.hpp"
+#include "RaftHeartbeatMailProvider.hpp"
+#include "RaftLeaderRecord.hpp"
+#include "RaftOption.hpp"
+#include "RaftPrevoteRecord.hpp"
 #include "RaftRole.hpp"
 #include "RaftVoteRecord.hpp"
-#include "RaftElectionRecord.hpp"
-#include "RaftOption.hpp"
-#include "RaftLeaderRecord.hpp"
-#include "RaftHeartbeatMailProvider.hpp"
-#include "RaftPrevoteRecord.hpp"
-#include "IRaftSnapshotController.hpp"
-#include "IRaftLogAccesser.hpp"
 
 namespace sharpen
 {
-    class RaftConsensus:public sharpen::IConsensus,private sharpen::IMailReceiver,public sharpen::Noncopyable,public sharpen::Nonmovable
+    class RaftConsensus
+        : public sharpen::IConsensus
+        , private sharpen::IMailReceiver
+        , public sharpen::Noncopyable
+        , public sharpen::Nonmovable
     {
     private:
         using Self = sharpen::RaftConsensus;
 
-        //scheduler
+        // scheduler
         sharpen::IFiberScheduler *scheduler_;
 
-        //the id of current actor
+        // the id of current actor
         std::uint64_t id_;
-        //persistent status map
+        // persistent status map
         std::unique_ptr<sharpen::IStatusMap> statusMap_;
-        //storage logs
+        // storage logs
         std::unique_ptr<sharpen::ILogStorage> logs_;
         std::unique_ptr<sharpen::IRaftLogAccesser> logAccesser_;
-        //snapshot provider
+        // snapshot provider
         std::unique_ptr<sharpen::IRaftSnapshotController> snapshotController_;
-        //raft option
+        // raft option
         sharpen::RaftOption option_;
-        //cache
+        // cache
         std::atomic_uint64_t term_;
         sharpen::RaftVoteRecord vote_;
         std::atomic_uint64_t commitIndex_;
-        //role
+        // role
         std::atomic<sharpen::RaftRole> role_;
-        //election record
+        // election record
         sharpen::RaftElectionRecord electionRecord_;
         sharpen::RaftPrevoteRecord prevoteRecord_;
-        
-        //leader record
-        //thread safty
+
+        // leader record
+        // thread safty
         sharpen::RaftLeaderRecord leaderRecord_;
-        
-        //waiters
-        std::atomic<sharpen::Future<void>*> waiter_;
+
+        // waiters
+        std::atomic<sharpen::Future<void> *> waiter_;
         std::atomic_uint64_t advancedCount_;
         std::atomic_uint64_t reachAdvancedCount_;
 
-        //mail builder
+        // mail builder
         std::unique_ptr<sharpen::IRaftMailBuilder> mailBuilder_;
-        //mail extractor
+        // mail extractor
         std::unique_ptr<sharpen::IRaftMailExtractor> mailExtractor_;
-        //quorum
+        // quorum
         std::unique_ptr<sharpen::IQuorum> quorum_;
-        //learner quorum
-        // std::unique_ptr<sharpen::IQuorum> learners_;
-        //quorum broadcaster
+        // learner quorum
+        //  std::unique_ptr<sharpen::IQuorum> learners_;
+        // quorum broadcaster
         std::unique_ptr<sharpen::Broadcaster> quorumBroadcaster_;
         // std::unique_ptr<sharpen::Broadcaster> learnerBroadcaster_;
 
         std::unique_ptr<sharpen::RaftHeartbeatMailProvider> heartbeatProvider_;
 
-        //must be last member
-        //single fiber worker
+        // must be last member
+        // single fiber worker
         std::unique_ptr<sharpen::IWorkerGroup> worker_;
 
         sharpen::Optional<std::uint64_t> LoadUint64(sharpen::ByteSlice key);
 
-        void SetUint64(sharpen::ByteSlice key,std::uint64_t value);
+        void SetUint64(sharpen::ByteSlice key, std::uint64_t value);
 
         void LoadTerm();
 
@@ -117,7 +121,7 @@ namespace sharpen
 
         sharpen::Optional<std::uint64_t> LookupTermOfEntry(std::uint64_t index) const noexcept;
 
-        bool CheckEntry(std::uint64_t index,std::uint64_t expectedTerm) const noexcept;
+        bool CheckEntry(std::uint64_t index, std::uint64_t expectedTerm) const noexcept;
 
         sharpen::Optional<std::uint64_t> LookupTerm(std::uint64_t index) const;
 
@@ -131,25 +135,27 @@ namespace sharpen
 
         void Abdicate();
 
-        //vote
+        // vote
         sharpen::Mail OnVoteRequest(const sharpen::RaftVoteForRequest &request);
 
-        void OnVoteResponse(const sharpen::RaftVoteForResponse &response,std::uint64_t actorId);
+        void OnVoteResponse(const sharpen::RaftVoteForResponse &response, std::uint64_t actorId);
 
-        //prevote
+        // prevote
         sharpen::Mail OnPrevoteRequest(const sharpen::RaftPrevoteRequest &request);
 
-        void OnPrevoteResponse(const sharpen::RaftPrevoteResponse &response,std::uint64_t actorId);
+        void OnPrevoteResponse(const sharpen::RaftPrevoteResponse &response, std::uint64_t actorId);
 
-        //heartbeat
+        // heartbeat
         sharpen::Mail OnHeartbeatRequest(const sharpen::RaftHeartbeatRequest &request);
 
-        void OnHeartbeatResponse(const sharpen::RaftHeartbeatResponse &response,std::uint64_t actorId);
+        void OnHeartbeatResponse(const sharpen::RaftHeartbeatResponse &response,
+                                 std::uint64_t actorId);
 
-        //snapshot
+        // snapshot
         sharpen::Mail OnSnapshotRequest(const sharpen::RaftSnapshotRequest &request);
 
-        void OnSnapshotResponse(const sharpen::RaftSnapshotResponse &response,std::uint64_t actorId);
+        void OnSnapshotResponse(const sharpen::RaftSnapshotResponse &response,
+                                std::uint64_t actorId);
 
         void NotifyWaiter(sharpen::Future<void> *future) noexcept;
 
@@ -159,9 +165,11 @@ namespace sharpen
 
         virtual sharpen::Mail NviGenerateResponse(sharpen::Mail request) override;
 
-        virtual void NviReceive(sharpen::Mail mail,std::uint64_t actorId) override;
+        virtual void NviReceive(sharpen::Mail mail, std::uint64_t actorId) override;
 
-        virtual void NviConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum*)> configurater) override;
+        virtual void NviConfigurateQuorum(
+            std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater)
+            override;
 
         sharpen::WriteLogsResult DoWrite(const sharpen::LogBatch *logs);
 
@@ -169,28 +177,41 @@ namespace sharpen
 
         virtual void NviDropLogsUntil(std::uint64_t index) override;
 
-        void DoConfigurateQuorum(std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum*)> configurater);
+        void DoConfigurateQuorum(
+            std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater);
 
         void DoAdvance();
 
-        void DoReceive(sharpen::Mail mail,std::uint64_t actorId);
+        void DoReceive(sharpen::Mail mail, std::uint64_t actorId);
 
         sharpen::Mail DoGenerateResponse(sharpen::Mail request);
 
         void EnsureConfig() const;
+
     public:
-        constexpr static sharpen::ByteSlice voteKey{"vote",4};
+        constexpr static sharpen::ByteSlice voteKey{"vote", 4};
 
-        constexpr static sharpen::ByteSlice termKey{"term",4};
+        constexpr static sharpen::ByteSlice termKey{"term", 4};
 
-        constexpr static sharpen::ByteSlice lastAppiledKey{"lastAppiled",11};
+        constexpr static sharpen::ByteSlice lastAppiledKey{"lastAppiled", 11};
 
-        RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,std::unique_ptr<sharpen::IRaftLogAccesser> logAccesser,std::unique_ptr<sharpen::IRaftSnapshotController> snapshotController,const sharpen::RaftOption &option);
+        RaftConsensus(std::uint64_t id,
+                      std::unique_ptr<sharpen::IStatusMap> statusMap,
+                      std::unique_ptr<sharpen::ILogStorage> logs,
+                      std::unique_ptr<sharpen::IRaftLogAccesser> logAccesser,
+                      std::unique_ptr<sharpen::IRaftSnapshotController> snapshotController,
+                      const sharpen::RaftOption &option);
 
-        RaftConsensus(std::uint64_t id,std::unique_ptr<sharpen::IStatusMap> statusMap,std::unique_ptr<sharpen::ILogStorage> logs,std::unique_ptr<sharpen::IRaftLogAccesser> logAccesser,std::unique_ptr<sharpen::IRaftSnapshotController> snapshotController,const sharpen::RaftOption &option,sharpen::IFiberScheduler &scheduler);
-    
+        RaftConsensus(std::uint64_t id,
+                      std::unique_ptr<sharpen::IStatusMap> statusMap,
+                      std::unique_ptr<sharpen::ILogStorage> logs,
+                      std::unique_ptr<sharpen::IRaftLogAccesser> logAccesser,
+                      std::unique_ptr<sharpen::IRaftSnapshotController> snapshotController,
+                      const sharpen::RaftOption &option,
+                      sharpen::IFiberScheduler &scheduler);
+
         virtual ~RaftConsensus() noexcept = default;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -228,13 +249,15 @@ namespace sharpen
 
         // void ConfigurateLearners(std::function<void(sharpen::IQuorum&)> configurater);
 
-        // template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<void,_Fn,sharpen::IQuorum&,_Args...>::Value>>
+        // template<typename _Fn,typename ..._Args,typename _Check =
+        // sharpen::EnableIf<sharpen::IsCompletedBindableReturned<void,_Fn,sharpen::IQuorum&,_Args...>::Value>>
         // inline void ConfigurateLearners(_Fn &&fn,_Args &&...args)
         // {
-        //     std::function<void(sharpen::IQuorum&)> config{std::bind(std::forward<_Fn>(fn),std::placeholders::_1,std::forward<_Args>(args)...)};
+        //     std::function<void(sharpen::IQuorum&)>
+        //     config{std::bind(std::forward<_Fn>(fn),std::placeholders::_1,std::forward<_Args>(args)...)};
         //     this->ConfigurateLearners(config);
         // }
     };
-}
+}   // namespace sharpen
 
 #endif

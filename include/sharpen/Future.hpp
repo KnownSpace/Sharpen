@@ -2,18 +2,18 @@
 #ifndef _SHARPEN_FUTURE_HPP
 #define _SHARPEN_FUTURE_HPP
 
-#include <memory>
 #include <condition_variable>
-#include <functional>
-#include <exception>
-#include <stdexcept>
-#include <new>
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
+#include <exception>
+#include <functional>
+#include <memory>
+#include <new>
+#include <stdexcept>
 #include <thread>
 
-#include "SpinLock.hpp"
 #include "Optional.hpp"
+#include "SpinLock.hpp"
 
 namespace sharpen
 {
@@ -26,61 +26,67 @@ namespace sharpen
     };
 
     template<typename _Value>
-    class Future:public sharpen::Noncopyable
+    class Future : public sharpen::Noncopyable
     {
     private:
         using Self = Future<_Value>;
+
     protected:
         using Callback = std::function<void(Self &)>;
+
     private:
         std::unique_ptr<sharpen::SpinLock> lock_;
         sharpen::Optional<_Value> value_;
         Callback callback_;
         std::atomic<FutureState> state_;
         std::exception_ptr error_;
+
     public:
         Future()
-            :lock_(new (std::nothrow) sharpen::SpinLock())
-            ,value_(sharpen::EmptyOpt)
-            ,callback_()
-            ,state_(sharpen::FutureState::Pending)
-            ,error_()
+            : lock_(new (std::nothrow) sharpen::SpinLock())
+            , value_(sharpen::EmptyOpt)
+            , callback_()
+            , state_(sharpen::FutureState::Pending)
+            , error_()
         {
-            if(!this->lock_)
+            if (!this->lock_)
             {
                 throw std::bad_alloc();
             }
         }
 
         Future(Self &&other) noexcept
-            :lock_(std::move(other.lock_))
-            ,value_(std::move(other.value_))
-            ,callback_(std::move(other.callback_))
-            ,state_(other.state_.load(std::memory_order::memory_order_relaxed))
-            ,error_(std::move(other.error_))
+            : lock_(std::move(other.lock_))
+            , value_(std::move(other.value_))
+            , callback_(std::move(other.callback_))
+            , state_(other.state_.load(std::memory_order::memory_order_relaxed))
+            , error_(std::move(other.error_))
         {
-            other.state_.store(sharpen::FutureState::Pending,std::memory_order::memory_order_relaxed);
+            other.state_.store(sharpen::FutureState::Pending,
+                               std::memory_order::memory_order_relaxed);
         }
 
         virtual ~Future() = default;
 
         inline Self &operator=(Self &&other) noexcept
         {
-            if(this != std::addressof(other))
+            if (this != std::addressof(other))
             {
                 this->lock_ = std::move(other.lock_);
                 this->value_ = std::move(other.value_);
                 this->callback_ = std::move(other.callback_);
                 // this->state_ = std::move(other.state_);
-                sharpen::FutureState state{other.state_.load(std::memory_order::memory_order_relaxed)};
-                this->state_.store(state,std::memory_order::memory_order_relaxed);
+                sharpen::FutureState state{
+                    other.state_.load(std::memory_order::memory_order_relaxed)};
+                this->state_.store(state, std::memory_order::memory_order_relaxed);
                 this->error_ = std::move(other.error_);
-                other.state_.store(sharpen::FutureState::Pending,std::memory_order::memory_order_relaxed);
+                other.state_.store(sharpen::FutureState::Pending,
+                                   std::memory_order::memory_order_relaxed);
             }
             return *this;
         }
 
-        template<typename ..._Args,typename = decltype(_Value{std::declval<_Args>()...})>
+        template<typename... _Args, typename = decltype(_Value{std::declval<_Args>()...})>
         void Complete(_Args &&...args)
         {
             {
@@ -106,7 +112,7 @@ namespace sharpen
 
         void Wait() const
         {
-            while(this->IsPending())
+            while (this->IsPending())
             {
                 std::this_thread::yield();
             }
@@ -115,22 +121,24 @@ namespace sharpen
         inline _Value &Get()
         {
             this->Wait();
-            if(this->state_.load(std::memory_order::memory_order_relaxed) == sharpen::FutureState::Completed)
+            if (this->state_.load(std::memory_order::memory_order_relaxed) ==
+                sharpen::FutureState::Completed)
             {
                 return this->value_.Get();
             }
-            //rethrow exception
+            // rethrow exception
             std::rethrow_exception(this->error_);
         }
 
         inline const _Value &Get() const
         {
             this->Wait();
-            if(this->state_.load(std::memory_order::memory_order_relaxed) == sharpen::FutureState::Completed)
+            if (this->state_.load(std::memory_order::memory_order_relaxed) ==
+                sharpen::FutureState::Completed)
             {
                 return this->value_.Get();
             }
-            //rethrow exception
+            // rethrow exception
             std::rethrow_exception(this->error_);
         }
 
@@ -162,13 +170,13 @@ namespace sharpen
         {
             {
                 std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
-                if(this->IsPending())
+                if (this->IsPending())
                 {
                     this->callback_ = std::move(callback);
                     return;
                 }
             }
-            if(callback)
+            if (callback)
             {
                 callback(*this);
             }
@@ -186,12 +194,12 @@ namespace sharpen
         }
 
     protected:
-
         virtual void ResetWithoutLock() noexcept
         {
             this->value_.Reset();
             this->error_ = std::exception_ptr{};
-            this->state_.store(sharpen::FutureState::Pending,std::memory_order::memory_order_release);
+            this->state_.store(sharpen::FutureState::Pending,
+                               std::memory_order::memory_order_release);
         }
 
         inline Callback &GetCallback() noexcept
@@ -201,7 +209,7 @@ namespace sharpen
 
         inline void SetState(sharpen::FutureState state) noexcept
         {
-            this->state_.store(state,std::memory_order::memory_order_release);
+            this->state_.store(state, std::memory_order::memory_order_release);
         }
 
         virtual void ExecuteCallback(sharpen::FutureState state)
@@ -209,10 +217,10 @@ namespace sharpen
             Callback cb;
             {
                 std::unique_lock<sharpen::SpinLock> lock{this->GetCompleteLock()};
-                std::swap(cb,this->GetCallback());
+                std::swap(cb, this->GetCallback());
                 this->SetState(state);
             }
-            if(cb)
+            if (cb)
             {
                 cb(*this);
             }
@@ -224,8 +232,10 @@ namespace sharpen
     {
     private:
         using Self = Future<void>;
+
     protected:
         using Callback = std::function<void(Self &)>;
+
     private:
         std::unique_ptr<sharpen::SpinLock> lock_;
         Callback callback_;
@@ -233,26 +243,26 @@ namespace sharpen
         std::exception_ptr error_;
 
     public:
-
         Future()
-            :lock_(new (std::nothrow) sharpen::SpinLock())
-            ,callback_()
-            ,state_(sharpen::FutureState::Pending)
-            ,error_()
+            : lock_(new (std::nothrow) sharpen::SpinLock())
+            , callback_()
+            , state_(sharpen::FutureState::Pending)
+            , error_()
         {
-            if(!this->lock_)
+            if (!this->lock_)
             {
                 throw std::bad_alloc();
             }
         }
 
         Future(Self &&other) noexcept
-            :lock_(std::move(other.lock_))
-            ,callback_(std::move(other.callback_))
-            ,state_(other.state_.load(std::memory_order::memory_order_relaxed))
-            ,error_(std::move(other.error_))
+            : lock_(std::move(other.lock_))
+            , callback_(std::move(other.callback_))
+            , state_(other.state_.load(std::memory_order::memory_order_relaxed))
+            , error_(std::move(other.error_))
         {
-            other.state_.store(sharpen::FutureState::Pending,std::memory_order::memory_order_relaxed);
+            other.state_.store(sharpen::FutureState::Pending,
+                               std::memory_order::memory_order_relaxed);
         }
 
         virtual ~Future() = default;
@@ -260,14 +270,16 @@ namespace sharpen
 
         inline Self &operator=(Self &&other) noexcept
         {
-            if(this != std::addressof(other))
+            if (this != std::addressof(other))
             {
                 this->lock_ = std::move(other.lock_);
                 this->callback_ = std::move(other.callback_);
-                sharpen::FutureState state{other.state_.load(std::memory_order::memory_order_relaxed)};
-                this->state_.store(state,std::memory_order::memory_order_relaxed);
+                sharpen::FutureState state{
+                    other.state_.load(std::memory_order::memory_order_relaxed)};
+                this->state_.store(state, std::memory_order::memory_order_relaxed);
                 this->error_ = std::move(other.error_);
-                other.state_.store(sharpen::FutureState::Pending,std::memory_order::memory_order_relaxed);
+                other.state_.store(sharpen::FutureState::Pending,
+                                   std::memory_order::memory_order_relaxed);
             }
             return *this;
         }
@@ -293,7 +305,7 @@ namespace sharpen
 
         inline void Wait() const
         {
-            while(this->IsPending())
+            while (this->IsPending())
             {
                 std::this_thread::yield();
             }
@@ -302,11 +314,12 @@ namespace sharpen
         inline void Get() const
         {
             this->Wait();
-            if(this->state_.load(std::memory_order::memory_order_relaxed) == sharpen::FutureState::Completed)
+            if (this->state_.load(std::memory_order::memory_order_relaxed) ==
+                sharpen::FutureState::Completed)
             {
                 return;
             }
-            //rethrow exception
+            // rethrow exception
             std::rethrow_exception(this->error_);
         }
 
@@ -336,13 +349,13 @@ namespace sharpen
 
         void SetCallback(Callback &&callback)
         {
-            if(!callback)
+            if (!callback)
             {
                 return;
             }
             {
                 std::unique_lock<sharpen::SpinLock> lock(*this->lock_);
-                if(this->IsPending())
+                if (this->IsPending())
                 {
                     this->callback_ = std::move(callback);
                     return;
@@ -361,11 +374,13 @@ namespace sharpen
             std::unique_lock<sharpen::SpinLock> lock(*this->lock_);
             this->ResetWithoutLock();
         }
+
     protected:
         virtual void ResetWithoutLock()
         {
             this->error_ = std::exception_ptr{};
-            this->state_.store(sharpen::FutureState::Pending,std::memory_order::memory_order_release);
+            this->state_.store(sharpen::FutureState::Pending,
+                               std::memory_order::memory_order_release);
         }
 
         inline Callback &GetCallback() noexcept
@@ -375,7 +390,7 @@ namespace sharpen
 
         inline void SetState(sharpen::FutureState state) noexcept
         {
-            this->state_.store(state,std::memory_order::memory_order_release);
+            this->state_.store(state, std::memory_order::memory_order_release);
         }
 
         inline virtual void ExecuteCallback(sharpen::FutureState state)
@@ -383,10 +398,10 @@ namespace sharpen
             Callback cb;
             {
                 std::unique_lock<sharpen::SpinLock> lock{this->GetCompleteLock()};
-                std::swap(cb,this->GetCallback());
+                std::swap(cb, this->GetCallback());
                 this->SetState(state);
             }
-            if(cb)
+            if (cb)
             {
                 cb(*this);
             }
@@ -402,6 +417,6 @@ namespace sharpen
         auto p = std::make_shared<sharpen::Future<_Value>>();
         return p;
     }
-}
+}   // namespace sharpen
 
 #endif

@@ -2,12 +2,13 @@
 #include <sharpen/AsyncRwLock.hpp>
 
 sharpen::AsyncRwLock::AsyncRwLock()
-    :state_(sharpen::RwLockState::Free)
-    ,readWaiters_()
-    ,writeWaiters_()
-    ,lock_()
-    ,readers_(0)
-{}
+    : state_(sharpen::RwLockState::Free)
+    , readWaiters_()
+    , writeWaiters_()
+    , lock_()
+    , readers_(0)
+{
+}
 
 sharpen::RwLockState sharpen::AsyncRwLock::LockRead()
 {
@@ -36,7 +37,7 @@ bool sharpen::AsyncRwLock::TryLockRead() noexcept
 bool sharpen::AsyncRwLock::TryLockRead(sharpen::RwLockState &status) noexcept
 {
     {
-        //we always get spin lock
+        // we always get spin lock
         std::unique_lock<sharpen::SpinLock> lock{this->lock_};
         if (this->state_ != sharpen::RwLockState::UniquedWriting && this->writeWaiters_.empty())
         {
@@ -59,7 +60,7 @@ sharpen::RwLockState sharpen::AsyncRwLock::LockWrite()
             this->state_ = sharpen::RwLockState::UniquedWriting;
             return sharpen::RwLockState::Free;
         }
-        this->writeWaiters_.push_back(&future);	
+        this->writeWaiters_.push_back(&future);
     }
     return future.Await();
 }
@@ -73,13 +74,13 @@ bool sharpen::AsyncRwLock::TryLockWrite() noexcept
 bool sharpen::AsyncRwLock::TryLockWrite(sharpen::RwLockState &prevStatus) noexcept
 {
     {
-        //if we could not get spin lock
-        //we return false
+        // if we could not get spin lock
+        // we return false
         if (!this->lock_.TryLock())
         {
             return false;
         }
-        std::unique_lock<sharpen::SpinLock> lock{this->lock_,std::adopt_lock};
+        std::unique_lock<sharpen::SpinLock> lock{this->lock_, std::adopt_lock};
         if (this->state_ == sharpen::RwLockState::Free)
         {
             this->state_ = sharpen::RwLockState::UniquedWriting;
@@ -103,14 +104,14 @@ void sharpen::AsyncRwLock::WriteUnlock() noexcept
         futurePtr->Complete(sharpen::RwLockState::UniquedWriting);
         return;
     }
-    else if(!this->readWaiters_.empty())
+    else if (!this->readWaiters_.empty())
     {
         sharpen::AsyncRwLock::Waiters waiters;
-        std::swap(waiters,this->readWaiters_);
+        std::swap(waiters, this->readWaiters_);
         this->readers_ = static_cast<std::uint32_t>(waiters.size());
         this->state_ = sharpen::RwLockState::SharedReading;
         lock.unlock();
-        for (auto begin = std::begin(waiters),end = std::end(waiters);begin != end;++begin)
+        for (auto begin = std::begin(waiters), end = std::end(waiters); begin != end; ++begin)
         {
             (*begin)->Complete(sharpen::RwLockState::UniquedWriting);
         }
@@ -142,11 +143,11 @@ void sharpen::AsyncRwLock::ReadUnlock() noexcept
 
 void sharpen::AsyncRwLock::Unlock() noexcept
 {
-    if(this->state_ == sharpen::RwLockState::UniquedWriting)
+    if (this->state_ == sharpen::RwLockState::UniquedWriting)
     {
         this->WriteUnlock();
     }
-    else if(this->state_ == sharpen::RwLockState::SharedReading)
+    else if (this->state_ == sharpen::RwLockState::SharedReading)
     {
         this->ReadUnlock();
     }
@@ -158,10 +159,10 @@ sharpen::RwLockState sharpen::AsyncRwLock::UpgradeFromRead()
     {
         std::unique_lock<sharpen::SpinLock> lock{this->lock_};
         assert(this->state_ == sharpen::RwLockState::SharedReading);
-        //if only we are reading
-        //change lock status
+        // if only we are reading
+        // change lock status
         this->readers_ -= 1;
-        if(this->readers_ == 0)
+        if (this->readers_ == 0)
         {
             this->state_ = sharpen::RwLockState::UniquedWriting;
             return sharpen::RwLockState::SharedReading;
@@ -178,11 +179,11 @@ sharpen::RwLockState sharpen::AsyncRwLock::DowngradeFromWrite()
         std::unique_lock<sharpen::SpinLock> lock{this->lock_};
         assert(this->state_ == sharpen::RwLockState::UniquedWriting);
         this->readers_ = 1;
-        std::swap(waiters,this->readWaiters_);
+        std::swap(waiters, this->readWaiters_);
         this->readers_ += static_cast<std::uint32_t>(waiters.size());
         this->state_ = sharpen::RwLockState::SharedReading;
     }
-    for (auto begin = waiters.begin(),end = waiters.end(); begin != end; ++begin)
+    for (auto begin = waiters.begin(), end = waiters.end(); begin != end; ++begin)
     {
         (*begin)->Complete(sharpen::RwLockState::UniquedWriting);
     }

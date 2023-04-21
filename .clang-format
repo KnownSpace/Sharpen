@@ -180,6 +180,8 @@ IncludeCategories:
     Priority: 4
   - Regex: 'Windows.h'
     Priority: 4
+  - Regex: 'TlHelp32.h'
+    Priority: 5
   - Regex:  '.*'
     Priority:   1
  

@@ -2,27 +2,31 @@
 
 #ifdef SHARPEN_HAS_WINSIGNALPIEPECHANNEL
 
-#include <cstdio>
 #include <cassert>
+#include <cstdio>
 
 #include <sharpen/EventLoop.hpp>
 
-sharpen::WinPipeSignalChannel::WinPipeSignalChannel(sharpen::FileHandle reader,sharpen::FileHandle writer,sharpen::SignalMap &map)
-    :Base()
-    ,map_(&map)
-    ,writer_()
+sharpen::WinPipeSignalChannel::WinPipeSignalChannel(sharpen::FileHandle reader,
+                                                    sharpen::FileHandle writer,
+                                                    sharpen::SignalMap &map)
+    : Base()
+    , map_(&map)
+    , writer_()
 {
     this->handle_ = reader;
     this->writer_ = writer;
     assert(this->handle_ != INVALID_HANDLE_VALUE);
     assert(this->writer_ != INVALID_HANDLE_VALUE);
-    //register closer
-    using FnPtr = void(*)(sharpen::FileHandle,sharpen::FileHandle,sharpen::SignalMap *);
+    // register closer
+    using FnPtr = void (*)(sharpen::FileHandle, sharpen::FileHandle, sharpen::SignalMap *);
     FnPtr doClosePtr{static_cast<FnPtr>(&Self::DoClose)};
-    this->closer_ = std::bind(doClosePtr,std::placeholders::_1,this->GetWriter(),this->map_);
+    this->closer_ = std::bind(doClosePtr, std::placeholders::_1, this->GetWriter(), this->map_);
 }
 
-void sharpen::WinPipeSignalChannel::DoClose(sharpen::FileHandle handle,sharpen::FileHandle writer,sharpen::SignalMap *map) noexcept
+void sharpen::WinPipeSignalChannel::DoClose(sharpen::FileHandle handle,
+                                            sharpen::FileHandle writer,
+                                            sharpen::SignalMap *map) noexcept
 {
     assert(map != nullptr);
     map->Unregister(writer);
@@ -42,7 +46,7 @@ sharpen::FileHandle sharpen::WinPipeSignalChannel::GetWriter() const noexcept
 
 void sharpen::WinPipeSignalChannel::InitOverlapped(OVERLAPPED &ol)
 {
-    std::memset(&ol,0,sizeof(ol));
+    std::memset(&ol, 0, sizeof(ol));
 }
 
 void sharpen::WinPipeSignalChannel::InitOverlappedStruct(sharpen::IocpOverlappedStruct &olStruct)
@@ -57,12 +61,14 @@ void sharpen::WinPipeSignalChannel::InitOverlappedStruct(sharpen::IocpOverlapped
 void sharpen::WinPipeSignalChannel::OnEvent(sharpen::IoEvent *event)
 {
     assert(event != nullptr);
-    std::unique_ptr<sharpen::IocpOverlappedStruct> ev(reinterpret_cast<sharpen::IocpOverlappedStruct *>(event->GetData()));
-    sharpen::Future<std::size_t> *future = reinterpret_cast<sharpen::Future<std::size_t>*>(ev->data_);
-    if(event->IsErrorEvent())
+    std::unique_ptr<sharpen::IocpOverlappedStruct> ev(
+        reinterpret_cast<sharpen::IocpOverlappedStruct *>(event->GetData()));
+    sharpen::Future<std::size_t> *future =
+        reinterpret_cast<sharpen::Future<std::size_t> *>(ev->data_);
+    if (event->IsErrorEvent())
     {
         sharpen::ErrorCode code{event->GetErrorCode()};
-        if(code == sharpen::ErrorBrokenPipe || code == sharpen::ErrorCancel)
+        if (code == sharpen::ErrorBrokenPipe || code == sharpen::ErrorCancel)
         {
             future->Complete(static_cast<std::size_t>(0));
             return;
@@ -73,29 +79,31 @@ void sharpen::WinPipeSignalChannel::OnEvent(sharpen::IoEvent *event)
     future->Complete(ev->length_);
 }
 
-void sharpen::WinPipeSignalChannel::RequestRead(char *sigs,std::size_t size,sharpen::Future<std::size_t> *future)
+void sharpen::WinPipeSignalChannel::RequestRead(char *sigs,
+                                                std::size_t size,
+                                                sharpen::Future<std::size_t> *future)
 {
     assert(future != nullptr);
     sharpen::IocpOverlappedStruct *olStruct = new (std::nothrow) sharpen::IocpOverlappedStruct();
-    if(!olStruct)
+    if (!olStruct)
     {
         future->Fail(std::make_exception_ptr(std::bad_alloc()));
         return;
     }
-    //init iocp olStruct
+    // init iocp olStruct
     this->InitOverlappedStruct(*olStruct);
     olStruct->event_.SetData(olStruct);
     olStruct->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Read);
-    //record future
+    // record future
     olStruct->data_ = future;
-    BOOL r = ::ReadFile(this->handle_,sigs,static_cast<DWORD>(size),nullptr,&olStruct->ol_);
-    if(r == FALSE)
+    BOOL r = ::ReadFile(this->handle_, sigs, static_cast<DWORD>(size), nullptr, &olStruct->ol_);
+    if (r == FALSE)
     {
         sharpen::ErrorCode err = sharpen::GetLastError();
-        if(err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
+        if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS)
         {
             delete olStruct;
-            if(err == sharpen::ErrorBrokenPipe || err == sharpen::ErrorCancel)
+            if (err == sharpen::ErrorBrokenPipe || err == sharpen::ErrorCancel)
             {
                 future->Complete(static_cast<std::size_t>(0));
                 return;
@@ -106,14 +114,16 @@ void sharpen::WinPipeSignalChannel::RequestRead(char *sigs,std::size_t size,shar
     }
 }
 
-void sharpen::WinPipeSignalChannel::ReadAsync(sharpen::SignalBuffer &signals,sharpen::Future<std::size_t> &future)
+void sharpen::WinPipeSignalChannel::ReadAsync(sharpen::SignalBuffer &signals,
+                                              sharpen::Future<std::size_t> &future)
 {
     assert(signals.Data() != nullptr || (signals.Data() == nullptr && signals.GetSize() == 0));
-    if(!this->IsRegistered())
+    if (!this->IsRegistered())
     {
         throw std::logic_error("should register to a loop first");
     }
-    this->loop_->RunInLoop(std::bind(&Self::RequestRead,this,signals.Data(),signals.GetSize(),&future));
+    this->loop_->RunInLoop(
+        std::bind(&Self::RequestRead, this, signals.Data(), signals.GetSize(), &future));
 }
 
 #endif

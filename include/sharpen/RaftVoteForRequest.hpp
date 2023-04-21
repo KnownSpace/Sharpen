@@ -2,8 +2,8 @@
 #ifndef _SHARPEN_RAFTVOTEFORREQUEST_HPP
 #define _SHARPEN_RAFTVOTEFORREQUEST_HPP
 
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 #include <utility>
 
 #include "BinarySerializable.hpp"
@@ -11,39 +11,42 @@
 
 namespace sharpen
 {
-    class RaftVoteForRequest:public sharpen::BinarySerializable<sharpen::RaftVoteForRequest>
+    class RaftVoteForRequest : public sharpen::BinarySerializable<sharpen::RaftVoteForRequest>
     {
     private:
         using Self = sharpen::RaftVoteForRequest;
-    
+
         std::uint64_t id_;
         std::uint64_t term_;
         std::uint64_t lastIndex_;
         std::uint64_t lastTerm_;
+
     public:
-    
         RaftVoteForRequest() noexcept;
 
-        RaftVoteForRequest(std::uint64_t id,std::uint64_t term,std::uint64_t lastIndex,std::uint64_t lastTerm) noexcept;
-    
+        RaftVoteForRequest(std::uint64_t id,
+                           std::uint64_t term,
+                           std::uint64_t lastIndex,
+                           std::uint64_t lastTerm) noexcept;
+
         RaftVoteForRequest(const Self &other) noexcept = default;
-    
+
         RaftVoteForRequest(Self &&other) noexcept;
-    
+
         inline Self &operator=(const Self &other) noexcept
         {
-            if(this != std::addressof(other))
+            if (this != std::addressof(other))
             {
                 Self tmp{other};
-                std::swap(tmp,*this);
+                std::swap(tmp, *this);
             }
             return *this;
         }
-    
+
         Self &operator=(Self &&other) noexcept;
-    
+
         ~RaftVoteForRequest() noexcept = default;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -51,7 +54,7 @@ namespace sharpen
 
         std::size_t ComputeSize() const noexcept;
 
-        std::size_t LoadFrom(const char *data,std::size_t size);
+        std::size_t LoadFrom(const char *data, std::size_t size);
 
         std::size_t UnsafeStoreTo(char *data) const noexcept;
 
@@ -95,6 +98,6 @@ namespace sharpen
             this->lastTerm_ = lastTerm;
         }
     };
-}
+}   // namespace sharpen
 
 #endif

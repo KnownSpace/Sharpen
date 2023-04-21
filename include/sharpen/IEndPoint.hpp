@@ -2,10 +2,10 @@
 #ifndef _SHARPEN_IENDPOINT_HPP
 #define _SHARPEN_IENDPOINT_HPP
 
-#include "SystemMacro.hpp"
-#include <cstdint>
-#include <cstddef>
 #include "NetTypeDef.hpp"
+#include "SystemMacro.hpp"
+#include <cstddef>
+#include <cstdint>
 
 #ifdef SHARPEN_IS_WIN
 #include <WinSock2.h>
@@ -48,6 +48,6 @@ namespace sharpen
             return this->GetHashCode64();
         }
     };
-}
+}   // namespace sharpen
 
 #endif

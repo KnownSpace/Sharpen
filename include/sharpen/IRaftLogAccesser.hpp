@@ -10,17 +10,18 @@ namespace sharpen
     {
     private:
         using Self = IRaftLogAccesser;
-    protected:
 
+    protected:
         virtual std::uint64_t NviGetTerm(sharpen::ByteSlice logEntry) const noexcept = 0;
 
-        virtual void NviSetTerm(sharpen::ByteBuffer &logEntry,std::uint64_t term) const = 0;
+        virtual void NviSetTerm(sharpen::ByteBuffer &logEntry, std::uint64_t term) const = 0;
 
         virtual bool NviIsRaftEntry(sharpen::ByteSlice logEntry) const noexcept = 0;
 
-        virtual sharpen::ByteBuffer NviCreateEntry(sharpen::ByteSlice bytes,std::uint64_t term) const = 0;
-    public:
+        virtual sharpen::ByteBuffer NviCreateEntry(sharpen::ByteSlice bytes,
+                                                   std::uint64_t term) const = 0;
 
+    public:
         IRaftLogAccesser() noexcept = default;
 
         IRaftLogAccesser(const Self &other) noexcept = default;
@@ -40,7 +41,7 @@ namespace sharpen
 
         inline bool IsRaftEntry(sharpen::ByteSlice logEntry) const noexcept
         {
-            if(!logEntry.Empty())
+            if (!logEntry.Empty())
             {
                 return this->NviIsRaftEntry(logEntry);
             }
@@ -63,40 +64,43 @@ namespace sharpen
             return this->GetTerm(logEntry.GetSlice());
         }
 
-        inline sharpen::Optional<std::uint64_t> LookupTerm(sharpen::ByteSlice logEntry) const noexcept
+        inline sharpen::Optional<std::uint64_t> LookupTerm(
+            sharpen::ByteSlice logEntry) const noexcept
         {
-            if(this->IsRaftEntry(logEntry))
+            if (this->IsRaftEntry(logEntry))
             {
                 return this->GetTerm(logEntry);
             }
             return sharpen::EmptyOpt;
         }
 
-        inline sharpen::Optional<std::uint64_t> LookupTerm(const sharpen::ByteBuffer &logEntry) const noexcept
+        inline sharpen::Optional<std::uint64_t> LookupTerm(
+            const sharpen::ByteBuffer &logEntry) const noexcept
         {
-            if(this->IsRaftEntry(logEntry))
+            if (this->IsRaftEntry(logEntry))
             {
                 return this->GetTerm(logEntry);
             }
             return sharpen::EmptyOpt;
         }
 
-        inline void SetTerm(sharpen::ByteBuffer &logEntry,std::uint64_t term) const
+        inline void SetTerm(sharpen::ByteBuffer &logEntry, std::uint64_t term) const
         {
             assert(this->IsRaftEntry(logEntry));
-            this->NviSetTerm(logEntry,term);
+            this->NviSetTerm(logEntry, term);
         }
 
-        inline sharpen::ByteBuffer CreateEntry(sharpen::ByteSlice bytes,std::uint64_t term) const
+        inline sharpen::ByteBuffer CreateEntry(sharpen::ByteSlice bytes, std::uint64_t term) const
         {
-            return this->NviCreateEntry(bytes,term);
+            return this->NviCreateEntry(bytes, term);
         }
 
-        inline sharpen::ByteBuffer CreateEntry(const sharpen::ByteBuffer &bytes,std::uint64_t term) const
+        inline sharpen::ByteBuffer CreateEntry(const sharpen::ByteBuffer &bytes,
+                                               std::uint64_t term) const
         {
-            return this->CreateEntry(bytes.GetSlice(),term);
+            return this->CreateEntry(bytes.GetSlice(), term);
         }
     };
-}
+}   // namespace sharpen
 
 #endif

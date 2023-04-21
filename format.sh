@@ -6,9 +6,11 @@ function format()
     do
         clang-format $name > ./tmp.txt
         mv ./tmp.txt $name
-        echo $name
+        echo "Processing $name"
     done
 }
 
 format ".cpp" "./src"
 format ".hpp" "./include/Sharpen"
+format ".cpp" "./test"
+echo "Done"

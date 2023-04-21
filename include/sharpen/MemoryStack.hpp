@@ -2,8 +2,8 @@
 #ifndef _SHARPEN_MEMORYSTACK_HPP
 #define _SHARPEN_MEMORYSTACK_HPP
 
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 
@@ -11,7 +11,7 @@
 
 namespace sharpen
 {
-    class MemoryStack:public sharpen::Noncopyable
+    class MemoryStack : public sharpen::Noncopyable
     {
     private:
         using Self = sharpen::MemoryStack;
@@ -21,7 +21,7 @@ namespace sharpen
 
         inline static void *Alloc(std::size_t size) noexcept
         {
-            return std::calloc(size,sizeof(char));
+            return std::calloc(size, sizeof(char));
         }
 
         inline static void Free(void *mem) noexcept
@@ -32,7 +32,7 @@ namespace sharpen
     public:
         MemoryStack() noexcept;
 
-        MemoryStack(void *mem,std::size_t size) noexcept;
+        MemoryStack(void *mem, std::size_t size) noexcept;
 
         MemoryStack(Self &&other) noexcept;
 
@@ -62,9 +62,9 @@ namespace sharpen
 
         inline void Clean() noexcept
         {
-            if(this->mem_)
+            if (this->mem_)
             {
-                std::memset(this->mem_,0,this->size_);
+                std::memset(this->mem_, 0, this->size_);
             }
         }
 
@@ -78,6 +78,6 @@ namespace sharpen
             return this->Validate();
         }
     };
-}
+}   // namespace sharpen
 
 #endif

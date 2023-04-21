@@ -2,8 +2,8 @@
 #ifndef _SHARPEN_RAFTVOTEFORRESPONSE_HPP
 #define _SHARPEN_RAFTVOTEFORRESPONSE_HPP
 
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 #include <utility>
 
 #include "BinarySerializable.hpp"
@@ -11,43 +11,43 @@
 
 namespace sharpen
 {
-    class RaftVoteForResponse:public sharpen::BinarySerializable<sharpen::RaftVoteForResponse>
+    class RaftVoteForResponse : public sharpen::BinarySerializable<sharpen::RaftVoteForResponse>
     {
     private:
         using Self = sharpen::RaftVoteForResponse;
-    
+
         bool status_;
         std::uint64_t term_;
+
     public:
-    
         RaftVoteForResponse() noexcept;
 
-        RaftVoteForResponse(bool status,std::uint64_t term) noexcept;
-    
+        RaftVoteForResponse(bool status, std::uint64_t term) noexcept;
+
         RaftVoteForResponse(const Self &other) noexcept = default;
-    
+
         RaftVoteForResponse(Self &&other) noexcept;
-    
+
         inline Self &operator=(const Self &other) noexcept
         {
-            if(this != std::addressof(other))
+            if (this != std::addressof(other))
             {
                 Self tmp{other};
-                std::swap(tmp,*this);
+                std::swap(tmp, *this);
             }
             return *this;
         }
-    
+
         Self &operator=(Self &&other) noexcept;
-    
+
         ~RaftVoteForResponse() noexcept = default;
 
         std::size_t ComputeSize() const noexcept;
 
-        std::size_t LoadFrom(const char *data,std::size_t size);
+        std::size_t LoadFrom(const char *data, std::size_t size);
 
         std::size_t UnsafeStoreTo(char *data) const noexcept;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -73,6 +73,6 @@ namespace sharpen
             this->term_ = term;
         }
     };
-}
+}   // namespace sharpen
 
 #endif

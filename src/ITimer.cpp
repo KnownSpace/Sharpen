@@ -1,7 +1,7 @@
-#include <sharpen/ITimer.hpp>
-#include <sharpen/WinTimer.hpp>
-#include <sharpen/LinuxTimer.hpp>
 #include <sharpen/IEventLoopGroup.hpp>
+#include <sharpen/ITimer.hpp>
+#include <sharpen/LinuxTimer.hpp>
+#include <sharpen/WinTimer.hpp>
 
 sharpen::TimerPtr sharpen::MakeTimer()
 {

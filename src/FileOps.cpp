@@ -4,11 +4,11 @@
 #include <cstring>
 
 #ifdef SHARPEN_IS_WIN
-#include <io.h>
 #include <Windows.h>
+#include <io.h>
 #else
-#include <unistd.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #endif
 
 #include <sharpen/SystemError.hpp>
@@ -117,7 +117,12 @@ void sharpen::SetCurrentWorkDirectory(const char *path)
 #endif
 }
 
-void sharpen::ResolvePath(const char *currentPath, std::size_t currentPathSize, const char *path, std::size_t pathSize, char *resolvedPath, std::size_t resolvedPathSize)
+void sharpen::ResolvePath(const char *currentPath,
+                          std::size_t currentPathSize,
+                          const char *path,
+                          std::size_t pathSize,
+                          char *resolvedPath,
+                          std::size_t resolvedPathSize)
 {
     if (resolvedPathSize < currentPathSize + pathSize)
     {
@@ -134,7 +139,7 @@ void sharpen::ResolvePath(const char *currentPath, std::size_t currentPathSize, 
     char *resolvedBegin = resolvedPath;
     char *resolved = resolvedPath + currentPathSize;
     char *resolvedEnd = resolvedPath + resolvedPathSize;
-    //state machine
+    // state machine
     std::size_t pointNumber{0};
     std::size_t separatorNumber{1};
     for (const char *begin = path, *end = path + pathSize; begin != end; ++begin)
@@ -155,13 +160,13 @@ void sharpen::ResolvePath(const char *currentPath, std::size_t currentPathSize, 
         {
             if (separatorNumber)
             {
-                //current /(.)[/] /[/]
-                //up-level /(..)[/]
+                // current /(.)[/] /[/]
+                // up-level /(..)[/]
                 if (pointNumber > 1)
                 {
                     // [...](/../)
                     resolved -= 2;
-                    //find up-level
+                    // find up-level
                     char *pos = resolved;
                     for (; pos != resolvedBegin - 1; --pos)
                     {
@@ -199,7 +204,7 @@ void sharpen::ResolvePath(const char *currentPath, std::size_t currentPathSize, 
         if (pointNumber > 1)
         {
             resolved -= 2;
-            //find up-level
+            // find up-level
             char *pos = resolved;
             for (; pos != resolvedBegin - 1; --pos)
             {
@@ -221,12 +226,13 @@ void sharpen::ResolvePath(const char *currentPath, std::size_t currentPathSize, 
 void sharpen::MakeDirectory(const char *name)
 {
 #ifdef SHARPEN_IS_WIN
-    if(::CreateDirectoryA(name,nullptr) == FALSE && sharpen::GetLastError() != ERROR_ALREADY_EXISTS)
+    if (::CreateDirectoryA(name, nullptr) == FALSE &&
+        sharpen::GetLastError() != ERROR_ALREADY_EXISTS)
     {
         sharpen::ThrowLastError();
     }
 #else
-    if(::mkdir(name,S_IRWXU) == -1 && sharpen::GetLastError() != EEXIST)
+    if (::mkdir(name, S_IRWXU) == -1 && sharpen::GetLastError() != EEXIST)
     {
         sharpen::ThrowLastError();
     }
@@ -236,12 +242,12 @@ void sharpen::MakeDirectory(const char *name)
 void sharpen::DeleteDirectory(const char *name)
 {
 #ifdef SHARPEN_IS_WIN
-    if(::RemoveDirectoryA(name) == FALSE && sharpen::GetLastError() != ERROR_FILE_NOT_FOUND)
+    if (::RemoveDirectoryA(name) == FALSE && sharpen::GetLastError() != ERROR_FILE_NOT_FOUND)
     {
         sharpen::ThrowLastError();
     }
 #else
-    if(::rmdir(name) == -1 && sharpen::GetLastError() != ENOENT)
+    if (::rmdir(name) == -1 && sharpen::GetLastError() != ENOENT)
     {
         sharpen::ThrowLastError();
     }

@@ -2,17 +2,17 @@
 #ifndef _SHARPEN_RAFTSNAPSHOTREQUEST_HPP
 #define _SHARPEN_RAFTSNAPSHOTREQUEST_HPP
 
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 #include <utility>
 
+#include "BinarySerializable.hpp"
 #include "ByteBuffer.hpp"
 #include "RaftSnapshotMetadata.hpp"
-#include "BinarySerializable.hpp"
 
 namespace sharpen
 {
-    class RaftSnapshotRequest:public sharpen::BinarySerializable<sharpen::RaftSnapshotRequest>
+    class RaftSnapshotRequest : public sharpen::BinarySerializable<sharpen::RaftSnapshotRequest>
     {
     private:
         using Self = sharpen::RaftSnapshotRequest;
@@ -23,28 +23,28 @@ namespace sharpen
         bool last_;
         sharpen::RaftSnapshotMetadata metadata_;
         sharpen::ByteBuffer data_;
+
     public:
-    
         RaftSnapshotRequest() noexcept;
-    
+
         RaftSnapshotRequest(const Self &other) = default;
-    
+
         RaftSnapshotRequest(Self &&other) noexcept;
-    
+
         inline Self &operator=(const Self &other)
         {
-            if(this != std::addressof(other))
+            if (this != std::addressof(other))
             {
                 Self tmp{other};
-                std::swap(tmp,*this);
+                std::swap(tmp, *this);
             }
             return *this;
         }
-    
+
         Self &operator=(Self &&other) noexcept;
-    
+
         ~RaftSnapshotRequest() noexcept = default;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -54,7 +54,7 @@ namespace sharpen
         {
             return this->metadata_;
         }
-        
+
         inline const sharpen::RaftSnapshotMetadata &Metadata() const noexcept
         {
             return this->metadata_;
@@ -64,7 +64,7 @@ namespace sharpen
         {
             return this->data_;
         }
-        
+
         inline const sharpen::ByteBuffer &Data() const noexcept
         {
             return this->data_;
@@ -114,8 +114,8 @@ namespace sharpen
 
         std::size_t UnsafeStoreTo(char *data) const noexcept;
 
-        std::size_t LoadFrom(const char *data,std::size_t size);
+        std::size_t LoadFrom(const char *data, std::size_t size);
     };
-}
+}   // namespace sharpen
 
 #endif

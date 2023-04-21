@@ -4,14 +4,17 @@
 
 #include <functional>
 
-#include "IWorkerGroup.hpp"
 #include "AsyncBlockingQueue.hpp"
-#include "NoexceptInvoke.hpp"
 #include "IFiberScheduler.hpp"
+#include "IWorkerGroup.hpp"
+#include "NoexceptInvoke.hpp"
 
 namespace sharpen
 {
-    class SingleWorkerGroup:public sharpen::IWorkerGroup,public sharpen::Noncopyable,public sharpen::Nonmovable
+    class SingleWorkerGroup
+        : public sharpen::IWorkerGroup
+        , public sharpen::Noncopyable
+        , public sharpen::Nonmovable
     {
     private:
         using Self = sharpen::SingleWorkerGroup;
@@ -21,15 +24,16 @@ namespace sharpen
         sharpen::AwaitableFuture<void> worker_;
 
         void Entry() noexcept;
-    
+
         virtual void NviSubmit(std::function<void()> task) override;
+
     public:
         SingleWorkerGroup();
 
         explicit SingleWorkerGroup(sharpen::IFiberScheduler &scheduler);
-    
+
         virtual ~SingleWorkerGroup() noexcept;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -46,6 +50,6 @@ namespace sharpen
             return 1;
         }
     };
-}
+}   // namespace sharpen
 
 #endif

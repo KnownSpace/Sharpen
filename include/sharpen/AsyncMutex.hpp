@@ -9,17 +9,21 @@
 
 namespace sharpen
 {
-    class AsyncMutex:public sharpen::Noncopyable,public sharpen::Nonmovable,public sharpen::IAsyncLockable
+    class AsyncMutex
+        : public sharpen::Noncopyable
+        , public sharpen::Nonmovable
+        , public sharpen::IAsyncLockable
     {
-        
+
     private:
         using MyFuture = sharpen::AwaitableFuture<void>;
-        using MyFuturePtr = MyFuture*;
+        using MyFuturePtr = MyFuture *;
         using Waiters = std::vector<MyFuturePtr>;
 
         bool locked_;
         Waiters waiters_;
         sharpen::SpinLock lock_;
+
     public:
         AsyncMutex();
 
@@ -36,7 +40,7 @@ namespace sharpen
 
         virtual ~AsyncMutex() noexcept = default;
     };
-    
-}
+
+}   // namespace sharpen
 
 #endif

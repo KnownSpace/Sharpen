@@ -11,28 +11,29 @@ namespace sharpen
     {
     private:
         using Self = sharpen::IHostPipelineStep;
+
     protected:
     public:
-    
         IHostPipelineStep() noexcept = default;
-    
+
         IHostPipelineStep(const Self &other) noexcept = default;
-    
+
         IHostPipelineStep(Self &&other) noexcept = default;
-    
+
         Self &operator=(const Self &other) noexcept = default;
-    
+
         Self &operator=(Self &&other) noexcept = default;
-    
+
         virtual ~IHostPipelineStep() noexcept = default;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
         }
 
-        virtual sharpen::HostPipelineResult Consume(sharpen::INetStreamChannel &channel,const std::atomic_bool &active) noexcept = 0;
+        virtual sharpen::HostPipelineResult Consume(sharpen::INetStreamChannel &channel,
+                                                    const std::atomic_bool &active) noexcept = 0;
     };
-}
+}   // namespace sharpen
 
 #endif

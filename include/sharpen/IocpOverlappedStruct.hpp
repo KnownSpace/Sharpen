@@ -6,8 +6,8 @@
 
 #ifdef SHARPEN_HAS_IOCP
 
-#include "IoEvent.hpp"
 #include "IChannel.hpp"
+#include "IoEvent.hpp"
 
 namespace sharpen
 {
@@ -19,7 +19,7 @@ namespace sharpen
         std::size_t length_;
         sharpen::ChannelPtr channel_;
     };
-}
+}   // namespace sharpen
 
 #endif
 #endif

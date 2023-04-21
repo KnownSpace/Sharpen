@@ -2,8 +2,8 @@
 #ifndef _SHARPEN_IRAFTSNAPSHOTCHUNK_HPP
 #define _SHARPEN_IRAFTSNAPSHOTCHUNK_HPP
 
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 
 #include "ByteBuffer.hpp"
 
@@ -13,21 +13,21 @@ namespace sharpen
     {
     private:
         using Self = sharpen::IRaftSnapshotChunk;
+
     protected:
     public:
-    
         IRaftSnapshotChunk() noexcept = default;
-    
+
         IRaftSnapshotChunk(const Self &other) noexcept = default;
-    
+
         IRaftSnapshotChunk(Self &&other) noexcept = default;
-    
+
         Self &operator=(const Self &other) noexcept = default;
-    
+
         Self &operator=(Self &&other) noexcept = default;
-    
+
         virtual ~IRaftSnapshotChunk() noexcept = default;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -41,6 +41,6 @@ namespace sharpen
 
         virtual std::uint64_t GetOffset() const noexcept = 0;
     };
-}
+}   // namespace sharpen
 
 #endif

@@ -1,15 +1,15 @@
 #include <sharpen/IInputPipeChannel.hpp>
-#include <sharpen/WinInputPipeChannel.hpp>
 #include <sharpen/PosixInputPipeChannel.hpp>
+#include <sharpen/WinInputPipeChannel.hpp>
 
 int sharpen::IInputPipeChannel::GetcharAsync()
 {
     char buf;
-    this->ReadAsync(&buf,1);
+    this->ReadAsync(&buf, 1);
     return buf;
 }
 
-std::size_t sharpen::IInputPipeChannel::GetsAsync(char *buf,std::size_t size)
+std::size_t sharpen::IInputPipeChannel::GetsAsync(char *buf, std::size_t size)
 {
     char *begin = buf;
     char *end = begin + size;
@@ -17,12 +17,12 @@ std::size_t sharpen::IInputPipeChannel::GetsAsync(char *buf,std::size_t size)
     {
         int c = this->GetcharAsync();
 #ifdef SHARPEN_IS_WIN
-        if(c == '\r')
+        if (c == '\r')
         {
             continue;
         }
 #endif
-        if(c == '\n')
+        if (c == '\n')
         {
             *begin = '\0';
             return begin - buf;
@@ -39,7 +39,7 @@ std::string sharpen::IInputPipeChannel::GetsAsync()
     while (c != '\n')
     {
 #ifdef SHARPEN_IS_WIN
-        if(c == '\r')
+        if (c == '\r')
         {
             c = this->GetcharAsync();
             continue;
@@ -54,8 +54,14 @@ std::string sharpen::IInputPipeChannel::GetsAsync()
 sharpen::InputPipeChannelPtr sharpen::OpenStdinPipe()
 {
 #ifdef SHARPEN_HAS_WININPUTPIPE
-    sharpen::FileHandle handle = ::CreateFileA("CONIN$",FILE_GENERIC_READ,FILE_SHARE_READ,nullptr,OPEN_EXISTING,FILE_FLAG_OVERLAPPED,nullptr);
-    if(handle == INVALID_HANDLE_VALUE)
+    sharpen::FileHandle handle = ::CreateFileA("CONIN$",
+                                               FILE_GENERIC_READ,
+                                               FILE_SHARE_READ,
+                                               nullptr,
+                                               OPEN_EXISTING,
+                                               FILE_FLAG_OVERLAPPED,
+                                               nullptr);
+    if (handle == INVALID_HANDLE_VALUE)
     {
         sharpen::ThrowLastError();
     }

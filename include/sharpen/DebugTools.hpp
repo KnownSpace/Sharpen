@@ -10,9 +10,9 @@ namespace sharpen
 
     extern sharpen::AsyncMutex *InternalSyncPrintMutex() noexcept;
 
-    extern int SyncPrintf(const char *format,...) noexcept;
+    extern int SyncPrintf(const char *format, ...) noexcept;
 
-    extern int SyncPuts(const char *str) noexcept;   
-}
+    extern int SyncPuts(const char *str) noexcept;
+}   // namespace sharpen
 
 #endif

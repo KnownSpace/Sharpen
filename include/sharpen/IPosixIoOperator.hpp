@@ -6,20 +6,22 @@
 
 #ifdef SHARPEN_IS_NIX
 
-#include <vector>
-#include <sys/uio.h>
 #include <functional>
+#include <sys/uio.h>
+#include <vector>
 
-#include <cstdint>
-#include <cstddef>
 #include "FileTypeDef.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "SystemError.hpp"
+#include <cstddef>
+#include <cstdint>
 
 namespace sharpen
 {
-    class IPosixIoOperator : public sharpen::Noncopyable,public sharpen::Nonmovable
+    class IPosixIoOperator
+        : public sharpen::Noncopyable
+        , public sharpen::Nonmovable
     {
     protected:
         using IoBuffer = iovec;
@@ -32,7 +34,9 @@ namespace sharpen
         Callbacks cbs_;
         Callbacks pendingCbs_;
 
-        void ConvertByteToBufferNumber(std::size_t byteNumber,std::size_t &bufferNumber,std::size_t &lastSize);
+        void ConvertByteToBufferNumber(std::size_t byteNumber,
+                                       std::size_t &bufferNumber,
+                                       std::size_t &lastSize);
 
         void FillBufferAndCallback();
 
@@ -52,24 +56,25 @@ namespace sharpen
 
         std::size_t ComputePendingSize() const;
 
-        virtual void NviExecute(sharpen::FileHandle handle,bool &executed,bool &blocking) = 0;
+        virtual void NviExecute(sharpen::FileHandle handle, bool &executed, bool &blocking) = 0;
+
     private:
-        
         std::size_t mark_;
+
     public:
         IPosixIoOperator();
 
         virtual ~IPosixIoOperator() noexcept = default;
 
-        void AddPendingTask(char *buf,std::size_t size,Callback cb);
+        void AddPendingTask(char *buf, std::size_t size, Callback cb);
 
-        void Execute(sharpen::FileHandle handle,bool &executed,bool &blocking);
+        void Execute(sharpen::FileHandle handle, bool &executed, bool &blocking);
 
         static bool IsBlockingError(sharpen::ErrorCode code);
 
         void CancelAllIo(sharpen::ErrorCode err) noexcept;
     };
-}
+}   // namespace sharpen
 
 #endif
 

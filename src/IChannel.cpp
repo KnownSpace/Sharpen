@@ -41,7 +41,7 @@ void sharpen::IChannel::Close() noexcept
     constexpr sharpen::FileHandle invalidHandle{-1};
 #endif
     sharpen::FileHandle handle{invalidHandle};
-    std::swap(this->handle_,handle);
+    std::swap(this->handle_, handle);
     if (handle != invalidHandle)
     {
         if (this->closer_)

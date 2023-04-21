@@ -1,17 +1,16 @@
-#include <cstdio>
 #include <cassert>
+#include <cstdio>
 
 #include <sharpen/BufferOps.hpp>
 
 #include <simpletest/TestRunner.hpp>
 
-class BufferEqualTest:public simpletest::ITypenamedTest<BufferEqualTest>
+class BufferEqualTest : public simpletest::ITypenamedTest<BufferEqualTest>
 {
 private:
     using Self = BufferEqualTest;
 
 public:
-
     BufferEqualTest() noexcept = default;
 
     ~BufferEqualTest() noexcept = default;
@@ -25,18 +24,17 @@ public:
     {
         char lhs[] = "abc";
         char rhs[] = "abc";
-        std::int32_t r{sharpen::BufferCompare(lhs,sizeof(lhs),rhs,sizeof(rhs))};
-        return this->Assert(r == 0,"\"abc\" != \"abc\"");
+        std::int32_t r{sharpen::BufferCompare(lhs, sizeof(lhs), rhs, sizeof(rhs))};
+        return this->Assert(r == 0, "\"abc\" != \"abc\"");
     }
 };
 
-class BufferLargerTest:public simpletest::ITypenamedTest<BufferLargerTest>
+class BufferLargerTest : public simpletest::ITypenamedTest<BufferLargerTest>
 {
 private:
     using Self = BufferLargerTest;
 
 public:
-
     BufferLargerTest() noexcept = default;
 
     ~BufferLargerTest() noexcept = default;
@@ -50,18 +48,17 @@ public:
     {
         char lhs[] = "abd";
         char rhs[] = "abc";
-        std::int32_t r{sharpen::BufferCompare(lhs,sizeof(lhs),rhs,sizeof(rhs))};
-        return this->Assert(r == 1,"\"abd\" should > \"abc\",but it not");
+        std::int32_t r{sharpen::BufferCompare(lhs, sizeof(lhs), rhs, sizeof(rhs))};
+        return this->Assert(r == 1, "\"abd\" should > \"abc\",but it not");
     }
 };
 
-class BufferLongerTest:public simpletest::ITypenamedTest<BufferLongerTest>
+class BufferLongerTest : public simpletest::ITypenamedTest<BufferLongerTest>
 {
 private:
     using Self = BufferLongerTest;
 
 public:
-
     BufferLongerTest() noexcept = default;
 
     ~BufferLongerTest() noexcept = default;
@@ -75,8 +72,8 @@ public:
     {
         char lhs[] = "abcd";
         char rhs[] = "abc";
-        std::int32_t r{sharpen::BufferCompare(lhs,sizeof(lhs),rhs,sizeof(rhs))};
-        return this->Assert(r == 1,"\"abcd\" should > \"abc\",but it not");
+        std::int32_t r{sharpen::BufferCompare(lhs, sizeof(lhs), rhs, sizeof(rhs))};
+        return this->Assert(r == 1, "\"abcd\" should > \"abc\",but it not");
     }
 };
 

@@ -14,23 +14,23 @@ namespace sharpen
     {
     private:
         using Self = sharpen::IHost;
-    protected:
 
+    protected:
         virtual void NviSetPipeline(std::unique_ptr<sharpen::IHostPipeline> pipeline) noexcept = 0;
+
     public:
-    
         IHost() noexcept = default;
-    
+
         IHost(const Self &other) noexcept = default;
-    
+
         IHost(Self &&other) noexcept = default;
-    
+
         Self &operator=(const Self &other) noexcept = default;
-    
+
         Self &operator=(Self &&other) noexcept = default;
-    
+
         virtual ~IHost() noexcept = default;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -46,13 +46,19 @@ namespace sharpen
             this->NviSetPipeline(std::move(pipeline));
         }
 
-        template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<std::unique_ptr<sharpen::IHostPipeline>,_Fn,_Args...>::Value>>
-        inline void ConfiguratePipeline(_Fn &&fn,_Args &&...args)
+        template<typename _Fn,
+                 typename... _Args,
+                 typename _Check = sharpen::EnableIf<
+                     sharpen::IsCompletedBindableReturned<std::unique_ptr<sharpen::IHostPipeline>,
+                                                          _Fn,
+                                                          _Args...>::Value>>
+        inline void ConfiguratePipeline(_Fn &&fn, _Args &&...args)
         {
-            std::unique_ptr<sharpen::IHostPipeline> pipeline{std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...)()};
+            std::unique_ptr<sharpen::IHostPipeline> pipeline{
+                std::bind(std::forward<_Fn>(fn), std::forward<_Args>(args)...)()};
             this->SetPipeline(std::move(pipeline));
         }
     };
-}
+}   // namespace sharpen
 
 #endif

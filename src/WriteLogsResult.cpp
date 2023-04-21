@@ -5,20 +5,22 @@
 #include <sharpen/IntOps.hpp>
 
 sharpen::WriteLogsResult::WriteLogsResult(std::uint64_t lastIndex) noexcept
-    :lastIndex_(lastIndex)
-    ,beginIndex_(0)
-{}
+    : lastIndex_(lastIndex)
+    , beginIndex_(0)
+{
+}
 
-sharpen::WriteLogsResult::WriteLogsResult(std::uint64_t lastIndex,std::uint64_t beginIndex) noexcept
-    :lastIndex_(lastIndex)
-    ,beginIndex_(beginIndex)
+sharpen::WriteLogsResult::WriteLogsResult(std::uint64_t lastIndex,
+                                          std::uint64_t beginIndex) noexcept
+    : lastIndex_(lastIndex)
+    , beginIndex_(beginIndex)
 {
     assert(this->lastIndex_ >= this->beginIndex_);
 }
 
 sharpen::WriteLogsResult::WriteLogsResult(Self &&other) noexcept
-    :lastIndex_(other.lastIndex_)
-    ,beginIndex_(other.beginIndex_)
+    : lastIndex_(other.lastIndex_)
+    , beginIndex_(other.beginIndex_)
 {
     other.lastIndex_ = 0;
     other.beginIndex_ = 0;
@@ -26,7 +28,7 @@ sharpen::WriteLogsResult::WriteLogsResult(Self &&other) noexcept
 
 sharpen::WriteLogsResult &sharpen::WriteLogsResult::operator=(const Self &other) noexcept
 {
-    if(this != std::addressof(other))
+    if (this != std::addressof(other))
     {
         this->lastIndex_ = other.lastIndex_;
         this->beginIndex_ = other.beginIndex_;
@@ -36,7 +38,7 @@ sharpen::WriteLogsResult &sharpen::WriteLogsResult::operator=(const Self &other)
 
 sharpen::WriteLogsResult &sharpen::WriteLogsResult::operator=(Self &&other) noexcept
 {
-    if(this != std::addressof(other))
+    if (this != std::addressof(other))
     {
         this->lastIndex_ = other.lastIndex_;
         this->beginIndex_ = other.beginIndex_;
@@ -58,7 +60,7 @@ std::uint64_t sharpen::WriteLogsResult::GetLastIndex() const noexcept
 
 sharpen::Optional<std::uint64_t> sharpen::WriteLogsResult::LookupBeginIndex() const noexcept
 {
-    if(this->beginIndex_)
+    if (this->beginIndex_)
     {
         return this->beginIndex_;
     }
@@ -67,7 +69,7 @@ sharpen::Optional<std::uint64_t> sharpen::WriteLogsResult::LookupBeginIndex() co
 
 std::size_t sharpen::WriteLogsResult::GetWrittenSize() const noexcept
 {
-    if(this->beginIndex_)
+    if (this->beginIndex_)
     {
         return sharpen::IntCast<std::size_t>(this->lastIndex_ - this->beginIndex_ + 1);
     }

@@ -2,9 +2,9 @@
 #ifndef _SHARPEN_FIBERLOCALSTORAGE_HPP
 #define _SHARPEN_FIBERLOCALSTORAGE_HPP
 
-#include <cstdint>
-#include <cstddef>
 #include <atomic>
+#include <cstddef>
+#include <cstdint>
 #include <map>
 #include <memory>
 
@@ -12,10 +12,10 @@
 
 namespace sharpen
 {
-    class FiberLocalStorage:public sharpen::Noncopyable
+    class FiberLocalStorage : public sharpen::Noncopyable
     {
     private:
-        using Dtor = void(*)(void*);
+        using Dtor = void (*)(void *);
 
         struct AnyPointer
         {
@@ -24,21 +24,21 @@ namespace sharpen
         };
 
         using Self = sharpen::FiberLocalStorage;
-        using Map = std::map<std::size_t,AnyPointer>;
-        
+        using Map = std::map<std::size_t, AnyPointer>;
+
         static std::atomic_size_t nextIndex_;
 
         std::unique_ptr<Map> storage_;
+
     public:
-    
         FiberLocalStorage() noexcept;
-    
+
         FiberLocalStorage(Self &&other) noexcept = default;
-    
+
         Self &operator=(Self &&other) noexcept;
-    
+
         ~FiberLocalStorage() noexcept;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -46,7 +46,7 @@ namespace sharpen
 
         void *Lookup(std::size_t index) const noexcept;
 
-        void Put(std::size_t index,void *p,Dtor dtor);
+        void Put(std::size_t index, void *p, Dtor dtor);
 
         void Remove(std::size_t index) noexcept;
 
@@ -54,6 +54,6 @@ namespace sharpen
 
         static std::size_t GetNextIndex() noexcept;
     };
-}
+}   // namespace sharpen
 
 #endif

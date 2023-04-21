@@ -9,7 +9,9 @@
 namespace sharpen
 {
     template<typename _T>
-    class AsyncBlockingQueue:public sharpen::Noncopyable,public sharpen::Nonmovable
+    class AsyncBlockingQueue
+        : public sharpen::Noncopyable
+        , public sharpen::Nonmovable
     {
     private:
         using Storage = std::deque<_T>;
@@ -17,12 +19,14 @@ namespace sharpen
         sharpen::SpinLock lock_;
         sharpen::AsyncSemaphore sign_;
         Storage storage_;
+
     public:
         AsyncBlockingQueue()
-            :lock_()
-            ,sign_(0)
-            ,storage_()
-        {}
+            : lock_()
+            , sign_(0)
+            , storage_()
+        {
+        }
 
         ~AsyncBlockingQueue() noexcept = default;
 
@@ -46,7 +50,7 @@ namespace sharpen
             this->sign_.Unlock();
         }
 
-        template<typename ..._Args,typename _Check = decltype(_T{std::declval<_Args>()...})>
+        template<typename... _Args, typename _Check = decltype(_T{std::declval<_Args>()...})>
         void Emplace(_Args &&...args)
         {
             {
@@ -55,7 +59,7 @@ namespace sharpen
             }
             this->sign_.Unlock();
         }
-    }; 
-}
+    };
+}   // namespace sharpen
 
 #endif

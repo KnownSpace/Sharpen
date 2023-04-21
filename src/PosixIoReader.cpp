@@ -2,7 +2,7 @@
 
 #ifdef SHARPEN_IS_NIX
 
-void sharpen::PosixIoReader::NviExecute(sharpen::FileHandle handle,bool &executed,bool &blocking)
+void sharpen::PosixIoReader::NviExecute(sharpen::FileHandle handle, bool &executed, bool &blocking)
 {
     std::size_t size = this->GetRemainingSize();
     if (size == 0)
@@ -16,20 +16,19 @@ void sharpen::PosixIoReader::NviExecute(sharpen::FileHandle handle,bool &execute
     IoBuffer *bufs = this->GetFirstBuffer();
     Callback *cbs = this->GetFirstCallback();
     ssize_t bytes;
-    do
-    {
-        bytes = ::readv(handle,bufs,size);
+    do {
+        bytes = ::readv(handle, bufs, size);
     } while (bytes == -1 && sharpen::GetLastError() == EINTR);
-    if(bytes == -1)
+    if (bytes == -1)
     {
-        //blocking
+        // blocking
         sharpen::ErrorCode err = sharpen::GetLastError();
         if (sharpen::IPosixIoOperator::IsBlockingError(err))
         {
             blocking = true;
             return;
         }
-        //error
+        // error
         for (std::size_t i = 0; i != size; ++i)
         {
             cbs[i](-1);
@@ -38,9 +37,9 @@ void sharpen::PosixIoReader::NviExecute(sharpen::FileHandle handle,bool &execute
         this->MoveMark(size);
         return;
     }
-    if(bytes == 0)
+    if (bytes == 0)
     {
-        //disconnect
+        // disconnect
         for (std::size_t i = 0; i != size; ++i)
         {
             cbs[i](0);
@@ -49,16 +48,16 @@ void sharpen::PosixIoReader::NviExecute(sharpen::FileHandle handle,bool &execute
         this->MoveMark(size);
         return;
     }
-    //check completed buffer number
+    // check completed buffer number
     std::size_t completed;
     std::size_t lastSize;
-    this->ConvertByteToBufferNumber(bytes,completed,lastSize);
-    //handle callback
+    this->ConvertByteToBufferNumber(bytes, completed, lastSize);
+    // handle callback
     for (std::size_t i = 0; i != completed; ++i)
     {
         cbs[i](bufs[i].iov_len);
     }
-    //last buffer
+    // last buffer
     std::size_t lastBufSize = bufs[completed].iov_len;
     cbs[completed](lastSize);
     completed += 1;

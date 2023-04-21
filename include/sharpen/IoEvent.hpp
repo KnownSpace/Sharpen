@@ -2,12 +2,12 @@
 #ifndef _SHARPEN_IOEVENT_HPP
 #define _SHARPEN_IOEVENT_HPP
 
-#include <cstdint>
-#include <cstddef>
+#include "IChannel.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "SystemError.hpp"
-#include "IChannel.hpp"
+#include <cstddef>
+#include <cstdint>
 
 namespace sharpen
 {
@@ -15,44 +15,45 @@ namespace sharpen
     class IoEvent
     {
     public:
-        //event type   
+        // event type
         struct EventTypeEnum
         {
-            enum 
+            enum
             {
-                //empty event
+                // empty event
                 None = 0,
-                //read event
+                // read event
                 Read = 1,
-                //write event
+                // write event
                 Write = 2,
-                //close by peer
+                // close by peer
                 Close = 4,
-                //error
+                // error
                 Error = 8,
 
-                //iocp only
-                //io completed
+                // iocp only
+                // io completed
                 Completed = 16,
-                //io request
+                // io request
                 Request = 32,
-                
-                //accept handle
+
+                // accept handle
                 Accept = 64,
-                //connect
+                // connect
                 Connect = 128,
-                //send file
+                // send file
                 Sendfile = 256,
-                //poll
+                // poll
                 Poll = 512,
 
-                //io_uring only
-                //flush
+                // io_uring only
+                // flush
                 Flush = 1024
             };
         };
-        
+
         using EventType = std::uint32_t;
+
     private:
         using Self = sharpen::IoEvent;
         using WeakChannel = std::weak_ptr<sharpen::IChannel>;
@@ -61,40 +62,44 @@ namespace sharpen
         WeakChannel channel_;
         void *data_;
         sharpen::ErrorCode errorCode_;
+
     public:
         IoEvent()
-            :type_(EventTypeEnum::None)
-            ,channel_()
-            ,data_(nullptr)
-            ,errorCode_(0)
-        {}
-    
-        IoEvent(EventType type,sharpen::ChannelPtr channel,void *data,sharpen::ErrorCode error)
-            :type_(type)
-            ,channel_(channel)
-            ,data_(data)
-            ,errorCode_(error)
-        {}
-        
+            : type_(EventTypeEnum::None)
+            , channel_()
+            , data_(nullptr)
+            , errorCode_(0)
+        {
+        }
+
+        IoEvent(EventType type, sharpen::ChannelPtr channel, void *data, sharpen::ErrorCode error)
+            : type_(type)
+            , channel_(channel)
+            , data_(data)
+            , errorCode_(error)
+        {
+        }
+
         IoEvent(const Self &other)
-            :type_(other.type_)
-            ,channel_(other.channel_)
-            ,data_(other.data_)
-            ,errorCode_(other.errorCode_)
-        {}
-        
+            : type_(other.type_)
+            , channel_(other.channel_)
+            , data_(other.data_)
+            , errorCode_(other.errorCode_)
+        {
+        }
+
         IoEvent(Self &&other) noexcept
-            :type_(other.type_)
-            ,channel_(other.channel_)
-            ,data_(other.data_)
-            ,errorCode_(other.errorCode_)
+            : type_(other.type_)
+            , channel_(other.channel_)
+            , data_(other.data_)
+            , errorCode_(other.errorCode_)
         {
             other.type_ = EventTypeEnum::None;
             other.channel_.reset();
             other.data_ = nullptr;
             other.errorCode_ = 0;
         }
-        
+
         Self &operator=(const Self &other)
         {
             this->type_ = other.type_;
@@ -103,7 +108,7 @@ namespace sharpen
             this->errorCode_ = other.errorCode_;
             return *this;
         }
-        
+
         Self &operator=(Self &&other) noexcept
         {
             this->type_ = other.type_;
@@ -116,24 +121,24 @@ namespace sharpen
             other.errorCode_ = 0;
             return *this;
         }
-        
+
         ~IoEvent() noexcept = default;
-        
+
         bool IsReadEvent() const noexcept
         {
             return this->type_ & EventTypeEnum::Read;
         }
-        
+
         bool IsWriteEvent() const noexcept
         {
             return this->type_ & EventTypeEnum::Write;
         }
-        
+
         bool IsCloseEvent() const noexcept
         {
             return this->type_ & EventTypeEnum::Close;
         }
-        
+
         bool IsErrorEvent() const noexcept
         {
             return this->type_ & EventTypeEnum::Error;
@@ -148,12 +153,12 @@ namespace sharpen
         {
             return this->type_ & EventTypeEnum::Request;
         }
-        
+
         sharpen::ChannelPtr GetChannel() const noexcept
         {
             return this->channel_.lock();
         }
-        
+
         void *GetData() const noexcept
         {
             return this->data_;
@@ -199,6 +204,6 @@ namespace sharpen
             this->type_ ^= ev;
         }
     };
-}
+}   // namespace sharpen
 
 #endif

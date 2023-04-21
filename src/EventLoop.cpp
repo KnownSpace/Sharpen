@@ -8,14 +8,14 @@ thread_local sharpen::EventLoop *sharpen::EventLoop::localLoop_{nullptr};
 thread_local sharpen::FiberPtr sharpen::EventLoop::localFiber_{nullptr};
 
 sharpen::EventLoop::EventLoop(SelectorPtr selector)
-    :selector_(selector)
-    ,tasks_()
-    ,pendingTasks_()
-    ,exectingTask_(false)
-    ,lock_()
-    ,running_(false)
-    ,works_(0)
-    ,loopGroup_(nullptr)
+    : selector_(selector)
+    , tasks_()
+    , pendingTasks_()
+    , exectingTask_(false)
+    , lock_()
+    , running_(false)
+    , works_(0)
+    , loopGroup_(nullptr)
 {
     assert(selector != nullptr);
     this->pendingTasks_.reserve(reservedTaskSize_);
@@ -41,19 +41,19 @@ void sharpen::EventLoop::RunInLoop(Task task)
         {
             task();
         }
-        catch(const std::bad_alloc &fault)
+        catch (const std::bad_alloc &fault)
         {
             (void)fault;
             std::terminate();
         }
-        catch(std::system_error &error)
+        catch (std::system_error &error)
         {
-            if(sharpen::IsFatalError(error.code().value()))
+            if (sharpen::IsFatalError(error.code().value()))
             {
                 std::terminate();
             }
         }
-        catch(const std::exception &ignore)
+        catch (const std::exception &ignore)
         {
             assert(ignore.what() == nullptr && "an exception occured in event loop");
             (void)ignore;
@@ -71,7 +71,7 @@ void sharpen::EventLoop::RunInLoopSoon(Task task)
     {
         std::unique_lock<Lock> lock(this->lock_);
         this->pendingTasks_.push_back(std::move(task));
-        std::swap(execting,this->exectingTask_);
+        std::swap(execting, this->exectingTask_);
     }
     if (!execting)
     {
@@ -89,7 +89,7 @@ void sharpen::EventLoop::ExecuteTask()
             this->tasks_.swap(this->pendingTasks_);
         }
     }
-    for (auto begin = this->tasks_.begin(),end = this->tasks_.end();begin != end;++begin)
+    for (auto begin = this->tasks_.begin(), end = this->tasks_.end(); begin != end; ++begin)
     {
         try
         {
@@ -98,19 +98,19 @@ void sharpen::EventLoop::ExecuteTask()
                 (*begin)();
             }
         }
-        catch(const std::bad_alloc &fault)
+        catch (const std::bad_alloc &fault)
         {
             (void)fault;
             std::terminate();
         }
-        catch(std::system_error &error)
+        catch (std::system_error &error)
         {
-            if(sharpen::IsFatalError(error.code().value()))
+            if (sharpen::IsFatalError(error.code().value()))
             {
                 std::terminate();
             }
         }
-        catch(const std::exception &ignore)
+        catch (const std::exception &ignore)
         {
             assert(ignore.what() == nullptr && "an exception occured in event loop");
             (void)ignore;
@@ -133,10 +133,10 @@ void sharpen::EventLoop::Run()
     this->running_ = true;
     while (this->running_)
     {
-        //select events
+        // select events
         this->selector_->Select(events);
         this->works_ += events.size();
-        for (auto begin = events.begin(),end = events.end();begin != end;++begin)
+        for (auto begin = events.begin(), end = events.end(); begin != end; ++begin)
         {
             sharpen::ChannelPtr channel = (*begin)->GetChannel();
             if (channel)
@@ -146,7 +146,7 @@ void sharpen::EventLoop::Run()
         }
         this->works_ -= events.size();
         events.clear();
-        //execute tasks
+        // execute tasks
         this->ExecuteTask();
     }
     sharpen::EventLoop::localLoop_ = nullptr;
@@ -189,7 +189,7 @@ std::size_t sharpen::EventLoop::GetWorkCount() const noexcept
 
 sharpen::IEventLoopGroup *sharpen::EventLoop::GetCurrentLoopGroup() noexcept
 {
-    if(localLoop_)
+    if (localLoop_)
     {
         return localLoop_->GetLoopGroup();
     }

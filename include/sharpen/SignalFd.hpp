@@ -17,8 +17,8 @@ namespace sharpen
 {
     extern sharpen::FileHandle OpenSignalFd(const sigset_t &sigs) noexcept;
 
-    extern ssize_t ReadSignalFd(sharpen::FileHandle fd,signalfd_siginfo &sigInfo) noexcept;
-}
+    extern ssize_t ReadSignalFd(sharpen::FileHandle fd, signalfd_siginfo &sigInfo) noexcept;
+}   // namespace sharpen
 
 #endif
 #endif

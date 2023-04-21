@@ -4,40 +4,44 @@
 
 #include <utility>
 
-#include <cstdint>
-#include <cstddef>
 #include "TypeTraits.hpp"
+#include <cstddef>
+#include <cstdint>
 
 namespace sharpen
 {
-    template<typename _T1,typename _T2,bool _T1IsEmpty,bool _T2IsEmpty>
+    template<typename _T1, typename _T2, bool _T1IsEmpty, bool _T2IsEmpty>
     class InternalCompressedPair
     {
     private:
-        using Self = sharpen::InternalCompressedPair<_T1,_T2,_T1IsEmpty,_T2IsEmpty>;
+        using Self = sharpen::InternalCompressedPair<_T1, _T2, _T1IsEmpty, _T2IsEmpty>;
 
         _T1 first_;
         _T2 second_;
+
     public:
-        InternalCompressedPair(_T1 first,_T2 second)
-            :first_(std::move(first))
-            ,second_(std::move(second))
-        {}
+        InternalCompressedPair(_T1 first, _T2 second)
+            : first_(std::move(first))
+            , second_(std::move(second))
+        {
+        }
 
         InternalCompressedPair(const Self &other)
-            :first_(other.first_)
-            ,second_(other.second_)
-        {}
+            : first_(other.first_)
+            , second_(other.second_)
+        {
+        }
 
         InternalCompressedPair(Self &&other) noexcept
-            :first_(std::move(other.first_))
-            ,second_(std::move(other.second_))
-        {}
+            : first_(std::move(other.first_))
+            , second_(std::move(other.second_))
+        {
+        }
 
         Self &operator=(const Self &other)
         {
             Self tmp(other);
-            std::swap(*this,tmp);
+            std::swap(*this, tmp);
             return *this;
         }
 
@@ -52,8 +56,8 @@ namespace sharpen
         {
             if (&other != this)
             {
-                std::swap(this->first_,other.first_);
-                std::swap(this->second_,other.second_);
+                std::swap(this->first_, other.first_);
+                std::swap(this->second_, other.second_);
             }
         }
 
@@ -85,20 +89,24 @@ namespace sharpen
         }
     };
 
-    template<typename _T1,typename _T2>
-    class InternalCompressedPair<_T1,_T2,true,true>:private _T1,private _T2
+    template<typename _T1, typename _T2>
+    class InternalCompressedPair<_T1, _T2, true, true>
+        : private _T1
+        , private _T2
     {
     private:
-        using Self  = sharpen::InternalCompressedPair<_T1,_T2,true,true>;
+        using Self = sharpen::InternalCompressedPair<_T1, _T2, true, true>;
         using MyFirstBase = _T1;
         using MySecondBase = _T2;
+
     public:
         InternalCompressedPair() = default;
 
-        InternalCompressedPair(_T1 first,_T2 second)
-            :MyFirstBase(std::move(first))
-            ,MySecondBase(std::move(second))
-        {}
+        InternalCompressedPair(_T1 first, _T2 second)
+            : MyFirstBase(std::move(first))
+            , MySecondBase(std::move(second))
+        {
+        }
 
         InternalCompressedPair(const Self &other) = default;
 
@@ -134,10 +142,10 @@ namespace sharpen
         {
             if (&other != this)
             {
-                MyFirstBase &first = *this,&otherFirst = other;
-                MySecondBase &second = *this,&otherSecond = other;
-                std::swap(first,otherFirst);
-                std::swap(second,otherSecond);
+                MyFirstBase &first = *this, &otherFirst = other;
+                MySecondBase &second = *this, &otherSecond = other;
+                std::swap(first, otherFirst);
+                std::swap(second, otherSecond);
             }
         }
 
@@ -147,36 +155,40 @@ namespace sharpen
         }
     };
 
-    template<typename _T1,typename _T2>
-    class InternalCompressedPair<_T1,_T2,true,false>:private _T1
+    template<typename _T1, typename _T2>
+    class InternalCompressedPair<_T1, _T2, true, false> : private _T1
     {
     private:
-        using Self = sharpen::InternalCompressedPair<_T1,_T2,true,false>;
+        using Self = sharpen::InternalCompressedPair<_T1, _T2, true, false>;
         using MyBase = _T1;
 
         _T2 second_;
+
     public:
         InternalCompressedPair() = default;
 
-        InternalCompressedPair(_T1 first,_T2 second)
-            :MyBase(std::move(first))
-            ,second_(std::move(second))
-        {}
+        InternalCompressedPair(_T1 first, _T2 second)
+            : MyBase(std::move(first))
+            , second_(std::move(second))
+        {
+        }
 
         InternalCompressedPair(const Self &other)
-            :MyBase(other)
-            ,second_(other.second_)
-        {}
+            : MyBase(other)
+            , second_(other.second_)
+        {
+        }
 
         InternalCompressedPair(Self &&other) noexcept
-            :MyBase(std::move(other))
-            ,second_(std::move(other.second_))
-        {}
+            : MyBase(std::move(other))
+            , second_(std::move(other.second_))
+        {
+        }
 
         Self &operator=(const Self &other)
         {
             Self tmp(other);
-            std::swap(*this,tmp);
+            std::swap(*this, tmp);
             return *this;
         }
 
@@ -216,9 +228,9 @@ namespace sharpen
         {
             if (&other != this)
             {
-                std::swap(this->second_,other.second_);
-                MyBase &base = *this,&otherBase = other;
-                std::swap(base,otherBase);
+                std::swap(this->second_, other.second_);
+                MyBase &base = *this, &otherBase = other;
+                std::swap(base, otherBase);
             }
         }
 
@@ -228,36 +240,40 @@ namespace sharpen
         }
     };
 
-    template<typename _T1,typename _T2>
-    class InternalCompressedPair<_T1,_T2,false,true>:private _T2
+    template<typename _T1, typename _T2>
+    class InternalCompressedPair<_T1, _T2, false, true> : private _T2
     {
     private:
         using MyBase = _T2;
-        using Self = sharpen::InternalCompressedPair<_T1,_T2,false,true>;
-        
+        using Self = sharpen::InternalCompressedPair<_T1, _T2, false, true>;
+
         _T1 first_;
+
     public:
         InternalCompressedPair() = default;
 
-        InternalCompressedPair(_T1 first,_T2 second)
-            :MyBase(std::move(second))
-            ,first_(std::move(first))
-        {}
+        InternalCompressedPair(_T1 first, _T2 second)
+            : MyBase(std::move(second))
+            , first_(std::move(first))
+        {
+        }
 
         InternalCompressedPair(const Self &other)
-            :MyBase(other)
-            ,first_(other.first_)
-        {}
+            : MyBase(other)
+            , first_(other.first_)
+        {
+        }
 
         InternalCompressedPair(Self &&other) noexcept
-            :MyBase(std::move(other))
-            ,first_(std::move(other.first_))
-        {}
+            : MyBase(std::move(other))
+            , first_(std::move(other.first_))
+        {
+        }
 
         Self &operator=(const Self &other)
         {
             Self tmp(other);
-            std::swap(tmp,*this);
+            std::swap(tmp, *this);
             return *this;
         }
 
@@ -297,9 +313,9 @@ namespace sharpen
         {
             if (&other != this)
             {
-                std::swap(this->frist_,other.first_);
-                MyBase &base = *this,&otherBase = other;
-                std::swap(base,otherBase);
+                std::swap(this->frist_, other.first_);
+                MyBase &base = *this, &otherBase = other;
+                std::swap(base, otherBase);
             }
         }
 
@@ -310,36 +326,39 @@ namespace sharpen
     };
 
     template<typename _T>
-    class InternalCompressedPair<_T,_T,true,true>:private _T
+    class InternalCompressedPair<_T, _T, true, true> : private _T
     {
     private:
         using MyBase = _T;
-        using Self = sharpen::InternalCompressedPair<_T,_T,true,true>;
+        using Self = sharpen::InternalCompressedPair<_T, _T, true, true>;
 
         _T second_;
 
     public:
         InternalCompressedPair() = default;
 
-        InternalCompressedPair(_T first,_T second)
-            :MyBase(std::move(first))
-            ,second_(std::move(second))
-        {}
+        InternalCompressedPair(_T first, _T second)
+            : MyBase(std::move(first))
+            , second_(std::move(second))
+        {
+        }
 
         InternalCompressedPair(const Self &other)
-            :MyBase(other)
-            ,second_(other.second_)
-        {}
+            : MyBase(other)
+            , second_(other.second_)
+        {
+        }
 
         InternalCompressedPair(Self &&other) noexcept
-            :MyBase(std::move(other))
-            ,second_(std::move(other.second_))
-        {}
+            : MyBase(std::move(other))
+            , second_(std::move(other.second_))
+        {
+        }
 
         Self &operator=(const Self &other)
         {
             Self tmp(other);
-            std::swap(*this,tmp);
+            std::swap(*this, tmp);
             return *this;
         }
 
@@ -379,9 +398,9 @@ namespace sharpen
         {
             if (&other != this)
             {
-                std::swap(this->second_,other.second_);
-                MyBase &base = *this,&otherBase = other;
-                std::swap(base,otherBase);
+                std::swap(this->second_, other.second_);
+                MyBase &base = *this, &otherBase = other;
+                std::swap(base, otherBase);
             }
         }
 
@@ -391,8 +410,11 @@ namespace sharpen
         }
     };
 
-    template<typename _T1,typename _T2>
-    using CompressedPair = sharpen::InternalCompressedPair<_T1,_T2,sharpen::IsEmptyType<_T1>::Value,sharpen::IsEmptyType<_T2>::Value>;
-}
+    template<typename _T1, typename _T2>
+    using CompressedPair = sharpen::InternalCompressedPair<_T1,
+                                                           _T2,
+                                                           sharpen::IsEmptyType<_T1>::Value,
+                                                           sharpen::IsEmptyType<_T2>::Value>;
+}   // namespace sharpen
 
 #endif

@@ -9,7 +9,7 @@ namespace sharpen
         Leader,
         Follower,
         Learner
-    };   
-}
+    };
+}   // namespace sharpen
 
 #endif

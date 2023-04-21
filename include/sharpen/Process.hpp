@@ -5,20 +5,20 @@
 #include <string>
 #include <vector>
 
-#include "SystemMacro.hpp"
+#include "FileTypeDef.hpp"
 #include "IInputPipeChannel.hpp"
 #include "IOutputPipeChannel.hpp"
-#include "FileTypeDef.hpp"
-#include "TypeTraits.hpp"
 #include "SystemError.hpp"
+#include "SystemMacro.hpp"
+#include "TypeTraits.hpp"
 
 namespace sharpen
 {
-    class Process:public sharpen::Noncopyable
+    class Process : public sharpen::Noncopyable
     {
     private:
         using Self = sharpen::Process;
-    
+
         std::string name_;
         std::string workDirectory_;
         std::vector<std::string> args_;
@@ -43,31 +43,38 @@ namespace sharpen
 
         void ReleaseHandles() noexcept;
 
-        Process(std::string name,std::string workDirectory,std::vector<std::string> args);
+        Process(std::string name, std::string workDirectory, std::vector<std::string> args);
+
     public:
-
         explicit Process(std::string name)
-            :Self{name,std::string{}}
-        {}
+            : Self{name, std::string{}}
+        {
+        }
 
-        Process(std::string name,std::string workDirectory);
+        Process(std::string name, std::string workDirectory);
 
-        template<typename _Iterator,typename _Check = decltype(std::declval<std::string&>() = *std::declval<_Iterator&>()++)>
-        Process(std::string name,_Iterator begin,_Iterator end)
-            :Self{std::move(name),std::string{},std::vector<std::string>{begin,end}}
-        {}
+        template<typename _Iterator,
+                 typename _Check =
+                     decltype(std::declval<std::string &>() = *std::declval<_Iterator &>()++)>
+        Process(std::string name, _Iterator begin, _Iterator end)
+            : Self{std::move(name), std::string{}, std::vector<std::string>{begin, end}}
+        {
+        }
 
-        template<typename _Iterator,typename _Check = decltype(std::declval<std::string&>() = *std::declval<_Iterator&>()++)>
-        Process(std::string name,std::string workDirectory,_Iterator begin,_Iterator end)
-            :Self{std::move(name),std::move(workDirectory),std::vector<std::string>{begin,end}}
-        {}
-    
+        template<typename _Iterator,
+                 typename _Check =
+                     decltype(std::declval<std::string &>() = *std::declval<_Iterator &>()++)>
+        Process(std::string name, std::string workDirectory, _Iterator begin, _Iterator end)
+            : Self{std::move(name), std::move(workDirectory), std::vector<std::string>{begin, end}}
+        {
+        }
+
         Process(Self &&other) noexcept;
-    
+
         Self &operator=(Self &&other) noexcept;
-    
+
         ~Process() noexcept;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -89,6 +96,6 @@ namespace sharpen
 
         sharpen::InputPipeChannelPtr RedirectStderr();
     };
-}
+}   // namespace sharpen
 
 #endif

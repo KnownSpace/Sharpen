@@ -20,6 +20,6 @@ namespace sharpen
         iovec vec_;
         sharpen::ChannelPtr channel_;
     };
-}
+}   // namespace sharpen
 #endif
 #endif

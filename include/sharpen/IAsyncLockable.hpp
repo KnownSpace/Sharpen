@@ -8,31 +8,32 @@ namespace sharpen
     {
     private:
         using Self = sharpen::IAsyncLockable;
+
     public:
         IAsyncLockable() noexcept = default;
-        
+
         IAsyncLockable(Self &&) noexcept = default;
-        
+
         IAsyncLockable(const Self &) = default;
-        
+
         virtual ~IAsyncLockable() = default;
-        
+
         virtual void LockAsync() = 0;
-        
+
         virtual void Unlock() noexcept = 0;
-        
-        //used by stl
+
+        // used by stl
         inline void lock()
         {
             this->LockAsync();
         }
-        
-        //used by stl
+
+        // used by stl
         inline void unlock() noexcept
         {
             this->Unlock();
         }
     };
-}
+}   // namespace sharpen
 
 #endif
