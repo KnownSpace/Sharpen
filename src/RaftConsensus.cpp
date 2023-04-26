@@ -2,11 +2,12 @@
 
 #include <sharpen/BufferReader.hpp>
 #include <sharpen/BufferWriter.hpp>
+#include <sharpen/LogEntries.hpp>
 #include <sharpen/SingleWorkerGroup.hpp>
 #include <sharpen/SystemError.hpp>
-#include <sharpen/LogEntries.hpp>
 #include <cassert>
 #include <utility>
+
 
 
 sharpen::RaftConsensus::RaftConsensus(
@@ -384,7 +385,8 @@ sharpen::Mail sharpen::RaftConsensus::OnPrevoteRequest(const sharpen::RaftPrevot
     {
         lastTerm = lastTermOpt.Get();
     }
-    if (request.GetLastIndex() >= lastIndex && request.GetLastTerm() >= lastTerm)
+    if (request.GetLastTerm() > lastTerm ||
+        (request.GetLastIndex() >= lastIndex && request.GetLastTerm() >= lastTerm))
     {
         response.SetStatus(true);
     }
@@ -435,7 +437,8 @@ sharpen::Mail sharpen::RaftConsensus::OnVoteRequest(const sharpen::RaftVoteForRe
                 lastTerm = lastTermOpt.Get();
             }
             // set true if logs up-to-date current logs
-            if (request.GetLastIndex() >= lastIndex && request.GetLastTerm() >= lastTerm)
+            if (request.GetLastTerm() > lastTerm ||
+                (request.GetLastIndex() >= lastIndex && request.GetLastTerm() >= lastTerm))
             {
                 // save vote record
                 vote.SetActorId(request.GetId());
