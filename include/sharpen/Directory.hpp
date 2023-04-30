@@ -2,11 +2,13 @@
 #ifndef _SHARPEN_DIRECTORY_HPP
 #define _SHARPEN_DIRECTORY_HPP
 
-#include <string>
-#include <utility>
-
+#include "Dentry.hpp"
 #include "FileTypeDef.hpp"
 #include "Noncopyable.hpp"
+#include "SystemMacro.hpp"
+#include "DirectoryIterator.hpp"
+#include <string>
+#include <utility>
 
 namespace sharpen
 {
@@ -14,9 +16,18 @@ namespace sharpen
     {
     private:
         using Self = sharpen::Directory;
+        using Iterator = sharpen::DirectoryIterator;
 
         std::string name_;
-        sharpen::FileHandle handle_;
+#ifdef SHARPEN_IS_WIN
+        mutable sharpen::FileHandle handle_;
+#else
+        mutable void *handle_;
+#endif
+
+        static bool CheckName(const std::string &name) noexcept;
+
+        void Close() noexcept;
 
     public:
         explicit Directory(std::string name);
@@ -25,11 +36,27 @@ namespace sharpen
 
         Self &operator=(Self &&other) noexcept;
 
-        ~Directory() noexcept = default;
+        ~Directory() noexcept;
 
         inline const Self &Const() const noexcept
         {
             return *this;
+        }
+
+        sharpen::Dentry GetNextEntry() const;
+
+        sharpen::Dentry GetNextEntry(bool excludeUpper) const;
+
+        bool Exist() const;
+
+        inline Iterator Begin() noexcept
+        {
+            return sharpen::DirectoryIterator{this};
+        }
+        
+        inline Iterator End() noexcept
+        {
+            return sharpen::DirectoryIterator{nullptr};
         }
     };
 }   // namespace sharpen

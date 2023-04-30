@@ -96,3 +96,10 @@ add_executable(ProcessTest "${PROJECT_SOURCE_DIR}/test/ProcessTest.cpp")
 target_link_libraries(ProcessTest sharpen)
 
 add_test(NAME Process_Test COMMAND "./ProcessTest${extname}")
+
+#Directory Test
+add_executable(DirectoryTest "${PROJECT_SOURCE_DIR}/test/DirectoryTest.cpp")
+
+target_link_libraries(DirectoryTest sharpen)
+
+add_test(NAME Directory_Test COMMAND "./DirectoryTest${extname}")

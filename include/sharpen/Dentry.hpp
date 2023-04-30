@@ -19,12 +19,14 @@ namespace sharpen
         using Self = sharpen::Dentry;
     
         sharpen::DentryType type_;
-        std::string path_;
+        std::string name_;
     public:
 
-        explicit Dentry(std::string path) noexcept;
+        Dentry() noexcept;
+
+        explicit Dentry(std::string name) noexcept;
     
-        Dentry(sharpen::DentryType type,std::string path) noexcept;
+        Dentry(sharpen::DentryType type,std::string name) noexcept;
     
         Dentry(const Self &other);
     
@@ -59,15 +61,21 @@ namespace sharpen
             this->type_ = type;
         }
 
-        inline std::string &Path() noexcept
+        inline std::string &Name() noexcept
         {
-            return this->path_;
+            return this->name_;
         }
         
-        inline const std::string &Path() const noexcept
+        inline const std::string &Name() const noexcept
         {
-            return this->path_;
+            return this->name_;
         }
+
+        bool Valid() const noexcept;
+
+        bool operator==(const Self &other) const noexcept;
+
+        bool operator!=(const Self &other) const noexcept;
     };
 }
 

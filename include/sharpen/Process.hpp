@@ -94,6 +94,8 @@ namespace sharpen
         sharpen::InputPipeChannelPtr RedirectStdout();
 
         sharpen::InputPipeChannelPtr RedirectStderr();
+
+        bool Active() const noexcept;
     };
 }   // namespace sharpen
 

@@ -352,6 +352,7 @@ void sharpen::Process::NixStart()
             offset += sz;
         }
         ::close(readPipe);
+        this->handle_ = invalidHandle;
         sharpen::ThrowSystemError(err);
     }
     ::close(readPipe);
@@ -465,6 +466,7 @@ void sharpen::Process::Kill()
 #else
     this->NixKill();
 #endif
+    this->handle_ = invalidHandle;
 }
 
 void sharpen::Process::Suspend()
@@ -698,4 +700,9 @@ sharpen::InputPipeChannelPtr sharpen::Process::RedirectStderr()
     }
     return channel;
 #endif
+}
+
+bool sharpen::Process::Active() const noexcept
+{
+    return this->handle_ != invalidHandle;
 }

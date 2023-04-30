@@ -27,6 +27,7 @@ bool sharpen::AccessFile(const char *name, sharpen::FileAccessMethod model)
         break;
     case sharpen::FileAccessMethod::All:
         mod = 6;
+        break;
     default:
         break;
     }
@@ -42,6 +43,7 @@ bool sharpen::AccessFile(const char *name, sharpen::FileAccessMethod model)
         break;
     case sharpen::FileAccessMethod::All:
         mod = R_OK | W_OK;
+        break;
     default:
         break;
     }
@@ -253,3 +255,4 @@ void sharpen::DeleteDirectory(const char *name)
     }
 #endif
 }
+
