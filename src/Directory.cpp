@@ -13,6 +13,8 @@
 
 #endif
 
+#include <cstring>
+
 #ifdef SHARPEN_IS_WIN
 static HANDLE invalidHandle{INVALID_HANDLE_VALUE};
 #else
@@ -84,7 +86,7 @@ bool sharpen::Directory::Exist() const
     {
         return false;
     }
-    return sharpen::ExistFile(this->name_.c_str());
+    return sharpen::ExistDirectory(this->name_.c_str());
 }
 
 sharpen::Dentry sharpen::Directory::GetNextEntry() const

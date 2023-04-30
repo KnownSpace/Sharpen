@@ -11,9 +11,24 @@ namespace sharpen
 {
     extern bool AccessFile(const char *name, sharpen::FileAccessMethod model);
 
+    inline bool AccessDirectory(const char *name,sharpen::FileAccessMethod model)
+    {
+        return sharpen::AccessFile(name,model);
+    }
+
     extern bool ExistFile(const char *name);
 
+    inline bool ExistDirectory(const char *name)
+    {
+        return sharpen::ExistFile(name);
+    }
+
     extern void RenameFile(const char *oldName, const char *newName);
+
+    inline void RenameDirectory(const char *oldName,const char *newName)
+    {
+        return sharpen::RenameFile(oldName,newName);
+    }
 
     extern void RemoveFile(const char *name);
 
