@@ -10,12 +10,12 @@
 
 namespace sharpen
 {
-    struct WSAOverlappedStruct:public sharpen::IocpOverlappedStruct
+    struct WSAOverlappedStruct : public sharpen::IocpOverlappedStruct
     {
         WSABUF buf_;
         sharpen::FileHandle accepted_;
     };
-}
+}   // namespace sharpen
 #endif
 
 #endif

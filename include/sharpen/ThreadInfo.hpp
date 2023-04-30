@@ -3,8 +3,8 @@
 #define _SHARPEN_THREADINFO_HPP
 
 #include "SystemMacro.hpp"
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 
 namespace sharpen
 {

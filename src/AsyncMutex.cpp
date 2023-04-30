@@ -1,10 +1,11 @@
 #include <sharpen/AsyncMutex.hpp>
 
 sharpen::AsyncMutex::AsyncMutex()
-    :locked_(false)
-    ,waiters_()
-    ,lock_()
-{}
+    : locked_(false)
+    , waiters_()
+    , lock_()
+{
+}
 
 void sharpen::AsyncMutex::LockAsync()
 {
@@ -28,9 +29,9 @@ bool sharpen::AsyncMutex::TryLock() noexcept
         {
             return false;
         }
-        std::unique_lock<sharpen::SpinLock> lock{this->lock_,std::adopt_lock};
+        std::unique_lock<sharpen::SpinLock> lock{this->lock_, std::adopt_lock};
         bool locked{true};
-        std::swap(locked,this->locked_);
+        std::swap(locked, this->locked_);
         return !locked;
     }
 }

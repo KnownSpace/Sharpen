@@ -1,6 +1,6 @@
 #include <sharpen/IChannel.hpp>
-#include <sharpen/IEventLoopGroup.hpp>
 
+#include <sharpen/IEventLoopGroup.hpp>
 #include <sharpen/SystemMacro.hpp>
 
 #ifdef SHARPEN_IS_NIX
@@ -41,7 +41,7 @@ void sharpen::IChannel::Close() noexcept
     constexpr sharpen::FileHandle invalidHandle{-1};
 #endif
     sharpen::FileHandle handle{invalidHandle};
-    std::swap(this->handle_,handle);
+    std::swap(this->handle_, handle);
     if (handle != invalidHandle)
     {
         if (this->closer_)

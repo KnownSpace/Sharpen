@@ -1,12 +1,14 @@
 #include <sharpen/TimerPool.hpp>
 
-sharpen::TimerPool::TimerPool(sharpen::IEventLoopGroup &loopGroup,TimerMaker maker,std::size_t reserveCount)
-    :lock_()
-    ,timers_()
-    ,maker_(maker)
-    ,loopGroup_(&loopGroup)
+sharpen::TimerPool::TimerPool(sharpen::IEventLoopGroup &loopGroup,
+                              TimerMaker maker,
+                              std::size_t reserveCount)
+    : lock_()
+    , timers_()
+    , maker_(maker)
+    , loopGroup_(&loopGroup)
 {
-    if(!reserveCount)
+    if (!reserveCount)
     {
         this->timers_.reserve(reservedSize_);
     }
@@ -15,7 +17,7 @@ sharpen::TimerPool::TimerPool(sharpen::IEventLoopGroup &loopGroup,TimerMaker mak
 
 void sharpen::TimerPool::Reserve(std::size_t size)
 {
-    if(size)
+    if (size)
     {
         {
             std::unique_lock<sharpen::SpinLock> lock{this->lock_};
@@ -23,7 +25,7 @@ void sharpen::TimerPool::Reserve(std::size_t size)
             this->timers_.reserve(realSize);
             for (std::size_t i = 0; i != size; ++i)
             {
-                this->timers_.emplace_back(this->MakeTimer());   
+                this->timers_.emplace_back(this->MakeTimer());
             }
         }
     }
@@ -34,13 +36,13 @@ sharpen::TimerPtr sharpen::TimerPool::GetTimer()
     sharpen::TimerPtr timer{nullptr};
     {
         std::unique_lock<sharpen::SpinLock> lock{this->lock_};
-        if(!this->timers_.empty())
+        if (!this->timers_.empty())
         {
             timer = std::move(this->timers_.back());
             this->timers_.pop_back();
         }
     }
-    if(!timer)
+    if (!timer)
     {
         timer = this->MakeTimer();
     }
@@ -55,9 +57,9 @@ void sharpen::TimerPool::ReturnTimer(sharpen::TimerPtr &&timer) noexcept
         {
             this->timers_.emplace_back(std::move(timer));
         }
-        catch(const std::bad_alloc &ignore)
+        catch (const std::bad_alloc &ignore)
         {
-            //drop timer
+            // drop timer
             (void)timer;
             (void)ignore;
         }

@@ -2,25 +2,27 @@
 #ifndef _SHARPEN_FIBER_HPP
 #define _SHARPEN_FIBER_HPP
 
-#include <memory>
-#include <functional>
-#include <cassert>
-
+#include "FiberLocalStorage.hpp"
 #include "MemoryStack.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "TypeTraits.hpp"
+#include <cassert>
+#include <functional>
+#include <memory>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-typedef void *fcontext_t;
+    typedef void *fcontext_t;
 
-typedef struct  {
-    fcontext_t fctx;
-    void *data;
-} transfer_t;
+    typedef struct
+    {
+        fcontext_t fctx;
+        void *data;
+    } transfer_t;
 
 #ifdef __cplusplus
 }
@@ -35,48 +37,55 @@ namespace sharpen
 
     class IFiberScheduler;
 
-    class Fiber:public sharpen::Noncopyable,public sharpen::Nonmovable,public std::enable_shared_from_this<sharpen::Fiber>
+    class Fiber
+        : public sharpen::Noncopyable
+        , public sharpen::Nonmovable
+        , public std::enable_shared_from_this<sharpen::Fiber>
     {
     private:
         using Handle = fcontext_t;
         using Task = std::function<void()>;
-        using Callback = std::weak_ptr<sharpen::Fiber>;
+        using Callback = sharpen::Fiber *;
 
-        //fcontext
+        // fcontext
         Handle handle_;
 
-        //stack
+        // stack
         MemoryStack stack_;
 
-        //task
+        // task
         Task task_;
 
-        //callback
+        // callback
         Callback callback_;
 
-        //inited
+        // inited
         bool inited_;
 
-        //scheduler
+        // scheduler
         sharpen::IFiberScheduler *scheduler_;
+
+        // local storage
+        sharpen::FiberLocalStorage localStorage_;
 
         thread_local static FiberPtr currentFiber_;
 
-        static void FiberEntry(transfer_t from);
+        static void FiberEntry(transfer_t from) noexcept;
 
-        static transfer_t SaveCurrentAndSwitch(transfer_t from);
+        static transfer_t SaveCurrentAndSwitch(transfer_t from) noexcept;
 
         void InitFiber();
+
     public:
         Fiber() noexcept;
 
         ~Fiber() noexcept;
 
-        void Switch();
+        void Switch() noexcept;
 
-        void Switch(const sharpen::FiberPtr &callback);
+        void Switch(sharpen::Fiber *callback) noexcept;
 
-        static sharpen::FiberPtr GetCurrentFiber();
+        static sharpen::FiberPtr GetCurrentFiber() noexcept;
 
         static sharpen::IFiberScheduler *GetCurrentFiberSceduler() noexcept;
 
@@ -86,14 +95,30 @@ namespace sharpen
 
         void SetScheduler(sharpen::IFiberScheduler *scheduler) noexcept;
 
-        template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<void,_Fn,_Args...>::Value>>
-        static sharpen::FiberPtr MakeFiber(std::size_t stackSize,_Fn &&fn,_Args &&...args)
+        template<typename _Fn,
+                 typename... _Args,
+                 typename _Check = sharpen::EnableIf<
+                     sharpen::IsCompletedBindableReturned<void, _Fn, _Args...>::Value>>
+        static sharpen::FiberPtr MakeFiber(std::size_t stackSize, _Fn &&fn, _Args &&...args)
         {
             sharpen::FiberPtr fiber = std::make_shared<sharpen::Fiber>();
-            fiber->stack_ = std::move(sharpen::MemoryStack(nullptr,stackSize));
-            fiber->task_ = std::move(std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...));
+            fiber->stack_ = sharpen::MemoryStack(nullptr, stackSize);
+            fiber->task_ =
+                std::move(std::bind(std::forward<_Fn>(fn), std::forward<_Args>(args)...));
             return fiber;
         }
+
+        inline sharpen::FiberLocalStorage &LocalStorage() noexcept
+        {
+            return this->localStorage_;
+        }
+
+        inline const sharpen::FiberLocalStorage &LocalStorage() const noexcept
+        {
+            return this->localStorage_;
+        }
+
+        static sharpen::FiberLocalStorage &GetLocalStorage() noexcept;
     };
 
     extern sharpen::IFiberScheduler *GetLocalSchedulerPtr() noexcept;
@@ -104,6 +129,6 @@ namespace sharpen
         assert(scheduler != nullptr);
         return *scheduler;
     }
-} 
+}   // namespace sharpen
 
 #endif

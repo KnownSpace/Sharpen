@@ -2,19 +2,21 @@
 #ifndef _SHARPEN_HOSTPIPELINE_HPP
 #define _SHARPEN_HOSTPIPELINE_HPP
 
-#include <vector>
-
 #include "IHostPipeline.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
+#include <vector>
 
 namespace sharpen
 {
-    class SimpleHostPipeline:public sharpen::IHostPipeline,public sharpen::Noncopyable,public sharpen::Nonmovable
+    class SimpleHostPipeline
+        : public sharpen::IHostPipeline
+        , public sharpen::Noncopyable
+        , public sharpen::Nonmovable
     {
     private:
         using Self = sharpen::SimpleHostPipeline;
-    
+
         std::atomic_bool token_;
         std::vector<std::unique_ptr<sharpen::IHostPipelineStep>> pipeline_;
 
@@ -23,12 +25,12 @@ namespace sharpen
         virtual void NviConsume(sharpen::NetStreamChannelPtr channel) noexcept override;
 
         virtual void NviRegister(std::unique_ptr<sharpen::IHostPipelineStep> step) override;
+
     public:
-    
         SimpleHostPipeline();
-    
+
         virtual ~SimpleHostPipeline() noexcept;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -44,6 +46,6 @@ namespace sharpen
             this->token_ = false;
         }
     };
-}
+}   // namespace sharpen
 
 #endif

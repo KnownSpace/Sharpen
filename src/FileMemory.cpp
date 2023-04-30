@@ -11,29 +11,31 @@
 #include <sharpen/SystemError.hpp>
 
 #ifdef SHARPEN_IS_WIN
-sharpen::FileMemory::FileMemory(sharpen::FileHandle file,void *address,std::size_t size) noexcept
-    :file_(file)
-    ,address_(address)
-    ,size_(size)
-{}
+sharpen::FileMemory::FileMemory(sharpen::FileHandle file, void *address, std::size_t size) noexcept
+    : address_(address)
+    , size_(size)
+    , file_(file)
+{
+}
 #else
-sharpen::FileMemory::FileMemory(void *address,std::size_t size) noexcept
-    :address_(address)
-    ,size_(size)
-{}
+sharpen::FileMemory::FileMemory(void *address, std::size_t size) noexcept
+    : address_(address)
+    , size_(size)
+{
+}
 #endif
 
 sharpen::FileMemory::FileMemory(Self &&other) noexcept
-    :address_(other.address_)
-    ,size_(other.size_)
+    : address_(other.address_)
+    , size_(other.size_)
 #ifdef SHARPEN_IS_WIN
-    ,file_(other.file_)
+    , file_(other.file_)
 #endif
 {
     other.address_ = nullptr;
     other.size_ = 0;
 #ifdef SHARPEN_IS_WIN
-    other.file_ =INVALID_HANDLE_VALUE;
+    other.file_ = INVALID_HANDLE_VALUE;
 #endif
 }
 
@@ -52,15 +54,15 @@ sharpen::FileMemory &sharpen::FileMemory::operator=(Self &&other) noexcept
     return *this;
 }
 
-sharpen::FileMemory::~FileMemory () noexcept
+sharpen::FileMemory::~FileMemory() noexcept
 {
-    if(this->address_)
+    if (this->address_)
     {
         assert(this->size_);
 #ifdef SHARPEN_IS_WIN
         ::UnmapViewOfFile(this->address_);
 #else
-        ::munmap(this->address_,this->size_);
+        ::munmap(this->address_, this->size_);
 #endif
     }
 }
@@ -72,16 +74,16 @@ void *sharpen::FileMemory::Get() const noexcept
 
 void sharpen::FileMemory::Flush() const
 {
-    if(this->address_)
+    if (this->address_)
     {
         assert(this->size_);
 #ifdef SHARPEN_IS_WIN
-        if(::FlushViewOfFile(this->address_,this->size_) == FALSE)
+        if (::FlushViewOfFile(this->address_, this->size_) == FALSE)
         {
             sharpen::ThrowLastError();
         }
 #else
-        if(::msync(this->address_,this->size_,MS_ASYNC) == -1)
+        if (::msync(this->address_, this->size_, MS_ASYNC) == -1)
         {
             sharpen::ThrowLastError();
         }
@@ -91,20 +93,20 @@ void sharpen::FileMemory::Flush() const
 
 void sharpen::FileMemory::FlushAndWait() const
 {
-    if(this->address_)
+    if (this->address_)
     {
         assert(this->size_);
 #ifdef SHARPEN_IS_WIN
-        if(::FlushViewOfFile(this->address_,this->size_) == FALSE)
+        if (::FlushViewOfFile(this->address_, this->size_) == FALSE)
         {
             sharpen::ThrowLastError();
-        }        
-        if(::FlushFileBuffers(this->file_) == FALSE)
+        }
+        if (::FlushFileBuffers(this->file_) == FALSE)
         {
             sharpen::ThrowLastError();
         }
 #else
-        if(::msync(this->address_,this->size_,MS_SYNC) == -1)
+        if (::msync(this->address_, this->size_, MS_SYNC) == -1)
         {
             sharpen::ThrowLastError();
         }
@@ -115,6 +117,6 @@ void sharpen::FileMemory::FlushAndWait() const
 void *sharpen::FileMemory::ReleaseOwnership() noexcept
 {
     void *p{nullptr};
-    std::swap(this->address_,p);
+    std::swap(this->address_, p);
     return p;
 }

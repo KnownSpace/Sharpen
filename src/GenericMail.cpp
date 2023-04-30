@@ -3,21 +3,23 @@
 #include <sharpen/IntOps.hpp>
 
 sharpen::GenericMail::GenericMail() noexcept
-    :Self(0)
-{}
+    : Self(0)
+{
+}
 
 sharpen::GenericMail::GenericMail(std::uint32_t magic) noexcept
-    :Base()
+    : Base()
 {
     this->Header().ExtendTo(sizeof(sharpen::GenericMailHeader));
     this->Header().As<sharpen::GenericMailHeader>().SetMagic(magic);
 }
 
 sharpen::GenericMail::GenericMail(sharpen::Mail mail) noexcept
-    :Base()
+    : Base()
 {
     assert(mail.Header().GetSize() == sizeof(sharpen::GenericMailHeader));
-    assert(mail.Content().GetSize() == mail.Header().As<sharpen::GenericMailHeader>().GetContentSize());
+    assert(mail.Content().GetSize() ==
+           mail.Header().As<sharpen::GenericMailHeader>().GetContentSize());
     this->Header() = std::move(mail.Header());
     this->Content() = std::move(mail.Content());
 }
@@ -46,7 +48,7 @@ void sharpen::GenericMail::SetMagic(std::uint32_t magic) noexcept
 
 void sharpen::GenericMail::SetContent(sharpen::ByteBuffer content)
 {
-    //overflow check
+    // overflow check
     std::uint32_t contentSize{sharpen::IntCast<std::uint32_t>(content.GetSize())};
     this->GenericHeader().SetContentSize(contentSize);
     Base::Content() = std::move(content);

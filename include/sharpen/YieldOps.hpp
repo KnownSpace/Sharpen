@@ -2,12 +2,11 @@
 #ifndef _SHARPEN_YIELDOPS_HPP
 #define _SHARPEN_YIELDOPS_HPP
 
-#include <thread>
-#include <utility>
-#include <cassert>
-
 #include "Fiber.hpp"
 #include "IFiberScheduler.hpp"
+#include <cassert>
+#include <thread>
+#include <utility>
 
 namespace sharpen
 {
@@ -17,11 +16,12 @@ namespace sharpen
         using Self = YieldCycleCallback;
 
         sharpen::FiberPtr fiber_;
-    public:
 
+    public:
         YieldCycleCallback(sharpen::FiberPtr fiber) noexcept
-            :fiber_(std::move(fiber))
-        {}
+            : fiber_(std::move(fiber))
+        {
+        }
 
         YieldCycleCallback(const Self &other) = default;
 
@@ -29,17 +29,17 @@ namespace sharpen
 
         inline Self &operator=(const Self &other)
         {
-            if(this != std::addressof(other))
+            if (this != std::addressof(other))
             {
                 Self tmp{other};
-                std::swap(tmp,*this);
+                std::swap(tmp, *this);
             }
             return *this;
         }
 
         inline Self &operator=(Self &&other) noexcept
         {
-            if(this != std::addressof(other))
+            if (this != std::addressof(other))
             {
                 this->fiber_ = std::move(other.fiber_);
             }
@@ -55,7 +55,7 @@ namespace sharpen
 
         inline void operator()() noexcept
         {
-            if(this->fiber_)
+            if (this->fiber_)
             {
                 sharpen::IFiberScheduler *scheduler{this->fiber_->GetScheduler()};
                 assert(scheduler);
@@ -65,6 +65,6 @@ namespace sharpen
     };
 
     void YieldCycle();
-}
+}   // namespace sharpen
 
 #endif

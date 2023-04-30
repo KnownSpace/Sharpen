@@ -2,12 +2,13 @@
 
 #include <cassert>
 
-sharpen::AsyncBarrier::AsyncBarrier(sharpen::BarrierModel model,std::uint64_t counter)
-    :count_(counter)
-    ,waiters_()
-    ,currentCount_(0)
-    ,model_(model)
-{}
+sharpen::AsyncBarrier::AsyncBarrier(sharpen::BarrierModel model, std::size_t counter)
+    : count_(counter)
+    , waiters_()
+    , currentCount_(0)
+    , model_(model)
+{
+}
 
 std::size_t sharpen::AsyncBarrier::WaitAsync()
 {
@@ -17,7 +18,7 @@ std::size_t sharpen::AsyncBarrier::WaitAsync()
         if (this->currentCount_ >= this->count_)
         {
             std::size_t currentCount{this->currentCount_};
-            if(this->model_ == sharpen::BarrierModel::Boundaried && currentCount > this->count_)
+            if (this->model_ == sharpen::BarrierModel::Boundaried && currentCount > this->count_)
             {
                 currentCount = this->count_;
             }
@@ -31,7 +32,7 @@ std::size_t sharpen::AsyncBarrier::WaitAsync()
 
 void sharpen::AsyncBarrier::ResetWithoutLock() noexcept
 {
-    if(this->model_ == sharpen::BarrierModel::Boundaried && this->currentCount_ >= this->count_)
+    if (this->model_ == sharpen::BarrierModel::Boundaried && this->currentCount_ >= this->count_)
     {
         this->currentCount_ -= this->count_;
     }
@@ -55,10 +56,10 @@ void sharpen::AsyncBarrier::Notify(std::size_t count) noexcept
     {
         std::unique_lock<sharpen::SpinLock> lock(this->lock_);
         this->currentCount_ += count;
-        if(this->currentCount_ >= this->count_)
+        if (this->currentCount_ >= this->count_)
         {
             currentCount = this->currentCount_;
-            if(this->model_ == sharpen::BarrierModel::Boundaried && currentCount > this->count_)
+            if (this->model_ == sharpen::BarrierModel::Boundaried && currentCount > this->count_)
             {
                 currentCount = this->count_;
             }

@@ -2,18 +2,20 @@
 #ifndef _SHARPEN_DYNAMICWORKERGROUP_HPP
 #define _SHARPEN_DYNAMICWORKERGROUP_HPP
 
-#include <vector>
-#include <functional>
-
-#include "IWorkerGroup.hpp"
-#include "NoexceptInvoke.hpp"
 #include "AsyncBlockingQueue.hpp"
 #include "IFiberScheduler.hpp"
+#include "IWorkerGroup.hpp"
+#include "NoexceptInvoke.hpp" // IWYU pragma: keep
+#include <functional>
+#include <vector>
 
 namespace sharpen
 {
 
-    class DynamicWorkerGroup:public sharpen::IWorkerGroup,public sharpen::Noncopyable,public sharpen::Nonmovable
+    class DynamicWorkerGroup
+        : public sharpen::IWorkerGroup
+        , public sharpen::Noncopyable
+        , public sharpen::Nonmovable
     {
     private:
         using Self = sharpen::DynamicWorkerGroup;
@@ -33,10 +35,10 @@ namespace sharpen
         void CreateWorker();
 
         void Entry(sharpen::AwaitableFuture<void> *future) noexcept;
-    
+
         virtual void NviSubmit(std::function<void()> task) override;
+
     public:
-    
         constexpr static std::size_t defaultBusyMark{256};
 
         constexpr static std::size_t defaultProbeCount{3};
@@ -49,16 +51,25 @@ namespace sharpen
 
         explicit DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler);
 
-        DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler,std::size_t workerCount);
+        DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler, std::size_t workerCount);
 
-        DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler,std::size_t workerCount,std::size_t busyMark);
+        DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler,
+                           std::size_t workerCount,
+                           std::size_t busyMark);
 
-        DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler,std::size_t workerCount,std::size_t busyMark,std::size_t probeCount);
+        DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler,
+                           std::size_t workerCount,
+                           std::size_t busyMark,
+                           std::size_t probeCount);
 
-        DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler,std::size_t workerCount,std::size_t busyMark,std::size_t probeCount,std::size_t maxWorkerCount);
-    
+        DynamicWorkerGroup(sharpen::IFiberScheduler &scheduler,
+                           std::size_t workerCount,
+                           std::size_t busyMark,
+                           std::size_t probeCount,
+                           std::size_t maxWorkerCount);
+
         virtual ~DynamicWorkerGroup() noexcept;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -74,7 +85,7 @@ namespace sharpen
         }
 
         virtual std::size_t GetWorkerCount() const noexcept override;
-    };   
-}
+    };
+}   // namespace sharpen
 
 #endif

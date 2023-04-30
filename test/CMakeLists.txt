@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14.0)
+cmake_minimum_required(VERSION 3.15.0)
 
 set(SIMPLETEST_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/lib/simpletest/include/")
 
@@ -89,3 +89,17 @@ add_executable(SignalTest "${PROJECT_SOURCE_DIR}/test/SignalTest.cpp")
 target_link_libraries(SignalTest sharpen)
 
 add_test(NAME Signal_Test COMMAND "./SignalTest${extname}")
+
+#Process Test
+add_executable(ProcessTest "${PROJECT_SOURCE_DIR}/test/ProcessTest.cpp")
+
+target_link_libraries(ProcessTest sharpen)
+
+add_test(NAME Process_Test COMMAND "./ProcessTest${extname}")
+
+#Directory Test
+add_executable(DirectoryTest "${PROJECT_SOURCE_DIR}/test/DirectoryTest.cpp")
+
+target_link_libraries(DirectoryTest sharpen)
+
+add_test(NAME Directory_Test COMMAND "./DirectoryTest${extname}")

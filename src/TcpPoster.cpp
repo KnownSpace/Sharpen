@@ -1,9 +1,8 @@
 #include <sharpen/TcpPoster.hpp>
 
-#include <new>
-#include <cassert>
-
 #include <sharpen/SystemError.hpp>
+#include <cassert>
+#include <new>
 
 void sharpen::TcpPoster::NviClose() noexcept
 {
@@ -11,9 +10,9 @@ void sharpen::TcpPoster::NviClose() noexcept
     {
         assert(this->lock_);
         std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
-        std::swap(channel,this->channel_);
+        std::swap(channel, this->channel_);
     }
-    if(channel)
+    if (channel)
     {
         channel->Close();
     }
@@ -26,7 +25,7 @@ void sharpen::TcpPoster::NviOpen(std::unique_ptr<sharpen::IMailParser> parser)
     {
         assert(this->lock_);
         std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
-        if(!this->channel_)
+        if (!this->channel_)
         {
             assert(this->factory_);
             this->channel_ = this->factory_->Produce();
@@ -38,7 +37,7 @@ void sharpen::TcpPoster::NviOpen(std::unique_ptr<sharpen::IMailParser> parser)
     {
         channel->ConnectAsync(*this->remoteEndpoint_);
     }
-    catch(const std::system_error &error)
+    catch (const std::system_error &error)
     {
         sharpen::ErrorCode errorCode{sharpen::GetErrorCode(error)};
         switch (errorCode)
@@ -66,13 +65,54 @@ void sharpen::TcpPoster::NviOpen(std::unique_ptr<sharpen::IMailParser> parser)
         }
         throw;
     }
-    catch(const std::exception&)
+    catch (const std::exception &rethrow)
     {
+        (void)rethrow;
         throw;
     }
 }
 
-sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail)
+bool sharpen::TcpPoster::Available() const noexcept
+{
+    {
+        std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
+        return this->channel_ != nullptr;
+    }
+}
+
+bool sharpen::TcpPoster::SupportPipeline() const noexcept
+{
+    return this->pipelineWorker_ != nullptr;
+}
+
+sharpen::Mail sharpen::TcpPoster::DoReceive(sharpen::NetStreamChannelPtr channel) noexcept
+{
+    std::size_t size{0};
+    sharpen::ByteBuffer buffer{4096};
+    sharpen::Mail response;
+    while (!this->parser_->Completed())
+    {
+        size = channel->ReadAsync(buffer);
+        if (!size)
+        {
+            return sharpen::Mail{};
+        }
+        sharpen::ByteSlice slice{buffer.Data(), size};
+        this->parser_->Parse(slice);
+    }
+    response = this->parser_->PopCompletedMail();
+    return response;
+}
+
+void sharpen::TcpPoster::Receive(sharpen::NetStreamChannelPtr channel,
+                                 std::function<void(sharpen::Mail)> cb) noexcept
+{
+    sharpen::Mail response{this->DoReceive(channel)};
+    cb(std::move(response));
+}
+
+void sharpen::TcpPoster::NviPost(const sharpen::Mail &mail,
+                                 std::function<void(sharpen::Mail)> cb) noexcept
 {
     sharpen::NetStreamChannelPtr channel{nullptr};
     {
@@ -80,64 +120,68 @@ sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail)
         std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
         channel = this->channel_;
     }
-    if(!channel)
+    if (!channel)
     {
-        //already closed
-        throw sharpen::RemotePosterClosedError{"poster already closed"};
+        cb(sharpen::Mail{});
+        return;
     }
-    //post mail
-    try
+    // post mail
+    std::size_t size{0};
+    size = channel->WriteAsync(mail.Header());
+    if (!size)
     {
-        channel->WriteAsync(mail.Header());
-        if(!mail.Content().Empty())
-        {
-            channel->WriteAsync(mail.Content());
-        }
+        cb(sharpen::Mail{});
+        return;
     }
-    catch(const std::system_error &error)
+    if (!mail.Content().Empty())
     {
-       sharpen::ErrorCode code{sharpen::GetErrorCode(error)};
-        if(code != sharpen::ErrorCancel 
-                    && code != sharpen::ErrorConnectionAborted 
-                    && code != sharpen::ErrorConnectionReset)
+        size = channel->WriteAsync(mail.Content());
+        if (!size)
         {
-            throw;
+            cb(sharpen::Mail{});
+            return;
         }
-        throw sharpen::RemotePosterClosedError{"poster is closed by operator or peer"};
     }
-    //receive mail
-    sharpen::ByteBuffer buffer{4096};
-    sharpen::Mail response;
-    while (!this->parser_->Completed())
+    // receive mail
+    if (!this->pipelineWorker_)
     {
-        std::size_t sz{0};
-        try
-        {
-            sz = channel->ReadAsync(buffer);
-        }
-        catch(const std::system_error &error)
-        {
-            sharpen::ErrorCode code{sharpen::GetErrorCode(error)};
-            if(code != sharpen::ErrorCancel 
-                    && code != sharpen::ErrorConnectionAborted 
-                    && code != sharpen::ErrorConnectionReset)
-            {
-                throw;
-            }
-            throw sharpen::RemotePosterClosedError{"poster is closed by operator or peer"};
-        }
-        catch(const std::exception&)
-        {
-            throw;   
-        }
-        if(!sz)
-        {
-            throw sharpen::RemotePosterClosedError{"poster already closed"};
-        }
-        sharpen::ByteSlice slice{buffer.Data(),sz};
-        this->parser_->Parse(slice);
+        sharpen::Mail response{this->DoReceive(std::move(channel))};
+        cb(std::move(response));
+        return;
     }
-    response = this->parser_->PopCompletedMail();
+    // pipeline model
+    this->pipelineWorker_->Submit(&Self::Receive, this, std::move(channel), std::move(cb));
+}
+
+sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail) noexcept
+{
+    sharpen::NetStreamChannelPtr channel{nullptr};
+    {
+        assert(this->lock_);
+        std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
+        channel = this->channel_;
+    }
+    if (!channel)
+    {
+        return sharpen::Mail{};
+    }
+    // post mail
+    std::size_t size{0};
+    size = channel->WriteAsync(mail.Header());
+    if (!size)
+    {
+        return sharpen::Mail{};
+    }
+    if (!mail.Content().Empty())
+    {
+        size = channel->WriteAsync(mail.Content());
+        if (!size)
+        {
+            return sharpen::Mail{};
+        }
+    }
+    // receive mail
+    sharpen::Mail response{this->DoReceive(std::move(channel))};
     return response;
 }
 
@@ -146,17 +190,26 @@ std::uint64_t sharpen::TcpPoster::NviGetId() const noexcept
     return this->remoteEndpoint_->GetActorId();
 }
 
-sharpen::TcpPoster::TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::shared_ptr<sharpen::ITcpSteamFactory> factory)
-    :lock_(nullptr)
-    ,channel_(nullptr)
-    ,remoteEndpoint_(std::move(endpoint))
-    ,parser_(nullptr)
-    ,factory_(std::move(factory))
+sharpen::TcpPoster::TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,
+                              std::shared_ptr<sharpen::ITcpSteamFactory> factory)
+    : Self{std::move(endpoint), std::move(factory), nullptr}
+{
+}
+
+sharpen::TcpPoster::TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,
+                              std::shared_ptr<sharpen::ITcpSteamFactory> factory,
+                              std::unique_ptr<sharpen::IWorkerGroup> pipelineWorker)
+    : lock_(nullptr)
+    , channel_(nullptr)
+    , remoteEndpoint_(std::move(endpoint))
+    , parser_(nullptr)
+    , factory_(std::move(factory))
+    , pipelineWorker_(std::move(pipelineWorker))
 {
     assert(this->factory_);
     assert(this->remoteEndpoint_);
     this->lock_.reset(new (std::nothrow) sharpen::SpinLock{});
-    if(!this->lock_)
+    if (!this->lock_)
     {
         throw std::bad_alloc{};
     }
@@ -164,13 +217,14 @@ sharpen::TcpPoster::TcpPoster(std::unique_ptr<sharpen::IEndPoint> endpoint,std::
 
 sharpen::TcpPoster &sharpen::TcpPoster::operator=(Self &&other) noexcept
 {
-    if(this != std::addressof(other))
+    if (this != std::addressof(other))
     {
         this->lock_ = std::move(other.lock_);
         this->channel_ = std::move(other.channel_);
         this->remoteEndpoint_ = std::move(other.remoteEndpoint_);
         this->parser_ = std::move(other.parser_);
         this->factory_ = std::move(other.factory_);
+        this->pipelineWorker_ = std::move(other.pipelineWorker_);
     }
     return *this;
 }

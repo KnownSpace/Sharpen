@@ -2,20 +2,22 @@
 #ifndef _SHARPEN_STOPWATCHER_HPP
 #define _SHARPEN_STOPWATCHER_HPP
 
-#include <ctime>
-
-#include <cstdint>
-#include <cstddef>
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
+#include <cstddef>
+#include <cstdint>
+#include <ctime>
 
 namespace sharpen
 {
-    struct StopWatcher:public sharpen::Noncopyable,public sharpen::Nonmovable
+    struct StopWatcher
+        : public sharpen::Noncopyable
+        , public sharpen::Nonmovable
     {
     private:
         std::clock_t begin_;
         std::clock_t end_;
+
     public:
         StopWatcher() = default;
 
@@ -41,6 +43,6 @@ namespace sharpen
             return CLOCKS_PER_SEC;
         }
     };
-}
+}   // namespace sharpen
 
 #endif

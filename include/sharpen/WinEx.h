@@ -1,6 +1,6 @@
 #pragma once
-#ifndef _SHARPEN_WINEX_HPP
-#define _SHARPEN_WINEX_HPP
+#ifndef _SHARPEN_WINEX_H
+#define _SHARPEN_WINEX_H
 
 #ifdef __cplusplus
 extern "C"

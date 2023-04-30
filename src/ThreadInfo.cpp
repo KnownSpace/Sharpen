@@ -1,21 +1,21 @@
 #include <sharpen/ThreadInfo.hpp>
 
+#include <sharpen/Optional.hpp>
+
 #ifdef SHARPEN_IS_WIN
 
 #include <Windows.h>
 #elif defined SHARPEN_IS_LINUX
-#include <unistd.h>
 #include <sys/syscall.h>
+#include <unistd.h>
 #else
 #include <pthread.h>
 #endif
 
-#include <sharpen/Optional.hpp>
-
 std::uint32_t sharpen::GetCurrentThreadId() noexcept
 {
     static thread_local sharpen::Optional<std::uint32_t> id;
-    if(!id.Exist())
+    if (!id.Exist())
     {
 #ifdef SHARPEN_IS_WIN
         id.Construct(::GetCurrentThreadId());

@@ -2,7 +2,7 @@
 
 #ifdef SHARPEN_IS_NIX
 
-void sharpen::PosixIoWriter::NviExecute(sharpen::FileHandle handle,bool &executed,bool &blocking)
+void sharpen::PosixIoWriter::NviExecute(sharpen::FileHandle handle, bool &executed, bool &blocking)
 {
     std::size_t size = this->GetRemainingSize();
     if (size == 0)
@@ -16,9 +16,8 @@ void sharpen::PosixIoWriter::NviExecute(sharpen::FileHandle handle,bool &execute
     IoBuffer *bufs = this->GetFirstBuffer();
     Callback *cbs = this->GetFirstCallback();
     ssize_t bytes;
-    do
-    {
-        bytes = ::writev(handle,bufs,size);
+    do {
+        bytes = ::writev(handle, bufs, size);
     } while (bytes == -1 && sharpen::GetLastError() == EINTR);
     if (bytes == -1)
     {
@@ -36,7 +35,7 @@ void sharpen::PosixIoWriter::NviExecute(sharpen::FileHandle handle,bool &execute
         this->MoveMark(size);
         return;
     }
-    else if(bytes == 0)
+    else if (bytes == 0)
     {
         for (std::size_t i = 0; i != size; ++i)
         {
@@ -48,7 +47,7 @@ void sharpen::PosixIoWriter::NviExecute(sharpen::FileHandle handle,bool &execute
     }
     std::size_t completed;
     std::size_t lastSize;
-    this->ConvertByteToBufferNumber(bytes,completed,lastSize);
+    this->ConvertByteToBufferNumber(bytes, completed, lastSize);
     for (std::size_t i = 0; i != completed; ++i)
     {
         cbs[i](bufs[i].iov_len);
@@ -58,7 +57,7 @@ void sharpen::PosixIoWriter::NviExecute(sharpen::FileHandle handle,bool &execute
     {
         std::uintptr_t p = reinterpret_cast<std::uintptr_t>(bufs[completed].iov_len);
         p += lastSize;
-        bufs[completed].iov_base = reinterpret_cast<void*>(p);
+        bufs[completed].iov_base = reinterpret_cast<void *>(p);
         bufs[completed].iov_len -= lastSize;
     }
     else

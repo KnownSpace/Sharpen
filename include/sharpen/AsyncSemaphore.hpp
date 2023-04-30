@@ -2,21 +2,23 @@
 #ifndef _SHARPEN_ASYNCSEMAPHORE_HPP
 #define _SHARPEN_ASYNCSEMAPHORE_HPP
 
-#include <vector>
-
 #include "AwaitableFuture.hpp"
-#include <cstdint>
-#include <cstddef>
 #include "IAsyncLockable.hpp"
+#include <cstddef>
+#include <cstdint>
+#include <vector>
 
 namespace sharpen
 {
 
-    class AsyncSemaphore:public sharpen::Noncopyable,public sharpen::Nonmovable,public sharpen::IAsyncLockable
+    class AsyncSemaphore
+        : public sharpen::Noncopyable
+        , public sharpen::Nonmovable
+        , public sharpen::IAsyncLockable
     {
     private:
         using MyFuture = sharpen::AwaitableFuture<void>;
-        using MyFuturePtr = MyFuture*;
+        using MyFuturePtr = MyFuture *;
         using Waiters = std::vector<MyFuturePtr>;
 
         Waiters waiters_;
@@ -24,13 +26,14 @@ namespace sharpen
         std::size_t counter_;
 
         bool NeedWait() const;
+
     public:
         explicit AsyncSemaphore(std::size_t count);
 
         virtual void LockAsync() override;
 
         virtual void Unlock() noexcept override;
-        
+
         void Unlock(std::size_t count) noexcept;
 
         bool TryLock() noexcept;
@@ -42,7 +45,7 @@ namespace sharpen
 
         virtual ~AsyncSemaphore() noexcept = default;
     };
-    
-}
+
+}   // namespace sharpen
 
 #endif

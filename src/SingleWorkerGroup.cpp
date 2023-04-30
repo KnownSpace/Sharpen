@@ -1,15 +1,16 @@
 #include <sharpen/SingleWorkerGroup.hpp>
 
 sharpen::SingleWorkerGroup::SingleWorkerGroup()
-    :SingleWorkerGroup(sharpen::GetLocalScheduler())
-{}
+    : SingleWorkerGroup(sharpen::GetLocalScheduler())
+{
+}
 
 sharpen::SingleWorkerGroup::SingleWorkerGroup(sharpen::IFiberScheduler &scheduler)
-    :token_(true)
-    ,queue_()
-    ,worker_()
+    : token_(true)
+    , queue_()
+    , worker_()
 {
-    scheduler.Launch(&Self::Entry,this);
+    scheduler.Launch(&Self::Entry, this);
 }
 
 sharpen::SingleWorkerGroup::~SingleWorkerGroup() noexcept
@@ -20,7 +21,7 @@ sharpen::SingleWorkerGroup::~SingleWorkerGroup() noexcept
 
 void sharpen::SingleWorkerGroup::Stop() noexcept
 {
-    if(this->token_.exchange(false))
+    if (this->token_.exchange(false))
     {
         this->queue_.Emplace(std::function<void()>{});
     }
@@ -28,7 +29,7 @@ void sharpen::SingleWorkerGroup::Stop() noexcept
 
 void sharpen::SingleWorkerGroup::Join() noexcept
 {
-    if(this->worker_.IsPending())
+    if (this->worker_.IsPending())
     {
         this->worker_.WaitAsync();
     }
@@ -45,7 +46,7 @@ void sharpen::SingleWorkerGroup::Entry() noexcept
     while (this->token_)
     {
         task = std::move(this->queue_.Pop());
-        if(task)
+        if (task)
         {
             sharpen::NonexceptInvoke(task);
         }

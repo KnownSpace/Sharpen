@@ -6,8 +6,8 @@
 
 #ifdef SHARPEN_HAS_IOURING
 
-#include <vector>
 #include <deque>
+#include <vector>
 
 namespace sharpen
 {
@@ -23,19 +23,19 @@ namespace sharpen
         static constexpr std::size_t queueLength_{64};
 
         static constexpr std::size_t reservedCqSize_{32};
-    
+
         sharpen::EventFd eventFd_;
         sharpen::IoUring ring_;
         CompletionQueue compQueue_;
         SubmitQueue subQueue_;
 
         void Submit();
+
     public:
-    
         IoUringQueue();
 
         explicit IoUringQueue(bool blockEventFd);
-    
+
         ~IoUringQueue() noexcept;
 
         sharpen::EventFd &EventFd() noexcept
@@ -50,11 +50,11 @@ namespace sharpen
 
         void SubmitIoRequest(const Sqe &sqe);
 
-        std::size_t GetCompletionStatus(Cqe *cqes,std::size_t size);
+        std::size_t GetCompletionStatus(Cqe *cqes, std::size_t size);
     };
 
     extern bool TestIoUring() noexcept;
-}
+}   // namespace sharpen
 
 #endif
 #endif

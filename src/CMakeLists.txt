@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14.0)
+cmake_minimum_required(VERSION 3.15.0)
 
 include_directories("${SHARPEN_INCLUDE_DIRS}")
 
@@ -73,9 +73,10 @@ add_library(sharpen ${src} ${fcontext_src})
 add_library(sharpen::sharpen ALIAS sharpen)
 
 if(MSVC)
-  target_compile_options(sharpen PRIVATE /W4 /WX)
+    string(REGEX REPLACE "/W[0-4]" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /WX")
 else()
-  target_compile_options(sharpen PRIVATE -Wall -Wextra -pedantic -Werror -Wimplicit-fallthrough)
+    target_compile_options(sharpen PRIVATE -Wall -Wextra -pedantic -Werror -Wimplicit-fallthrough)
 endif()
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)

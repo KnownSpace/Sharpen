@@ -8,7 +8,7 @@ namespace sharpen
     {
         Continue,
         Broken
-    };   
-}
+    };
+}   // namespace sharpen
 
 #endif

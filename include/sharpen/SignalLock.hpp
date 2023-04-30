@@ -2,13 +2,12 @@
 #ifndef _SHARPEN_SIGNALLOCK_HPP
 #define _SHARPEN_SIGNALLOCK_HPP
 
-#include <mutex>
-#include <chrono>
-
-#include "SystemMacro.hpp"
+#include "IntOps.hpp" // IWYU pragma: keep
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
-#include "IntOps.hpp"
+#include "SystemMacro.hpp"
+#include <chrono>
+#include <mutex>
 
 #ifndef SHARPEN_IS_WIN
 #include <signal.h>
@@ -16,7 +15,9 @@
 
 namespace sharpen
 {
-    class SignalLock:public sharpen::Noncopyable,public sharpen::Nonmovable
+    class SignalLock
+        : public sharpen::Noncopyable
+        , public sharpen::Nonmovable
     {
     private:
         using Self = sharpen::SignalLock;
@@ -28,11 +29,10 @@ namespace sharpen
         static void GetBlockableSet(sigset_t &set) noexcept;
 #endif
     public:
-    
         SignalLock() = default;
-    
+
         ~SignalLock() noexcept = default;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
@@ -52,6 +52,6 @@ namespace sharpen
             this->Unlock();
         }
     };
-}
+}   // namespace sharpen
 
 #endif

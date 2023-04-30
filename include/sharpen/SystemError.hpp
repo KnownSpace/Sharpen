@@ -2,10 +2,9 @@
 #ifndef _SHARPEN_SYSTEMERROR_HPP
 #define _SHARPEN_SYSTEMERROR_HPP
 
-#include <type_traits>
-#include <system_error>
-
 #include "SystemMacro.hpp"
+#include <system_error>
+#include <type_traits>
 
 #ifdef SHARPEN_IS_WIN
 #include <Windows.h>
@@ -34,7 +33,7 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorIsConnected = WSAEISCONN;
     constexpr sharpen::ErrorCode ErrorIo = ERROR_IO_DEVICE;
     constexpr sharpen::ErrorCode ErrorToManyFiles = ERROR_TOO_MANY_OPEN_FILES;
-    constexpr sharpen::ErrorCode ErrorConnectionReset = ERROR_NETNAME_DELETED;
+    constexpr sharpen::ErrorCode ErrorConnectionReset = WSAECONNRESET;
     constexpr sharpen::ErrorCode ErrorNameTooLong = ERROR_FILENAME_EXCED_RANGE;
     constexpr sharpen::ErrorCode ErrorOutOfMemory = ERROR_OUTOFMEMORY;
     constexpr sharpen::ErrorCode ErrorFunctionNotImplemented = ERROR_NOT_SUPPORTED;
@@ -95,18 +94,16 @@ namespace sharpen
 
     inline bool IsFatalError(sharpen::ErrorCode code) noexcept
     {
-        return code == sharpen::ErrorIo 
-                || code == sharpen::ErrorOutOfMemory
-                || code == sharpen::ErrorNoSpace
-                || code == sharpen::ErrorNoDevice;
+        return code == sharpen::ErrorIo || code == sharpen::ErrorOutOfMemory ||
+               code == sharpen::ErrorNoSpace || code == sharpen::ErrorNoDevice;
     }
 
     inline sharpen::ErrorCode GetLastError() noexcept
     {
 #ifdef SHARPEN_IS_WIN
         sharpen::ErrorCode err{::GetLastError()};
-        //covert to WSAE* error code
-        switch(err)
+        // covert to WSAE* error code
+        switch (err)
         {
         case ERROR_CONNECTION_REFUSED:
             err = sharpen::ErrorConnectionRefused;
@@ -135,28 +132,28 @@ namespace sharpen
 
     inline void ThrowSystemError(sharpen::ErrorCode err)
     {
-        throw std::system_error(err,std::system_category());
+        throw std::system_error(err, std::system_category());
     }
 
     inline void ThrowLastError()
     {
         sharpen::ThrowSystemError(sharpen::GetLastError());
     }
-    
+
     inline std::exception_ptr MakeSystemErrorPtr(sharpen::ErrorCode err)
     {
-        return std::make_exception_ptr(std::system_error(err,std::system_category()));
+        return std::make_exception_ptr(std::system_error(err, std::system_category()));
     }
 
     inline std::exception_ptr MakeLastErrorPtr()
     {
-       return sharpen::MakeSystemErrorPtr(sharpen::GetLastError());
+        return sharpen::MakeSystemErrorPtr(sharpen::GetLastError());
     }
 
     inline sharpen::ErrorCode GetErrorCode(const std::system_error &exception) noexcept
     {
         return static_cast<sharpen::ErrorCode>(exception.code().value());
     }
-}
+}   // namespace sharpen
 
 #endif

@@ -2,24 +2,25 @@
 #ifndef _SHARPEN_SPINLOCK_HPP
 #define _SHARPEN_SPINLOCK_HPP
 
-#include <atomic>
-
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
+#include <atomic>
 
 namespace sharpen
 {
 
-    class SpinLock:public sharpen::Noncopyable,public sharpen::Nonmovable
+    class SpinLock
+        : public sharpen::Noncopyable
+        , public sharpen::Nonmovable
     {
     private:
-        using Flag = std::atomic_flag;
+        std::atomic_uint64_t acquireCount_;
+        std::atomic_uint64_t releaseCount_;
 
-        Flag flag_;
     public:
-        SpinLock() noexcept = default;
+        SpinLock() noexcept;
 
-        //use by stl
+        // use by stl
         void lock() noexcept;
 
         inline void Lock() noexcept
@@ -27,7 +28,7 @@ namespace sharpen
             this->lock();
         }
 
-        //use by stl
+        // use by stl
         void unlock() noexcept;
 
         inline void Unlock() noexcept
@@ -35,9 +36,9 @@ namespace sharpen
             this->unlock();
         }
 
-        bool TryLock();
+        bool TryLock() noexcept;
 
-        inline bool try_lock()
+        inline bool try_lock() noexcept
         {
             return this->TryLock();
         }
@@ -45,6 +46,6 @@ namespace sharpen
         ~SpinLock() noexcept = default;
     };
 
-} 
+}   // namespace sharpen
 
 #endif

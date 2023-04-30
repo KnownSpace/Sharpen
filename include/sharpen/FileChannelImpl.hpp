@@ -2,8 +2,8 @@
 #ifndef _SHARPEN_FILECHANNELIMPL_HPP
 #define _SHARPEN_FILECHANNELIMPL_HPP
 
-#include "WinFileChannel.hpp"
 #include "PosixFileChannel.hpp"
+#include "WinFileChannel.hpp"
 
 namespace sharpen
 {
@@ -12,6 +12,6 @@ namespace sharpen
 #else
     using FileChannelImpl = sharpen::PosixFileChannel;
 #endif
-}
+}   // namespace sharpen
 
 #endif

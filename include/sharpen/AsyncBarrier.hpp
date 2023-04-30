@@ -2,20 +2,22 @@
 #ifndef _SHARPEN_ASYNCBARRIER_HPP
 #define _SHARPEN_ASYNCBARRIER_HPP
 
-#include <vector>
-#include <cstdint>
-#include <cstddef>
-
 #include "AwaitableFuture.hpp"
 #include "IAsyncBarrier.hpp"
+#include <cstddef>
+#include <cstdint>
+#include <vector>
 
 namespace sharpen
 {
-    class AsyncBarrier:public sharpen::IAsyncBarrier,public sharpen::Noncopyable,public sharpen::Nonmovable
+    class AsyncBarrier
+        : public sharpen::IAsyncBarrier
+        , public sharpen::Noncopyable
+        , public sharpen::Nonmovable
     {
     private:
         using MyFuture = sharpen::AwaitableFuture<std::size_t>;
-        using MyFuturePtr = MyFuture*;
+        using MyFuturePtr = MyFuture *;
         using Waiters = std::vector<MyFuturePtr>;
 
         std::size_t count_;
@@ -25,17 +27,19 @@ namespace sharpen
         sharpen::BarrierModel model_;
 
         void ResetWithoutLock() noexcept;
+
     public:
         AsyncBarrier(std::size_t count)
-            :AsyncBarrier(sharpen::BarrierModel::Flush,count)
-        {}
+            : AsyncBarrier(sharpen::BarrierModel::Flush, count)
+        {
+        }
 
-        AsyncBarrier(sharpen::BarrierModel model,std::size_t count);
+        AsyncBarrier(sharpen::BarrierModel model, std::size_t count);
 
         virtual std::size_t WaitAsync() override;
-        
+
         virtual void Notify(std::size_t count) noexcept override;
-        
+
         virtual void Reset() noexcept override;
 
         virtual ~AsyncBarrier() noexcept = default;
@@ -45,7 +49,7 @@ namespace sharpen
             return this->model_;
         }
     };
-    
-}
+
+}   // namespace sharpen
 
 #endif

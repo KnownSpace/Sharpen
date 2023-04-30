@@ -8,6 +8,7 @@ namespace sharpen
     {
     private:
         using Self = sharpen::Noncopyable;
+
     public:
         Noncopyable() noexcept = default;
 
@@ -21,6 +22,6 @@ namespace sharpen
 
         ~Noncopyable() noexcept = default;
     };
-} 
+}   // namespace sharpen
 
 #endif

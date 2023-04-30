@@ -2,10 +2,10 @@
 #ifndef _SHARPEN_IQUORUMMAP_HPP
 #define _SHARPEN_IQUORUMMAP_HPP
 
-#include <cassert>
-
-#include "IRemoteActorBuilder.hpp"
 #include "Broadcaster.hpp"
+#include "IRemoteActorBuilder.hpp"
+#include <cassert>
+#include <set>
 
 namespace sharpen
 {
@@ -13,33 +13,47 @@ namespace sharpen
     {
     private:
         using Self = sharpen::IQuorum;
-    protected:
 
+    protected:
         virtual sharpen::IRemoteActorBuilder *NviLookup(std::uint64_t actorId) noexcept = 0;
 
-        virtual const sharpen::IRemoteActorBuilder *NviLookup(std::uint64_t actorId) const noexcept = 0;
+        virtual const sharpen::IRemoteActorBuilder *NviLookup(
+            std::uint64_t actorId) const noexcept = 0;
 
-        virtual void NviRegister(std::uint64_t actorId,std::unique_ptr<sharpen::IRemoteActorBuilder> builder) = 0;
+        virtual void NviRegister(std::uint64_t actorId,
+                                 std::unique_ptr<sharpen::IRemoteActorBuilder> builder) = 0;
+
+        virtual std::unique_ptr<sharpen::Broadcaster> NviCreateBroadcaster(
+            std::size_t pipeline) const = 0;
+
     public:
-    
         IQuorum() noexcept = default;
-    
+
         IQuorum(const Self &other) noexcept = default;
-    
+
         IQuorum(Self &&other) noexcept = default;
-    
+
         Self &operator=(const Self &other) noexcept = default;
-    
+
         Self &operator=(Self &&other) noexcept = default;
-    
+
         virtual ~IQuorum() noexcept = default;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
         }
 
-        virtual std::unique_ptr<sharpen::Broadcaster> CreateBroadcaster() const = 0;
+        std::unique_ptr<sharpen::Broadcaster> CreateBroadcaster() const
+        {
+            return this->CreateBroadcaster(1);
+        }
+
+        std::unique_ptr<sharpen::Broadcaster> CreateBroadcaster(std::size_t pipeline) const
+        {
+            assert(pipeline > 0);
+            return this->NviCreateBroadcaster((std::max)(static_cast<std::size_t>(1), pipeline));
+        }
 
         inline sharpen::IRemoteActorBuilder *Lookup(std::uint64_t actorId)
         {
@@ -65,10 +79,11 @@ namespace sharpen
             return *builder;
         }
 
-        inline void Register(std::uint64_t actorId,std::unique_ptr<sharpen::IRemoteActorBuilder> builder)
+        inline void Register(std::uint64_t actorId,
+                             std::unique_ptr<sharpen::IRemoteActorBuilder> builder)
         {
             assert(builder != nullptr);
-            this->NviRegister(actorId,std::move(builder));
+            this->NviRegister(actorId, std::move(builder));
         }
 
         virtual void Remove(std::uint64_t actorId) noexcept = 0;
@@ -77,7 +92,23 @@ namespace sharpen
         {
             return this->NviLookup(actorId) != nullptr;
         }
+
+        virtual std::size_t GetSize() const noexcept = 0;
+
+        inline std::size_t GetMajority() const noexcept
+        {
+            std::size_t size{this->GetSize()};
+            size += 1;
+            return size / 2;
+        }
+
+        inline bool Empty() const noexcept
+        {
+            return !this->GetSize();
+        }
+
+        virtual std::set<std::uint64_t> GenerateActorsSet() const = 0;
     };
-}
+}   // namespace sharpen
 
 #endif

@@ -5,7 +5,7 @@
 void *sharpen::ByteVector::Alloc(std::size_t size) noexcept
 {
     assert(size);
-    return std::malloc(size);
+    return std::calloc(size, sizeof(char));
 }
 
 void sharpen::ByteVector::Free(void *p) noexcept
@@ -15,7 +15,7 @@ void sharpen::ByteVector::Free(void *p) noexcept
 
 std::size_t sharpen::ByteVector::ComputeHeapSize(std::size_t size) noexcept
 {
-    if(size % 2)
+    if (size % 2)
     {
         size += 1;
     }
@@ -23,14 +23,14 @@ std::size_t sharpen::ByteVector::ComputeHeapSize(std::size_t size) noexcept
 }
 
 sharpen::ByteVector::ByteVector(std::size_t size)
-    :size_(0)
-    ,rawVector_()
+    : size_(0)
+    , rawVector_()
 {
-    if(!this->InlineBuffer(size))
+    if (!this->InlineBuffer(size))
     {
         std::size_t cap{this->ComputeHeapSize(size)};
-        char *buf = reinterpret_cast<char*>(this->Alloc(cap));
-        if(!buf)
+        char *buf = reinterpret_cast<char *>(this->Alloc(cap));
+        if (!buf)
         {
             throw std::bad_alloc();
         }
@@ -41,24 +41,24 @@ sharpen::ByteVector::ByteVector(std::size_t size)
 }
 
 sharpen::ByteVector::ByteVector(const Self &other)
-    :size_(0)
-    ,rawVector_()
+    : size_(0)
+    , rawVector_()
 {
-    if(!other.InlineBuffer())
+    if (!other.InlineBuffer())
     {
         std::size_t cap{other.rawVector_.external_.cap_};
-        char *buf{reinterpret_cast<char*>(this->Alloc(cap))};
-        if(!buf)
+        char *buf{reinterpret_cast<char *>(this->Alloc(cap))};
+        if (!buf)
         {
             throw std::bad_alloc();
         }
-        std::memcpy(buf,other.rawVector_.external_.data_,other.size_);
+        std::memcpy(buf, other.rawVector_.external_.data_, other.size_);
         this->rawVector_.external_.data_ = buf;
         this->rawVector_.external_.cap_ = cap;
     }
-    else if(other.size_)
+    else if (other.size_)
     {
-        std::memcpy(this->rawVector_.inline_,other.rawVector_.inline_,other.size_);   
+        std::memcpy(this->rawVector_.inline_, other.rawVector_.inline_, other.size_);
     }
     this->size_ = other.size_;
 }
@@ -66,30 +66,30 @@ sharpen::ByteVector::ByteVector(const Self &other)
 void sharpen::ByteVector::MoveFrom(Self &&other) noexcept
 {
     this->Clear();
-    if(!other.InlineBuffer())
+    if (!other.InlineBuffer())
     {
         this->rawVector_.external_.cap_ = other.rawVector_.external_.cap_;
         this->rawVector_.external_.data_ = other.rawVector_.external_.data_;
         other.rawVector_.external_.data_ = nullptr;
         other.rawVector_.external_.cap_ = 0;
     }
-    else if(other.size_)
+    else if (other.size_)
     {
-        std::memcpy(this->rawVector_.inline_,other.rawVector_.inline_,other.size_);
+        std::memcpy(this->rawVector_.inline_, other.rawVector_.inline_, other.size_);
     }
-    std::swap(this->size_,other.size_);
+    std::swap(this->size_, other.size_);
 }
 
 sharpen::ByteVector::ByteVector(Self &&other) noexcept
-    :size_(0)
-    ,rawVector_()
+    : size_(0)
+    , rawVector_()
 {
     this->MoveFrom(std::move(other));
 }
 
 sharpen::ByteVector &sharpen::ByteVector::operator=(Self &&other) noexcept
 {
-    if(this != std::addressof(other))
+    if (this != std::addressof(other))
     {
         this->MoveFrom(std::move(other));
     }
@@ -98,9 +98,9 @@ sharpen::ByteVector &sharpen::ByteVector::operator=(Self &&other) noexcept
 
 char *sharpen::ByteVector::Data() noexcept
 {
-    if(this->size_)
+    if (this->size_)
     {
-        if(this->InlineBuffer())
+        if (this->InlineBuffer())
         {
             return this->rawVector_.inline_;
         }
@@ -111,9 +111,9 @@ char *sharpen::ByteVector::Data() noexcept
 
 const char *sharpen::ByteVector::Data() const noexcept
 {
-    if(this->size_)
+    if (this->size_)
     {
-        if(this->InlineBuffer())
+        if (this->InlineBuffer())
         {
             return this->rawVector_.inline_;
         }
@@ -124,7 +124,7 @@ const char *sharpen::ByteVector::Data() const noexcept
 
 char &sharpen::ByteVector::Get(std::size_t index)
 {
-    if(index >= this->size_)
+    if (index >= this->size_)
     {
         throw std::out_of_range("index out of range");
     }
@@ -133,7 +133,7 @@ char &sharpen::ByteVector::Get(std::size_t index)
 
 char sharpen::ByteVector::Get(std::size_t index) const
 {
-    if(index >= this->size_)
+    if (index >= this->size_)
     {
         throw std::out_of_range("index out of range");
     }
@@ -142,11 +142,11 @@ char sharpen::ByteVector::Get(std::size_t index) const
 
 void sharpen::ByteVector::Clear() noexcept
 {
-    if(!this->InlineBuffer())
+    if (!this->InlineBuffer())
     {
         char *p{nullptr};
-        std::swap(p,this->rawVector_.external_.data_);
-        if(p)
+        std::swap(p, this->rawVector_.external_.data_);
+        if (p)
         {
             this->Free(p);
             this->rawVector_.external_.cap_ = 0;
@@ -155,31 +155,31 @@ void sharpen::ByteVector::Clear() noexcept
     this->size_ = 0;
 }
 
-void sharpen::ByteVector::Resize(std::size_t newSize,char defalutVal)
+void sharpen::ByteVector::Resize(std::size_t newSize, char defalutVal)
 {
-    if(!this->InlineBuffer(newSize))
+    if (!this->InlineBuffer(newSize))
     {
-        if(this->size_ < newSize)
+        if (this->size_ < newSize)
         {
-            if(this->InlineBuffer() || this->rawVector_.external_.cap_ < newSize)
+            if (this->InlineBuffer() || this->rawVector_.external_.cap_ < newSize)
             {
                 std::size_t newCap{this->ComputeHeapSize(newSize)};
-                if(newCap < sharpen::ByteVector::blobSize_)
+                if (newCap < sharpen::ByteVector::blobSize_)
                 {
-                    std::size_t sz{(std::max)(static_cast<std::size_t>(1),this->size_)};
-                    newCap = (std::max)(sz*2,newCap);
+                    std::size_t sz{(std::max)(static_cast<std::size_t>(1), this->size_)};
+                    newCap = (std::max)(sz * 2, newCap);
                 }
-                char *buf{reinterpret_cast<char*>(this->Alloc(newCap))};
-                if(!buf)
+                char *buf{reinterpret_cast<char *>(this->Alloc(newCap))};
+                if (!buf)
                 {
                     throw std::bad_alloc();
                 }
-                std::memcpy(buf,this->Data(),this->size_);
-                if(!this->InlineBuffer())
+                std::memcpy(buf, this->Data(), this->size_);
+                if (!this->InlineBuffer())
                 {
                     this->Free(this->rawVector_.external_.data_);
                 }
-                for(std::size_t i = this->size_;i != newSize;++i)
+                for (std::size_t i = this->size_; i != newSize; ++i)
                 {
                     buf[i] = defalutVal;
                 }
@@ -188,16 +188,16 @@ void sharpen::ByteVector::Resize(std::size_t newSize,char defalutVal)
             }
         }
     }
-    else if(!this->InlineBuffer())
+    else if (!this->InlineBuffer())
     {
         char *p = this->rawVector_.external_.data_;
-        std::memcpy(this->rawVector_.inline_,p,newSize);
+        std::memcpy(this->rawVector_.inline_, p, newSize);
         this->Free(p);
     }
-    else if(this->size_ < newSize)
+    else if (this->size_ < newSize)
     {
         char *buf{this->rawVector_.inline_};
-        for(std::size_t i = this->size_;i != newSize;++i)
+        for (std::size_t i = this->size_; i != newSize; ++i)
         {
             buf[i] = defalutVal;
         }
@@ -205,46 +205,46 @@ void sharpen::ByteVector::Resize(std::size_t newSize,char defalutVal)
     this->size_ = newSize;
 }
 
-void sharpen::ByteVector::Erase(std::size_t begin,std::size_t end) noexcept
+void sharpen::ByteVector::Erase(std::size_t begin, std::size_t end) noexcept
 {
     assert(begin <= end);
     assert(end <= this->size_);
-    if(begin != end)
+    if (begin != end)
     {
         std::size_t oldSize{this->size_};
         std::size_t size{end - begin};
         assert(oldSize >= size);
         std::size_t newSize{oldSize - size};
-        if(!newSize)
+        if (!newSize)
         {
             return this->Clear();
         }
-        if(!this->InlineBuffer() && this->InlineBuffer(newSize))
+        if (!this->InlineBuffer() && this->InlineBuffer(newSize))
         {
             char *p{this->rawVector_.external_.data_};
-            if(begin)
+            if (begin)
             {
-                std::memcpy(this->rawVector_.inline_,p,begin);
+                std::memcpy(this->rawVector_.inline_, p, begin);
             }
             std::size_t moveSize{oldSize - end};
-            if(moveSize)
+            if (moveSize)
             {
-                std::memcpy(this->rawVector_.inline_ + begin,p + end,moveSize);
+                std::memcpy(this->rawVector_.inline_ + begin, p + end, moveSize);
             }
             this->Free(p);
         }
         else
         {
-            if(end == this->size_)
+            if (end == this->size_)
             {
                 this->Resize(begin);
             }
             else
             {
                 std::size_t moveSize{oldSize - end};
-                if(moveSize)
+                if (moveSize)
                 {
-                    std::memcpy(this->Data() + begin,this->Data() + end,moveSize);
+                    std::memcpy(this->Data() + begin, this->Data() + end, moveSize);
                 }
             }
         }
@@ -260,7 +260,7 @@ sharpen::ByteVector::Iterator sharpen::ByteVector::Begin() noexcept
 sharpen::ByteVector::Iterator sharpen::ByteVector::End() noexcept
 {
     char *p{this->Data()};
-    if(p)
+    if (p)
     {
         return Iterator{p + this->size_};
     }
@@ -275,7 +275,7 @@ sharpen::ByteVector::ConstIterator sharpen::ByteVector::Begin() const noexcept
 sharpen::ByteVector::ConstIterator sharpen::ByteVector::End() const noexcept
 {
     const char *p{this->Data()};
-    if(p)
+    if (p)
     {
         return ConstIterator{p + this->size_};
     }
@@ -285,7 +285,7 @@ sharpen::ByteVector::ConstIterator sharpen::ByteVector::End() const noexcept
 sharpen::ByteVector::ReverseIterator sharpen::ByteVector::ReverseBegin() noexcept
 {
     char *p{this->Data()};
-    if(p)
+    if (p)
     {
         return ReverseIterator{p + this->size_ - 1};
     }
@@ -295,7 +295,7 @@ sharpen::ByteVector::ReverseIterator sharpen::ByteVector::ReverseBegin() noexcep
 sharpen::ByteVector::ReverseIterator sharpen::ByteVector::ReverseEnd() noexcept
 {
     char *p{this->Data()};
-    if(p)
+    if (p)
     {
         return ReverseIterator{p - 1};
     }
@@ -305,7 +305,7 @@ sharpen::ByteVector::ReverseIterator sharpen::ByteVector::ReverseEnd() noexcept
 sharpen::ByteVector::ConstReverseIterator sharpen::ByteVector::ReverseBegin() const noexcept
 {
     const char *p{this->Data()};
-    if(p)
+    if (p)
     {
         return ConstReverseIterator{p + this->size_ - 1};
     }
@@ -315,7 +315,7 @@ sharpen::ByteVector::ConstReverseIterator sharpen::ByteVector::ReverseBegin() co
 sharpen::ByteVector::ConstReverseIterator sharpen::ByteVector::ReverseEnd() const noexcept
 {
     const char *p{this->Data()};
-    if(p)
+    if (p)
     {
         return ConstReverseIterator{p - 1};
     }
@@ -334,13 +334,13 @@ void sharpen::ByteVector::Erase(Iterator where)
     this->Erase(whereInx);
 }
 
-void sharpen::ByteVector::Erase(Iterator begin,Iterator end)
+void sharpen::ByteVector::Erase(Iterator begin, Iterator end)
 {
     assert(CheckPointer(begin.GetPointer()) && CheckPointer(end.GetPointer()));
     char *buf{this->Data()};
     std::size_t beginInx{static_cast<std::size_t>(begin.GetPointer() - buf)};
     std::size_t endInx{static_cast<std::size_t>(end.GetPointer() - buf)};
-    this->Erase(beginInx,endInx);
+    this->Erase(beginInx, endInx);
 }
 
 void sharpen::ByteVector::Erase(ConstIterator where)
@@ -350,11 +350,11 @@ void sharpen::ByteVector::Erase(ConstIterator where)
     this->Erase(whereInx);
 }
 
-void sharpen::ByteVector::Erase(ConstIterator begin,ConstIterator end)
+void sharpen::ByteVector::Erase(ConstIterator begin, ConstIterator end)
 {
     assert(CheckPointer(begin.GetPointer()) && CheckPointer(end.GetPointer()));
     char *buf{this->Data()};
     std::size_t beginInx{static_cast<std::size_t>(begin.GetPointer() - buf)};
     std::size_t endInx{static_cast<std::size_t>(end.GetPointer() - buf)};
-    this->Erase(beginInx,endInx);
+    this->Erase(beginInx, endInx);
 }

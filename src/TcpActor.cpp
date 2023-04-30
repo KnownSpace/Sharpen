@@ -1,67 +1,63 @@
 #include <sharpen/TcpActor.hpp>
 
+#include <sharpen/RemotePosterOpenError.hpp>
+#include <sharpen/SingleWorkerGroup.hpp>
+#include <sharpen/SystemError.hpp>
+#include <sharpen/YieldOps.hpp>
 #include <new>
 
-#include <sharpen/RemotePosterOpenError.hpp>
-#include <sharpen/RemotePosterClosedError.hpp>
-#include <sharpen/SingleWorkerGroup.hpp>
-#include <sharpen/YieldOps.hpp>
-#include <sharpen/SystemError.hpp>
+void sharpen::TcpActor::DoReceive(sharpen::Mail response) noexcept
+{
+    if (!response.Empty())
+    {
+        this->receiver_->Receive(std::move(response), this->GetId());
+    }
+    this->ackCount_.fetch_add(1, std::memory_order::memory_order_acq_rel);
+}
 
 void sharpen::TcpActor::DoPostShared(const sharpen::Mail *mail) noexcept
 {
     assert(mail);
-    sharpen::RemoteActorStatus status{this->status_.exchange(sharpen::RemoteActorStatus::InProgress)};
-    if(status == sharpen::RemoteActorStatus::Closed)
+    this->postCount_.fetch_add(1, std::memory_order::memory_order_acq_rel);
+    if (!this->poster_->Available())
     {
         try
         {
-            this->poster_->Open(this->parserFactory_->Produce());
+            std::unique_ptr<sharpen::IMailParser> parser{this->parserFactory_->Produce()};
+            this->poster_->Open(std::move(parser));
         }
-        catch(const sharpen::RemotePosterOpenError &ignore)
+        catch (const sharpen::RemotePosterOpenError &ignore)
         {
             (void)ignore;
+            this->ackCount_.fetch_add(1, std::memory_order::memory_order_acq_rel);
             return;
         }
-        catch(const std::system_error &error)
+        catch (const std::system_error &error)
         {
             sharpen::ErrorCode errorCode{sharpen::GetErrorCode(error)};
-            if(sharpen::IsFatalError(errorCode))
+            if (sharpen::IsFatalError(errorCode))
             {
                 std::terminate();
             }
             assert(!error.what() && "fail to post mail");
             (void)error;
+            this->ackCount_.fetch_add(1, std::memory_order::memory_order_acq_rel);
             return;
         }
-        catch(const std::exception &ignore)
+        catch (const std::exception &ignore)
         {
             assert(!ignore.what() && "fail to post mail");
             (void)ignore;
+            this->ackCount_.fetch_add(1, std::memory_order::memory_order_acq_rel);
             return;
         }
     }
-    sharpen::Mail response;
-    try
+    if (this->pipelineCb_)
     {
-        response = this->poster_->Post(*mail);
-        sharpen::RemoteActorStatus expectedStatus{sharpen::RemoteActorStatus::InProgress};
-        if(this->status_.compare_exchange_strong(expectedStatus,sharpen::RemoteActorStatus::Opened))
-        {
-            this->receiver_->Receive(std::move(response),this->GetId());
-        }
+        return this->poster_->Post(*mail, this->pipelineCb_);
     }
-    catch(const sharpen::RemotePosterClosedError &ignore)
-    {
-        //cancel by operator
-        (void)ignore;
-        return;
-    }
-    catch(const std::exception &ignore)
-    {
-        assert(!ignore.what() && "fail to post or receive mail");
-        (void)ignore;
-    }
+    sharpen::Mail response{this->poster_->Post(*mail)};
+    this->DoReceive(std::move(response));
 }
 
 void sharpen::TcpActor::DoPost(sharpen::Mail mail) noexcept
@@ -69,40 +65,130 @@ void sharpen::TcpActor::DoPost(sharpen::Mail mail) noexcept
     this->DoPostShared(&mail);
 }
 
-void sharpen::TcpActor::Cancel() noexcept
+sharpen::RemoteActorStatus sharpen::TcpActor::GetStatus() const noexcept
 {
-    sharpen::RemoteActorStatus expectedStatus{sharpen::RemoteActorStatus::InProgress};
-    if(this->status_.compare_exchange_strong(expectedStatus,sharpen::RemoteActorStatus::Closed))
+    std::size_t ackCount{this->ackCount_.load(std::memory_order::memory_order_acquire)};
+    std::size_t postCount{this->postCount_.load(std::memory_order::memory_order_acquire)};
+    if (postCount != ackCount)
     {
-        this->poster_->Close();
+        return sharpen::RemoteActorStatus::InProgress;
+    }
+    if (this->poster_->Available())
+    {
+        return sharpen::RemoteActorStatus::Opened;
+    }
+    return sharpen::RemoteActorStatus::Closed;
+}
+
+std::size_t sharpen::TcpActor::GetPipelineCount() const noexcept
+{
+    std::size_t ackCount{this->ackCount_.load(std::memory_order::memory_order_acquire)};
+    std::size_t postCount{this->postCount_.load(std::memory_order::memory_order_acquire)};
+    assert(postCount >= ackCount);
+    return postCount - ackCount;
+}
+
+void sharpen::TcpActor::Drain() noexcept
+{
+    std::size_t ackCount{this->ackCount_.load(std::memory_order::memory_order_acquire)};
+    std::size_t postCount{this->postCount_.load(std::memory_order::memory_order_acquire)};
+    assert(postCount >= ackCount);
+    if (ackCount != postCount)
+    {
+        if (this->poster_->Available())
+        {
+            this->poster_->Close();
+            // wait for pipeline empty
+            ackCount = this->ackCount_.load(std::memory_order::memory_order_acquire);
+            std::size_t newPostCount{
+                this->postCount_.load(std::memory_order::memory_order_acquire)};
+            postCount = newPostCount;
+            while (ackCount != newPostCount)
+            {
+                sharpen::YieldCycle();
+                ackCount = this->ackCount_.load(std::memory_order::memory_order_acquire);
+                newPostCount = this->postCount_.load(std::memory_order::memory_order_acquire);
+                if (postCount != newPostCount)
+                {
+                    this->poster_->Close();
+                }
+            }
+        }
     }
 }
 
-void sharpen::TcpActor::Post(sharpen::Mail mail)
+bool sharpen::TcpActor::SupportPipeline() const noexcept
 {
-    this->worker_->Submit(&Self::DoPost,this,std::move(mail));
+    return this->pipelineCb_ != nullptr;
 }
 
-void sharpen::TcpActor::PostShared(const sharpen::Mail &mail)
+void sharpen::TcpActor::Cancel() noexcept
 {
-    this->worker_->Submit(&Self::DoPostShared,this,&mail);
+    std::size_t ackCount{this->ackCount_.load(std::memory_order::memory_order_acquire)};
+    std::size_t postCount{this->postCount_.load(std::memory_order::memory_order_acquire)};
+    // if pipeline is not empty
+    if (postCount != ackCount)
+    {
+        // if poster is avaliable
+        if (this->poster_->Available())
+        {
+            // close poster
+            this->poster_->Close();
+            // wait for pipeline empty
+            ackCount = this->ackCount_.load(std::memory_order::memory_order_acquire);
+            postCount = this->postCount_.load(std::memory_order::memory_order_acquire);
+            while (ackCount < postCount)
+            {
+                sharpen::YieldCycle();
+                ackCount = this->ackCount_.load(std::memory_order::memory_order_acquire);
+            }
+        }
+    }
 }
 
-sharpen::TcpActor::TcpActor(sharpen::IFiberScheduler &scheduler,sharpen::IMailReceiver &receiver,std::shared_ptr<sharpen::IMailParserFactory> factory,std::unique_ptr<sharpen::IRemotePoster> poster)
-    :receiver_(&receiver)
-    ,poster_(std::move(poster))
-    ,status_(sharpen::RemoteActorStatus::Closed)
-    ,parserFactory_(std::move(factory))
-    ,worker_(nullptr)
+void sharpen::TcpActor::NviPost(sharpen::Mail mail)
+{
+    this->postWorker_->Submit(&Self::DoPost, this, std::move(mail));
+}
+
+void sharpen::TcpActor::NviPostShared(const sharpen::Mail &mail)
+{
+    this->postWorker_->Submit(&Self::DoPostShared, this, &mail);
+}
+
+sharpen::TcpActor::TcpActor(sharpen::IFiberScheduler &scheduler,
+                            sharpen::IMailReceiver &receiver,
+                            std::shared_ptr<sharpen::IMailParserFactory> factory,
+                            std::unique_ptr<sharpen::IRemotePoster> poster)
+    : Self{scheduler, receiver, std::move(factory), std::move(poster), false}
+{
+}
+
+sharpen::TcpActor::TcpActor(sharpen::IFiberScheduler &scheduler,
+                            sharpen::IMailReceiver &receiver,
+                            std::shared_ptr<sharpen::IMailParserFactory> factory,
+                            std::unique_ptr<sharpen::IRemotePoster> poster,
+                            bool enablePipeline)
+    : receiver_(&receiver)
+    , postCount_(0)
+    , ackCount_(0)
+    , parserFactory_(std::move(factory))
+    , pipelineCb_()
+    , poster_(std::move(poster))
+    , postWorker_(nullptr)
 {
     assert(this->parserFactory_);
     assert(this->poster_);
     sharpen::IWorkerGroup *worker{new (std::nothrow) sharpen::SingleWorkerGroup{scheduler}};
-    if(!worker)
+    if (!worker)
     {
         throw std::bad_alloc{};
     }
-    this->worker_.reset(worker);
+    this->postWorker_.reset(worker);
+    if (enablePipeline && this->poster_->SupportPipeline())
+    {
+        this->pipelineCb_ = std::bind(&Self::DoReceive, this, std::placeholders::_1);
+    }
 }
 
 sharpen::TcpActor::~TcpActor() noexcept

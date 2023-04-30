@@ -5,13 +5,15 @@
 #include <mutex>
 
 #include "EventLoopThread.hpp"
-#include "ISelector.hpp"
-#include "IFiberScheduler.hpp"
 #include "IEventLoopGroup.hpp"
+#include "IFiberScheduler.hpp"
+#include "ISelector.hpp"
 
 namespace sharpen
 {
-    class EventEngine:public sharpen::IFiberScheduler,public sharpen::IEventLoopGroup
+    class EventEngine
+        : public sharpen::IFiberScheduler
+        , public sharpen::IEventLoopGroup
     {
     private:
         using Workers = std::vector<std::unique_ptr<sharpen::EventLoopThread>>;
@@ -25,12 +27,12 @@ namespace sharpen
         Workers workers_;
         std::size_t pos_;
         std::unique_ptr<sharpen::EventLoop> mainLoop_;
-        std::vector<sharpen::EventLoop*> loops_;
+        std::vector<sharpen::EventLoop *> loops_;
 
         static thread_local SwitchCallback switchCb_;
 
         static void ProcessFiber(sharpen::FiberPtr fiber);
-        
+
         EventEngine();
 
         explicit EventEngine(std::size_t workerCount);
@@ -39,15 +41,15 @@ namespace sharpen
 
         void ProcessStartup(std::function<void()> fn);
 
-        void ProcessStartupWithCode(std::function<int()> fn,int *code);
+        void ProcessStartupWithCode(std::function<int()> fn, int *code);
 
         virtual void NviSchedule(sharpen::FiberPtr &&fiber) override;
 
         virtual void NviScheduleSoon(sharpen::FiberPtr &&fiber) override;
 
         static void InitEngine();
+
     public:
-        
         virtual ~EventEngine() noexcept;
 
         static Self &SetupEngine();
@@ -68,20 +70,28 @@ namespace sharpen
 
         virtual void Run() override;
 
-        template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<void,_Fn,_Args...>::Value>>
-        void Startup(_Fn &&fn,_Args &&...args)
+        template<typename _Fn,
+                 typename... _Args,
+                 typename _Check = sharpen::EnableIf<
+                     sharpen::IsCompletedBindableReturned<void, _Fn, _Args...>::Value>>
+        void Startup(_Fn &&fn, _Args &&...args)
         {
-            std::function<void()> task{std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...)};
-            this->Launch(&Self::ProcessStartup,this,task);
+            std::function<void()> task{
+                std::bind(std::forward<_Fn>(fn), std::forward<_Args>(args)...)};
+            this->Launch(&Self::ProcessStartup, this, task);
             this->Run();
         }
 
-        template<typename _Fn,typename ..._Args,typename _Check = sharpen::EnableIf<sharpen::IsCompletedBindableReturned<int,_Fn,_Args...>::Value>>
-        int StartupWithCode(_Fn &&fn,_Args &&...args)
+        template<typename _Fn,
+                 typename... _Args,
+                 typename _Check = sharpen::EnableIf<
+                     sharpen::IsCompletedBindableReturned<int, _Fn, _Args...>::Value>>
+        int StartupWithCode(_Fn &&fn, _Args &&...args)
         {
             int code{0};
-            std::function<int()> task{std::bind(std::forward<_Fn>(fn),std::forward<_Args>(args)...)};
-            this->Launch(&Self::ProcessStartupWithCode,this,task,&code);
+            std::function<int()> task{
+                std::bind(std::forward<_Fn>(fn), std::forward<_Args>(args)...)};
+            this->Launch(&Self::ProcessStartupWithCode, this, task, &code);
             this->Run();
             return code;
         }
@@ -96,6 +106,6 @@ namespace sharpen
             return this->GetLoopCount();
         }
     };
-}
+}   // namespace sharpen
 
 #endif

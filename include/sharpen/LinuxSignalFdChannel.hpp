@@ -2,18 +2,20 @@
 #ifndef _SHARPEN_LINUXSIGNALFDCHANNEL_HPP
 #define _SHARPEN_LINUXSIGNALFDCHANNEL_HPP
 
-#include "SignalFd.hpp"
+#include "SignalFd.hpp" // IWYU pragma: keep
 
 #ifdef SHARPEN_HAS_SIGNALFD
 
-#include <deque>
-
 #include "ISignalChannel.hpp"
 #include "SystemError.hpp"
+#include <deque>
 
 namespace sharpen
 {
-    class LinuxSignalFdChannel:public sharpen::ISignalChannel,public sharpen::Noncopyable,public sharpen::Nonmovable
+    class LinuxSignalFdChannel
+        : public sharpen::ISignalChannel
+        , public sharpen::Noncopyable
+        , public sharpen::Nonmovable
     {
     private:
         using Self = sharpen::LinuxSignalFdChannel;
@@ -31,7 +33,7 @@ namespace sharpen
         bool readable_;
         Tasks tasks_;
 
-        void DoSafeClose(sharpen::ErrorCode err,sharpen::ChannelPtr keepalive) noexcept;
+        void DoSafeClose(sharpen::ErrorCode err, sharpen::ChannelPtr keepalive) noexcept;
 
         void SafeClose(sharpen::FileHandle handle) noexcept;
 
@@ -41,27 +43,30 @@ namespace sharpen
 
         void DoRead();
 
-        void TryRead(char *buf,std::size_t bufSize,Callback cb);
+        void TryRead(char *buf, std::size_t bufSize, Callback cb);
 
-        void RequestRead(char *buf,std::size_t bufSize,sharpen::Future<std::size_t> *future);
+        void RequestRead(char *buf, std::size_t bufSize, sharpen::Future<std::size_t> *future);
 
-        static void CompleteReadCallback(sharpen::EventLoop *loop,sharpen::Future<std::size_t> *future,ssize_t size) noexcept;
+        static void CompleteReadCallback(sharpen::EventLoop *loop,
+                                         sharpen::Future<std::size_t> *future,
+                                         ssize_t size) noexcept;
+
     public:
-    
         LinuxSignalFdChannel(sharpen::FileHandle handle);
-    
+
         virtual ~LinuxSignalFdChannel() noexcept;
-    
+
         inline const Self &Const() const noexcept
         {
             return *this;
         }
 
-        virtual void ReadAsync(sharpen::SignalBuffer &signals,sharpen::Future<std::size_t> &future) override;
+        virtual void ReadAsync(sharpen::SignalBuffer &signals,
+                               sharpen::Future<std::size_t> &future) override;
 
         virtual void OnEvent(sharpen::IoEvent *event) override;
     };
-}
+}   // namespace sharpen
 
 #endif
 #endif

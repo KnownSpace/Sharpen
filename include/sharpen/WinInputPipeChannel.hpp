@@ -7,15 +7,18 @@
 #ifdef SHARPEN_IS_WIN
 
 #include "IInputPipeChannel.hpp"
+#include "IocpSelector.hpp" // IWYU pragma: keep
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
-#include "IocpSelector.hpp"
 
 #define SHARPEN_HAS_WININPUTPIPE
 
 namespace sharpen
 {
-    class WinInputPipeChannel:public sharpen::IInputPipeChannel,public sharpen::Noncopyable,public sharpen::Nonmovable
+    class WinInputPipeChannel
+        : public sharpen::IInputPipeChannel
+        , public sharpen::Noncopyable
+        , public sharpen::Nonmovable
     {
     private:
         using Mybase = sharpen::IInputPipeChannel;
@@ -25,19 +28,24 @@ namespace sharpen
 
         void InitOverlappedStruct(sharpen::IocpOverlappedStruct &event);
 
-        void RequestRead(char *buf,std::size_t bufSize,sharpen::Future<std::size_t> *future);
+        void RequestRead(char *buf, std::size_t bufSize, sharpen::Future<std::size_t> *future);
+
     public:
         explicit WinInputPipeChannel(sharpen::FileHandle handle);
-        
-        virtual ~WinInputPipeChannel();
 
-        virtual void ReadAsync(char *buf,std::size_t bufSize,sharpen::Future<std::size_t> &future) override;
-        
-        virtual void ReadAsync(sharpen::ByteBuffer &buf,std::size_t bufferOffset,sharpen::Future<std::size_t> &future) override;
+        virtual ~WinInputPipeChannel() noexcept;
+
+        virtual void ReadAsync(char *buf,
+                               std::size_t bufSize,
+                               sharpen::Future<std::size_t> &future) override;
+
+        virtual void ReadAsync(sharpen::ByteBuffer &buf,
+                               std::size_t bufferOffset,
+                               sharpen::Future<std::size_t> &future) override;
 
         virtual void OnEvent(sharpen::IoEvent *event) override;
     };
-}
+}   // namespace sharpen
 
 #endif
 #endif
