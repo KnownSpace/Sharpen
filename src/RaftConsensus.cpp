@@ -8,8 +8,6 @@
 #include <cassert>
 #include <utility>
 
-
-
 sharpen::RaftConsensus::RaftConsensus(
     std::uint64_t id,
     std::unique_ptr<sharpen::IStatusMap> statusMap,
@@ -463,93 +461,101 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(
     sharpen::RaftHeartbeatResponse response;
     response.SetStatus(false);
     response.SetTerm(this->GetTerm());
-    // if term > current term
-    if (request.GetTerm() > this->GetTerm())
+    // check leader id
+    std::pair<std::uint64_t, std::uint64_t> leaderRecord{this->leaderRecord_.GetRecord()};
+    if (this->quorum_->Exist(request.GetLeaderId()) && request.GetTerm() >= this->GetTerm() &&
+        (leaderRecord.first != request.GetTerm() || leaderRecord.second == request.GetLeaderId()))
     {
-        std::uint64_t newTerm{request.GetTerm()};
-        this->SetTerm(newTerm);
-        response.SetTerm(newTerm);
-        this->Abdicate();
-    }
-    bool validatedEntries{true};
-    // check request entires
-    for (std::size_t i = 0; i != request.Entries().GetSize(); ++i)
-    {
-        if (!this->logAccesser_->IsRaftEntry(request.Entries().Get(i)))
+        // if term > current term
+        if (request.GetTerm() > this->GetTerm())
         {
-            validatedEntries = false;
-            break;
+            std::uint64_t newTerm{request.GetTerm()};
+            this->SetTerm(newTerm);
+            response.SetTerm(newTerm);
+            this->Abdicate();
         }
-    }
-    std::uint64_t lastIndex{this->GetLastIndex()};
-    std::uint64_t commitIndex{this->GetCommitIndex()};
-    // last index must >= pre index, so we could check logs
-    // commit index must <= pre index, so we make sure this request is validated
-    if (validatedEntries && request.GetTerm() == this->GetTerm() &&
-        lastIndex >= request.GetPreLogIndex() && request.GetPreLogIndex() >= commitIndex &&
-        this->role_ != sharpen::RaftRole::Leader)
-    {
-        // check pre index & pre term
-        sharpen::Optional<std::uint64_t> termOpt{sharpen::EmptyOpt};
-        if (request.GetPreLogIndex())
+
+        bool validatedEntries{true};
+        // check request entires
+        for (std::size_t i = 0; i != request.Entries().GetSize(); ++i)
         {
-            this->LookupTerm(request.GetPreLogIndex());
-        }
-        else
-        {
-            termOpt.Construct(static_cast<std::uint64_t>(0));
-        }
-        // if we find the log
-        // check term of log
-        if (termOpt.Exist() && termOpt.Get() == request.GetPreLogTerm())
-        {
-            // if last index bigger than the last index of leader
-            // truncate the logs, make sure our logs shorter than leader
-            bool check{true};
-            if (lastIndex > request.GetPreLogIndex() + request.Entries().GetSize())
+            if (!this->logAccesser_->IsRaftEntry(request.Entries().Get(i)))
             {
-                this->logs_->TruncateFrom(request.GetPreLogIndex() + 1);
-                check = false;
+                validatedEntries = false;
+                break;
             }
-            // write log to logs and fix conflicts
-            std::size_t offset{0};
-            if (check)
+        }
+        std::uint64_t lastIndex{this->GetLastIndex()};
+        std::uint64_t commitIndex{this->GetCommitIndex()};
+        // last index must >= pre index, so we could check logs
+        // commit index must <= pre index, so we make sure this request is validated
+        if (validatedEntries && request.GetTerm() == this->GetTerm() &&
+            lastIndex >= request.GetPreLogIndex() && request.GetPreLogIndex() >= commitIndex &&
+            this->role_ != sharpen::RaftRole::Leader)
+        {
+            // check pre index & pre term
+            sharpen::Optional<std::uint64_t> termOpt{sharpen::EmptyOpt};
+            if (request.GetPreLogIndex())
             {
-                for (std::size_t i = 0; i != request.Entries().GetSize(); ++i)
+                this->LookupTerm(request.GetPreLogIndex());
+            }
+            else
+            {
+                termOpt.Construct(static_cast<std::uint64_t>(0));
+            }
+            // if we find the log
+            // check term of log
+            if (termOpt.Exist() && termOpt.Get() == request.GetPreLogTerm())
+            {
+                // if last index bigger than the last index of leader
+                // truncate the logs, make sure our logs shorter than leader
+                bool check{true};
+                if (lastIndex > request.GetPreLogIndex() + request.Entries().GetSize())
                 {
-                    std::uint64_t index{request.Entries().GetSize() + 1 + i};
-                    std::uint64_t entryTerm{this->logAccesser_->GetTerm(request.Entries().Get(i))};
-                    if (!this->CheckEntry(index, entryTerm))
-                    {
-                        this->logs_->TruncateFrom(index);
-                        break;
-                    }
-                    offset = i;
+                    this->logs_->TruncateFrom(request.GetPreLogIndex() + 1);
+                    check = false;
                 }
+                // write log to logs and fix conflicts
+                std::size_t offset{0};
+                if (check)
+                {
+                    for (std::size_t i = 0; i != request.Entries().GetSize(); ++i)
+                    {
+                        std::uint64_t index{request.Entries().GetSize() + 1 + i};
+                        std::uint64_t entryTerm{
+                            this->logAccesser_->GetTerm(request.Entries().Get(i))};
+                        if (!this->CheckEntry(index, entryTerm))
+                        {
+                            this->logs_->TruncateFrom(index);
+                            break;
+                        }
+                        offset = i;
+                    }
+                }
+                std::uint64_t matchIndex{request.GetPreLogIndex() + request.Entries().GetSize()};
+                sharpen::LogEntries entires{request.Entries(), offset};
+                this->logs_->WriteBatch(request.GetPreLogIndex() + 1 + offset, std::move(entires));
+                response.SetStatus(true);
+                // set match index to last index
+                response.SetMatchIndex(matchIndex);
+                // flush leader id if we need
+                if (leaderRecord.first < request.GetTerm())
+                {
+                    this->leaderRecord_.Flush(request.GetTerm(), request.GetLeaderId());
+                }
+                // set commit index
+                this->commitIndex_ = request.GetCommitIndex();
             }
-            std::uint64_t matchIndex{request.GetPreLogIndex() + request.Entries().GetSize()};
-            sharpen::LogEntries entires{request.Entries(), offset};
-            this->logs_->WriteBatch(request.GetPreLogIndex() + 1 + offset, std::move(entires));
-            response.SetStatus(true);
-            // set match index to last index
-            response.SetMatchIndex(matchIndex);
-            // flush leader id if we need
-            if (this->leaderRecord_.GetRecord().first < request.GetTerm())
-            {
-                this->leaderRecord_.Flush(request.GetTerm(), request.GetLeaderId());
-            }
-            // set commit index
-            this->commitIndex_ = request.GetCommitIndex();
+            // always advance state machine
+            this->OnStatusChanged();
         }
-        // always advance state machine
-        this->OnStatusChanged();
-    }
-    if (!response.GetStatus())
-    {
-        // if we failure in some way
-        // set match index to current commit index
-        // then leader could relocate conflict point
-        response.SetMatchIndex(commitIndex);
+        if (!response.GetStatus())
+        {
+            // if we failure in some way
+            // set match index to current commit index
+            // then leader could relocate conflict point
+            response.SetMatchIndex(commitIndex);
+        }
     }
     sharpen::Mail mail{this->mailBuilder_->BuildHeartbeatResponse(response)};
     return mail;
@@ -562,39 +568,45 @@ sharpen::Mail sharpen::RaftConsensus::OnSnapshotRequest(const sharpen::RaftSnaps
     sharpen::RaftSnapshotResponse response;
     response.SetTerm(this->GetTerm());
     response.SetStatus(false);
-    // if term > current term
-    if (request.GetTerm() > this->GetTerm())
+    // check leader id
+    std::pair<std::uint64_t, std::uint64_t> leaderRecord{this->leaderRecord_.GetRecord()};
+    if (this->quorum_->Exist(request.GetLeaderId()) && request.GetTerm() >= this->GetTerm() &&
+        (leaderRecord.first != request.GetTerm() || leaderRecord.second == request.GetLeaderId()))
     {
-        // set new term
-        std::uint64_t newTerm{request.GetTerm()};
-        this->SetTerm(newTerm);
-        response.SetTerm(newTerm);
-        this->Abdicate();
-    }
-    // if enable snapshot
-    // request.term is up-to-date
-    // check offset
-    if (this->snapshotController_ && this->GetTerm() == request.GetTerm() &&
-        this->role_ != sharpen::RaftRole::Leader &&
-        this->GetSnapshotInstaller().GetExpectedOffset() == request.GetOffset())
-    {
-        // write snapshot chunk
-        this->GetSnapshotInstaller().Write(request.GetOffset(), request.Data());
-        if (request.IsLast())
+        // if term > current term
+        if (request.GetTerm() > this->GetTerm())
         {
-            // if this chunk is last one
-            // install snapshot(could be asynchronous)
-            this->GetSnapshotInstaller().Install(request.Metadata());
-            // set commit index to last index of snapshot
-            this->commitIndex_ = request.Metadata().GetLastIndex();
+            // set new term
+            std::uint64_t newTerm{request.GetTerm()};
+            this->SetTerm(newTerm);
+            response.SetTerm(newTerm);
+            this->Abdicate();
         }
-        response.SetStatus(true);
-        // flush leader id if we need
-        if (this->leaderRecord_.GetRecord().first < request.GetTerm())
+        // if enable snapshot
+        // request.term is up-to-date
+        // check offset
+        if (this->snapshotController_ && this->GetTerm() == request.GetTerm() &&
+            this->role_ != sharpen::RaftRole::Leader &&
+            this->GetSnapshotInstaller().GetExpectedOffset() == request.GetOffset())
         {
-            this->leaderRecord_.Flush(request.GetTerm(), request.GetLeaderId());
+            // write snapshot chunk
+            this->GetSnapshotInstaller().Write(request.GetOffset(), request.Data());
+            if (request.IsLast())
+            {
+                // if this chunk is last one
+                // install snapshot(could be asynchronous)
+                this->GetSnapshotInstaller().Install(request.Metadata());
+                // set commit index to last index of snapshot
+                this->commitIndex_ = request.Metadata().GetLastIndex();
+            }
+            response.SetStatus(true);
+            // flush leader id if we need
+            if (this->leaderRecord_.GetRecord().first < request.GetTerm())
+            {
+                this->leaderRecord_.Flush(request.GetTerm(), request.GetLeaderId());
+            }
+            this->OnStatusChanged();
         }
-        this->OnStatusChanged();
     }
     sharpen::Mail mail{this->mailBuilder_->BuildSnapshotResponse(response)};
     return mail;
@@ -623,6 +635,20 @@ void sharpen::RaftConsensus::NotifyWaiter(sharpen::Future<void> *waiter) noexcep
     catch (const std::exception &ignore)
     {
         (void)ignore;
+    }
+}
+
+void sharpen::RaftConsensus::ComeToPower()
+{
+    this->role_ = sharpen::RaftRole::Leader;
+    assert(this->heartbeatProvider_ != nullptr);
+    // set commit index
+    this->heartbeatProvider_->SetCommitIndex(this->commitIndex_);
+    this->OnStatusChanged();
+    // draining pipeline
+    if (this->quorumBroadcaster_)
+    {
+        this->quorumBroadcaster_->Drain();
     }
 }
 
@@ -683,8 +709,8 @@ void sharpen::RaftConsensus::OnPrevoteResponse(const sharpen::RaftPrevoteRespons
 void sharpen::RaftConsensus::OnVoteResponse(const sharpen::RaftVoteForResponse &response,
                                             std::uint64_t actorId)
 {
-    (void)actorId;
     assert(this->quorum_);
+    assert(this->quorum_->Exist(actorId));
     if (response.GetTerm() > this->GetTerm())
     {
         assert(!response.GetStatus());
@@ -701,16 +727,7 @@ void sharpen::RaftConsensus::OnVoteResponse(const sharpen::RaftVoteForResponse &
         // check if we could be leader
         if (votes == this->quorum_->GetMajority())
         {
-            this->role_ = sharpen::RaftRole::Leader;
-            assert(this->heartbeatProvider_ != nullptr);
-            // set commit index
-            this->heartbeatProvider_->SetCommitIndex(this->commitIndex_);
-            this->OnStatusChanged();
-            // draining pipeline
-            if (this->quorumBroadcaster_)
-            {
-                this->quorumBroadcaster_->Drain();
-            }
+            this->ComeToPower();
         }
     }
 }
@@ -959,6 +976,7 @@ void sharpen::RaftConsensus::DoAdvance()
     switch (this->role_.load())
     {
     case sharpen::RaftRole::Leader:
+    {
         if (!this->heartbeatProvider_->Empty())
         {
             this->heartbeatProvider_->PrepareTerm(this->GetTerm());
@@ -975,18 +993,38 @@ void sharpen::RaftConsensus::DoAdvance()
             }
         }
         break;
+    }
     case sharpen::RaftRole::Follower:
     {
-        if (!this->option_.EnablePrevote())
+        if (!this->quorum_->Empty())
         {
-            this->RaiseElection();
+            if (!this->option_.EnablePrevote())
+            {
+                this->RaiseElection();
+            }
+            else
+            {
+                this->RaisePrevote();
+            }
         }
         else
         {
-            this->RaisePrevote();
+            // get current term
+            std::uint64_t term{this->GetTerm()};
+            term += 1;
+            this->SetTerm(term);
+            // flush election record
+            this->electionRecord_.Flush(term);
+            // vote to self
+            sharpen::RaftVoteRecord vote{this->GetVote()};
+            vote.SetTerm(term);
+            vote.SetActorId(this->GetId());
+            this->SetVote(vote);
+            // become leader
+            this->ComeToPower();
         }
+        break;
     }
-    break;
     case sharpen::RaftRole::Learner:
         // do nothing
         break;
@@ -1078,7 +1116,6 @@ sharpen::WriteLogsResult sharpen::RaftConsensus::DoWrite(const sharpen::LogBatch
     {
         return sharpen::WriteLogsResult{lastIndex};
     }
-    // TODO:Term
     std::uint64_t beginIndex{lastIndex + 1};
     std::uint64_t term{this->GetTerm()};
     assert(term != 0);

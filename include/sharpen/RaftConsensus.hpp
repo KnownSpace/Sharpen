@@ -75,12 +75,16 @@ namespace sharpen
         // quorum
         std::unique_ptr<sharpen::IQuorum> quorum_;
         // learner quorum
-        //  std::unique_ptr<sharpen::IQuorum> learners_;
+        // std::unique_ptr<sharpen::IQuorum> learners_;
         // quorum broadcaster
         std::unique_ptr<sharpen::Broadcaster> quorumBroadcaster_;
+        // learner quorum broadcaster
         // std::unique_ptr<sharpen::Broadcaster> learnerBroadcaster_;
 
+        // quorum heartbeat provider
         std::unique_ptr<sharpen::RaftHeartbeatMailProvider> heartbeatProvider_;
+        // learner heartbeat provider
+        
 
         // must be last member
         // single fiber worker
@@ -118,19 +122,23 @@ namespace sharpen
 
         const sharpen::IRaftSnapshotInstaller &GetSnapshotInstaller() const noexcept;
 
+        sharpen::Optional<std::uint64_t> LookupTerm(std::uint64_t index) const;
+
         sharpen::Optional<std::uint64_t> LookupTermOfEntry(std::uint64_t index) const noexcept;
 
         bool CheckEntry(std::uint64_t index, std::uint64_t expectedTerm) const noexcept;
 
-        sharpen::Optional<std::uint64_t> LookupTerm(std::uint64_t index) const;
-
         void EnsureBroadcaster();
+
+        void EnsureConfig() const;
 
         void OnStatusChanged();
 
         void RaiseElection();
 
         void RaisePrevote();
+
+        void ComeToPower();
 
         void Abdicate();
 
@@ -164,11 +172,18 @@ namespace sharpen
 
         virtual sharpen::Mail NviGenerateResponse(sharpen::Mail request) override;
 
+        sharpen::Mail DoGenerateResponse(sharpen::Mail request);
+
         virtual void NviReceive(sharpen::Mail mail, std::uint64_t actorId) override;
+
+        void DoReceive(sharpen::Mail mail, std::uint64_t actorId);
 
         virtual void NviConfigurateQuorum(
             std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater)
             override;
+
+        void DoConfigurateQuorum(
+            std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater);
 
         sharpen::WriteLogsResult DoWrite(const sharpen::LogBatch *logs);
 
@@ -176,16 +191,7 @@ namespace sharpen
 
         virtual void NviDropLogsUntil(std::uint64_t index) override;
 
-        void DoConfigurateQuorum(
-            std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater);
-
         void DoAdvance();
-
-        void DoReceive(sharpen::Mail mail, std::uint64_t actorId);
-
-        sharpen::Mail DoGenerateResponse(sharpen::Mail request);
-
-        void EnsureConfig() const;
 
     public:
         constexpr static sharpen::ByteSlice voteKey{"vote", 4};
