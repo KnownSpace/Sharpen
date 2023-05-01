@@ -7,10 +7,8 @@
 #include <cstdint>
 #include <utility>
 
-namespace sharpen
-{
-    class RaftSnapshotResponse : public sharpen::BinarySerializable<sharpen::RaftSnapshotResponse>
-    {
+namespace sharpen {
+    class RaftSnapshotResponse : public sharpen::BinarySerializable<sharpen::RaftSnapshotResponse> {
     private:
         using Self = sharpen::RaftSnapshotResponse;
 
@@ -32,28 +30,23 @@ namespace sharpen
 
         ~RaftSnapshotResponse() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline bool GetStatus() const noexcept
-        {
+        inline bool GetStatus() const noexcept {
             return this->status_;
         }
 
-        inline void SetStatus(bool status) noexcept
-        {
+        inline void SetStatus(bool status) noexcept {
             this->status_ = status;
         }
 
-        inline std::uint64_t GetTerm() const noexcept
-        {
+        inline std::uint64_t GetTerm() const noexcept {
             return this->term_;
         }
 
-        inline void SetTerm(std::uint64_t term) noexcept
-        {
+        inline void SetTerm(std::uint64_t term) noexcept {
             this->term_ = term;
         }
 

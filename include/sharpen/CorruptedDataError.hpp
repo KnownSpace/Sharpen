@@ -4,11 +4,9 @@
 
 #include <exception>
 
-namespace sharpen
-{
+namespace sharpen {
     template<typename _Exception, bool _IsEmpty>
-    class InternalCorruptedDataError : public _Exception
-    {
+    class InternalCorruptedDataError : public _Exception {
     private:
         using Self = sharpen::InternalCorruptedDataError<_Exception, _IsEmpty>;
 
@@ -18,8 +16,7 @@ namespace sharpen
         InternalCorruptedDataError() noexcept = default;
 
         explicit InternalCorruptedDataError(const char *msg)
-            : msg_(msg)
-        {
+            : msg_(msg) {
         }
 
         InternalCorruptedDataError(const Self &other) noexcept = default;
@@ -32,16 +29,14 @@ namespace sharpen
 
         Self &operator=(Self &&other) noexcept = default;
 
-        virtual const char *what() const noexcept override
-        {
+        virtual const char *what() const noexcept override {
             return this->msg_;
         }
     };
 
     // msvc exception
     template<typename _Exception>
-    class InternalCorruptedDataError<_Exception, false> : public _Exception
-    {
+    class InternalCorruptedDataError<_Exception, false> : public _Exception {
     private:
         using Self = sharpen::InternalCorruptedDataError<_Exception, false>;
         using Base = _Exception;
@@ -50,8 +45,7 @@ namespace sharpen
         InternalCorruptedDataError() noexcept = default;
 
         explicit InternalCorruptedDataError(const char *msg) noexcept
-            : Base(msg)
-        {
+            : Base(msg) {
         }
 
         InternalCorruptedDataError(const Self &other) noexcept = default;
@@ -69,8 +63,7 @@ namespace sharpen
     // exception class defination
     class CorruptedDataError
         : public sharpen::InternalCorruptedDataError<std::exception,
-                                                     sizeof(std::exception) == sizeof(void *)>
-    {
+                                                     sizeof(std::exception) == sizeof(void *)> {
     private:
         using Self = sharpen::CorruptedDataError;
         using Base = sharpen::InternalCorruptedDataError<std::exception,
@@ -80,8 +73,7 @@ namespace sharpen
         CorruptedDataError() noexcept = default;
 
         explicit CorruptedDataError(const char *msg) noexcept
-            : Base(msg)
-        {
+            : Base(msg) {
         }
 
         CorruptedDataError(const Self &other) noexcept = default;

@@ -6,8 +6,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace sharpen
-{
+namespace sharpen {
     extern std::uint32_t GetProcessId() noexcept;
 }
 

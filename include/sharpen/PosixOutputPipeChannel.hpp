@@ -15,13 +15,11 @@
 
 #define SHARPEN_HAS_POSIXOUTPUTPIPE
 
-namespace sharpen
-{
+namespace sharpen {
     class PosixOutputPipeChannel
         : public sharpen::IOutputPipeChannel
         , public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using Mybase = sharpen::IOutputPipeChannel;
         using Callback = std::function<void(ssize_t)>;

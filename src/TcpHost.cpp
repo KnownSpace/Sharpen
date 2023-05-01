@@ -3,8 +3,7 @@
 #include <sharpen/YieldOps.hpp>
 
 sharpen::TcpHost::TcpHost(sharpen::ITcpSteamFactory &factory)
-    : Self{sharpen::GetLocalScheduler(), factory}
-{
+    : Self{sharpen::GetLocalScheduler(), factory} {
 }
 
 sharpen::TcpHost::TcpHost(sharpen::IFiberScheduler &scheduler, sharpen::ITcpSteamFactory &factory)
@@ -12,8 +11,7 @@ sharpen::TcpHost::TcpHost(sharpen::IFiberScheduler &scheduler, sharpen::ITcpStea
     , loopGroup_(&factory.GetLoopGroup())
     , token_(false)
     , pipeline_(nullptr)
-    , acceptor_(nullptr)
-{
+    , acceptor_(nullptr) {
     sharpen::NetStreamChannelPtr channel{factory.Produce()};
     // reuse address
     channel->SetReuseAddress(true);
@@ -21,56 +19,44 @@ sharpen::TcpHost::TcpHost(sharpen::IFiberScheduler &scheduler, sharpen::ITcpStea
     this->acceptor_ = std::move(channel);
 }
 
-sharpen::TcpHost::~TcpHost() noexcept
-{
+sharpen::TcpHost::~TcpHost() noexcept {
     this->Stop();
 }
 
-void sharpen::TcpHost::NviSetPipeline(std::unique_ptr<sharpen::IHostPipeline> pipeline) noexcept
-{
+void sharpen::TcpHost::NviSetPipeline(std::unique_ptr<sharpen::IHostPipeline> pipeline) noexcept {
     this->pipeline_ = std::move(pipeline);
 }
 
 void sharpen::TcpHost::ConsumeChannel(sharpen::NetStreamChannelPtr channel,
-                                      std::atomic_size_t *counter) noexcept
-{
+                                      std::atomic_size_t *counter) noexcept {
     this->pipeline_->Consume(std::move(channel));
     *counter -= 1;
 }
 
-void sharpen::TcpHost::Stop() noexcept
-{
+void sharpen::TcpHost::Stop() noexcept {
     this->pipeline_->Stop();
     this->token_ = false;
     this->acceptor_->Close();
 }
 
-void sharpen::TcpHost::Run()
-{
+void sharpen::TcpHost::Run() {
     this->token_ = true;
     assert(this->pipeline_);
     std::atomic_size_t counter{0};
-    while (this->token_)
-    {
+    while (this->token_) {
         sharpen::NetStreamChannelPtr channel{nullptr};
-        try
-        {
+        try {
             channel = this->acceptor_->AcceptAsync();
-        }
-        catch (const std::system_error &error)
-        {
+        } catch (const std::system_error &error) {
             sharpen::ErrorCode code{sharpen::GetErrorCode(error)};
-            if (sharpen::IsFatalError(code))
-            {
+            if (sharpen::IsFatalError(code)) {
                 std::terminate();
             }
-            if (code != sharpen::ErrorConnectionAborted && code != sharpen::ErrorCancel)
-            {
+            if (code != sharpen::ErrorConnectionAborted && code != sharpen::ErrorCancel) {
                 throw;
             }
         }
-        if (this->token_)
-        {
+        if (this->token_) {
             assert(channel);
             channel->Register(*this->loopGroup_);
             counter += 1;
@@ -79,8 +65,7 @@ void sharpen::TcpHost::Run()
         }
     }
     // FIXME:busy loop
-    while (counter != 0)
-    {
+    while (counter != 0) {
         sharpen::YieldCycle();
     }
 }

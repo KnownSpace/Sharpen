@@ -3,17 +3,15 @@
 #define _SHARPEN_DIRECTORY_HPP
 
 #include "Dentry.hpp"
+#include "DirectoryIterator.hpp"
 #include "FileTypeDef.hpp"
 #include "Noncopyable.hpp"
 #include "SystemMacro.hpp"
-#include "DirectoryIterator.hpp"
 #include <string>
 #include <utility>
 
-namespace sharpen
-{
-    class Directory : public sharpen::Noncopyable
-    {
+namespace sharpen {
+    class Directory : public sharpen::Noncopyable {
     private:
         using Self = sharpen::Directory;
         using Iterator = sharpen::DirectoryIterator;
@@ -38,8 +36,7 @@ namespace sharpen
 
         ~Directory() noexcept;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
@@ -49,13 +46,11 @@ namespace sharpen
 
         bool Exist() const;
 
-        inline Iterator Begin() noexcept
-        {
+        inline Iterator Begin() noexcept {
             return sharpen::DirectoryIterator{this};
         }
-        
-        inline Iterator End() noexcept
-        {
+
+        inline Iterator End() noexcept {
             return sharpen::DirectoryIterator{nullptr};
         }
     };

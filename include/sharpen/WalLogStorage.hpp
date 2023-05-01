@@ -8,12 +8,10 @@
 #include "LogEntries.hpp"
 #include <map>
 
-namespace sharpen
-{
+namespace sharpen {
     class WalLogStorage
         : public sharpen::ILogStorage
-        , public sharpen::Noncopyable
-    {
+        , public sharpen::Noncopyable {
     private:
         using Self = sharpen::WalLogStorage;
         using Logs = std::map<std::uint64_t, sharpen::ByteBuffer>;
@@ -65,8 +63,7 @@ namespace sharpen
 
         virtual ~WalLogStorage() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

@@ -9,13 +9,11 @@
 #include "Noncopyable.hpp"
 #include "SystemMacro.hpp"
 
-namespace sharpen
-{
+namespace sharpen {
     class IFileChannel
         : public sharpen::IChannel
         , public sharpen::IAsyncRandomWritable
-        , public sharpen::IAsyncRandomReadable
-    {
+        , public sharpen::IAsyncRandomReadable {
     private:
         using Self = sharpen::IFileChannel;
 
@@ -42,8 +40,7 @@ namespace sharpen
 
         std::size_t ZeroMemoryAsync(std::size_t size, std::uint64_t offset);
 
-        inline std::size_t ZeroMemoryAsync(std::size_t size)
-        {
+        inline std::size_t ZeroMemoryAsync(std::size_t size) {
             return this->ZeroMemoryAsync(size, 0);
         }
 

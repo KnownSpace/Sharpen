@@ -2,28 +2,23 @@
 #include <sharpen/PosixInputPipeChannel.hpp>
 #include <sharpen/WinInputPipeChannel.hpp>
 
-int sharpen::IInputPipeChannel::GetcharAsync()
-{
+int sharpen::IInputPipeChannel::GetcharAsync() {
     char buf;
     this->ReadAsync(&buf, 1);
     return buf;
 }
 
-std::size_t sharpen::IInputPipeChannel::GetsAsync(char *buf, std::size_t size)
-{
+std::size_t sharpen::IInputPipeChannel::GetsAsync(char *buf, std::size_t size) {
     char *begin = buf;
     char *end = begin + size;
-    while (begin != end)
-    {
+    while (begin != end) {
         int c = this->GetcharAsync();
 #ifdef SHARPEN_IS_WIN
-        if (c == '\r')
-        {
+        if (c == '\r') {
             continue;
         }
 #endif
-        if (c == '\n')
-        {
+        if (c == '\n') {
             *begin = '\0';
             return begin - buf;
         }
@@ -32,15 +27,12 @@ std::size_t sharpen::IInputPipeChannel::GetsAsync(char *buf, std::size_t size)
     return begin - buf;
 }
 
-std::string sharpen::IInputPipeChannel::GetsAsync()
-{
+std::string sharpen::IInputPipeChannel::GetsAsync() {
     std::string str;
     int c = this->GetcharAsync();
-    while (c != '\n')
-    {
+    while (c != '\n') {
 #ifdef SHARPEN_IS_WIN
-        if (c == '\r')
-        {
+        if (c == '\r') {
             c = this->GetcharAsync();
             continue;
         }
@@ -51,8 +43,7 @@ std::string sharpen::IInputPipeChannel::GetsAsync()
     return str;
 }
 
-sharpen::InputPipeChannelPtr sharpen::OpenStdinPipe()
-{
+sharpen::InputPipeChannelPtr sharpen::OpenStdinPipe() {
 #ifdef SHARPEN_HAS_WININPUTPIPE
     sharpen::FileHandle handle = ::CreateFileA("CONIN$",
                                                FILE_GENERIC_READ,
@@ -61,8 +52,7 @@ sharpen::InputPipeChannelPtr sharpen::OpenStdinPipe()
                                                OPEN_EXISTING,
                                                FILE_FLAG_OVERLAPPED,
                                                nullptr);
-    if (handle == INVALID_HANDLE_VALUE)
-    {
+    if (handle == INVALID_HANDLE_VALUE) {
         sharpen::ThrowLastError();
     }
     return std::make_shared<sharpen::WinInputPipeChannel>(handle);

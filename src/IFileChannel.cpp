@@ -15,15 +15,13 @@
 sharpen::FileChannelPtr sharpen::OpenFileChannel(const char *filename,
                                                  sharpen::FileAccessMethod access,
                                                  sharpen::FileOpenMethod open,
-                                                 sharpen::FileIoMethod io)
-{
+                                                 sharpen::FileIoMethod io) {
     sharpen::FileChannelPtr channel;
 #ifdef SHARPEN_HAS_WINFILE
     DWORD accessModel = GENERIC_READ;
     DWORD openModel = OPEN_EXISTING;
     // set access and shared
-    switch (access)
-    {
+    switch (access) {
     case sharpen::FileAccessMethod::Write:
         accessModel = GENERIC_WRITE;
         break;
@@ -37,8 +35,7 @@ sharpen::FileChannelPtr sharpen::OpenFileChannel(const char *filename,
         throw std::logic_error("unkonw access method");
     }
     // set open
-    switch (open)
-    {
+    switch (open) {
     case sharpen::FileOpenMethod::Open:
         openModel = OPEN_EXISTING;
         break;
@@ -53,8 +50,7 @@ sharpen::FileChannelPtr sharpen::OpenFileChannel(const char *filename,
     }
     DWORD ioFlag{FILE_FLAG_OVERLAPPED};
     bool syncWrite{false};
-    switch (io)
-    {
+    switch (io) {
     case sharpen::FileIoMethod::Normal:
         break;
     case sharpen::FileIoMethod::Direct:
@@ -75,8 +71,7 @@ sharpen::FileChannelPtr sharpen::OpenFileChannel(const char *filename,
 #ifndef SHARPEN_NOT_WIN_AUTOSYNC
     // FlushFileBuffers() doesn't have an async version
     // use FILE_FLAG_WRITE_THROUGH for get maximum asynchronous performance
-    if (accessModel & GENERIC_WRITE)
-    {
+    if (accessModel & GENERIC_WRITE) {
         ioFlag |= FILE_FLAG_WRITE_THROUGH;
         syncWrite = true;
     }
@@ -90,16 +85,12 @@ sharpen::FileChannelPtr sharpen::OpenFileChannel(const char *filename,
                       openModel,
                       ioFlag,
                       nullptr);
-    if (handle == INVALID_HANDLE_VALUE)
-    {
+    if (handle == INVALID_HANDLE_VALUE) {
         sharpen::ThrowLastError();
     }
-    try
-    {
+    try {
         channel = std::make_shared<sharpen::WinFileChannel>(handle, syncWrite);
-    }
-    catch (const std::exception &rethrow)
-    {
+    } catch (const std::exception &rethrow) {
         sharpen::CloseFileHandle(handle);
         throw;
         (void)rethrow;
@@ -109,8 +100,7 @@ sharpen::FileChannelPtr sharpen::OpenFileChannel(const char *filename,
     std::int32_t openModel{0};
     std::int32_t ioFlag{0};
     // set access and shared
-    switch (access)
-    {
+    switch (access) {
     case sharpen::FileAccessMethod::Read:
         accessModel = O_RDONLY;
         break;
@@ -124,8 +114,7 @@ sharpen::FileChannelPtr sharpen::OpenFileChannel(const char *filename,
         throw std::logic_error("unknow access method");
     }
     // set open
-    switch (open)
-    {
+    switch (open) {
     case sharpen::FileOpenMethod::Open:
         openModel = 0;
         break;
@@ -139,8 +128,7 @@ sharpen::FileChannelPtr sharpen::OpenFileChannel(const char *filename,
         throw std::logic_error("unknow open method");
     }
     bool syncWrite{false};
-    switch (io)
-    {
+    switch (io) {
     case sharpen::FileIoMethod::Normal:
         break;
     case sharpen::FileIoMethod::Direct:
@@ -159,24 +147,18 @@ sharpen::FileChannelPtr sharpen::OpenFileChannel(const char *filename,
         break;
     }
     sharpen::FileHandle handle{-1};
-    while (handle == -1)
-    {
+    while (handle == -1) {
         handle = ::open(filename, accessModel | openModel | O_CLOEXEC | ioFlag, S_IRUSR | S_IWUSR);
-        if (handle == -1)
-        {
+        if (handle == -1) {
             sharpen::ErrorCode error{sharpen::GetLastError()};
-            if (error != EINTR)
-            {
+            if (error != EINTR) {
                 sharpen::ThrowSystemError(error);
             }
         }
     }
-    try
-    {
+    try {
         channel = std::make_shared<sharpen::PosixFileChannel>(handle, syncWrite);
-    }
-    catch (const std::exception &rethrow)
-    {
+    } catch (const std::exception &rethrow) {
         sharpen::CloseFileHandle(handle);
         throw;
         (void)rethrow;
@@ -187,27 +169,23 @@ sharpen::FileChannelPtr sharpen::OpenFileChannel(const char *filename,
 
 sharpen::FileChannelPtr sharpen::OpenFileChannel(const char *filename,
                                                  sharpen::FileAccessMethod access,
-                                                 sharpen::FileOpenMethod open)
-{
+                                                 sharpen::FileOpenMethod open) {
     return sharpen::OpenFileChannel(filename, access, open, sharpen::FileIoMethod::Normal);
 }
 
 void sharpen::IFileChannel::ZeroMemoryAsync(sharpen::Future<std::size_t> &future,
                                             std::size_t size,
-                                            std::uint64_t offset)
-{
+                                            std::uint64_t offset) {
     this->WriteAsync("", 1, offset + size - 1, future);
 }
 
-std::size_t sharpen::IFileChannel::ZeroMemoryAsync(std::size_t size, std::uint64_t offset)
-{
+std::size_t sharpen::IFileChannel::ZeroMemoryAsync(std::size_t size, std::uint64_t offset) {
     sharpen::AwaitableFuture<std::size_t> future;
     this->ZeroMemoryAsync(future, size, offset);
     return future.Await();
 }
 
-void sharpen::IFileChannel::FlushAsync()
-{
+void sharpen::IFileChannel::FlushAsync() {
     sharpen::AwaitableFuture<void> future;
     this->FlushAsync(future);
     return future.Await();

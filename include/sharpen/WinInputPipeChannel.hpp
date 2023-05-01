@@ -7,19 +7,17 @@
 #ifdef SHARPEN_IS_WIN
 
 #include "IInputPipeChannel.hpp"
-#include "IocpSelector.hpp" // IWYU pragma: keep
+#include "IocpSelector.hpp"   // IWYU pragma: keep
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 
 #define SHARPEN_HAS_WININPUTPIPE
 
-namespace sharpen
-{
+namespace sharpen {
     class WinInputPipeChannel
         : public sharpen::IInputPipeChannel
         , public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using Mybase = sharpen::IInputPipeChannel;
         using Self = sharpen::WinInputPipeChannel;

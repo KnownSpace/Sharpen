@@ -9,12 +9,10 @@
 #include "IFiberScheduler.hpp"
 #include "ISelector.hpp"
 
-namespace sharpen
-{
+namespace sharpen {
     class EventEngine
         : public sharpen::IFiberScheduler
-        , public sharpen::IEventLoopGroup
-    {
+        , public sharpen::IEventLoopGroup {
     private:
         using Workers = std::vector<std::unique_ptr<sharpen::EventLoopThread>>;
         using Self = sharpen::EventEngine;
@@ -74,8 +72,7 @@ namespace sharpen
                  typename... _Args,
                  typename _Check = sharpen::EnableIf<
                      sharpen::IsCompletedBindableReturned<void, _Fn, _Args...>::Value>>
-        void Startup(_Fn &&fn, _Args &&...args)
-        {
+        void Startup(_Fn &&fn, _Args &&...args) {
             std::function<void()> task{
                 std::bind(std::forward<_Fn>(fn), std::forward<_Args>(args)...)};
             this->Launch(&Self::ProcessStartup, this, task);
@@ -86,8 +83,7 @@ namespace sharpen
                  typename... _Args,
                  typename _Check = sharpen::EnableIf<
                      sharpen::IsCompletedBindableReturned<int, _Fn, _Args...>::Value>>
-        int StartupWithCode(_Fn &&fn, _Args &&...args)
-        {
+        int StartupWithCode(_Fn &&fn, _Args &&...args) {
             int code{0};
             std::function<int()> task{
                 std::bind(std::forward<_Fn>(fn), std::forward<_Args>(args)...)};
@@ -96,13 +92,11 @@ namespace sharpen
             return code;
         }
 
-        inline virtual std::size_t GetLoopCount() const noexcept override
-        {
+        inline virtual std::size_t GetLoopCount() const noexcept override {
             return this->loops_.size();
         }
 
-        inline virtual std::size_t GetParallelCount() const noexcept override
-        {
+        inline virtual std::size_t GetParallelCount() const noexcept override {
             return this->GetLoopCount();
         }
     };

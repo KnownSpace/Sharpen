@@ -6,10 +6,8 @@
 #include "Mail.hpp"
 #include "TypeTraits.hpp"
 
-namespace sharpen
-{
-    class GenericMail : private sharpen::Mail
-    {
+namespace sharpen {
+    class GenericMail : private sharpen::Mail {
     private:
         using Self = sharpen::GenericMail;
         using Base = sharpen::Mail;
@@ -35,8 +33,7 @@ namespace sharpen
 
         ~GenericMail() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
@@ -44,8 +41,7 @@ namespace sharpen
             typename _T,
             typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value &&
                                                 sizeof(_T) == sharpen::GenericMailHeader::formSize>>
-        inline _T &Form() noexcept
-        {
+        inline _T &Form() noexcept {
             return this->GenericHeader().Form<_T>();
         }
 
@@ -53,8 +49,7 @@ namespace sharpen
             typename _T,
             typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value &&
                                                 sizeof(_T) == sharpen::GenericMailHeader::formSize>>
-        inline const _T &Form() const noexcept
-        {
+        inline const _T &Form() const noexcept {
             return this->GenericHeader().Form<_T>();
         }
 
@@ -62,25 +57,21 @@ namespace sharpen
 
         void SetMagic(std::uint32_t magic) noexcept;
 
-        inline const sharpen::ByteBuffer &ImmutableContent() const noexcept
-        {
+        inline const sharpen::ByteBuffer &ImmutableContent() const noexcept {
             return Base::Content();
         }
 
         void SetContent(sharpen::ByteBuffer content);
 
-        inline Base &AsMail() noexcept
-        {
+        inline Base &AsMail() noexcept {
             return *this;
         }
 
-        inline const Base &AsMail() const noexcept
-        {
+        inline const Base &AsMail() const noexcept {
             return *this;
         }
 
-        inline Base ReleaseMail() noexcept
-        {
+        inline Base ReleaseMail() noexcept {
             return std::move(*this);
         }
     };

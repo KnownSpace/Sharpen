@@ -10,8 +10,7 @@ sharpen::RaftHeartbeatRequest::RaftHeartbeatRequest() noexcept
     , preLogIndex_(0)
     , preLogTerm_(0)
     , entries_()
-    , leaderCommitIndex_(0)
-{
+    , leaderCommitIndex_(0) {
 }
 
 sharpen::RaftHeartbeatRequest::RaftHeartbeatRequest(Self &&other) noexcept
@@ -20,8 +19,7 @@ sharpen::RaftHeartbeatRequest::RaftHeartbeatRequest(Self &&other) noexcept
     , preLogIndex_(other.preLogIndex_)
     , preLogTerm_(other.preLogTerm_)
     , entries_(std::move(other.entries_))
-    , leaderCommitIndex_(other.leaderCommitIndex_)
-{
+    , leaderCommitIndex_(other.leaderCommitIndex_) {
     other.term_ = 0;
     other.leaderId_ = 0;
     other.preLogIndex_ = 0;
@@ -29,10 +27,8 @@ sharpen::RaftHeartbeatRequest::RaftHeartbeatRequest(Self &&other) noexcept
     other.leaderCommitIndex_ = 0;
 }
 
-sharpen::RaftHeartbeatRequest &sharpen::RaftHeartbeatRequest::operator=(Self &&other) noexcept
-{
-    if (this != std::addressof(other))
-    {
+sharpen::RaftHeartbeatRequest &sharpen::RaftHeartbeatRequest::operator=(Self &&other) noexcept {
+    if (this != std::addressof(other)) {
         this->term_ = other.term_;
         this->leaderId_ = other.leaderId_;
         this->preLogIndex_ = other.preLogIndex_;
@@ -48,8 +44,7 @@ sharpen::RaftHeartbeatRequest &sharpen::RaftHeartbeatRequest::operator=(Self &&o
     return *this;
 }
 
-std::size_t sharpen::RaftHeartbeatRequest::ComputeSize() const noexcept
-{
+std::size_t sharpen::RaftHeartbeatRequest::ComputeSize() const noexcept {
     std::size_t size{0};
     sharpen::Varuint64 builder{this->term_};
     size += builder.ComputeSize();
@@ -65,43 +60,36 @@ std::size_t sharpen::RaftHeartbeatRequest::ComputeSize() const noexcept
     return size;
 }
 
-std::size_t sharpen::RaftHeartbeatRequest::LoadFrom(const char *data, std::size_t size)
-{
-    if (size < 6)
-    {
+std::size_t sharpen::RaftHeartbeatRequest::LoadFrom(const char *data, std::size_t size) {
+    if (size < 6) {
         throw sharpen::CorruptedDataError{"corrupted heartbeat request"};
     }
     sharpen::Varuint64 builder{0};
     std::size_t offset{0};
     offset += sharpen::BinarySerializator::LoadFrom(builder, data + offset, size - offset);
     this->term_ = builder.Get();
-    if (size < offset + 5)
-    {
+    if (size < offset + 5) {
         throw sharpen::CorruptedDataError{"corrupted heartbeat request"};
     }
     offset += sharpen::BinarySerializator::LoadFrom(builder, data + offset, size - offset);
     this->leaderId_ = builder.Get();
-    if (size < offset + 4)
-    {
+    if (size < offset + 4) {
         throw sharpen::CorruptedDataError{"corrupted heartbeat request"};
     }
     offset += sharpen::BinarySerializator::LoadFrom(builder, data + offset, size - offset);
     this->preLogIndex_ = builder.Get();
-    if (size < offset + 3)
-    {
+    if (size < offset + 3) {
         throw sharpen::CorruptedDataError{"corrupted heartbeat request"};
     }
     offset += sharpen::BinarySerializator::LoadFrom(builder, data + offset, size - offset);
     this->preLogTerm_ = builder.Get();
     sharpen::LogEntries entries;
-    if (size < offset + 2)
-    {
+    if (size < offset + 2) {
         throw sharpen::CorruptedDataError{"corrupted heartbeat request"};
     }
     offset += sharpen::BinarySerializator::LoadFrom(entries, data + offset, size - offset);
     this->entries_ = std::move(entries);
-    if (size < offset + 1)
-    {
+    if (size < offset + 1) {
         throw sharpen::CorruptedDataError{"corrupted heartbeat request"};
     }
     offset += sharpen::BinarySerializator::LoadFrom(builder, data + offset, size - offset);
@@ -109,8 +97,7 @@ std::size_t sharpen::RaftHeartbeatRequest::LoadFrom(const char *data, std::size_
     return offset;
 }
 
-std::size_t sharpen::RaftHeartbeatRequest::UnsafeStoreTo(char *data) const noexcept
-{
+std::size_t sharpen::RaftHeartbeatRequest::UnsafeStoreTo(char *data) const noexcept {
     std::size_t offset{0};
     sharpen::Varuint64 builder{this->term_};
     offset += sharpen::BinarySerializator::UnsafeStoreTo(builder, data + offset);

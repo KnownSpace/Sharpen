@@ -6,31 +6,26 @@
 #include <tuple>
 #include <type_traits>
 
-namespace sharpen
-{
+namespace sharpen {
     template<typename _T>
-    struct AwaitPackageHelper
-    {
+    struct AwaitPackageHelper {
         using Type = _T;
 
         static Type Decltype();
     };
 
     template<>
-    struct AwaitPackageHelper<void>
-    {
+    struct AwaitPackageHelper<void> {
         using Type = decltype(std::ignore);
 
         static Type Decltype();
     };
 
     template<typename _Tuple, size_t _Index, typename _MainFuture, typename... _Futures>
-    struct AwaitSetTupleHelper
-    {
+    struct AwaitSetTupleHelper {
     private:
     public:
-        static void AwaitAndSet(_Tuple &tuple, _MainFuture &mainFuture, _Futures &...futures)
-        {
+        static void AwaitAndSet(_Tuple &tuple, _MainFuture &mainFuture, _Futures &...futures) {
             // do sth
             std::get<_Index>(tuple) = mainFuture.Await();
             // continue
@@ -40,25 +35,21 @@ namespace sharpen
     };
 
     template<typename _Tuple, size_t _Index, typename _MainFuture>
-    struct AwaitSetTupleHelper<_Tuple, _Index, _MainFuture>
-    {
+    struct AwaitSetTupleHelper<_Tuple, _Index, _MainFuture> {
     private:
     public:
-        static void AwaitAndSet(_Tuple &tuple, _MainFuture &mainFuture)
-        {
+        static void AwaitAndSet(_Tuple &tuple, _MainFuture &mainFuture) {
             std::get<_Index>(tuple) = mainFuture.Await();
         }
     };
 
     template<typename _Tuple, size_t _Index, typename... _Futures>
-    struct AwaitSetTupleHelper<_Tuple, _Index, sharpen::AwaitableFuture<void>, _Futures...>
-    {
+    struct AwaitSetTupleHelper<_Tuple, _Index, sharpen::AwaitableFuture<void>, _Futures...> {
     private:
     public:
         static void AwaitAndSet(_Tuple &tuple,
                                 sharpen::AwaitableFuture<void> &mainFuture,
-                                _Futures &...futures)
-        {
+                                _Futures &...futures) {
             mainFuture.Await();
             // continue
             sharpen::AwaitSetTupleHelper<_Tuple, _Index + 1, _Futures...>::AwaitAndSet(tuple,
@@ -67,12 +58,10 @@ namespace sharpen
     };
 
     template<typename _Tuple, size_t _Index>
-    struct AwaitSetTupleHelper<_Tuple, _Index, sharpen::AwaitableFuture<void>>
-    {
+    struct AwaitSetTupleHelper<_Tuple, _Index, sharpen::AwaitableFuture<void>> {
     private:
     public:
-        static void AwaitAndSet(_Tuple &tuple, sharpen::AwaitableFuture<void> &mainFuture)
-        {
+        static void AwaitAndSet(_Tuple &tuple, sharpen::AwaitableFuture<void> &mainFuture) {
             (void)tuple;
             (void)mainFuture;
             mainFuture.Await();
@@ -82,8 +71,7 @@ namespace sharpen
     template<typename... _T,
              typename _Ret =
                  typename std::tuple<decltype(sharpen::AwaitPackageHelper<_T>::Decltype())...>>
-    inline auto AwaitAll(sharpen::AwaitableFuture<_T> &...futures) -> _Ret
-    {
+    inline auto AwaitAll(sharpen::AwaitableFuture<_T> &...futures) -> _Ret {
         _Ret tuple;
         sharpen::AwaitSetTupleHelper<_Ret, 0, sharpen::AwaitableFuture<_T>...>::AwaitAndSet(
             tuple, futures...);
@@ -91,18 +79,15 @@ namespace sharpen
     }
 
     template<typename _MainFuture, typename... _Futures>
-    struct AwaitAnyHelper
-    {
+    struct AwaitAnyHelper {
     private:
         using Self = sharpen::AwaitAnyHelper<_MainFuture, _Futures...>;
 
         static void Callback(std::shared_ptr<std::atomic_flag> token,
                              sharpen::Future<void> *future,
-                             _MainFuture &)
-        {
+                             _MainFuture &) {
             bool t = token->test_and_set();
-            if (!t)
-            {
+            if (!t) {
                 future->Complete();
             }
         }
@@ -111,14 +96,12 @@ namespace sharpen
         static void SetCallback(std::shared_ptr<std::atomic_flag> token,
                                 sharpen::AwaitableFuture<void> &future,
                                 _MainFuture &mainFuture,
-                                _Futures &...futures)
-        {
+                                _Futures &...futures) {
             using FnPtr =
                 void (*)(std::shared_ptr<std::atomic_flag>, sharpen::Future<void> *, _MainFuture &);
             mainFuture.SetCallback(std::bind(
                 static_cast<FnPtr>(&Self::Callback), token, &future, std::placeholders::_1));
-            if (future.IsPending())
-            {
+            if (future.IsPending()) {
                 sharpen::AwaitAnyHelper<_Futures...>::SetCallback(
                     std::move(token), future, futures...);
             }
@@ -126,18 +109,15 @@ namespace sharpen
     };
 
     template<typename _Future>
-    struct AwaitAnyHelper<_Future>
-    {
+    struct AwaitAnyHelper<_Future> {
     private:
         using Self = sharpen::AwaitAnyHelper<_Future>;
 
         static void Callback(std::shared_ptr<std::atomic_flag> token,
                              sharpen::Future<void> *future,
-                             _Future &)
-        {
+                             _Future &) {
             bool t = token->test_and_set();
-            if (!t)
-            {
+            if (!t) {
                 future->Complete();
             }
         }
@@ -145,8 +125,7 @@ namespace sharpen
     public:
         static void SetCallback(std::shared_ptr<std::atomic_flag> token,
                                 sharpen::AwaitableFuture<void> &future,
-                                _Future &last)
-        {
+                                _Future &last) {
             using FnPtr =
                 void (*)(std::shared_ptr<std::atomic_flag>, sharpen::Future<void> *, _Future &);
             last.SetCallback(std::bind(static_cast<FnPtr>(&Self::Callback),
@@ -158,8 +137,7 @@ namespace sharpen
 
 
     template<typename... _T>
-    inline void AwaitAny(sharpen::Future<_T> &...futures)
-    {
+    inline void AwaitAny(sharpen::Future<_T> &...futures) {
         std::shared_ptr<std::atomic_flag> flag = std::make_shared<std::atomic_flag>();
         sharpen::AwaitableFuture<void> future;
         sharpen::AwaitAnyHelper<sharpen::Future<_T>...>::SetCallback(flag, future, futures...);

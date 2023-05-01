@@ -7,27 +7,23 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace sharpen
-{
+namespace sharpen {
     extern bool AccessFile(const char *name, sharpen::FileAccessMethod model);
 
-    inline bool AccessDirectory(const char *name,sharpen::FileAccessMethod model)
-    {
-        return sharpen::AccessFile(name,model);
+    inline bool AccessDirectory(const char *name, sharpen::FileAccessMethod model) {
+        return sharpen::AccessFile(name, model);
     }
 
     extern bool ExistFile(const char *name);
 
-    inline bool ExistDirectory(const char *name)
-    {
+    inline bool ExistDirectory(const char *name) {
         return sharpen::ExistFile(name);
     }
 
     extern void RenameFile(const char *oldName, const char *newName);
 
-    inline void RenameDirectory(const char *oldName,const char *newName)
-    {
-        return sharpen::RenameFile(oldName,newName);
+    inline void RenameDirectory(const char *oldName, const char *newName) {
+        return sharpen::RenameFile(oldName, newName);
     }
 
     extern void RemoveFile(const char *name);
@@ -36,8 +32,7 @@ namespace sharpen
 
     extern void SetCurrentWorkDirectory(const char *path);
 
-    constexpr inline std::size_t GetMaxPath() noexcept
-    {
+    constexpr inline std::size_t GetMaxPath() noexcept {
 #ifdef SHARPEN_IS_WIN
         return 260;   // MAX_PATH
 #else
@@ -52,8 +47,7 @@ namespace sharpen
                             char *resolvedPath,
                             std::size_t resolvedPathSize);
 
-    constexpr inline bool IsPathSeparator(char c) noexcept
-    {
+    constexpr inline bool IsPathSeparator(char c) noexcept {
 #ifdef SHARPEN_IS_WIN
         return c == '\\' || c == '/';
 #else

@@ -2,11 +2,11 @@
 
 #ifdef SHARPEN_IS_NIX
 
-void sharpen::PosixIoReader::NviExecute(sharpen::FileHandle handle, bool &executed, bool &blocking)
-{
+void sharpen::PosixIoReader::NviExecute(sharpen::FileHandle handle,
+                                        bool &executed,
+                                        bool &blocking) {
     std::size_t size = this->GetRemainingSize();
-    if (size == 0)
-    {
+    if (size == 0) {
         blocking = false;
         executed = false;
         return;
@@ -19,29 +19,24 @@ void sharpen::PosixIoReader::NviExecute(sharpen::FileHandle handle, bool &execut
     do {
         bytes = ::readv(handle, bufs, size);
     } while (bytes == -1 && sharpen::GetLastError() == EINTR);
-    if (bytes == -1)
-    {
+    if (bytes == -1) {
         // blocking
         sharpen::ErrorCode err = sharpen::GetLastError();
-        if (sharpen::IPosixIoOperator::IsBlockingError(err))
-        {
+        if (sharpen::IPosixIoOperator::IsBlockingError(err)) {
             blocking = true;
             return;
         }
         // error
-        for (std::size_t i = 0; i != size; ++i)
-        {
+        for (std::size_t i = 0; i != size; ++i) {
             cbs[i](-1);
         }
         size += this->GetMark();
         this->MoveMark(size);
         return;
     }
-    if (bytes == 0)
-    {
+    if (bytes == 0) {
         // disconnect
-        for (std::size_t i = 0; i != size; ++i)
-        {
+        for (std::size_t i = 0; i != size; ++i) {
             cbs[i](0);
         }
         size += this->GetMark();
@@ -53,8 +48,7 @@ void sharpen::PosixIoReader::NviExecute(sharpen::FileHandle handle, bool &execut
     std::size_t lastSize;
     this->ConvertByteToBufferNumber(bytes, completed, lastSize);
     // handle callback
-    for (std::size_t i = 0; i != completed; ++i)
-    {
+    for (std::size_t i = 0; i != completed; ++i) {
         cbs[i](bufs[i].iov_len);
     }
     // last buffer
@@ -64,8 +58,7 @@ void sharpen::PosixIoReader::NviExecute(sharpen::FileHandle handle, bool &execut
     completed += this->GetMark();
     this->MoveMark(completed);
     size = this->GetRemainingSize();
-    if (lastBufSize != lastSize || size != 0)
-    {
+    if (lastBufSize != lastSize || size != 0) {
         blocking = true;
     }
 }

@@ -7,10 +7,8 @@
 #include <cstdint>
 #include <utility>
 
-namespace sharpen
-{
-    class RaftSnapshotMetadata : public sharpen::BinarySerializable<sharpen::RaftSnapshotMetadata>
-    {
+namespace sharpen {
+    class RaftSnapshotMetadata : public sharpen::BinarySerializable<sharpen::RaftSnapshotMetadata> {
     private:
         using Self = sharpen::RaftSnapshotMetadata;
 
@@ -32,25 +30,21 @@ namespace sharpen
 
         ~RaftSnapshotMetadata() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline std::uint64_t GetLastIndex() const noexcept
-        {
+        inline std::uint64_t GetLastIndex() const noexcept {
             return this->lastIndex_;
         }
 
-        inline std::uint64_t GetLastTerm() const noexcept
-        {
+        inline std::uint64_t GetLastTerm() const noexcept {
             return this->lastTerm_;
         }
 
         void SetLastIndex(std::uint64_t index) noexcept;
 
-        inline void SetLastTerm(std::uint64_t term) noexcept
-        {
+        inline void SetLastTerm(std::uint64_t term) noexcept {
             this->lastTerm_ = term;
         }
 

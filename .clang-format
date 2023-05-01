@@ -83,11 +83,11 @@ BraceWrapping:
   # class定义后面
   AfterClass: true
   # 控制语句后面
-  AfterControlStatement: true
+  AfterControlStatement: false
   # enum定义后面
   AfterEnum: true
   # 函数定义后面
-  AfterFunction: true
+  AfterFunction: false
   # 命名空间定义后面
   AfterNamespace: true
   # ObjC定义后面
@@ -97,11 +97,11 @@ BraceWrapping:
   # union定义后面
   AfterUnion: true
   # extern 导出块后面
-  AfterExternBlock: true
+  AfterExternBlock: false
   # catch之前
-  BeforeCatch: true
+  BeforeCatch: false
   # else之前
-  BeforeElse: true
+  BeforeElse: false
   # 缩进大括号(整个大括号框起来的部分都缩进)
   IndentBraces: true
   # 空函数的大括号是否可以在一行
@@ -120,7 +120,7 @@ BreakBeforeBinaryOperators: None
 #   注：这里认为语句块也属于函数
  
 # 大括号的换行规则
-BreakBeforeBraces: Allman
+BreakBeforeBraces: Attach
  
 # 三元运算操作符换行位置（?和: 在新行还是尾部）
 BreakBeforeTernaryOperators: true

@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_EVENTFD_HPP
 #define _SHARPEN_EVENTFD_HPP
 
-#include "FileTypeDef.hpp" // IWYU pragma: keep
+#include "FileTypeDef.hpp"   // IWYU pragma: keep
 
 // event fd only supported by linux
 #ifdef SHARPEN_IS_LINUX
@@ -13,10 +13,8 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace sharpen
-{
-    class EventFd : public sharpen::Noncopyable
-    {
+namespace sharpen {
+    class EventFd : public sharpen::Noncopyable {
     private:
         using EventFdValue = std::uint64_t;
         using Self = sharpen::EventFd;

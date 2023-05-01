@@ -13,16 +13,14 @@
 #include <mutex>
 #include <vector>
 
-namespace sharpen
-{
+namespace sharpen {
     class IChannel;
 
     class IEventLoopGroup;
 
     class EventLoop
         : public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using Task = std::function<void()>;
         using Lock = sharpen::SpinLock;
@@ -88,20 +86,17 @@ namespace sharpen
         bool IsWaiting() const noexcept;
 
         // get selector pointer
-        inline ISelector *GetSelectorPtr() const noexcept
-        {
+        inline ISelector *GetSelectorPtr() const noexcept {
             return this->selector_.get();
         }
 
         std::size_t GetWorkCount() const noexcept;
 
-        inline sharpen::IEventLoopGroup *GetLoopGroup() const noexcept
-        {
+        inline sharpen::IEventLoopGroup *GetLoopGroup() const noexcept {
             return this->loopGroup_;
         }
 
-        inline void SetLoopGroup(sharpen::IEventLoopGroup *loopGroup) noexcept
-        {
+        inline void SetLoopGroup(sharpen::IEventLoopGroup *loopGroup) noexcept {
             this->loopGroup_ = loopGroup;
         }
 
@@ -110,8 +105,7 @@ namespace sharpen
 
     extern sharpen::IEventLoopGroup *GetLocalLoopGroupPtr() noexcept;
 
-    inline sharpen::IEventLoopGroup &GetLocalLoopGroup() noexcept
-    {
+    inline sharpen::IEventLoopGroup &GetLocalLoopGroup() noexcept {
         sharpen::IEventLoopGroup *loopGroup{sharpen::GetLocalLoopGroupPtr()};
         assert(loopGroup != nullptr);
         return *loopGroup;

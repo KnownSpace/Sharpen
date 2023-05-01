@@ -5,73 +5,55 @@
 #include "Future.hpp"
 #include <cassert>
 
-namespace sharpen
-{
+namespace sharpen {
     template<typename _T>
-    struct FutureCompletor
-    {
+    struct FutureCompletor {
         template<typename _Fn,
                  typename... _Args,
                  typename _Check = decltype(_T{std::declval<_Fn>()(std::declval<_Args>()...)})>
-        static void Complete(sharpen::Future<_T> &future, _Fn &&fn, _Args &&...args)
-        {
-            try
-            {
+        static void Complete(sharpen::Future<_T> &future, _Fn &&fn, _Args &&...args) {
+            try {
                 _T &&result{fn(std::forward<_Args>(args)...)};
                 future.Complete(std::move(result));
-            }
-            catch (const std::exception &)
-            {
+            } catch (const std::exception &) {
                 future.Fail(std::current_exception());
             }
         }
 
-        inline static void CompleteForBind(sharpen::Future<_T> *future, std::function<_T()> fn)
-        {
+        inline static void CompleteForBind(sharpen::Future<_T> *future, std::function<_T()> fn) {
             assert(future != nullptr);
             assert(fn);
-            try
-            {
+            try {
                 _T &&result{fn()};
                 future->Complete(std::move(result));
-            }
-            catch (const std::exception &)
-            {
+            } catch (const std::exception &) {
                 future->Fail(std::current_exception());
             }
         }
     };
 
     template<>
-    struct FutureCompletor<void>
-    {
+    struct FutureCompletor<void> {
         template<typename _Fn,
                  typename... _Args,
                  typename _Check = decltype(std::declval<_Fn>()(std::declval<_Args>()...))>
-        static void Complete(sharpen::Future<void> &future, _Fn &&fn, _Args &&...args)
-        {
-            try
-            {
+        static void Complete(sharpen::Future<void> &future, _Fn &&fn, _Args &&...args) {
+            try {
                 fn(std::forward<_Args>(args)...);
                 future.Complete();
-            }
-            catch (const std::exception &)
-            {
+            } catch (const std::exception &) {
                 future.Fail(std::current_exception());
             }
         }
 
-        inline static void CompleteForBind(sharpen::Future<void> *future, std::function<void()> fn)
-        {
+        inline static void CompleteForBind(sharpen::Future<void> *future,
+                                           std::function<void()> fn) {
             assert(future != nullptr);
             assert(fn);
-            try
-            {
+            try {
                 fn();
                 future->Complete();
-            }
-            catch (const std::exception &)
-            {
+            } catch (const std::exception &) {
                 future->Fail(std::current_exception());
             }
         }

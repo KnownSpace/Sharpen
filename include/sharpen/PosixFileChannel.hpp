@@ -15,12 +15,10 @@
 #include "IoUringStruct.hpp"
 #endif
 
-namespace sharpen
-{
+namespace sharpen {
     class PosixFileChannel
         : public sharpen::IFileChannel
-        , public sharpen::Noncopyable
-    {
+        , public sharpen::Noncopyable {
     private:
         using MyBase = sharpen::IFileChannel;
         using Self = sharpen::PosixFileChannel;

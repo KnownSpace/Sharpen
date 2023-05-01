@@ -5,8 +5,7 @@
 #include <sharpen/IocpSelector.hpp>
 #include <sharpen/SelectorOps.hpp>
 
-sharpen::SelectorPtr sharpen::MakeDefaultSelector()
-{
+sharpen::SelectorPtr sharpen::MakeDefaultSelector() {
 #ifdef SHARPEN_HAS_IOCP
     // use iocp
     return std::make_shared<sharpen::IocpSelector>();

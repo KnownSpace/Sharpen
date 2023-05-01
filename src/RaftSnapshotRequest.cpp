@@ -6,8 +6,7 @@ sharpen::RaftSnapshotRequest::RaftSnapshotRequest() noexcept
     , offset_(0)
     , last_(false)
     , metadata_(0, 0)
-    , data_()
-{
+    , data_() {
 }
 
 sharpen::RaftSnapshotRequest::RaftSnapshotRequest(Self &&other) noexcept
@@ -16,18 +15,15 @@ sharpen::RaftSnapshotRequest::RaftSnapshotRequest(Self &&other) noexcept
     , offset_(other.offset_)
     , last_(other.last_)
     , metadata_(std::move(other.metadata_))
-    , data_(std::move(other.data_))
-{
+    , data_(std::move(other.data_)) {
     other.term_ = 0;
     other.leaderId_ = 0;
     other.offset_ = 0;
     other.last_ = false;
 }
 
-sharpen::RaftSnapshotRequest &sharpen::RaftSnapshotRequest::operator=(Self &&other) noexcept
-{
-    if (this != std::addressof(other))
-    {
+sharpen::RaftSnapshotRequest &sharpen::RaftSnapshotRequest::operator=(Self &&other) noexcept {
+    if (this != std::addressof(other)) {
         this->term_ = other.term_;
         this->leaderId_ = other.leaderId_;
         this->offset_ = other.offset_;
@@ -42,8 +38,7 @@ sharpen::RaftSnapshotRequest &sharpen::RaftSnapshotRequest::operator=(Self &&oth
     return *this;
 }
 
-std::size_t sharpen::RaftSnapshotRequest::ComputeSize() const noexcept
-{
+std::size_t sharpen::RaftSnapshotRequest::ComputeSize() const noexcept {
     std::size_t size{0};
     sharpen::Varuint64 builder{this->term_};
     size += builder.ComputeSize();
@@ -57,43 +52,36 @@ std::size_t sharpen::RaftSnapshotRequest::ComputeSize() const noexcept
     return size;
 }
 
-std::size_t sharpen::RaftSnapshotRequest::LoadFrom(const char *data, std::size_t size)
-{
-    if (size < 7)
-    {
+std::size_t sharpen::RaftSnapshotRequest::LoadFrom(const char *data, std::size_t size) {
+    if (size < 7) {
         throw sharpen::CorruptedDataError{"corrupted raft snapshot request"};
     }
     std::size_t offset{0};
     sharpen::Varuint64 builder{0};
     offset += builder.LoadFrom(data, size);
     std::uint64_t term{builder.Get()};
-    if (size < 6 + offset)
-    {
+    if (size < 6 + offset) {
         throw sharpen::CorruptedDataError{"corrupted raft snapshot request"};
     }
     offset += builder.LoadFrom(data + offset, size - offset);
     std::uint64_t leaderId{builder.Get()};
-    if (size < 5 + offset)
-    {
+    if (size < 5 + offset) {
         throw sharpen::CorruptedDataError{"corrupted raft snapshot request"};
     }
     offset += builder.LoadFrom(data + offset, size - offset);
     std::uint64_t off{builder.Get()};
-    if (size < 4 + offset)
-    {
+    if (size < 4 + offset) {
         throw sharpen::CorruptedDataError{"corrupted raft snapshot request"};
     }
     std::uint8_t last{0};
     std::memcpy(&last, data + offset, sizeof(last));
     offset += sizeof(last);
-    if (size < 3 + offset)
-    {
+    if (size < 3 + offset) {
         throw sharpen::CorruptedDataError{"corrupted raft snapshot request"};
     }
     sharpen::RaftSnapshotMetadata metadata;
     offset += sharpen::BinarySerializator::LoadFrom(metadata, data, size);
-    if (offset == size)
-    {
+    if (offset == size) {
         throw sharpen::CorruptedDataError{"corrupted raft snapshot request"};
     }
     sharpen::ByteBuffer chunkdata;
@@ -107,8 +95,7 @@ std::size_t sharpen::RaftSnapshotRequest::LoadFrom(const char *data, std::size_t
     return offset;
 }
 
-std::size_t sharpen::RaftSnapshotRequest::UnsafeStoreTo(char *data) const noexcept
-{
+std::size_t sharpen::RaftSnapshotRequest::UnsafeStoreTo(char *data) const noexcept {
     std::size_t offset{0};
     sharpen::Varuint64 builder{this->term_};
     offset += builder.UnsafeStoreTo(data);
@@ -117,8 +104,7 @@ std::size_t sharpen::RaftSnapshotRequest::UnsafeStoreTo(char *data) const noexce
     builder.Set(this->offset_);
     offset += builder.UnsafeStoreTo(data + offset);
     std::uint8_t last{0};
-    if (this->last_)
-    {
+    if (this->last_) {
         last = 1;
     }
     offset += sharpen::BinarySerializator::UnsafeStoreTo(last, data + offset);

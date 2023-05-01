@@ -12,8 +12,7 @@
 #include <errno.h>
 #endif
 
-namespace sharpen
-{
+namespace sharpen {
 #ifdef SHARPEN_IS_WIN
     using ErrorCode = decltype(::GetLastError());
 #else
@@ -92,19 +91,16 @@ namespace sharpen
     constexpr sharpen::ErrorCode ErrorTimeout = ETIMEDOUT;
 #endif
 
-    inline bool IsFatalError(sharpen::ErrorCode code) noexcept
-    {
+    inline bool IsFatalError(sharpen::ErrorCode code) noexcept {
         return code == sharpen::ErrorIo || code == sharpen::ErrorOutOfMemory ||
                code == sharpen::ErrorNoSpace || code == sharpen::ErrorNoDevice;
     }
 
-    inline sharpen::ErrorCode GetLastError() noexcept
-    {
+    inline sharpen::ErrorCode GetLastError() noexcept {
 #ifdef SHARPEN_IS_WIN
         sharpen::ErrorCode err{::GetLastError()};
         // covert to WSAE* error code
-        switch (err)
-        {
+        switch (err) {
         case ERROR_CONNECTION_REFUSED:
             err = sharpen::ErrorConnectionRefused;
             break;
@@ -130,28 +126,23 @@ namespace sharpen
 #endif
     }
 
-    inline void ThrowSystemError(sharpen::ErrorCode err)
-    {
+    inline void ThrowSystemError(sharpen::ErrorCode err) {
         throw std::system_error(err, std::system_category());
     }
 
-    inline void ThrowLastError()
-    {
+    inline void ThrowLastError() {
         sharpen::ThrowSystemError(sharpen::GetLastError());
     }
 
-    inline std::exception_ptr MakeSystemErrorPtr(sharpen::ErrorCode err)
-    {
+    inline std::exception_ptr MakeSystemErrorPtr(sharpen::ErrorCode err) {
         return std::make_exception_ptr(std::system_error(err, std::system_category()));
     }
 
-    inline std::exception_ptr MakeLastErrorPtr()
-    {
+    inline std::exception_ptr MakeLastErrorPtr() {
         return sharpen::MakeSystemErrorPtr(sharpen::GetLastError());
     }
 
-    inline sharpen::ErrorCode GetErrorCode(const std::system_error &exception) noexcept
-    {
+    inline sharpen::ErrorCode GetErrorCode(const std::system_error &exception) noexcept {
         return static_cast<sharpen::ErrorCode>(exception.code().value());
     }
 }   // namespace sharpen

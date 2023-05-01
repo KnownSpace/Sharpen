@@ -13,12 +13,10 @@
 #include <cassert>
 #include <cstring>
 
-bool sharpen::AccessFile(const char *name, sharpen::FileAccessMethod model)
-{
+bool sharpen::AccessFile(const char *name, sharpen::FileAccessMethod model) {
     int mod = 0;
 #ifdef SHARPEN_IS_WIN
-    switch (model)
-    {
+    switch (model) {
     case sharpen::FileAccessMethod::Read:
         mod = 4;
         break;
@@ -33,8 +31,7 @@ bool sharpen::AccessFile(const char *name, sharpen::FileAccessMethod model)
     }
     return _access_s(name, mod) == 0;
 #else
-    switch (model)
-    {
+    switch (model) {
     case sharpen::FileAccessMethod::Read:
         mod = R_OK;
         break;
@@ -51,8 +48,7 @@ bool sharpen::AccessFile(const char *name, sharpen::FileAccessMethod model)
 #endif
 }
 
-bool sharpen::ExistFile(const char *name)
-{
+bool sharpen::ExistFile(const char *name) {
 #ifdef SHARPEN_IS_WIN
     return ::_access_s(name, 0) == 0;
 #else
@@ -60,40 +56,33 @@ bool sharpen::ExistFile(const char *name)
 #endif
 }
 
-void sharpen::RenameFile(const char *oldName, const char *newName)
-{
+void sharpen::RenameFile(const char *oldName, const char *newName) {
 #ifdef SHARPEN_IS_WIN
-    if (::MoveFileExA(oldName, newName, MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING) == FALSE)
-    {
+    if (::MoveFileExA(oldName, newName, MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING) ==
+        FALSE) {
         sharpen::ThrowLastError();
     }
 #else
-    if (::rename(oldName, newName) == -1)
-    {
+    if (::rename(oldName, newName) == -1) {
         sharpen::ThrowLastError();
     }
 #endif
 }
 
-void sharpen::RemoveFile(const char *name)
-{
+void sharpen::RemoveFile(const char *name) {
 #ifdef SHARPEN_IS_WIN
-    if (::DeleteFileA(name) == FALSE)
-    {
+    if (::DeleteFileA(name) == FALSE) {
         sharpen::ThrowLastError();
     }
 #else
-    if (::remove(name) == -1)
-    {
+    if (::remove(name) == -1) {
         sharpen::ThrowLastError();
     }
 #endif
 }
 
-bool sharpen::GetCurrentWorkDirectory(char *pathBuf, std::size_t size) noexcept
-{
-    if (!pathBuf || !size)
-    {
+bool sharpen::GetCurrentWorkDirectory(char *pathBuf, std::size_t size) noexcept {
+    if (!pathBuf || !size) {
         return false;
     }
 #ifdef SHARPEN_IS_WIN
@@ -103,17 +92,14 @@ bool sharpen::GetCurrentWorkDirectory(char *pathBuf, std::size_t size) noexcept
 #endif
 }
 
-void sharpen::SetCurrentWorkDirectory(const char *path)
-{
+void sharpen::SetCurrentWorkDirectory(const char *path) {
     assert(path);
 #ifdef SHARPEN_IS_WIN
-    if (::SetCurrentDirectoryA(path) == FALSE)
-    {
+    if (::SetCurrentDirectoryA(path) == FALSE) {
         sharpen::ThrowLastError();
     }
 #else
-    if (::chdir(path) == -1)
-    {
+    if (::chdir(path) == -1) {
         sharpen::ThrowLastError();
     }
 #endif
@@ -124,16 +110,12 @@ void sharpen::ResolvePath(const char *currentPath,
                           const char *path,
                           std::size_t pathSize,
                           char *resolvedPath,
-                          std::size_t resolvedPathSize)
-{
-    if (resolvedPathSize < currentPathSize + pathSize)
-    {
+                          std::size_t resolvedPathSize) {
+    if (resolvedPathSize < currentPathSize + pathSize) {
         throw std::invalid_argument("resolved path size too small");
     }
-    if (currentPathSize)
-    {
-        if (currentPath[currentPathSize - 1] != '/')
-        {
+    if (currentPathSize) {
+        if (currentPath[currentPathSize - 1] != '/') {
             throw std::invalid_argument("invalid current path");
         }
         std::memcpy(resolvedPath, currentPath, currentPathSize);
@@ -144,42 +126,30 @@ void sharpen::ResolvePath(const char *currentPath,
     // state machine
     std::size_t pointNumber{0};
     std::size_t separatorNumber{1};
-    for (const char *begin = path, *end = path + pathSize; begin != end; ++begin)
-    {
+    for (const char *begin = path, *end = path + pathSize; begin != end; ++begin) {
         assert(resolved < resolvedEnd);
-        if (*begin == '.')
-        {
-            if (separatorNumber)
-            {
+        if (*begin == '.') {
+            if (separatorNumber) {
                 pointNumber += 1;
-            }
-            else
-            {
+            } else {
                 *resolved++ = *begin;
             }
-        }
-        else if (sharpen::IsPathSeparator(*begin))
-        {
-            if (separatorNumber)
-            {
+        } else if (sharpen::IsPathSeparator(*begin)) {
+            if (separatorNumber) {
                 // current /(.)[/] /[/]
                 // up-level /(..)[/]
-                if (pointNumber > 1)
-                {
+                if (pointNumber > 1) {
                     // [...](/../)
                     resolved -= 2;
                     // find up-level
                     char *pos = resolved;
-                    for (; pos != resolvedBegin - 1; --pos)
-                    {
-                        if (sharpen::IsPathSeparator(*pos))
-                        {
+                    for (; pos != resolvedBegin - 1; --pos) {
+                        if (sharpen::IsPathSeparator(*pos)) {
                             resolved = pos + 1;
                             break;
                         }
                     }
-                    if (pos == resolvedBegin - 1)
-                    {
+                    if (pos == resolvedBegin - 1) {
                         throw std::invalid_argument("invalid path");
                     }
                     resolved = pos + 1;
@@ -189,34 +159,26 @@ void sharpen::ResolvePath(const char *currentPath,
             }
             separatorNumber += 1;
             *resolved++ = *begin;
-        }
-        else
-        {
+        } else {
             separatorNumber = 0;
-            for (std::size_t i = 0; i < pointNumber; ++i)
-            {
+            for (std::size_t i = 0; i < pointNumber; ++i) {
                 *resolved++ = '.';
             }
             pointNumber = 0;
             *resolved++ = *begin;
         }
     }
-    if (separatorNumber)
-    {
-        if (pointNumber > 1)
-        {
+    if (separatorNumber) {
+        if (pointNumber > 1) {
             resolved -= 2;
             // find up-level
             char *pos = resolved;
-            for (; pos != resolvedBegin - 1; --pos)
-            {
-                if (sharpen::IsPathSeparator(*pos))
-                {
+            for (; pos != resolvedBegin - 1; --pos) {
+                if (sharpen::IsPathSeparator(*pos)) {
                     break;
                 }
             }
-            if (pos == resolvedBegin - 1)
-            {
+            if (pos == resolvedBegin - 1) {
                 throw std::invalid_argument("invalid path");
             }
             resolved = pos + 1;
@@ -225,34 +187,27 @@ void sharpen::ResolvePath(const char *currentPath,
     std::memset(resolved, 0, resolvedEnd - resolved);
 }
 
-void sharpen::MakeDirectory(const char *name)
-{
+void sharpen::MakeDirectory(const char *name) {
 #ifdef SHARPEN_IS_WIN
     if (::CreateDirectoryA(name, nullptr) == FALSE &&
-        sharpen::GetLastError() != ERROR_ALREADY_EXISTS)
-    {
+        sharpen::GetLastError() != ERROR_ALREADY_EXISTS) {
         sharpen::ThrowLastError();
     }
 #else
-    if (::mkdir(name, S_IRWXU) == -1 && sharpen::GetLastError() != EEXIST)
-    {
+    if (::mkdir(name, S_IRWXU) == -1 && sharpen::GetLastError() != EEXIST) {
         sharpen::ThrowLastError();
     }
 #endif
 }
 
-void sharpen::DeleteDirectory(const char *name)
-{
+void sharpen::DeleteDirectory(const char *name) {
 #ifdef SHARPEN_IS_WIN
-    if (::RemoveDirectoryA(name) == FALSE && sharpen::GetLastError() != ERROR_FILE_NOT_FOUND)
-    {
+    if (::RemoveDirectoryA(name) == FALSE && sharpen::GetLastError() != ERROR_FILE_NOT_FOUND) {
         sharpen::ThrowLastError();
     }
 #else
-    if (::rmdir(name) == -1 && sharpen::GetLastError() != ENOENT)
-    {
+    if (::rmdir(name) == -1 && sharpen::GetLastError() != ENOENT) {
         sharpen::ThrowLastError();
     }
 #endif
 }
-

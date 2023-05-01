@@ -8,11 +8,9 @@
 #include <cstdint>
 #include <utility>
 
-namespace sharpen
-{
+namespace sharpen {
 #pragma pack(push, 1)
-    class MultiRaftForm
-    {
+    class MultiRaftForm {
     private:
         using Self = sharpen::MultiRaftForm;
 
@@ -40,8 +38,7 @@ namespace sharpen
 
         ~MultiRaftForm() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
@@ -57,14 +54,12 @@ namespace sharpen
 
         void SetChecksum(const char *data, std::size_t size) noexcept;
 
-        inline sharpen::ByteSlice GetMagic() const noexcept
-        {
+        inline sharpen::ByteSlice GetMagic() const noexcept {
             sharpen::ByteSlice slice{this->magic_, sizeof(this->magic_)};
             return slice;
         }
 
-        inline bool CheckMagic() const noexcept
-        {
+        inline bool CheckMagic() const noexcept {
             return this->GetMagic() == multiRaftMagic;
         }
 

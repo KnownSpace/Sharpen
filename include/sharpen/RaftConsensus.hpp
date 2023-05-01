@@ -24,14 +24,12 @@
 #include <queue>
 #include <set>
 
-namespace sharpen
-{
+namespace sharpen {
     class RaftConsensus
         : public sharpen::IConsensus
         , private sharpen::IMailReceiver
         , public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using Self = sharpen::RaftConsensus;
 
@@ -84,7 +82,7 @@ namespace sharpen
         // quorum heartbeat provider
         std::unique_ptr<sharpen::RaftHeartbeatMailProvider> heartbeatProvider_;
         // learner heartbeat provider
-        
+
 
         // must be last member
         // single fiber worker
@@ -217,8 +215,7 @@ namespace sharpen
 
         virtual ~RaftConsensus() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
@@ -234,13 +231,11 @@ namespace sharpen
 
         virtual const sharpen::ILogStorage &ImmutableLogs() const noexcept override;
 
-        inline virtual sharpen::IMailReceiver &GetReceiver() noexcept override
-        {
+        inline virtual sharpen::IMailReceiver &GetReceiver() noexcept override {
             return *this;
         }
 
-        inline virtual const sharpen::IMailReceiver &GetReceiver() const noexcept override
-        {
+        inline virtual const sharpen::IMailReceiver &GetReceiver() const noexcept override {
             return *this;
         }
 

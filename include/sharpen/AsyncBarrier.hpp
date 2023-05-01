@@ -8,13 +8,11 @@
 #include <cstdint>
 #include <vector>
 
-namespace sharpen
-{
+namespace sharpen {
     class AsyncBarrier
         : public sharpen::IAsyncBarrier
         , public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using MyFuture = sharpen::AwaitableFuture<std::size_t>;
         using MyFuturePtr = MyFuture *;
@@ -30,8 +28,7 @@ namespace sharpen
 
     public:
         AsyncBarrier(std::size_t count)
-            : AsyncBarrier(sharpen::BarrierModel::Flush, count)
-        {
+            : AsyncBarrier(sharpen::BarrierModel::Flush, count) {
         }
 
         AsyncBarrier(sharpen::BarrierModel model, std::size_t count);
@@ -44,8 +41,7 @@ namespace sharpen
 
         virtual ~AsyncBarrier() noexcept = default;
 
-        inline virtual sharpen::BarrierModel GetModel() const noexcept override
-        {
+        inline virtual sharpen::BarrierModel GetModel() const noexcept override {
             return this->model_;
         }
     };

@@ -7,11 +7,9 @@
 #include <type_traits>
 #include <utility>
 
-namespace sharpen
-{
+namespace sharpen {
 #pragma pack(push, 1)
-    class GenericMailHeader
-    {
+    class GenericMailHeader {
     private:
         using Self = sharpen::GenericMailHeader;
 
@@ -40,21 +38,18 @@ namespace sharpen
 
         ~GenericMailHeader() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline static constexpr std::size_t GetFormSize() noexcept
-        {
+        inline static constexpr std::size_t GetFormSize() noexcept {
             return formSize;
         }
 
         template<typename _T,
                  typename _Check = typename std::enable_if<std::is_standard_layout<_T>::value &&
                                                            sizeof(_T) == formSize>::type>
-        inline _T &Form() noexcept
-        {
+        inline _T &Form() noexcept {
             _T *ptr{reinterpret_cast<_T *>(this->form_)};
             return *ptr;
         }
@@ -62,8 +57,7 @@ namespace sharpen
         template<typename _T,
                  typename _Check = typename std::enable_if<std::is_standard_layout<_T>::value &&
                                                            sizeof(_T) == formSize>::type>
-        inline const _T &Form() const noexcept
-        {
+        inline const _T &Form() const noexcept {
             const _T *ptr{reinterpret_cast<const _T *>(this->form_)};
             return *ptr;
         }

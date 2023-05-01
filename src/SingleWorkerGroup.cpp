@@ -1,61 +1,49 @@
 #include <sharpen/SingleWorkerGroup.hpp>
 
 sharpen::SingleWorkerGroup::SingleWorkerGroup()
-    : SingleWorkerGroup(sharpen::GetLocalScheduler())
-{
+    : SingleWorkerGroup(sharpen::GetLocalScheduler()) {
 }
 
 sharpen::SingleWorkerGroup::SingleWorkerGroup(sharpen::IFiberScheduler &scheduler)
     : token_(true)
     , queue_()
-    , worker_()
-{
+    , worker_() {
     scheduler.Launch(&Self::Entry, this);
 }
 
-sharpen::SingleWorkerGroup::~SingleWorkerGroup() noexcept
-{
+sharpen::SingleWorkerGroup::~SingleWorkerGroup() noexcept {
     this->Stop();
     this->Join();
 }
 
-void sharpen::SingleWorkerGroup::Stop() noexcept
-{
-    if (this->token_.exchange(false))
-    {
+void sharpen::SingleWorkerGroup::Stop() noexcept {
+    if (this->token_.exchange(false)) {
         this->queue_.Emplace(std::function<void()>{});
     }
 }
 
-void sharpen::SingleWorkerGroup::Join() noexcept
-{
-    if (this->worker_.IsPending())
-    {
+void sharpen::SingleWorkerGroup::Join() noexcept {
+    if (this->worker_.IsPending()) {
         this->worker_.WaitAsync();
     }
 }
 
-bool sharpen::SingleWorkerGroup::Running() const noexcept
-{
+bool sharpen::SingleWorkerGroup::Running() const noexcept {
     return this->token_;
 }
 
-void sharpen::SingleWorkerGroup::Entry() noexcept
-{
+void sharpen::SingleWorkerGroup::Entry() noexcept {
     std::function<void()> task;
-    while (this->token_)
-    {
+    while (this->token_) {
         task = std::move(this->queue_.Pop());
-        if (task)
-        {
+        if (task) {
             sharpen::NonexceptInvoke(task);
         }
     }
     this->worker_.Complete();
 }
 
-void sharpen::SingleWorkerGroup::NviSubmit(std::function<void()> task)
-{
+void sharpen::SingleWorkerGroup::NviSubmit(std::function<void()> task) {
     assert(this->token_);
     this->queue_.Emplace(std::move(task));
 }

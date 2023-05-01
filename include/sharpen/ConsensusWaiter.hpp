@@ -7,10 +7,8 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace sharpen
-{
-    class ConsensusWaiter
-    {
+namespace sharpen {
+    class ConsensusWaiter {
     private:
         using Self = sharpen::ConsensusWaiter;
 
@@ -26,10 +24,8 @@ namespace sharpen
 
         ConsensusWaiter(Self &&other) noexcept;
 
-        inline Self &operator=(const Self &other) noexcept
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) noexcept {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -40,57 +36,47 @@ namespace sharpen
 
         ~ConsensusWaiter() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
         std::int32_t CompareWith(const Self &other) const noexcept;
 
-        inline bool operator==(const Self &other) const noexcept
-        {
+        inline bool operator==(const Self &other) const noexcept {
             return this->CompareWith(other) == 0;
         }
 
-        inline bool operator!=(const Self &other) const noexcept
-        {
+        inline bool operator!=(const Self &other) const noexcept {
             return this->CompareWith(other) != 0;
         }
 
-        inline bool operator<(const Self &other) const noexcept
-        {
+        inline bool operator<(const Self &other) const noexcept {
             return this->CompareWith(other) < 0;
         }
 
-        inline bool operator>(const Self &other) const noexcept
-        {
+        inline bool operator>(const Self &other) const noexcept {
             return this->CompareWith(other) > 0;
         }
 
-        inline bool operator>=(const Self &other) const noexcept
-        {
+        inline bool operator>=(const Self &other) const noexcept {
             return this->CompareWith(other) >= 0;
         }
 
-        inline bool operator<=(const Self &other) const noexcept
-        {
+        inline bool operator<=(const Self &other) const noexcept {
             return this->CompareWith(other) <= 0;
         }
 
-        inline sharpen::Future<std::uint64_t> &Future() noexcept
-        {
+        inline sharpen::Future<std::uint64_t> &Future() noexcept {
             assert(this->future_ != nullptr);
             return *this->future_;
         }
 
-        inline const sharpen::Future<std::uint64_t> &Future() const noexcept
-        {
+        inline const sharpen::Future<std::uint64_t> &Future() const noexcept {
             assert(this->future_ != nullptr);
             return *this->future_;
         }
 
-        inline std::uint64_t GetIndex() const noexcept
-        {
+        inline std::uint64_t GetIndex() const noexcept {
             return this->index_;
         }
     };

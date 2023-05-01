@@ -5,10 +5,8 @@
 #include "ByteBuffer.hpp"
 #include <vector>
 
-namespace sharpen
-{
-    class LogBatch
-    {
+namespace sharpen {
+    class LogBatch {
     private:
         using Self = sharpen::LogBatch;
 
@@ -23,10 +21,8 @@ namespace sharpen
 
         LogBatch(Self &&other) noexcept = default;
 
-        inline Self &operator=(const Self &other)
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -37,8 +33,7 @@ namespace sharpen
 
         ~LogBatch() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

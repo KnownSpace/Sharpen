@@ -6,13 +6,11 @@
 #include "IHost.hpp"
 #include "ITcpSteamFactory.hpp"
 
-namespace sharpen
-{
+namespace sharpen {
     class TcpHost
         : public sharpen::IHost
         , public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using Self = TcpHost;
 
@@ -35,8 +33,7 @@ namespace sharpen
 
         virtual ~TcpHost() noexcept;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

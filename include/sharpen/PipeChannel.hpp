@@ -5,8 +5,7 @@
 #include "IInputPipeChannel.hpp"
 #include "IOutputPipeChannel.hpp"
 
-namespace sharpen
-{
+namespace sharpen {
     void OpenPipeChannel(sharpen::InputPipeChannelPtr &in, sharpen::OutputPipeChannelPtr &out);
 }
 

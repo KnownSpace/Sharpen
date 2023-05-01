@@ -8,13 +8,11 @@
 #include <functional>
 #include <vector>
 
-namespace sharpen
-{
+namespace sharpen {
     class FunctorHostPipeline
         : public sharpen::IHostPipeline
         , public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using Self = FunctorHostPipeline;
         using Base = sharpen::IHostPipeline;
@@ -36,8 +34,7 @@ namespace sharpen
 
         virtual ~FunctorHostPipeline() noexcept;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
@@ -48,14 +45,12 @@ namespace sharpen
                  typename _Check = decltype(
                      std::declval<sharpen::IHostPipelineStep *&>() = std::declval<_Impl *>(),
                      _Impl{std::declval<_Args>()...})>
-        inline Self &Register(_Args &&...args)
-        {
+        inline Self &Register(_Args &&...args) {
             Base::Register<_Impl>(std::forward<_Args>(args)...);
             return *this;
         }
 
-        inline Self &Register(std::unique_ptr<sharpen::IHostPipelineStep> step)
-        {
+        inline Self &Register(std::unique_ptr<sharpen::IHostPipelineStep> step) {
             Base::Register(std::move(step));
             return *this;
         }

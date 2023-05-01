@@ -5,10 +5,8 @@
 #include "RaftSnapshot.hpp"
 #include <memory>
 
-namespace sharpen
-{
-    class IRaftSnapshotProvider
-    {
+namespace sharpen {
+    class IRaftSnapshotProvider {
     private:
         using Self = sharpen::IRaftSnapshotProvider;
 
@@ -26,8 +24,7 @@ namespace sharpen
 
         virtual ~IRaftSnapshotProvider() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

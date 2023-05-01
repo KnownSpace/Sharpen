@@ -8,12 +8,10 @@
 #include <functional>
 #include <memory>
 
-namespace sharpen
-{
+namespace sharpen {
     class EventLoop;
 
-    class ITimer
-    {
+    class ITimer {
     private:
         using Self = sharpen::ITimer;
         using WaitFuture = sharpen::Future<bool>;
@@ -32,14 +30,13 @@ namespace sharpen
         virtual void Cancel() = 0;
 
         template<typename _Rep, typename _Period>
-        inline void WaitAsync(WaitFuture &future, const std::chrono::duration<_Rep, _Period> &time)
-        {
+        inline void WaitAsync(WaitFuture &future,
+                              const std::chrono::duration<_Rep, _Period> &time) {
             this->WaitAsync(future, time / std::chrono::milliseconds(1));
         }
 
         template<typename _Rep, typename _Period>
-        inline bool Await(const std::chrono::duration<_Rep, _Period> &time)
-        {
+        inline bool Await(const std::chrono::duration<_Rep, _Period> &time) {
             sharpen::AwaitableFuture<bool> future;
             this->WaitAsync(future, time);
             return future.Await();

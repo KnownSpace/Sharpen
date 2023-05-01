@@ -12,23 +12,19 @@
 #include <stdexcept>
 #include <utility>
 
-namespace sharpen
-{
-    struct ByteVectorStruct
-    {
+namespace sharpen {
+    struct ByteVectorStruct {
         char *data_;
         std::size_t cap_;
     };
 
     template<std::size_t _InlineSize>
-    union ByteVectorUnion
-    {
+    union ByteVectorUnion {
         sharpen::ByteVectorStruct external_;
         char inline_[_InlineSize];
     };
 
-    class ByteVector
-    {
+    class ByteVector {
     private:
         using Self = ByteVector;
 
@@ -40,13 +36,11 @@ namespace sharpen
         std::size_t size_;
         sharpen::ByteVectorUnion<sharpen::ByteVector::inlineSize_> rawVector_;
 
-        inline static bool InlineBuffer(std::size_t size) noexcept
-        {
+        inline static bool InlineBuffer(std::size_t size) noexcept {
             return size <= inlineSize_;
         }
 
-        inline bool InlineBuffer() const noexcept
-        {
+        inline bool InlineBuffer() const noexcept {
             return this->InlineBuffer(this->size_);
         }
 
@@ -68,15 +62,13 @@ namespace sharpen
 
         static constexpr std::size_t inlineSize{inlineSize_};
 
-        inline static constexpr std::size_t GetInlineSize() noexcept
-        {
+        inline static constexpr std::size_t GetInlineSize() noexcept {
             return inlineSize;
         }
 
         ByteVector() noexcept
             : size_(0)
-            , rawVector_()
-        {
+            , rawVector_() {
         }
 
         explicit ByteVector(std::size_t size);
@@ -85,10 +77,8 @@ namespace sharpen
 
         ByteVector(Self &&other) noexcept;
 
-        inline Self &operator=(const Self &other)
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -97,13 +87,11 @@ namespace sharpen
 
         Self &operator=(Self &&other) noexcept;
 
-        ~ByteVector() noexcept
-        {
+        ~ByteVector() noexcept {
             this->Clear();
         }
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
@@ -115,8 +103,7 @@ namespace sharpen
 
         char Get(std::size_t index) const;
 
-        inline std::size_t GetSize() const noexcept
-        {
+        inline std::size_t GetSize() const noexcept {
             return this->size_;
         }
 
@@ -124,36 +111,31 @@ namespace sharpen
 
         void Resize(std::size_t newSize, char defaultVal);
 
-        inline void Resize(std::size_t newSize)
-        {
+        inline void Resize(std::size_t newSize) {
             this->Resize(newSize, 0);
         }
 
         template<
             typename _Iterator,
             typename _Check = decltype(std::declval<char &>() = *std::declval<_Iterator &>()++)>
-        inline void Append(_Iterator begin, _Iterator end)
-        {
+        inline void Append(_Iterator begin, _Iterator end) {
             std::size_t size{sharpen::GetRangeSize(begin, end)};
             std::size_t oldSize{this->GetSize()};
             std::size_t newSize{oldSize + size};
             this->Resize(newSize);
             char *buf = this->Data();
-            while (oldSize != newSize)
-            {
+            while (oldSize != newSize) {
                 buf[oldSize++] = *begin++;
             }
         }
 
-        inline void PushBack(char c)
-        {
+        inline void PushBack(char c) {
             this->Append(&c, &c + 1);
         }
 
         void Erase(std::size_t begin, std::size_t end) noexcept;
 
-        inline void Erase(std::size_t where) noexcept
-        {
+        inline void Erase(std::size_t where) noexcept {
             return this->Erase(where, where + 1);
         }
 
@@ -165,16 +147,13 @@ namespace sharpen
 
         void Erase(ConstIterator begin, ConstIterator end);
 
-        inline void PopBack()
-        {
-            if (this->size_)
-            {
+        inline void PopBack() {
+            if (this->size_) {
                 this->Erase(this->size_ - 1);
             }
         }
 
-        inline bool Empty() const noexcept
-        {
+        inline bool Empty() const noexcept {
             return !this->size_;
         }
 
@@ -194,39 +173,31 @@ namespace sharpen
 
         ConstReverseIterator ReverseEnd() const noexcept;
 
-        char &operator[](std::size_t index) noexcept
-        {
+        char &operator[](std::size_t index) noexcept {
             return this->Data()[index];
         }
 
-        char operator[](std::size_t index) const noexcept
-        {
+        char operator[](std::size_t index) const noexcept {
             return this->Data()[index];
         }
 
-        inline char &Front()
-        {
+        inline char &Front() {
             return this->Get(0);
         }
 
-        inline char Front() const noexcept
-        {
+        inline char Front() const noexcept {
             return this->Get(0);
         }
 
-        inline char &Back()
-        {
-            if (this->Empty())
-            {
+        inline char &Back() {
+            if (this->Empty()) {
                 throw std::out_of_range("index out of range");
             }
             return this->Get(this->GetSize() - 1);
         }
 
-        inline char Back() const
-        {
-            if (this->Empty())
-            {
+        inline char Back() const {
+            if (this->Empty()) {
                 throw std::out_of_range("index out of range");
             }
             return this->Get(this->GetSize() - 1);

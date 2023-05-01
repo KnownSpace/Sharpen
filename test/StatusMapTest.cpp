@@ -12,8 +12,7 @@ static const char *walName = "./Test.wal";
 
 static constexpr std::size_t keyCount{100};
 
-class CowMapTest : public simpletest::ITypenamedTest<CowMapTest>
-{
+class CowMapTest : public simpletest::ITypenamedTest<CowMapTest> {
 private:
     using Self = CowMapTest;
 
@@ -22,43 +21,35 @@ public:
 
     ~CowMapTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         std::unique_ptr<sharpen::IStatusMap> map{new (std::nothrow) sharpen::CowStatusMap{cowName}};
         sharpen::ByteBuffer key{"key", 4};
         sharpen::ByteBuffer value{"val", 4};
-        for (std::size_t i = 0; i != keyCount; ++i)
-        {
+        for (std::size_t i = 0; i != keyCount; ++i) {
             key[3] = static_cast<char>(i);
             value[3] = static_cast<char>(i);
             map->Write(key, value);
         }
-        for (std::size_t i = 0; i != keyCount; ++i)
-        {
+        for (std::size_t i = 0; i != keyCount; ++i) {
             key[3] = static_cast<char>(i);
             value[3] = static_cast<char>(i);
             auto valOpt = map->Lookup(key);
-            if (valOpt.Get() != value)
-            {
+            if (valOpt.Get() != value) {
                 return this->Fail("Get() return wrong answer,put failed or lookup failed");
             }
         }
-        for (std::size_t i = 0; i != keyCount; ++i)
-        {
+        for (std::size_t i = 0; i != keyCount; ++i) {
             key[3] = static_cast<char>(i);
             map->Remove(key);
         }
-        for (std::size_t i = 0; i != keyCount; ++i)
-        {
+        for (std::size_t i = 0; i != keyCount; ++i) {
             key[3] = static_cast<char>(i);
             auto valOpt = map->Lookup(key);
-            if (valOpt.Exist())
-            {
+            if (valOpt.Exist()) {
                 return this->Fail("Get() return wrong answer,remove failed");
             }
         }
@@ -66,8 +57,7 @@ public:
     }
 };
 
-class CowPersistentTest : public simpletest::ITypenamedTest<CowPersistentTest>
-{
+class CowPersistentTest : public simpletest::ITypenamedTest<CowPersistentTest> {
 private:
     using Self = CowPersistentTest;
 
@@ -76,13 +66,11 @@ public:
 
     ~CowPersistentTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         std::unique_ptr<sharpen::IStatusMap> map{new (std::nothrow) sharpen::CowStatusMap{cowName}};
         sharpen::ByteBuffer key{"key", 3};
         sharpen::ByteBuffer value{"val", 3};
@@ -95,8 +83,7 @@ public:
     }
 };
 
-class WalMapTest : public simpletest::ITypenamedTest<WalMapTest>
-{
+class WalMapTest : public simpletest::ITypenamedTest<WalMapTest> {
 private:
     using Self = WalMapTest;
 
@@ -105,43 +92,35 @@ public:
 
     ~WalMapTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         std::unique_ptr<sharpen::IStatusMap> map{new (std::nothrow) sharpen::WalStatusMap{walName}};
         sharpen::ByteBuffer key{"key", 4};
         sharpen::ByteBuffer value{"val", 4};
-        for (std::size_t i = 0; i != keyCount; ++i)
-        {
+        for (std::size_t i = 0; i != keyCount; ++i) {
             key[3] = static_cast<char>(i);
             value[3] = static_cast<char>(i);
             map->Write(key, value);
         }
-        for (std::size_t i = 0; i != keyCount; ++i)
-        {
+        for (std::size_t i = 0; i != keyCount; ++i) {
             key[3] = static_cast<char>(i);
             value[3] = static_cast<char>(i);
             auto valOpt = map->Lookup(key);
-            if (valOpt.Get() != value)
-            {
+            if (valOpt.Get() != value) {
                 return this->Fail("Get() return wrong answer,put failed or lookup failed");
             }
         }
-        for (std::size_t i = 0; i != keyCount; ++i)
-        {
+        for (std::size_t i = 0; i != keyCount; ++i) {
             key[3] = static_cast<char>(i);
             map->Remove(key);
         }
-        for (std::size_t i = 0; i != keyCount; ++i)
-        {
+        for (std::size_t i = 0; i != keyCount; ++i) {
             key[3] = static_cast<char>(i);
             auto valOpt = map->Lookup(key);
-            if (valOpt.Exist())
-            {
+            if (valOpt.Exist()) {
                 return this->Fail("Get() return wrong answer,remove failed");
             }
         }
@@ -149,8 +128,7 @@ public:
     }
 };
 
-class WalPersisentTest : public simpletest::ITypenamedTest<WalPersisentTest>
-{
+class WalPersisentTest : public simpletest::ITypenamedTest<WalPersisentTest> {
 private:
     using Self = WalPersisentTest;
 
@@ -159,13 +137,11 @@ public:
 
     ~WalPersisentTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         std::unique_ptr<sharpen::IStatusMap> map{new (std::nothrow) sharpen::WalStatusMap{walName}};
         sharpen::ByteBuffer key{"key", 3};
         sharpen::ByteBuffer value{"val", 3};
@@ -178,8 +154,7 @@ public:
     }
 };
 
-static int Test()
-{
+static int Test() {
     simpletest::TestRunner runner;
     runner.Register<CowMapTest>();
     runner.Register<CowPersistentTest>();
@@ -191,8 +166,7 @@ static int Test()
     return code;
 }
 
-int main(int argc, char const *argv[])
-{
+int main(int argc, char const *argv[]) {
     sharpen::EventEngine &engine = sharpen::EventEngine::SetupSingleThreadEngine();
     return engine.StartupWithCode(&Test);
 }

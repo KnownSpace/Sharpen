@@ -6,12 +6,10 @@
 #include "ISignalChannel.hpp"
 #include <stdexcept>
 
-namespace sharpen
-{
+namespace sharpen {
     class ConsoleHostLifetime
         : public sharpen::IHostLifetime
-        , public sharpen::Noncopyable
-    {
+        , public sharpen::Noncopyable {
     private:
         using Self = sharpen::ConsoleHostLifetime;
 
@@ -33,8 +31,7 @@ namespace sharpen
 
         virtual ~ConsoleHostLifetime() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

@@ -11,13 +11,11 @@
 #include <Windows.h>
 
 #define SHARPEN_HAS_WAITABLETIMER
-namespace sharpen
-{
+namespace sharpen {
     class WinTimer
         : public sharpen::ITimer
         , public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using Myhandle = void *;
         using Mybase = sharpen::ITimer;

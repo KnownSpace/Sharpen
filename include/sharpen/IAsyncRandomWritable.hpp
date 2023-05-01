@@ -7,11 +7,9 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace sharpen
-{
+namespace sharpen {
 
-    class IAsyncRandomWritable
-    {
+    class IAsyncRandomWritable {
     private:
         using Self = sharpen::IAsyncRandomWritable;
 
@@ -44,8 +42,7 @@ namespace sharpen
 
         template<typename _T,
                  typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>
-        inline std::size_t WriteObjectAsync(const _T &obj, std::uint64_t offset)
-        {
+        inline std::size_t WriteObjectAsync(const _T &obj, std::uint64_t offset) {
             return this->WriteAsync(reinterpret_cast<const char *>(&obj), sizeof(obj), offset);
         }
     };

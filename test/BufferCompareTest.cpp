@@ -5,8 +5,7 @@
 
 #include <simpletest/TestRunner.hpp>
 
-class BufferEqualTest : public simpletest::ITypenamedTest<BufferEqualTest>
-{
+class BufferEqualTest : public simpletest::ITypenamedTest<BufferEqualTest> {
 private:
     using Self = BufferEqualTest;
 
@@ -15,13 +14,11 @@ public:
 
     ~BufferEqualTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         char lhs[] = "abc";
         char rhs[] = "abc";
         std::int32_t r{sharpen::BufferCompare(lhs, sizeof(lhs), rhs, sizeof(rhs))};
@@ -29,8 +26,7 @@ public:
     }
 };
 
-class BufferLargerTest : public simpletest::ITypenamedTest<BufferLargerTest>
-{
+class BufferLargerTest : public simpletest::ITypenamedTest<BufferLargerTest> {
 private:
     using Self = BufferLargerTest;
 
@@ -39,13 +35,11 @@ public:
 
     ~BufferLargerTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         char lhs[] = "abd";
         char rhs[] = "abc";
         std::int32_t r{sharpen::BufferCompare(lhs, sizeof(lhs), rhs, sizeof(rhs))};
@@ -53,8 +47,7 @@ public:
     }
 };
 
-class BufferLongerTest : public simpletest::ITypenamedTest<BufferLongerTest>
-{
+class BufferLongerTest : public simpletest::ITypenamedTest<BufferLongerTest> {
 private:
     using Self = BufferLongerTest;
 
@@ -63,13 +56,11 @@ public:
 
     ~BufferLongerTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         char lhs[] = "abcd";
         char rhs[] = "abc";
         std::int32_t r{sharpen::BufferCompare(lhs, sizeof(lhs), rhs, sizeof(rhs))};
@@ -77,8 +68,7 @@ public:
     }
 };
 
-int main(int argc, char const *argv[])
-{
+int main(int argc, char const *argv[]) {
     simpletest::TestRunner runner;
     runner.Register<BufferEqualTest>();
     runner.Register<BufferLargerTest>();

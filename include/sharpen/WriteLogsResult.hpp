@@ -7,10 +7,8 @@
 #include <cstdint>
 #include <utility>
 
-namespace sharpen
-{
-    class WriteLogsResult
-    {
+namespace sharpen {
+    class WriteLogsResult {
     private:
         using Self = sharpen::WriteLogsResult;
 
@@ -32,8 +30,7 @@ namespace sharpen
 
         ~WriteLogsResult() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

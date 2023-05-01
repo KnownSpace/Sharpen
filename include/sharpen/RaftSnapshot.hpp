@@ -7,10 +7,8 @@
 #include "RaftSnapshotMetadata.hpp"
 #include <memory>
 
-namespace sharpen
-{
-    class RaftSnapshot : public sharpen::Noncopyable
-    {
+namespace sharpen {
+    class RaftSnapshot : public sharpen::Noncopyable {
     private:
         using Self = sharpen::RaftSnapshot;
 
@@ -29,18 +27,15 @@ namespace sharpen
 
         ~RaftSnapshot() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline sharpen::RaftSnapshotMetadata &Metadata() noexcept
-        {
+        inline sharpen::RaftSnapshotMetadata &Metadata() noexcept {
             return this->metadata_;
         }
 
-        inline const sharpen::RaftSnapshotMetadata &Metadata() const noexcept
-        {
+        inline const sharpen::RaftSnapshotMetadata &Metadata() const noexcept {
             return this->metadata_;
         }
 

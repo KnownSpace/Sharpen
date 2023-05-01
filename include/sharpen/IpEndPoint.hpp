@@ -4,10 +4,10 @@
 
 #include "BufferOps.hpp"
 #include "IEndPoint.hpp"
-#include "Noncopyable.hpp" // IWYU pragma: keep
-#include "Nonmovable.hpp" // IWYU pragma: keep
-#include "SystemError.hpp" // IWYU pragma: keep
-#include "SystemMacro.hpp" // IWYU pragma: keep
+#include "Noncopyable.hpp"   // IWYU pragma: keep
+#include "Nonmovable.hpp"    // IWYU pragma: keep
+#include "SystemError.hpp"   // IWYU pragma: keep
+#include "SystemMacro.hpp"   // IWYU pragma: keep
 #include "TypeTraits.hpp"
 
 
@@ -20,29 +20,24 @@
 #include <functional>
 #include <stdexcept>
 
-namespace sharpen
-{
+namespace sharpen {
     class ByteBuffer;
 
-    struct IpEndPointHash
-    {
+    struct IpEndPointHash {
         template<
             typename _U,
             typename _Check = sharpen::EnableIf<std::is_same<std::size_t, std::uint64_t>::value>>
-        inline static std::uint64_t GetHashCode(const _U &ep, int) noexcept
-        {
+        inline static std::uint64_t GetHashCode(const _U &ep, int) noexcept {
             return ep.GetHashCode64();
         }
 
         template<typename _U>
-        inline static std::uint32_t GetHashCode(const _U &ep, ...) noexcept
-        {
+        inline static std::uint32_t GetHashCode(const _U &ep, ...) noexcept {
             return ep.GetHashCode32();
         }
     };
 
-    class IpEndPoint : public sharpen::IEndPoint
-    {
+    class IpEndPoint : public sharpen::IEndPoint {
     private:
         using MyAddr = sockaddr_in;
         using MyBase = sharpen::IEndPoint;
@@ -67,30 +62,25 @@ namespace sharpen
 
         bool operator==(const Self &other) const noexcept;
 
-        inline bool operator!=(const Self &other) const noexcept
-        {
+        inline bool operator!=(const Self &other) const noexcept {
             return !(*this == other);
         }
 
         std::int64_t CompareWith(const Self &other) const noexcept;
 
-        inline bool operator>(const Self &other) const noexcept
-        {
+        inline bool operator>(const Self &other) const noexcept {
             return this->CompareWith(other) > 0;
         }
 
-        inline bool operator<(const Self &other) const noexcept
-        {
+        inline bool operator<(const Self &other) const noexcept {
             return this->CompareWith(other) < 0;
         }
 
-        inline bool operator>=(const Self &other) const noexcept
-        {
+        inline bool operator>=(const Self &other) const noexcept {
             return this->CompareWith(other) >= 0;
         }
 
-        inline bool operator<=(const Self &other) const noexcept
-        {
+        inline bool operator<=(const Self &other) const noexcept {
             return this->CompareWith(other) <= 0;
         }
 
@@ -110,13 +100,11 @@ namespace sharpen
 
         void SetAddrByString(const char *addrStr);
 
-        virtual std::uint32_t GetAddrLen() const override
-        {
+        virtual std::uint32_t GetAddrLen() const override {
             return sizeof(this->addr_);
         }
 
-        constexpr static std::size_t ComputeSize() noexcept
-        {
+        constexpr static std::size_t ComputeSize() noexcept {
             return sizeof(std::uint32_t) + sizeof(std::uint16_t);
         }
 
@@ -124,8 +112,7 @@ namespace sharpen
 
         std::size_t LoadFrom(const sharpen::ByteBuffer &buf, std::size_t offset);
 
-        inline std::size_t LoadFrom(const sharpen::ByteBuffer &buf)
-        {
+        inline std::size_t LoadFrom(const sharpen::ByteBuffer &buf) {
             return this->LoadFrom(buf, 0);
         }
 
@@ -135,40 +122,33 @@ namespace sharpen
 
         std::size_t StoreTo(sharpen::ByteBuffer &buf, std::size_t offset) const;
 
-        inline std::size_t StoreTo(sharpen::ByteBuffer &buf) const
-        {
+        inline std::size_t StoreTo(sharpen::ByteBuffer &buf) const {
             return this->StoreTo(buf, 0);
         }
 
-        inline virtual std::uint64_t GetHashCode64() const noexcept override
-        {
+        inline virtual std::uint64_t GetHashCode64() const noexcept override {
             std::uint64_t value{this->GetPort()};
             std::uint32_t *p{reinterpret_cast<std::uint32_t *>(&value) + 1};
             *p = this->GetAddr();
             return value;
         }
 
-        inline virtual std::uint32_t GetHashCode32() const noexcept override
-        {
+        inline virtual std::uint32_t GetHashCode32() const noexcept override {
             std::uint64_t hash{this->GetHashCode64()};
             return sharpen::BufferHash32(reinterpret_cast<const char *>(&hash), sizeof(hash));
         }
 
-        inline virtual std::size_t GetHashCode() const noexcept override
-        {
+        inline virtual std::size_t GetHashCode() const noexcept override {
             return sharpen::IpEndPointHash::GetHashCode(*this, 0);
         }
     };
 }   // namespace sharpen
 
-namespace std
-{
+namespace std {
     template<>
-    struct hash<sharpen::IpEndPoint>
-    {
+    struct hash<sharpen::IpEndPoint> {
     public:
-        inline std::size_t operator()(const sharpen::IpEndPoint &endpoint) const noexcept
-        {
+        inline std::size_t operator()(const sharpen::IpEndPoint &endpoint) const noexcept {
             return endpoint.GetHashCode();
         }
     };

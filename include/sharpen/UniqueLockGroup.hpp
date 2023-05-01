@@ -10,11 +10,9 @@
 #include <mutex>
 #include <new>
 
-namespace sharpen
-{
+namespace sharpen {
     template<typename _Lock>
-    class UniqueLockGroup : public sharpen::Noncopyable
-    {
+    class UniqueLockGroup : public sharpen::Noncopyable {
     private:
         using Self = sharpen::UniqueLockGroup<_Lock>;
         using UniqueLock = std::unique_lock<_Lock>;
@@ -29,12 +27,10 @@ namespace sharpen
             : locks_(nullptr)
             , size_(0)
             , beginIndex_(0)
-            , endIndex_(0)
-        {
+            , endIndex_(0) {
             assert(size);
             UniqueLock *locks{reinterpret_cast<UniqueLock *>(std::calloc(size, sizeof(*locks)))};
-            if (!locks)
-            {
+            if (!locks) {
                 throw std::bad_alloc{};
             }
             this->locks_ = locks;
@@ -45,21 +41,17 @@ namespace sharpen
             : locks_(other.locks_)
             , size_(other.size_)
             , beginIndex_(other.beginIndex_)
-            , endIndex_(other.endIndex_)
-        {
+            , endIndex_(other.endIndex_) {
             other.locks_ = nullptr;
             other.size_ = 0;
             other.beginIndex_ = 0;
             other.endIndex_ = 0;
         }
 
-        inline Self &operator=(Self &&other) noexcept
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(Self &&other) noexcept {
+            if (this != std::addressof(other)) {
                 this->Clear();
-                if (this->locks_)
-                {
+                if (this->locks_) {
                     std::free(this->locks_);
                 }
                 this->locks_ = other.locks_;
@@ -74,43 +66,34 @@ namespace sharpen
             return *this;
         }
 
-        ~UniqueLockGroup() noexcept
-        {
+        ~UniqueLockGroup() noexcept {
             this->Clear();
-            if (this->locks_)
-            {
+            if (this->locks_) {
                 std::free(this->locks_);
             }
         }
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline std::size_t GetMaxSize() const noexcept
-        {
+        inline std::size_t GetMaxSize() const noexcept {
             return this->size_;
         }
 
-        inline std::size_t GetSize() const noexcept
-        {
+        inline std::size_t GetSize() const noexcept {
             return this->endIndex_ - this->beginIndex_;
         }
 
-        inline void Clear() noexcept
-        {
+        inline void Clear() noexcept {
             this->Clear(this->endIndex_ - this->beginIndex_);
         }
 
-        inline void Clear(std::size_t size) noexcept
-        {
-            if (this->locks_)
-            {
+        inline void Clear(std::size_t size) noexcept {
+            if (this->locks_) {
                 std::size_t endIndex = this->beginIndex_ + size;
                 assert(this->endIndex_ >= endIndex);
-                for (std::size_t i = this->beginIndex_; i != endIndex; ++i)
-                {
+                for (std::size_t i = this->beginIndex_; i != endIndex; ++i) {
                     std::size_t index{i % this->size_};
                     this->locks_[index].~unique_lock();
                 }
@@ -118,8 +101,7 @@ namespace sharpen
             }
         }
 
-        inline void Lock(UniqueLock &&lock) noexcept
-        {
+        inline void Lock(UniqueLock &&lock) noexcept {
             assert(this->endIndex_ - this->beginIndex_ != this->size_);
             std::size_t index{this->endIndex_};
             this->endIndex_ += 1;

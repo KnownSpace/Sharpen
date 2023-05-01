@@ -10,8 +10,7 @@
 
 #include <simpletest/TestRunner.hpp>
 
-class WriteTest : public simpletest::ITypenamedTest<WriteTest>
-{
+class WriteTest : public simpletest::ITypenamedTest<WriteTest> {
 private:
     using Self = WriteTest;
 
@@ -20,32 +19,26 @@ public:
 
     ~WriteTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         sharpen::FileChannelPtr channel = sharpen::OpenFileChannel(
             "./hello.txt", sharpen::FileAccessMethod::Write, sharpen::FileOpenMethod::CreateOrOpen);
         channel->Register(sharpen::GetLocalLoopGroup());
         char str[] = "hello";
         std::size_t size = channel->WriteAsync(str, sizeof(str) - 1, 0);
-        try
-        {
+        try {
             channel->FlushAsync();
-        }
-        catch (const std::system_error &e)
-        {
+        } catch (const std::system_error &e) {
             std::printf("%s:%d", e.what(), e.code().value());
         }
         return this->Assert(size == sizeof(str) - 1, "size should == sizeof(str) - 1,but it not");
     }
 };
 
-class ReadTest : public simpletest::ITypenamedTest<ReadTest>
-{
+class ReadTest : public simpletest::ITypenamedTest<ReadTest> {
 private:
     using Self = ReadTest;
 
@@ -54,13 +47,11 @@ public:
 
     ~ReadTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         sharpen::FileChannelPtr channel = sharpen::OpenFileChannel(
             "./hello.txt", sharpen::FileAccessMethod::Read, sharpen::FileOpenMethod::CreateOrOpen);
         channel->Register(sharpen::GetLocalLoopGroup());
@@ -73,8 +64,7 @@ public:
     }
 };
 
-class ZeroMemoryTest : public simpletest::ITypenamedTest<ZeroMemoryTest>
-{
+class ZeroMemoryTest : public simpletest::ITypenamedTest<ZeroMemoryTest> {
 private:
     using Self = ZeroMemoryTest;
 
@@ -83,13 +73,11 @@ public:
 
     ~ZeroMemoryTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         sharpen::FileChannelPtr channel = sharpen::OpenFileChannel(
             "./buf.log", sharpen::FileAccessMethod::Write, sharpen::FileOpenMethod::CreateNew);
         channel->Register(sharpen::GetLocalLoopGroup());
@@ -99,8 +87,7 @@ public:
     }
 };
 
-class ExistTest : public simpletest::ITypenamedTest<ExistTest>
-{
+class ExistTest : public simpletest::ITypenamedTest<ExistTest> {
 private:
     using Self = ExistTest;
 
@@ -109,19 +96,16 @@ public:
 
     ~ExistTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         return this->Assert(sharpen::ExistFile("./buf.log"), "ExistFile() return wrong answer");
     }
 };
 
-class AccessTest : public simpletest::ITypenamedTest<AccessTest>
-{
+class AccessTest : public simpletest::ITypenamedTest<AccessTest> {
 private:
     using Self = AccessTest;
 
@@ -130,20 +114,17 @@ public:
 
     ~AccessTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         return this->Assert(sharpen::AccessFile("./buf.log", sharpen::FileAccessMethod::Read),
                             "AccessFile() return wrong answer");
     }
 };
 
-class RenameTest : public simpletest::ITypenamedTest<RenameTest>
-{
+class RenameTest : public simpletest::ITypenamedTest<RenameTest> {
 private:
     using Self = RenameTest;
 
@@ -152,21 +133,18 @@ public:
 
     ~RenameTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         sharpen::RenameFile("./buf.log", "./buf1.log");
         return this->Assert(!sharpen::ExistFile("./buf.log") && sharpen::ExistFile("./buf1.log"),
                             "RenameFile() doesn't works");
     }
 };
 
-class RemoveTest : public simpletest::ITypenamedTest<RemoveTest>
-{
+class RemoveTest : public simpletest::ITypenamedTest<RemoveTest> {
 private:
     using Self = RemoveTest;
 
@@ -175,20 +153,17 @@ public:
 
     ~RemoveTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         sharpen::RemoveFile("./buf1.log");
         return this->Assert(!sharpen::ExistFile("./buf1.log"), "RemoveFile() doesn't works");
     }
 };
 
-class MappingTest : public simpletest::ITypenamedTest<MappingTest>
-{
+class MappingTest : public simpletest::ITypenamedTest<MappingTest> {
 private:
     using Self = MappingTest;
 
@@ -197,13 +172,11 @@ public:
 
     ~MappingTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         sharpen::FileChannelPtr channel = sharpen::OpenFileChannel(
             "./buf.log", sharpen::FileAccessMethod::All, sharpen::FileOpenMethod::CreateNew);
         channel->Register(sharpen::GetLocalLoopGroup());
@@ -223,8 +196,7 @@ public:
     }
 };
 
-class ResolvePathTest : public simpletest::ITypenamedTest<ResolvePathTest>
-{
+class ResolvePathTest : public simpletest::ITypenamedTest<ResolvePathTest> {
 private:
     using Self = ResolvePathTest;
 
@@ -233,13 +205,11 @@ public:
 
     ~ResolvePathTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         bool status{true};
         {
             char curr[] = "/";
@@ -271,8 +241,7 @@ public:
     }
 };
 
-class DirectOpeartionTest : public simpletest::ITypenamedTest<DirectOpeartionTest>
-{
+class DirectOpeartionTest : public simpletest::ITypenamedTest<DirectOpeartionTest> {
 private:
     using Self = DirectOpeartionTest;
 
@@ -281,13 +250,11 @@ public:
 
     ~DirectOpeartionTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         sharpen::FileChannelPtr channel =
             sharpen::OpenFileChannel("./buf.log",
                                      sharpen::FileAccessMethod::All,
@@ -306,8 +273,7 @@ public:
     }
 };
 
-static int Test()
-{
+static int Test() {
     simpletest::TestRunner runner;
     runner.Register<WriteTest>();
     runner.Register<ReadTest>();
@@ -322,8 +288,7 @@ static int Test()
     return runner.Run();
 }
 
-int main()
-{
+int main() {
     sharpen::EventEngine &engine = sharpen::EventEngine::SetupSingleThreadEngine();
     return engine.StartupWithCode(&Test);
 }

@@ -7,10 +7,8 @@
 #include <cassert>
 #include <iterator>
 
-namespace sharpen
-{
-    class IMailReceiver
-    {
+namespace sharpen {
+    class IMailReceiver {
     private:
         using Self = sharpen::IMailReceiver;
 
@@ -30,13 +28,11 @@ namespace sharpen
 
         virtual ~IMailReceiver() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline void Receive(sharpen::Mail mail, std::uint64_t actorId)
-        {
+        inline void Receive(sharpen::Mail mail, std::uint64_t actorId) {
             assert(!mail.Empty());
             return this->NviReceive(std::move(mail), actorId);
         }

@@ -5,16 +5,14 @@
 #include "AsyncBlockingQueue.hpp"
 #include "IFiberScheduler.hpp"
 #include "IWorkerGroup.hpp"
-#include "NoexceptInvoke.hpp" // IWYU pragma: keep
+#include "NoexceptInvoke.hpp"   // IWYU pragma: keep
 #include <vector>
 
-namespace sharpen
-{
+namespace sharpen {
     class FixedWorkerGroup
         : public sharpen::IWorkerGroup
         , public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using Self = sharpen::FixedWorkerGroup;
 
@@ -33,14 +31,12 @@ namespace sharpen
 
         FixedWorkerGroup(sharpen::IFiberScheduler &scheduler, std::size_t workerCount);
 
-        virtual ~FixedWorkerGroup() noexcept
-        {
+        virtual ~FixedWorkerGroup() noexcept {
             this->Stop();
             this->Join();
         }
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
@@ -48,13 +44,11 @@ namespace sharpen
 
         virtual void Stop() noexcept override;
 
-        inline virtual bool Running() const noexcept override
-        {
+        inline virtual bool Running() const noexcept override {
             return this->token_.load();
         }
 
-        inline virtual std::size_t GetWorkerCount() const noexcept override
-        {
+        inline virtual std::size_t GetWorkerCount() const noexcept override {
             return this->workers_.size();
         }
     };

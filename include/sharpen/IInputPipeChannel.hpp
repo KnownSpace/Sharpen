@@ -2,19 +2,17 @@
 #ifndef _SHARPEN_IINPUTPIPECHANNEL_HPP
 #define _SHARPEN_IINPUTPIPECHANNEL_HPP
 
-#include "AwaitableFuture.hpp" // IWYU pragma: keep
-#include "ByteBuffer.hpp" // IWYU pragma: keep
+#include "AwaitableFuture.hpp"   // IWYU pragma: keep
+#include "ByteBuffer.hpp"        // IWYU pragma: keep
 #include "IAsyncReadable.hpp"
 #include "IChannel.hpp"
 #include <cstdio>
 #include <cstring>
 
-namespace sharpen
-{
+namespace sharpen {
     class IInputPipeChannel
         : public sharpen::IChannel
-        , public sharpen::IAsyncReadable
-    {
+        , public sharpen::IAsyncReadable {
     private:
         using Self = sharpen::IInputPipeChannel;
 

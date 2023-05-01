@@ -5,10 +5,8 @@
 #include "Mail.hpp"
 #include "RemoteActorStatus.hpp"
 
-namespace sharpen
-{
-    class IRemoteActor
-    {
+namespace sharpen {
+    class IRemoteActor {
     private:
         using Self = sharpen::IRemoteActor;
 
@@ -32,23 +30,18 @@ namespace sharpen
 
         virtual ~IRemoteActor() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline void Post(sharpen::Mail mail)
-        {
-            if (!mail.Empty())
-            {
+        inline void Post(sharpen::Mail mail) {
+            if (!mail.Empty()) {
                 this->NviPost(std::move(mail));
             }
         }
 
-        inline void PostShared(const sharpen::Mail &mail)
-        {
-            if (!mail.Empty())
-            {
+        inline void PostShared(const sharpen::Mail &mail) {
+            if (!mail.Empty()) {
                 this->NviPostShared(mail);
             }
         }
@@ -57,8 +50,7 @@ namespace sharpen
 
         virtual void Cancel() noexcept = 0;
 
-        inline std::uint64_t GetId() const noexcept
-        {
+        inline std::uint64_t GetId() const noexcept {
             return this->NviGetId();
         }
 

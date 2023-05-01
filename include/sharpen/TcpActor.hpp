@@ -12,13 +12,11 @@
 #include "Nonmovable.hpp"
 #include <cassert>
 
-namespace sharpen
-{
+namespace sharpen {
     class TcpActor
         : public sharpen::IRemoteActor
         , public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using Self = sharpen::TcpActor;
 
@@ -34,8 +32,7 @@ namespace sharpen
 
         void DoPost(sharpen::Mail mail) noexcept;
 
-        inline virtual std::uint64_t NviGetId() const noexcept override
-        {
+        inline virtual std::uint64_t NviGetId() const noexcept override {
             assert(this->poster_);
             return this->poster_->GetId();
         }
@@ -60,8 +57,7 @@ namespace sharpen
 
         virtual ~TcpActor() noexcept;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

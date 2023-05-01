@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_LINUXSIGNALFDCHANNEL_HPP
 #define _SHARPEN_LINUXSIGNALFDCHANNEL_HPP
 
-#include "SignalFd.hpp" // IWYU pragma: keep
+#include "SignalFd.hpp"   // IWYU pragma: keep
 
 #ifdef SHARPEN_HAS_SIGNALFD
 
@@ -10,19 +10,16 @@
 #include "SystemError.hpp"
 #include <deque>
 
-namespace sharpen
-{
+namespace sharpen {
     class LinuxSignalFdChannel
         : public sharpen::ISignalChannel
         , public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using Self = sharpen::LinuxSignalFdChannel;
         using Callback = std::function<void(ssize_t)>;
         using Base = sharpen::ISignalChannel;
-        struct ReadTask
-        {
+        struct ReadTask {
             Callback cb;
             char *buf;
             std::size_t bufSize;
@@ -56,8 +53,7 @@ namespace sharpen
 
         virtual ~LinuxSignalFdChannel() noexcept;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

@@ -4,10 +4,8 @@
 
 #include "INetStreamChannel.hpp"
 
-namespace sharpen
-{
-    class ITcpSteamFactory
-    {
+namespace sharpen {
+    class ITcpSteamFactory {
     private:
         using Self = sharpen::ITcpSteamFactory;
 
@@ -27,13 +25,11 @@ namespace sharpen
 
         virtual ~ITcpSteamFactory() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline sharpen::NetStreamChannelPtr Produce()
-        {
+        inline sharpen::NetStreamChannelPtr Produce() {
             return this->NviProduce();
         }
 

@@ -5,8 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace sharpen
-{
+namespace sharpen {
     void SuspendProcess(std::uint32_t processId);
 
     void ResumeProcess(std::uint32_t processId);

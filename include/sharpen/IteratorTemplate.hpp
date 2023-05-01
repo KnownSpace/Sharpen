@@ -4,15 +4,13 @@
 
 #include <cstddef>
 
-namespace sharpen
-{
+namespace sharpen {
     template<typename _IteratorCategory,
              typename _ValueType,
              typename _DistanceType,
              typename _PointerType,
              typename _ReferenceType>
-    struct IteratorTemplate
-    {
+    struct IteratorTemplate {
         using iterator_category = _IteratorCategory;
         using value_type = _ValueType;
         using difference_type = _DistanceType;

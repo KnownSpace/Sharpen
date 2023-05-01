@@ -8,12 +8,10 @@
 #include <cstdint>
 #include <ctime>
 
-namespace sharpen
-{
+namespace sharpen {
     struct StopWatcher
         : public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         std::clock_t begin_;
         std::clock_t end_;
@@ -23,23 +21,19 @@ namespace sharpen
 
         ~StopWatcher() noexcept = default;
 
-        inline void Begin() noexcept
-        {
+        inline void Begin() noexcept {
             this->begin_ = std::clock();
         }
 
-        inline void Stop() noexcept
-        {
+        inline void Stop() noexcept {
             this->end_ = std::clock();
         }
 
-        inline std::clock_t Compute() noexcept
-        {
+        inline std::clock_t Compute() noexcept {
             return this->end_ - this->begin_;
         }
 
-        static inline constexpr std::clock_t TimeUnitPerSecond() noexcept
-        {
+        static inline constexpr std::clock_t TimeUnitPerSecond() noexcept {
             return CLOCKS_PER_SEC;
         }
     };

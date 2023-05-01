@@ -7,10 +7,8 @@
 #include "TypeTraits.hpp"
 #include <functional>
 
-namespace sharpen
-{
-    class IWorkerGroup
-    {
+namespace sharpen {
+    class IWorkerGroup {
     private:
         using Self = sharpen::IWorkerGroup;
 
@@ -30,8 +28,7 @@ namespace sharpen
 
         virtual ~IWorkerGroup() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
@@ -47,8 +44,7 @@ namespace sharpen
                  typename... _Args,
                  typename _Check = sharpen::EnableIf<
                      sharpen::IsCompletedBindableReturned<void, _Fn, _Args...>::Value>>
-        inline void Submit(_Fn &&fn, _Args &&...args)
-        {
+        inline void Submit(_Fn &&fn, _Args &&...args) {
             std::function<void()> task{
                 std::bind(std::forward<_Fn>(fn), std::forward<_Args>(args)...)};
             this->NviSubmit(std::move(task));
@@ -59,8 +55,7 @@ namespace sharpen
                  typename _R,
                  typename _Check = sharpen::EnableIf<
                      sharpen::IsCompletedBindableReturned<_R, _Fn, _Args...>::Value>>
-        inline void Invoke(sharpen::Future<_R> &future, _Fn &&fn, _Args &&...args)
-        {
+        inline void Invoke(sharpen::Future<_R> &future, _Fn &&fn, _Args &&...args) {
             assert(future.IsPending());
             using FnPtr = void (*)(sharpen::Future<_R> *, std::function<_R()>);
             FnPtr fnPtr{static_cast<FnPtr>(&sharpen::FutureCompletor<_R>::CompleteForBind)};
@@ -75,8 +70,7 @@ namespace sharpen
                  typename _R = decltype(std::declval<_Fn>()(std::declval<_Args>()...)),
                  typename _Check = sharpen::EnableIf<
                      sharpen::IsCompletedBindableReturned<_R, _Fn, _Args...>::Value>>
-        inline sharpen::AwaitableFuturePtr<_R> Invoke(_Fn &&fn, _Args &&...args)
-        {
+        inline sharpen::AwaitableFuturePtr<_R> Invoke(_Fn &&fn, _Args &&...args) {
             sharpen::AwaitableFuturePtr<_R> future{sharpen::MakeAwaitableFuture<_R>()};
             this->Invoke(*future, std::forward<_Fn>(fn), std::forward<_Args>(args)...);
             return future;

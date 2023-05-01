@@ -5,20 +5,16 @@
 #include <sharpen/IntOps.hpp>
 
 sharpen::RaftMailBuilder::RaftMailBuilder(std::uint32_t magic) noexcept
-    : magic_(magic)
-{
+    : magic_(magic) {
 }
 
 sharpen::RaftMailBuilder::RaftMailBuilder(Self &&other) noexcept
-    : magic_(other.magic_)
-{
+    : magic_(other.magic_) {
     other.magic_ = 0;
 }
 
-sharpen::RaftMailBuilder &sharpen::RaftMailBuilder::operator=(Self &&other) noexcept
-{
-    if (this != std::addressof(other))
-    {
+sharpen::RaftMailBuilder &sharpen::RaftMailBuilder::operator=(Self &&other) noexcept {
+    if (this != std::addressof(other)) {
         this->magic_ = other.magic_;
         other.magic_ = 0;
     }
@@ -26,8 +22,7 @@ sharpen::RaftMailBuilder &sharpen::RaftMailBuilder::operator=(Self &&other) noex
 }
 
 sharpen::RaftForm sharpen::RaftMailBuilder::BuildForm(
-    sharpen::RaftMailType type, const sharpen::ByteBuffer &content) const noexcept
-{
+    sharpen::RaftMailType type, const sharpen::ByteBuffer &content) const noexcept {
     assert(type != sharpen::RaftMailType::MaxValue);
     assert(type != sharpen::RaftMailType::Unknown);
     sharpen::RaftForm form;
@@ -37,8 +32,7 @@ sharpen::RaftForm sharpen::RaftMailBuilder::BuildForm(
 }
 
 sharpen::Mail sharpen::RaftMailBuilder::BuildMail(sharpen::RaftMailType type,
-                                                  sharpen::ByteBuffer content) const noexcept
-{
+                                                  sharpen::ByteBuffer content) const noexcept {
     sharpen::GenericMail mail{this->magic_};
     mail.Form<sharpen::RaftForm>() = this->BuildForm(type, content);
     mail.SetContent(std::move(content));
@@ -46,8 +40,7 @@ sharpen::Mail sharpen::RaftMailBuilder::BuildMail(sharpen::RaftMailType type,
 }
 
 sharpen::Mail sharpen::RaftMailBuilder::BuildVoteRequest(
-    const sharpen::RaftVoteForRequest &request) const
-{
+    const sharpen::RaftVoteForRequest &request) const {
     std::uint32_t size{sharpen::IntCast<std::uint32_t>(request.ComputeSize())};
     sharpen::ByteBuffer content{size};
     sharpen::BufferWriter writer{content};
@@ -56,8 +49,7 @@ sharpen::Mail sharpen::RaftMailBuilder::BuildVoteRequest(
 }
 
 sharpen::Mail sharpen::RaftMailBuilder::BuildVoteResponse(
-    const sharpen::RaftVoteForResponse &response) const
-{
+    const sharpen::RaftVoteForResponse &response) const {
     std::uint32_t size{sharpen::IntCast<std::uint32_t>(response.ComputeSize())};
     sharpen::ByteBuffer content{size};
     sharpen::BufferWriter writer{content};
@@ -66,8 +58,7 @@ sharpen::Mail sharpen::RaftMailBuilder::BuildVoteResponse(
 }
 
 sharpen::Mail sharpen::RaftMailBuilder::BuildHeartbeatRequest(
-    const sharpen::RaftHeartbeatRequest &request) const
-{
+    const sharpen::RaftHeartbeatRequest &request) const {
     std::uint32_t size{sharpen::IntCast<std::uint32_t>(request.ComputeSize())};
     sharpen::ByteBuffer content{size};
     sharpen::BufferWriter writer{content};
@@ -76,8 +67,7 @@ sharpen::Mail sharpen::RaftMailBuilder::BuildHeartbeatRequest(
 }
 
 sharpen::Mail sharpen::RaftMailBuilder::BuildHeartbeatResponse(
-    const sharpen::RaftHeartbeatResponse &response) const
-{
+    const sharpen::RaftHeartbeatResponse &response) const {
     std::uint32_t size{sharpen::IntCast<std::uint32_t>(response.ComputeSize())};
     sharpen::ByteBuffer content{size};
     sharpen::BufferWriter writer{content};
@@ -86,8 +76,7 @@ sharpen::Mail sharpen::RaftMailBuilder::BuildHeartbeatResponse(
 }
 
 sharpen::Mail sharpen::RaftMailBuilder::BuildPrevoteRequest(
-    const sharpen::RaftPrevoteRequest &request) const
-{
+    const sharpen::RaftPrevoteRequest &request) const {
     std::uint32_t size{sharpen::IntCast<std::uint32_t>(request.ComputeSize())};
     sharpen::ByteBuffer content{size};
     sharpen::BufferWriter writer{content};
@@ -96,8 +85,7 @@ sharpen::Mail sharpen::RaftMailBuilder::BuildPrevoteRequest(
 }
 
 sharpen::Mail sharpen::RaftMailBuilder::BuildPrevoteResponse(
-    const sharpen::RaftPrevoteResponse &response) const
-{
+    const sharpen::RaftPrevoteResponse &response) const {
     std::uint32_t size{sharpen::IntCast<std::uint32_t>(response.ComputeSize())};
     sharpen::ByteBuffer content{size};
     sharpen::BufferWriter writer{content};
@@ -106,8 +94,7 @@ sharpen::Mail sharpen::RaftMailBuilder::BuildPrevoteResponse(
 }
 
 sharpen::Mail sharpen::RaftMailBuilder::BuildSnapshotRequest(
-    const sharpen::RaftSnapshotRequest &request) const
-{
+    const sharpen::RaftSnapshotRequest &request) const {
     std::uint32_t size{sharpen::IntCast<std::uint32_t>(request.ComputeSize())};
     sharpen::ByteBuffer content{size};
     sharpen::BufferWriter writer{content};
@@ -116,8 +103,7 @@ sharpen::Mail sharpen::RaftMailBuilder::BuildSnapshotRequest(
 }
 
 sharpen::Mail sharpen::RaftMailBuilder::BuildSnapshotResponse(
-    const sharpen::RaftSnapshotResponse &response) const
-{
+    const sharpen::RaftSnapshotResponse &response) const {
     std::uint32_t size{sharpen::IntCast<std::uint32_t>(response.ComputeSize())};
     sharpen::ByteBuffer content{size};
     sharpen::BufferWriter writer{content};

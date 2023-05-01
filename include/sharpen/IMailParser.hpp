@@ -7,10 +7,8 @@
 #include "MailParseError.hpp"
 #include <memory>
 
-namespace sharpen
-{
-    class IMailParser
-    {
+namespace sharpen {
+    class IMailParser {
     private:
         using Self = sharpen::IMailParser;
 
@@ -32,46 +30,37 @@ namespace sharpen
 
         virtual ~IMailParser() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline void Parse(sharpen::ByteSlice slice)
-        {
-            if (!slice.Empty())
-            {
+        inline void Parse(sharpen::ByteSlice slice) {
+            if (!slice.Empty()) {
                 this->NviParse(slice);
             }
         }
 
-        inline void Parse(const sharpen::ByteBuffer &buffer, std::size_t offset, std::size_t size)
-        {
+        inline void Parse(const sharpen::ByteBuffer &buffer, std::size_t offset, std::size_t size) {
             this->NviParse(buffer.GetSlice(offset, size));
         }
 
-        inline void Parse(const char *data, std::size_t size)
-        {
+        inline void Parse(const char *data, std::size_t size) {
             sharpen::ByteSlice slice{data, size};
             this->NviParse(slice);
         }
 
-        inline void Parse(const sharpen::ByteBuffer &buffer)
-        {
+        inline void Parse(const sharpen::ByteBuffer &buffer) {
             this->NviParse(buffer.GetSlice());
         }
 
-        inline void Parse(const sharpen::ByteBuffer &buffer, std::size_t offset)
-        {
+        inline void Parse(const sharpen::ByteBuffer &buffer, std::size_t offset) {
             assert(buffer.GetSize() > offset);
             std::size_t size{buffer.GetSize() - offset};
             this->Parse(buffer, offset, size);
         }
 
-        inline sharpen::Mail PopCompletedMail()
-        {
-            if (!this->Completed())
-            {
+        inline sharpen::Mail PopCompletedMail() {
+            if (!this->Completed()) {
                 throw sharpen::MailParseError{"Parse not complete"};
             }
             return this->NviPopCompletedMail();

@@ -8,19 +8,17 @@
 
 #define SHARPEN_HAS_WINFILE
 
-#include "AwaitableFuture.hpp" // IWYU pragma: keep
+#include "AwaitableFuture.hpp"   // IWYU pragma: keep
 #include "IFileChannel.hpp"
-#include "IocpSelector.hpp" // IWYU pragma: keep
+#include "IocpSelector.hpp"   // IWYU pragma: keep
 #include "Optional.hpp"
 #include <mutex>
 
-namespace sharpen
-{
+namespace sharpen {
     class WinFileChannel
         : public sharpen::IFileChannel
         , public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using MyFuture = sharpen::Future<std::size_t>;
         using MyFuturePtr = MyFuture *;

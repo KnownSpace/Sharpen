@@ -4,17 +4,15 @@
 
 #include "AsyncRwLock.hpp"
 #include "IEventLoopGroup.hpp"
-#include "IFileChannel.hpp" // IWYU pragma: keep
+#include "IFileChannel.hpp"   // IWYU pragma: keep
 #include "IStatusMap.hpp"
 #include <map>
 #include <string>
 
-namespace sharpen
-{
+namespace sharpen {
     class CowStatusMap
         : public sharpen::IStatusMap
-        , public sharpen::Noncopyable
-    {
+        , public sharpen::Noncopyable {
     private:
         using Self = CowStatusMap;
         using Map = std::map<sharpen::ByteBuffer, sharpen::ByteBuffer>;
@@ -47,8 +45,7 @@ namespace sharpen
 
         virtual ~CowStatusMap() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
     };

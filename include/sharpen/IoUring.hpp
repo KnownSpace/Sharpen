@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_IOURING_HPP
 #define _SHARPEN_IOURING_HPP
 
-#include "SystemMacro.hpp" // IWYU pragma: keep
+#include "SystemMacro.hpp"   // IWYU pragma: keep
 
 #ifdef SHARPEN_IS_LINUX
 #include <sys/syscall.h>
@@ -23,11 +23,9 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace sharpen
-{
+namespace sharpen {
     // system call
-    inline int IoUringSetup(std::uint32_t entries, struct io_uring_params *p)
-    {
+    inline int IoUringSetup(std::uint32_t entries, struct io_uring_params *p) {
         return (int)syscall(SYS_io_uring_setup, entries, p);
     }
 
@@ -35,8 +33,7 @@ namespace sharpen
                             unsigned int to_submit,
                             unsigned int min_complete,
                             unsigned int flags,
-                            sigset_t *sig)
-    {
+                            sigset_t *sig) {
         return (int)syscall(SYS_io_uring_enter, ring_fd, to_submit, min_complete, flags, sig);
     }
 
@@ -45,21 +42,18 @@ namespace sharpen
                               unsigned int min_complete,
                               unsigned int flags,
                               const void *arg,
-                              size_t argsz)
-    {
+                              size_t argsz) {
         return (int)syscall(SYS_io_uring_enter, fd, to_submit, min_complete, flags, arg, argsz);
     }
 
     inline int IoUringRegister(unsigned int fd,
                                unsigned int opcode,
                                void *arg,
-                               unsigned int nr_args)
-    {
+                               unsigned int nr_args) {
         return (int)syscall(SYS_io_uring_register, fd, opcode, arg, nr_args);
     }
 
-    struct IoSring
-    {
+    struct IoSring {
         unsigned *head_;
         unsigned *tail_;
         unsigned *ringMask_;
@@ -68,8 +62,7 @@ namespace sharpen
         unsigned *array_;
     };
 
-    struct IoCring
-    {
+    struct IoCring {
         unsigned *head_;
         unsigned *tail_;
         unsigned *ringMask_;
@@ -79,22 +72,19 @@ namespace sharpen
 
     class IoUring
         : public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using Self = sharpen::IoUring;
 
 
         template<typename _T>
-        inline static _T Load(const _T *p) noexcept
-        {
+        inline static _T Load(const _T *p) noexcept {
             return std::atomic_load_explicit(reinterpret_cast<const std::atomic<_T> *>(p),
                                              std::memory_order_acquire);
         }
 
         template<typename _T>
-        inline static void Store(_T *p, _T value) noexcept
-        {
+        inline static void Store(_T *p, _T value) noexcept {
             std::atomic_store_explicit(
                 reinterpret_cast<std::atomic<_T> *>(p), value, std::memory_order_release);
         }
@@ -136,18 +126,15 @@ namespace sharpen
                    void *arg,
                    size_t argsz);
 
-        inline void Enter(unsigned int to_submit, unsigned int min_complete, unsigned int flags)
-        {
+        inline void Enter(unsigned int to_submit, unsigned int min_complete, unsigned int flags) {
             this->Enter(to_submit, min_complete, flags, nullptr);
         }
 
-        inline void Wait(unsigned int min_complete)
-        {
+        inline void Wait(unsigned int min_complete) {
             this->Enter(0, min_complete, IORING_ENTER_GETEVENTS);
         }
 
-        inline void Wait(unsigned int min_complete, sigset_t *sig)
-        {
+        inline void Wait(unsigned int min_complete, sigset_t *sig) {
             this->Enter(0, min_complete, IORING_ENTER_GETEVENTS, sig);
         }
 

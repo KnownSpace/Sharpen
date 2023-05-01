@@ -8,14 +8,12 @@
 #include <cstdint>
 #include <vector>
 
-namespace sharpen
-{
+namespace sharpen {
 
     class AsyncSemaphore
         : public sharpen::Noncopyable
         , public sharpen::Nonmovable
-        , public sharpen::IAsyncLockable
-    {
+        , public sharpen::IAsyncLockable {
     private:
         using MyFuture = sharpen::AwaitableFuture<void>;
         using MyFuturePtr = MyFuture *;
@@ -38,8 +36,7 @@ namespace sharpen
 
         bool TryLock() noexcept;
 
-        inline bool try_lock() noexcept
-        {
+        inline bool try_lock() noexcept {
             return this->TryLock();
         }
 

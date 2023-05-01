@@ -8,8 +8,7 @@
 #include <stdlib.h>
 #endif
 
-void *sharpen::AlignedAlloc(std::size_t size, std::size_t alignment) noexcept
-{
+void *sharpen::AlignedAlloc(std::size_t size, std::size_t alignment) noexcept {
     assert(size != 0);
 #ifdef SHARPEN_IS_WIN
     return _aligned_malloc(size, alignment);
@@ -21,8 +20,7 @@ void *sharpen::AlignedAlloc(std::size_t size, std::size_t alignment) noexcept
 #endif
 }
 
-void sharpen::AlignedFree(void *memblock) noexcept
-{
+void sharpen::AlignedFree(void *memblock) noexcept {
 #ifdef SHARPEN_IS_WIN
     return _aligned_free(memblock);
 #else

@@ -10,10 +10,8 @@
 #include "Ipv6EndPoint.hpp"
 #include <stdexcept>
 
-namespace sharpen
-{
-    class Ipv6TcpActorBuilder : public sharpen::IRemoteActorBuilder
-    {
+namespace sharpen {
+    class Ipv6TcpActorBuilder : public sharpen::IRemoteActorBuilder {
     private:
         using Self = sharpen::Ipv6TcpActorBuilder;
 
@@ -52,10 +50,8 @@ namespace sharpen
 
         Ipv6TcpActorBuilder(Self &&other) noexcept;
 
-        inline Self &operator=(const Self &other)
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -66,8 +62,7 @@ namespace sharpen
 
         virtual ~Ipv6TcpActorBuilder() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

@@ -5,10 +5,8 @@
 #include "GenericMailHeader.hpp"
 #include "IMailParser.hpp"
 
-namespace sharpen
-{
-    class GenericMailPaser : public sharpen::IMailParser
-    {
+namespace sharpen {
+    class GenericMailPaser : public sharpen::IMailParser {
     private:
         using Self = GenericMailPaser;
 
@@ -28,10 +26,8 @@ namespace sharpen
 
         GenericMailPaser(Self &&other) noexcept;
 
-        inline Self &operator=(const Self &other)
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -42,8 +38,7 @@ namespace sharpen
 
         virtual ~GenericMailPaser() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

@@ -5,12 +5,10 @@
 #include "IRaftSnapshotInstaller.hpp"
 #include "IRaftSnapshotProvider.hpp"
 
-namespace sharpen
-{
+namespace sharpen {
     class IRaftSnapshotController
         : public sharpen::IRaftSnapshotProvider
-        , public sharpen::IRaftSnapshotInstaller
-    {
+        , public sharpen::IRaftSnapshotInstaller {
     private:
         using Self = sharpen::IRaftSnapshotController;
 
@@ -28,28 +26,23 @@ namespace sharpen
 
         virtual ~IRaftSnapshotController() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline sharpen::IRaftSnapshotProvider &Provider() noexcept
-        {
+        inline sharpen::IRaftSnapshotProvider &Provider() noexcept {
             return *this;
         }
 
-        inline const sharpen::IRaftSnapshotProvider &Provider() const noexcept
-        {
+        inline const sharpen::IRaftSnapshotProvider &Provider() const noexcept {
             return *this;
         }
 
-        inline sharpen::IRaftSnapshotInstaller &Installer() noexcept
-        {
+        inline sharpen::IRaftSnapshotInstaller &Installer() noexcept {
             return *this;
         }
 
-        inline const sharpen::IRaftSnapshotInstaller &Installer() const noexcept
-        {
+        inline const sharpen::IRaftSnapshotInstaller &Installer() const noexcept {
             return *this;
         }
     };

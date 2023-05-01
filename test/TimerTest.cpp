@@ -8,8 +8,7 @@
 
 #include <simpletest/TestRunner.hpp>
 
-class CancelTest : public simpletest::ITypenamedTest<CancelTest>
-{
+class CancelTest : public simpletest::ITypenamedTest<CancelTest> {
 private:
     using Self = CancelTest;
 
@@ -18,13 +17,11 @@ public:
 
     ~CancelTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::GetLocalLoopGroup());
         sharpen::AwaitableFuture<bool> future;
         sharpen::StopWatcher sw;
@@ -38,8 +35,7 @@ public:
     }
 };
 
-class AwaitForTest : public simpletest::ITypenamedTest<AwaitForTest>
-{
+class AwaitForTest : public simpletest::ITypenamedTest<AwaitForTest> {
 private:
     using Self = AwaitForTest;
 
@@ -48,13 +44,11 @@ public:
 
     ~AwaitForTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         sharpen::UniquedTimerRef timer{sharpen::GetUniquedTimerRef()};
         sharpen::AwaitableFuture<void> future;
         sharpen::AwaitForResult result{
@@ -64,8 +58,7 @@ public:
     }
 };
 
-class AwaitForCompletedTest : public simpletest::ITypenamedTest<AwaitForCompletedTest>
-{
+class AwaitForCompletedTest : public simpletest::ITypenamedTest<AwaitForCompletedTest> {
 private:
     using Self = AwaitForCompletedTest;
 
@@ -74,21 +67,17 @@ public:
 
     ~AwaitForCompletedTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         sharpen::UniquedTimerRef timer{sharpen::GetUniquedTimerRef()};
         sharpen::AwaitableFuture<void> future;
-        sharpen::Launch(
-            [&future]()
-            {
-                sharpen::Delay(std::chrono::milliseconds(500));
-                future.Complete();
-            });
+        sharpen::Launch([&future]() {
+            sharpen::Delay(std::chrono::milliseconds(500));
+            future.Complete();
+        });
         sharpen::AwaitForResult result{
             sharpen::AwaitFor(future, timer.Timer(), std::chrono::seconds(1))};
         return this->Assert(result == sharpen::AwaitForResult::CompletedOrError,
@@ -96,8 +85,7 @@ public:
     }
 };
 
-static int Test()
-{
+static int Test() {
     simpletest::TestRunner runner;
     runner.Register<CancelTest>();
     runner.Register<AwaitForTest>();
@@ -105,8 +93,7 @@ static int Test()
     return runner.Run();
 }
 
-int main(int argc, char const *argv[])
-{
+int main(int argc, char const *argv[]) {
     sharpen::EventEngine &engine = sharpen::EventEngine::SetupSingleThreadEngine();
     return engine.StartupWithCode(&Test);
 }

@@ -7,8 +7,7 @@
 
 #include <simpletest/TestRunner.hpp>
 
-class Message : public sharpen::BinarySerializable<Message>
-{
+class Message : public sharpen::BinarySerializable<Message> {
 private:
     using Self = Message;
     using ContainerType = std::map<std::string, sharpen::Optional<std::string>>;
@@ -22,17 +21,14 @@ public:
 
     Message(Self &&other) noexcept = default;
 
-    inline Self &operator=(const Self &other)
-    {
+    inline Self &operator=(const Self &other) {
         Self tmp{other};
         std::swap(tmp, *this);
         return *this;
     }
 
-    inline Self &operator=(Self &&other) noexcept
-    {
-        if (this != std::addressof(other))
-        {
+    inline Self &operator=(Self &&other) noexcept {
+        if (this != std::addressof(other)) {
             this->container_ = std::move(other.container_);
         }
         return *this;
@@ -40,44 +36,36 @@ public:
 
     ~Message() noexcept = default;
 
-    ContainerType &Container() noexcept
-    {
+    ContainerType &Container() noexcept {
         return this->container_;
     }
 
-    const ContainerType &Container() const noexcept
-    {
+    const ContainerType &Container() const noexcept {
         return this->container_;
     }
 
-    std::size_t ComputeSize() const noexcept
-    {
+    std::size_t ComputeSize() const noexcept {
         return Helper::ComputeSize(this->container_);
     }
 
-    std::size_t LoadFrom(const char *data, std::size_t size)
-    {
+    std::size_t LoadFrom(const char *data, std::size_t size) {
         return Helper::LoadFrom(this->container_, data, size);
     }
 
-    std::size_t UnsafeStoreTo(char *data) const noexcept
-    {
+    std::size_t UnsafeStoreTo(char *data) const noexcept {
         return Helper::UnsafeStoreTo(this->container_, data);
     }
 };
 
-void Store(const sharpen::BinarySerializable<Message> &msg, sharpen::ByteBuffer &buf)
-{
+void Store(const sharpen::BinarySerializable<Message> &msg, sharpen::ByteBuffer &buf) {
     msg.StoreTo(buf);
 }
 
-void Load(sharpen::BinarySerializable<Message> &msg, const sharpen::ByteBuffer &buf)
-{
+void Load(sharpen::BinarySerializable<Message> &msg, const sharpen::ByteBuffer &buf) {
     msg.LoadFrom(buf);
 }
 
-class SimpleObjectTest : public simpletest::ITypenamedTest<SimpleObjectTest>
-{
+class SimpleObjectTest : public simpletest::ITypenamedTest<SimpleObjectTest> {
 private:
     using Self = SimpleObjectTest;
 
@@ -86,13 +74,11 @@ public:
 
     ~SimpleObjectTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         sharpen::ByteBuffer buf;
         {
             Message msg;
@@ -110,8 +96,7 @@ public:
     }
 };
 
-class StdContainerTest : public simpletest::ITypenamedTest<StdContainerTest>
-{
+class StdContainerTest : public simpletest::ITypenamedTest<StdContainerTest> {
 private:
     using Self = StdContainerTest;
 
@@ -120,18 +105,15 @@ public:
 
     ~StdContainerTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         sharpen::ByteBuffer buf;
         {
             std::vector<Message> msgs;
-            for (std::size_t i = 0; i != 3; ++i)
-            {
+            for (std::size_t i = 0; i != 3; ++i) {
                 Message msg;
                 msg.Container().emplace("vector msg", "test");
                 msgs.emplace_back(msg);
@@ -142,8 +124,7 @@ public:
             std::vector<Message> msgs;
             sharpen::BinarySerializator::LoadFrom(msgs, buf);
             bool status{true};
-            for (std::size_t i = 0, count = msgs.size(); i != count; ++i)
-            {
+            for (std::size_t i = 0, count = msgs.size(); i != count; ++i) {
                 auto &opt{msgs[i].Container()["vector msg"]};
                 status = status && opt.Exist() && opt.Get() == "test";
             }
@@ -152,8 +133,7 @@ public:
     }
 };
 
-int main(int argc, char const *argv[])
-{
+int main(int argc, char const *argv[]) {
     simpletest::TestRunner runner;
     runner.Register<SimpleObjectTest>();
     runner.Register<StdContainerTest>();

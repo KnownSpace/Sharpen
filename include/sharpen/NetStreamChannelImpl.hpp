@@ -5,8 +5,7 @@
 #include "PosixFileChannel.hpp"
 #include "WinNetStreamChannel.hpp"
 
-namespace sharpen
-{
+namespace sharpen {
 #ifdef SHARPEN_HAS_WINSOCKET
     using NetStreamChannelImpl = sharpen::WinNetStreamChannel;
 #else

@@ -9,39 +9,31 @@
 sharpen::WinTimer::WinTimer()
     : Mybase()
     , handle_(INVALID_HANDLE_VALUE)
-    , future_(nullptr)
-{
+    , future_(nullptr) {
     this->handle_ = ::CreateWaitableTimerA(nullptr, TRUE, nullptr);
-    if (this->handle_ == INVALID_HANDLE_VALUE)
-    {
+    if (this->handle_ == INVALID_HANDLE_VALUE) {
         sharpen::ThrowLastError();
     }
 }
 
-sharpen::WinTimer::~WinTimer() noexcept
-{
-    if (this->handle_ != INVALID_HANDLE_VALUE)
-    {
+sharpen::WinTimer::~WinTimer() noexcept {
+    if (this->handle_ != INVALID_HANDLE_VALUE) {
         ::CloseHandle(this->handle_);
     }
 }
 
-void WINAPI sharpen::WinTimer::CompleteFuture(void *arg, DWORD, DWORD)
-{
+void WINAPI sharpen::WinTimer::CompleteFuture(void *arg, DWORD, DWORD) {
     assert(arg);
     sharpen::WinTimer *thiz = reinterpret_cast<sharpen::WinTimer *>(arg);
     sharpen::Future<bool> *future{thiz->future_.exchange(nullptr)};
-    if (future)
-    {
+    if (future) {
         future->Complete(true);
     }
 }
 
-void sharpen::WinTimer::WaitAsync(sharpen::Future<bool> &future, std::uint64_t waitMs)
-{
+void sharpen::WinTimer::WaitAsync(sharpen::Future<bool> &future, std::uint64_t waitMs) {
     assert(this->handle_ != INVALID_HANDLE_VALUE);
-    if (waitMs == 0)
-    {
+    if (waitMs == 0) {
         future.Complete(true);
         return;
     }
@@ -50,23 +42,19 @@ void sharpen::WinTimer::WaitAsync(sharpen::Future<bool> &future, std::uint64_t w
     this->future_ = &future;
     BOOL r =
         ::SetWaitableTimer(this->handle_, &li, 0, &sharpen::WinTimer::CompleteFuture, this, FALSE);
-    if (r == FALSE)
-    {
+    if (r == FALSE) {
         sharpen::ThrowLastError();
     }
 }
 
-void sharpen::WinTimer::Cancel()
-{
+void sharpen::WinTimer::Cancel() {
     assert(this->handle_ != INVALID_HANDLE_VALUE);
-    if (!this->future_)
-    {
+    if (!this->future_) {
         return;
     }
     ::CancelWaitableTimer(this->handle_);
     sharpen::Future<bool> *future{this->future_.exchange(nullptr)};
-    if (future)
-    {
+    if (future) {
         future->Complete(false);
     }
 }

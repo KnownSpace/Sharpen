@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_POSIXNETSTREAMCHANNEL_HPP
 #define _SHARPEN_POSIXNETSTREAMCHANNEL_HPP
 
-#include "SystemMacro.hpp" // IWYU pragma: keep
+#include "SystemMacro.hpp"   // IWYU pragma: keep
 
 #ifdef SHARPEN_IS_NIX
 
@@ -15,13 +15,11 @@
 #include <atomic>
 #include <vector>
 
-namespace sharpen
-{
+namespace sharpen {
 
     class PosixNetStreamChannel
         : public sharpen::INetStreamChannel
-        , public sharpen::Noncopyable
-    {
+        , public sharpen::Noncopyable {
     private:
         using Self = sharpen::PosixNetStreamChannel;
         using Mybase = sharpen::INetStreamChannel;
@@ -32,8 +30,7 @@ namespace sharpen
         using Callback = std::function<void(ssize_t)>;
         using Callbacks = std::vector<Callback>;
 
-        enum class IoStatus
-        {
+        enum class IoStatus {
             Io,
             Accept,
             Connect

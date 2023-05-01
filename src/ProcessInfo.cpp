@@ -8,11 +8,9 @@
 #include <unistd.h>
 #endif
 
-std::uint32_t sharpen::GetProcessId() noexcept
-{
+std::uint32_t sharpen::GetProcessId() noexcept {
     static sharpen::Optional<std::uint32_t> id;
-    if (!id.Exist())
-    {
+    if (!id.Exist()) {
 #ifdef SHARPEN_IS_WIN
         id.Construct(::GetCurrentProcessId());
 #else

@@ -14,10 +14,8 @@
 #include <stdexcept>
 #include <unordered_map>
 
-namespace sharpen
-{
-    class Broadcaster : public sharpen::Noncopyable
-    {
+namespace sharpen {
+    class Broadcaster : public sharpen::Noncopyable {
     private:
         using Self = sharpen::Broadcaster;
         using Lock = sharpen::AsyncMutex;
@@ -36,8 +34,7 @@ namespace sharpen
             typename _Check = decltype(std::declval<std::unique_ptr<sharpen::IRemoteActor> &>() =
                                            std::move(*std::declval<_Iterator &>()++))>
         Broadcaster(std::move_iterator<_Iterator> begin, std::move_iterator<_Iterator> end)
-            : Self{begin, end, 1}
-        {
+            : Self{begin, end, 1} {
         }
 
         template<
@@ -51,17 +48,14 @@ namespace sharpen
             , index_(0)
             , pipelineLength_(pipeline)
             , sharedMails_()
-            , actors_()
-        {
+            , actors_() {
             this->lock_.reset(new (std::nothrow) Lock{});
-            if (!this->lock_)
-            {
+            if (!this->lock_) {
                 throw std::bad_alloc{};
             }
             std::size_t sz{sharpen::GetRangeSize(begin, end)};
             this->actors_.rehash(sz);
-            while (begin != end)
-            {
+            while (begin != end) {
                 std::uint64_t id{(*begin)->GetId()};
                 this->actors_.emplace(id, std::move(*begin));
                 ++begin;
@@ -75,16 +69,13 @@ namespace sharpen
                     std::size_t pipeline);
 
         Broadcaster(std::unique_ptr<sharpen::IRemoteActor> *actors, std::size_t size)
-            : Self{actors, size, 1}
-        {
+            : Self{actors, size, 1} {
         }
 
         Broadcaster(Self &&other) noexcept = default;
 
-        inline Self &operator=(Self &&other) noexcept
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(Self &&other) noexcept {
+            if (this != std::addressof(other)) {
                 this->lock_ = std::move(other.lock_);
                 this->index_ = other.index_;
                 this->pipelineLength_ = other.pipelineLength_;
@@ -98,8 +89,7 @@ namespace sharpen
 
         ~Broadcaster() noexcept;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

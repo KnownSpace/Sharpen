@@ -6,8 +6,7 @@
 #include "SystemMacro.hpp"
 #include "WinTimer.hpp"
 
-namespace sharpen
-{
+namespace sharpen {
 #ifdef SHARPEN_IS_WIN
     using TimerImpl = sharpen::WinTimer;
 #else

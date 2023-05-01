@@ -7,10 +7,8 @@
 #include <cstdint>
 #include <utility>
 
-namespace sharpen
-{
-    class RaftLeaderRecord
-    {
+namespace sharpen {
+    class RaftLeaderRecord {
     private:
         using Self = sharpen::RaftLeaderRecord;
 
@@ -26,10 +24,8 @@ namespace sharpen
 
         RaftLeaderRecord(Self &&other) noexcept;
 
-        inline Self &operator=(const Self &other) noexcept
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) noexcept {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -40,8 +36,7 @@ namespace sharpen
 
         ~RaftLeaderRecord() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

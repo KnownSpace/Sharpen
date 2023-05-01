@@ -3,15 +3,13 @@
 #define _SHARPEN_RAFTVOTEFORREQUEST_HPP
 
 #include "BinarySerializable.hpp"
-#include "CorruptedDataError.hpp" // IWYU pragma: keep
+#include "CorruptedDataError.hpp"   // IWYU pragma: keep
 #include <cstddef>
 #include <cstdint>
 #include <utility>
 
-namespace sharpen
-{
-    class RaftVoteForRequest : public sharpen::BinarySerializable<sharpen::RaftVoteForRequest>
-    {
+namespace sharpen {
+    class RaftVoteForRequest : public sharpen::BinarySerializable<sharpen::RaftVoteForRequest> {
     private:
         using Self = sharpen::RaftVoteForRequest;
 
@@ -32,10 +30,8 @@ namespace sharpen
 
         RaftVoteForRequest(Self &&other) noexcept;
 
-        inline Self &operator=(const Self &other) noexcept
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) noexcept {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -46,8 +42,7 @@ namespace sharpen
 
         ~RaftVoteForRequest() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
@@ -57,43 +52,35 @@ namespace sharpen
 
         std::size_t UnsafeStoreTo(char *data) const noexcept;
 
-        inline std::uint64_t GetId() const noexcept
-        {
+        inline std::uint64_t GetId() const noexcept {
             return this->id_;
         }
 
-        inline void SetId(std::uint64_t id) noexcept
-        {
+        inline void SetId(std::uint64_t id) noexcept {
             this->id_ = id;
         }
 
-        inline std::uint64_t GetTerm() const noexcept
-        {
+        inline std::uint64_t GetTerm() const noexcept {
             return this->term_;
         }
 
-        inline void SetTerm(std::uint64_t term) noexcept
-        {
+        inline void SetTerm(std::uint64_t term) noexcept {
             this->term_ = term;
         }
 
-        inline std::uint64_t GetLastIndex() const noexcept
-        {
+        inline std::uint64_t GetLastIndex() const noexcept {
             return this->lastIndex_;
         }
 
-        inline void SetLastIndex(std::uint64_t lastIndex) noexcept
-        {
+        inline void SetLastIndex(std::uint64_t lastIndex) noexcept {
             this->lastIndex_ = lastIndex;
         }
 
-        inline std::uint64_t GetLastTerm() const noexcept
-        {
+        inline std::uint64_t GetLastTerm() const noexcept {
             return this->lastTerm_;
         }
 
-        inline void SetLastTerm(std::uint64_t lastTerm) noexcept
-        {
+        inline void SetLastTerm(std::uint64_t lastTerm) noexcept {
             this->lastTerm_ = lastTerm;
         }
     };

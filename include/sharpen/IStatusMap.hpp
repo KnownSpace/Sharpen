@@ -6,10 +6,8 @@
 #include "Optional.hpp"
 #include <cassert>
 
-namespace sharpen
-{
-    class IStatusMap
-    {
+namespace sharpen {
+    class IStatusMap {
     private:
         using Self = sharpen::IStatusMap;
 
@@ -34,25 +32,21 @@ namespace sharpen
 
         virtual ~IStatusMap() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline void Write(sharpen::ByteBuffer key, sharpen::ByteBuffer value)
-        {
+        inline void Write(sharpen::ByteBuffer key, sharpen::ByteBuffer value) {
             assert(!key.Empty());
             return this->NviWrite(std::move(key), std::move(value));
         }
 
-        inline sharpen::Optional<sharpen::ByteBuffer> Lookup(const sharpen::ByteBuffer &key) const
-        {
+        inline sharpen::Optional<sharpen::ByteBuffer> Lookup(const sharpen::ByteBuffer &key) const {
             assert(!key.Empty());
             return this->NviLookup(key);
         }
 
-        inline void Remove(const sharpen::ByteBuffer &key)
-        {
+        inline void Remove(const sharpen::ByteBuffer &key) {
             assert(!key.Empty());
             return this->NviRemove(key);
         }

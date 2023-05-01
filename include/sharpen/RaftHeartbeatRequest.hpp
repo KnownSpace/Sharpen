@@ -9,10 +9,8 @@
 #include <utility>
 #include <vector>
 
-namespace sharpen
-{
-    class RaftHeartbeatRequest : public sharpen::BinarySerializable<sharpen::RaftHeartbeatRequest>
-    {
+namespace sharpen {
+    class RaftHeartbeatRequest : public sharpen::BinarySerializable<sharpen::RaftHeartbeatRequest> {
     private:
         using Self = sharpen::RaftHeartbeatRequest;
 
@@ -30,10 +28,8 @@ namespace sharpen
 
         RaftHeartbeatRequest(Self &&other) noexcept;
 
-        inline Self &operator=(const Self &other)
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -44,68 +40,55 @@ namespace sharpen
 
         ~RaftHeartbeatRequest() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline std::uint64_t GetTerm() const noexcept
-        {
+        inline std::uint64_t GetTerm() const noexcept {
             return this->term_;
         }
 
-        inline void SetTerm(std::uint64_t term) noexcept
-        {
+        inline void SetTerm(std::uint64_t term) noexcept {
             this->term_ = term;
         }
 
-        inline std::uint64_t GetLeaderId() const noexcept
-        {
+        inline std::uint64_t GetLeaderId() const noexcept {
             return this->leaderId_;
         }
 
-        inline void SetLeaderId(std::uint64_t leaderId) noexcept
-        {
+        inline void SetLeaderId(std::uint64_t leaderId) noexcept {
             this->leaderId_ = leaderId;
         }
 
-        inline std::uint64_t GetPreLogIndex() const noexcept
-        {
+        inline std::uint64_t GetPreLogIndex() const noexcept {
             return this->preLogIndex_;
         }
 
-        inline void SetPreLogIndex(std::uint64_t logIndex) noexcept
-        {
+        inline void SetPreLogIndex(std::uint64_t logIndex) noexcept {
             this->preLogIndex_ = logIndex;
         }
 
-        inline std::uint64_t GetPreLogTerm() const noexcept
-        {
+        inline std::uint64_t GetPreLogTerm() const noexcept {
             return this->preLogTerm_;
         }
 
-        inline void SetPreLogTerm(std::uint64_t term) noexcept
-        {
+        inline void SetPreLogTerm(std::uint64_t term) noexcept {
             this->preLogTerm_ = term;
         }
 
-        inline sharpen::LogEntries &Entries() noexcept
-        {
+        inline sharpen::LogEntries &Entries() noexcept {
             return this->entries_;
         }
 
-        inline const sharpen::LogEntries &Entries() const noexcept
-        {
+        inline const sharpen::LogEntries &Entries() const noexcept {
             return this->entries_;
         }
 
-        inline std::uint64_t GetCommitIndex() const noexcept
-        {
+        inline std::uint64_t GetCommitIndex() const noexcept {
             return this->leaderCommitIndex_;
         }
 
-        inline void SetCommitIndex(std::uint64_t commitIndex) noexcept
-        {
+        inline void SetCommitIndex(std::uint64_t commitIndex) noexcept {
             this->leaderCommitIndex_ = commitIndex;
         }
 

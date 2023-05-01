@@ -8,8 +8,7 @@
 #include <functional>
 #include <memory>
 
-namespace sharpen
-{
+namespace sharpen {
     class EventLoop;
 
     class IoEvent;
@@ -18,8 +17,7 @@ namespace sharpen
 
     void CloseFileHandle(sharpen::FileHandle handle) noexcept;
 
-    class IChannel : public std::enable_shared_from_this<sharpen::IChannel>
-    {
+    class IChannel : public std::enable_shared_from_this<sharpen::IChannel> {
     private:
         using Self = sharpen::IChannel;
         using Closer = std::function<void(sharpen::FileHandle)>;
@@ -49,18 +47,15 @@ namespace sharpen
         // close channel
         void Close() noexcept;
 
-        sharpen::FileHandle GetHandle() const noexcept
-        {
+        sharpen::FileHandle GetHandle() const noexcept {
             return this->handle_;
         }
 
-        sharpen::EventLoop *GetLoop() noexcept
-        {
+        sharpen::EventLoop *GetLoop() noexcept {
             return this->loop_;
         }
 
-        bool IsRegistered() const noexcept
-        {
+        bool IsRegistered() const noexcept {
             return this->loop_ != nullptr;
         }
 

@@ -9,10 +9,8 @@
 #include <map>
 #include <vector>
 
-namespace sharpen
-{
-    class SignalMap
-    {
+namespace sharpen {
+    class SignalMap {
     private:
         using Self = sharpen::SignalMap;
         using Map = std::map<std::int32_t, std::vector<sharpen::FileHandle>>;
@@ -28,15 +26,13 @@ namespace sharpen
 
         ~SignalMap() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
         void Register(sharpen::FileHandle handle, std::int32_t *sigs, std::size_t sigSize);
 
-        inline void Register(sharpen::FileHandle handle, std::int32_t sig)
-        {
+        inline void Register(sharpen::FileHandle handle, std::int32_t sig) {
             this->Register(handle, &sig, 1);
         }
 

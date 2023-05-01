@@ -5,10 +5,8 @@
 #include "IRemoteActor.hpp"
 #include <memory>
 
-namespace sharpen
-{
-    class IRemoteActorBuilder
-    {
+namespace sharpen {
+    class IRemoteActorBuilder {
     private:
         using Self = sharpen::IRemoteActorBuilder;
 
@@ -30,18 +28,15 @@ namespace sharpen
 
         virtual ~IRemoteActorBuilder() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        std::unique_ptr<sharpen::IRemoteActor> Build() const
-        {
+        std::unique_ptr<sharpen::IRemoteActor> Build() const {
             return this->NviBuild();
         }
 
-        std::shared_ptr<sharpen::IRemoteActor> BuildShared() const
-        {
+        std::shared_ptr<sharpen::IRemoteActor> BuildShared() const {
             return this->NviBuildShared();
         }
     };

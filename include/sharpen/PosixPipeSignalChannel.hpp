@@ -11,13 +11,11 @@
 #include "ISignalChannel.hpp"
 #include "PosixIoReader.hpp"
 
-namespace sharpen
-{
+namespace sharpen {
     class PosixPipeSignalChannel
         : public sharpen::ISignalChannel
         , public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using Self = sharpen::PosixPipeSignalChannel;
         using Callback = std::function<void(ssize_t)>;
@@ -55,8 +53,7 @@ namespace sharpen
 
         virtual ~PosixPipeSignalChannel() noexcept;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

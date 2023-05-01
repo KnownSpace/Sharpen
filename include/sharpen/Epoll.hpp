@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_EPOLL_HPP
 #define _SHARPEN_EPOLL_HPP
 
-#include "SystemMacro.hpp" // IWYU pragma: keep
+#include "SystemMacro.hpp"   // IWYU pragma: keep
 
 // epoll is only support by linux
 #ifdef SHARPEN_IS_LINUX
@@ -17,12 +17,10 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace sharpen
-{
+namespace sharpen {
     class Epoll
         : public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         sharpen::FileHandle handle_;
 

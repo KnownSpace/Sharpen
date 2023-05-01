@@ -24,8 +24,7 @@ sharpen::PosixFileChannel::PosixFileChannel(sharpen::FileHandle handle, bool syn
 #ifdef SHARPEN_HAS_IOURING
     , queue_(nullptr)
 #endif
-    , syncWrite_(syncWrite)
-{
+    , syncWrite_(syncWrite) {
     assert(handle != -1);
     this->handle_ = handle;
 }
@@ -33,14 +32,12 @@ sharpen::PosixFileChannel::PosixFileChannel(sharpen::FileHandle handle, bool syn
 void sharpen::PosixFileChannel::NormalWrite(const char *buf,
                                             std::size_t bufSize,
                                             std::uint64_t offset,
-                                            sharpen::Future<std::size_t> *future)
-{
+                                            sharpen::Future<std::size_t> *future) {
     ssize_t r;
     do {
         r = ::pwrite64(this->handle_, buf, bufSize, offset);
     } while (r == -1 && sharpen::GetLastError() == EINTR);
-    if (r == -1)
-    {
+    if (r == -1) {
         future->Fail(sharpen::MakeLastErrorPtr());
         return;
     }
@@ -49,13 +46,10 @@ void sharpen::PosixFileChannel::NormalWrite(const char *buf,
 
 #ifdef SHARPEN_HAS_IOURING
 
-sharpen::IoUringStruct *sharpen::PosixFileChannel::InitStruct(void *buf,
-                                                              std::size_t bufSize,
-                                                              sharpen::Future<std::size_t> *future)
-{
+sharpen::IoUringStruct *sharpen::PosixFileChannel::InitStruct(
+    void *buf, std::size_t bufSize, sharpen::Future<std::size_t> *future) {
     sharpen::IoUringStruct *st = new (std::nothrow) sharpen::IoUringStruct();
-    if (!st)
-    {
+    if (!st) {
         return nullptr;
     }
     st->channel_ = this->shared_from_this();
@@ -69,11 +63,9 @@ sharpen::IoUringStruct *sharpen::PosixFileChannel::InitStruct(void *buf,
     return st;
 }
 
-sharpen::IoUringStruct *sharpen::PosixFileChannel::InitStruct(sharpen::Future<void> *future)
-{
+sharpen::IoUringStruct *sharpen::PosixFileChannel::InitStruct(sharpen::Future<void> *future) {
     sharpen::IoUringStruct *st = new (std::nothrow) sharpen::IoUringStruct();
-    if (!st)
-    {
+    if (!st) {
         return nullptr;
     }
     st->channel_ = this->shared_from_this();
@@ -92,17 +84,14 @@ sharpen::IoUringStruct *sharpen::PosixFileChannel::InitStruct(sharpen::Future<vo
 void sharpen::PosixFileChannel::DoWrite(const char *buf,
                                         std::size_t bufSize,
                                         std::uint64_t offset,
-                                        sharpen::Future<std::size_t> *future)
-{
+                                        sharpen::Future<std::size_t> *future) {
 #ifdef SHARPEN_HAS_IOURING
-    if (!this->queue_)
-    {
+    if (!this->queue_) {
         this->NormalWrite(buf, bufSize, offset, future);
         return;
     }
     auto *st = this->InitStruct(const_cast<char *>(buf), bufSize, future);
-    if (!st)
-    {
+    if (!st) {
         future->Fail(std::make_exception_ptr(std::bad_alloc()));
         return;
     }
@@ -124,14 +113,12 @@ void sharpen::PosixFileChannel::DoWrite(const char *buf,
 void sharpen::PosixFileChannel::NormalRead(char *buf,
                                            std::size_t bufSize,
                                            std::uint64_t offset,
-                                           sharpen::Future<std::size_t> *future)
-{
+                                           sharpen::Future<std::size_t> *future) {
     ssize_t r;
     do {
         r = ::pread64(this->handle_, buf, bufSize, offset);
     } while (r == -1 && sharpen::GetLastError() == EINTR);
-    if (r == -1)
-    {
+    if (r == -1) {
         future->Fail(sharpen::MakeLastErrorPtr());
         return;
     }
@@ -141,17 +128,14 @@ void sharpen::PosixFileChannel::NormalRead(char *buf,
 void sharpen::PosixFileChannel::DoRead(char *buf,
                                        std::size_t bufSize,
                                        std::uint64_t offset,
-                                       sharpen::Future<std::size_t> *future)
-{
+                                       sharpen::Future<std::size_t> *future) {
 #ifdef SHARPEN_HAS_IOURING
-    if (!this->queue_)
-    {
+    if (!this->queue_) {
         this->NormalRead(buf, bufSize, offset, future);
         return;
     }
     auto *st = this->InitStruct(buf, bufSize, future);
-    if (!st)
-    {
+    if (!st) {
         future->Fail(std::make_exception_ptr(std::bad_alloc()));
         return;
     }
@@ -173,11 +157,9 @@ void sharpen::PosixFileChannel::DoRead(char *buf,
 void sharpen::PosixFileChannel::WriteAsync(const char *buf,
                                            std::size_t bufSize,
                                            std::uint64_t offset,
-                                           sharpen::Future<std::size_t> &future)
-{
+                                           sharpen::Future<std::size_t> &future) {
     assert(buf != nullptr || (buf == nullptr && bufSize == 0));
-    if (!this->IsRegistered())
-    {
+    if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
     }
     this->loop_->RunInLoopSoon(std::bind(&Self::DoWrite, this, buf, bufSize, offset, &future));
@@ -186,10 +168,8 @@ void sharpen::PosixFileChannel::WriteAsync(const char *buf,
 void sharpen::PosixFileChannel::WriteAsync(const sharpen::ByteBuffer &buf,
                                            std::size_t bufferOffset,
                                            std::uint64_t offset,
-                                           sharpen::Future<std::size_t> &future)
-{
-    if (buf.GetSize() < bufferOffset)
-    {
+                                           sharpen::Future<std::size_t> &future) {
+    if (buf.GetSize() < bufferOffset) {
         throw std::length_error("buffer size is wrong");
     }
     this->WriteAsync(buf.Data() + bufferOffset, buf.GetSize() - bufferOffset, offset, future);
@@ -198,11 +178,9 @@ void sharpen::PosixFileChannel::WriteAsync(const sharpen::ByteBuffer &buf,
 void sharpen::PosixFileChannel::ReadAsync(char *buf,
                                           std::size_t bufSize,
                                           std::uint64_t offset,
-                                          sharpen::Future<std::size_t> &future)
-{
+                                          sharpen::Future<std::size_t> &future) {
     assert(buf != nullptr || (buf == nullptr && bufSize == 0));
-    if (!this->IsRegistered())
-    {
+    if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
     }
     this->loop_->RunInLoop(std::bind(&Self::DoRead, this, buf, bufSize, offset, &future));
@@ -211,27 +189,22 @@ void sharpen::PosixFileChannel::ReadAsync(char *buf,
 void sharpen::PosixFileChannel::ReadAsync(sharpen::ByteBuffer &buf,
                                           std::size_t bufferOffset,
                                           std::uint64_t offset,
-                                          sharpen::Future<std::size_t> &future)
-{
-    if (buf.GetSize() < bufferOffset)
-    {
+                                          sharpen::Future<std::size_t> &future) {
+    if (buf.GetSize() < bufferOffset) {
         throw std::length_error("buffer size is wrong");
     }
     this->ReadAsync(buf.Data() + bufferOffset, buf.GetSize() - bufferOffset, offset, future);
 }
 
-void sharpen::PosixFileChannel::OnEvent(sharpen::IoEvent *event)
-{
+void sharpen::PosixFileChannel::OnEvent(sharpen::IoEvent *event) {
 #ifdef SHARPEN_HAS_IOURING
     assert(this->queue_);
     std::unique_ptr<sharpen::IoUringStruct> st{
         reinterpret_cast<sharpen::IoUringStruct *>(event->GetData())};
-    if (event->IsReadEvent() || event->IsWriteEvent())
-    {
+    if (event->IsReadEvent() || event->IsWriteEvent()) {
         sharpen::Future<std::size_t> *future =
             reinterpret_cast<sharpen::Future<std::size_t> *>(st->data_);
-        if (event->IsErrorEvent())
-        {
+        if (event->IsErrorEvent()) {
             future->Fail(sharpen::MakeSystemErrorPtr(event->GetErrorCode()));
             return;
         }
@@ -239,8 +212,7 @@ void sharpen::PosixFileChannel::OnEvent(sharpen::IoEvent *event)
         return;
     }
     sharpen::Future<void> *future = reinterpret_cast<sharpen::Future<void> *>(st->data_);
-    if (event->IsErrorEvent())
-    {
+    if (event->IsErrorEvent()) {
         future->Fail(sharpen::MakeSystemErrorPtr(event->GetErrorCode()));
         return;
     }
@@ -251,19 +223,16 @@ void sharpen::PosixFileChannel::OnEvent(sharpen::IoEvent *event)
 #endif
 }
 
-std::uint64_t sharpen::PosixFileChannel::GetFileSize() const
-{
+std::uint64_t sharpen::PosixFileChannel::GetFileSize() const {
     struct stat buf;
     int r = ::fstat(this->handle_, &buf);
-    if (r == -1)
-    {
+    if (r == -1) {
         sharpen::ThrowLastError();
     }
     return buf.st_size;
 }
 
-void sharpen::PosixFileChannel::Register(sharpen::EventLoop &loop)
-{
+void sharpen::PosixFileChannel::Register(sharpen::EventLoop &loop) {
     this->loop_ = &loop;
 #ifdef SHARPEN_HAS_IOURING
     sharpen::EpollSelector *selector =
@@ -272,68 +241,54 @@ void sharpen::PosixFileChannel::Register(sharpen::EventLoop &loop)
 #endif
 }
 
-sharpen::FileMemory sharpen::PosixFileChannel::MapMemory(std::size_t size, std::uint64_t offset)
-{
+sharpen::FileMemory sharpen::PosixFileChannel::MapMemory(std::size_t size, std::uint64_t offset) {
     void *addr = ::mmap64(nullptr, size, PROT_READ | PROT_WRITE, MAP_SHARED, this->handle_, offset);
-    if (addr == MAP_FAILED)
-    {
+    if (addr == MAP_FAILED) {
         sharpen::ThrowLastError();
     }
     return {addr, size};
 }
 
-void sharpen::PosixFileChannel::Truncate()
-{
-    if (::ftruncate(this->handle_, 0) == -1)
-    {
+void sharpen::PosixFileChannel::Truncate() {
+    if (::ftruncate(this->handle_, 0) == -1) {
         sharpen::ThrowLastError();
     }
 }
 
-void sharpen::PosixFileChannel::Truncate(std::uint64_t size)
-{
-    if (::ftruncate64(this->handle_, size) == -1)
-    {
+void sharpen::PosixFileChannel::Truncate(std::uint64_t size) {
+    if (::ftruncate64(this->handle_, size) == -1) {
         sharpen::ThrowLastError();
     }
 }
 
-void sharpen::PosixFileChannel::Flush()
-{
+void sharpen::PosixFileChannel::Flush() {
     // if we use sync write flag
     // skip flush system call
-    if (this->syncWrite_)
-    {
+    if (this->syncWrite_) {
         return;
     }
-    if (::fsync(this->handle_) == -1)
-    {
+    if (::fsync(this->handle_) == -1) {
         sharpen::ThrowLastError();
     }
 }
 
-void sharpen::PosixFileChannel::NormalFlush(sharpen::Future<void> *future)
-{
-    if (::fsync(this->handle_) == -1)
-    {
+void sharpen::PosixFileChannel::NormalFlush(sharpen::Future<void> *future) {
+    if (::fsync(this->handle_) == -1) {
         future->Fail(sharpen::MakeLastErrorPtr());
         return;
     }
     future->Complete();
 }
 
-void sharpen::PosixFileChannel::DoFlushAsync(sharpen::Future<void> *future)
-{
+void sharpen::PosixFileChannel::DoFlushAsync(sharpen::Future<void> *future) {
     assert(future != nullptr);
 #ifdef SHARPEN_HAS_IOURING
-    if (!this->queue_)
-    {
+    if (!this->queue_) {
         this->NormalFlush(future);
         return;
     }
     auto *st = this->InitStruct(future);
-    if (!st)
-    {
+    if (!st) {
         future->Fail(std::make_exception_ptr(std::bad_alloc()));
         return;
     }
@@ -349,35 +304,28 @@ void sharpen::PosixFileChannel::DoFlushAsync(sharpen::Future<void> *future)
 #endif
 }
 
-void sharpen::PosixFileChannel::FlushAsync(sharpen::Future<void> &future)
-{
+void sharpen::PosixFileChannel::FlushAsync(sharpen::Future<void> &future) {
     // if we use sync write flag
     // skip flush system call
-    if (this->syncWrite_)
-    {
+    if (this->syncWrite_) {
         future.Complete();
         return;
     }
-    if (!this->IsRegistered())
-    {
+    if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
     }
     this->loop_->RunInLoopSoon(std::bind(&Self::DoFlushAsync, this, &future));
 }
 
-void sharpen::PosixFileChannel::Allocate(std::uint64_t offset, std::size_t size)
-{
-    if (::fallocate64(this->handle_, FALLOC_FL_KEEP_SIZE, offset, size) == -1)
-    {
+void sharpen::PosixFileChannel::Allocate(std::uint64_t offset, std::size_t size) {
+    if (::fallocate64(this->handle_, FALLOC_FL_KEEP_SIZE, offset, size) == -1) {
         sharpen::ThrowLastError();
     }
 }
 
-void sharpen::PosixFileChannel::Deallocate(std::uint64_t offset, std::size_t size)
-{
+void sharpen::PosixFileChannel::Deallocate(std::uint64_t offset, std::size_t size) {
     if (::fallocate64(this->handle_, FALLOC_FL_PUNCH_HOLE | FALLOC_FL_KEEP_SIZE, offset, size) ==
-        -1)
-    {
+        -1) {
         sharpen::ThrowLastError();
     }
 }

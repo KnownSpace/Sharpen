@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_BYTEORDER_HPP
 #define _SHARPEN_BYTEORDER_HPP
 
-#include "SystemMacro.hpp" // IWYU pragma: keep
+#include "SystemMacro.hpp"   // IWYU pragma: keep
 #include <cstddef>
 #include <cstdint>
 
@@ -28,37 +28,30 @@
 #define SHARPEN_IS_LIL_ENDIAN
 #endif
 
-namespace sharpen
-{
+namespace sharpen {
     template<typename _T>
-    void ConvertEndian(_T &val)
-    {
+    void ConvertEndian(_T &val) {
         char *data = reinterpret_cast<char *>(&val);
-        for (std::size_t i = 0; i < sizeof(_T) / 2; i++)
-        {
+        for (std::size_t i = 0; i < sizeof(_T) / 2; i++) {
             char tmp = data[i];
             data[i] = data[sizeof(_T) - 1 - i];
             data[sizeof(_T) - 1 - i] = tmp;
         }
     }
 
-    inline void ConvertEndian(char *data, std::size_t size)
-    {
-        for (std::size_t i = 0, count = size / 2; i != count; ++i)
-        {
+    inline void ConvertEndian(char *data, std::size_t size) {
+        for (std::size_t i = 0, count = size / 2; i != count; ++i) {
             char tmp = data[i];
             data[i] = data[size - 1 - i];
             data[size - 1 - i] = tmp;
         }
     }
 
-    constexpr bool IsBigEndian()
-    {
+    constexpr bool IsBigEndian() {
         return SHARPEN_BYTEORDER == SHARPEN_BIG_ENDIAN;
     }
 
-    constexpr bool IsLittleEndian()
-    {
+    constexpr bool IsLittleEndian() {
         return SHARPEN_BYTEORDER == SHARPEN_LIL_ENDIAN;
     }
 }   // namespace sharpen

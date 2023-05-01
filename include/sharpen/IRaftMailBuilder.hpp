@@ -12,10 +12,8 @@
 #include "RaftVoteForRequest.hpp"
 #include "RaftVoteForResponse.hpp"
 
-namespace sharpen
-{
-    class IRaftMailBuilder
-    {
+namespace sharpen {
+    class IRaftMailBuilder {
     private:
         using Self = sharpen::IRaftMailBuilder;
 
@@ -33,8 +31,7 @@ namespace sharpen
 
         virtual ~IRaftMailBuilder() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

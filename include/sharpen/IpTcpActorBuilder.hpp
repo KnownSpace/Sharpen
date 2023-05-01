@@ -10,10 +10,8 @@
 #include "IpEndPoint.hpp"
 #include <stdexcept>
 
-namespace sharpen
-{
-    class IpTcpActorBuilder : public sharpen::IRemoteActorBuilder
-    {
+namespace sharpen {
+    class IpTcpActorBuilder : public sharpen::IRemoteActorBuilder {
     private:
         using Self = sharpen::IpTcpActorBuilder;
 
@@ -52,10 +50,8 @@ namespace sharpen
 
         IpTcpActorBuilder(Self &&other) noexcept;
 
-        inline Self &operator=(const Self &other)
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -66,8 +62,7 @@ namespace sharpen
 
         virtual ~IpTcpActorBuilder() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

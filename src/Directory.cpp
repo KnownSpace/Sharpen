@@ -21,12 +21,9 @@ static HANDLE invalidHandle{INVALID_HANDLE_VALUE};
 static constexpr DIR *invalidHandle{nullptr};
 #endif
 
-bool sharpen::Directory::CheckName(const std::string &name) noexcept
-{
-    for (auto begin = name.begin(), end = name.end(); begin != end; ++begin)
-    {
-        if (*begin == '*' || *begin == '?' || *begin == '<' || *begin == '>')
-        {
+bool sharpen::Directory::CheckName(const std::string &name) noexcept {
+    for (auto begin = name.begin(), end = name.end(); begin != end; ++begin) {
+        if (*begin == '*' || *begin == '?' || *begin == '<' || *begin == '>') {
             return false;
         }
     }
@@ -35,30 +32,24 @@ bool sharpen::Directory::CheckName(const std::string &name) noexcept
 
 sharpen::Directory::Directory(std::string name)
     : name_()
-    , handle_(invalidHandle)
-{
-    if (CheckName(name))
-    {
+    , handle_(invalidHandle) {
+    if (CheckName(name)) {
         this->name_ = std::move(name);
     }
 }
 
 sharpen::Directory::Directory(Self &&other) noexcept
     : name_(std::move(other.name_))
-    , handle_(other.handle_)
-{
+    , handle_(other.handle_) {
     other.handle_ = invalidHandle;
 }
 
-sharpen::Directory::~Directory() noexcept
-{
+sharpen::Directory::~Directory() noexcept {
     this->Close();
 }
 
-void sharpen::Directory::Close() noexcept
-{
-    if (this->handle_ != invalidHandle)
-    {
+void sharpen::Directory::Close() noexcept {
+    if (this->handle_ != invalidHandle) {
 #ifdef SHARPEN_IS_WIN
         ::FindClose(this->handle_);
 #else
@@ -68,10 +59,8 @@ void sharpen::Directory::Close() noexcept
     }
 }
 
-sharpen::Directory &sharpen::Directory::operator=(Self &&other) noexcept
-{
-    if (this != std::addressof(other))
-    {
+sharpen::Directory &sharpen::Directory::operator=(Self &&other) noexcept {
+    if (this != std::addressof(other)) {
         this->name_ = std::move(other.name_);
         this->Close();
         this->handle_ = other.handle_;
@@ -80,19 +69,15 @@ sharpen::Directory &sharpen::Directory::operator=(Self &&other) noexcept
     return *this;
 }
 
-bool sharpen::Directory::Exist() const
-{
-    if (this->name_.empty())
-    {
+bool sharpen::Directory::Exist() const {
+    if (this->name_.empty()) {
         return false;
     }
     return sharpen::ExistDirectory(this->name_.c_str());
 }
 
-sharpen::Dentry sharpen::Directory::GetNextEntry() const
-{
-    if (!this->Exist())
-    {
+sharpen::Dentry sharpen::Directory::GetNextEntry() const {
+    if (!this->Exist()) {
         sharpen::ThrowSystemError(sharpen::ErrorFileNotFound);
     }
     sharpen::DentryType type{sharpen::DentryType::File};
@@ -100,90 +85,68 @@ sharpen::Dentry sharpen::Directory::GetNextEntry() const
 #ifdef SHARPEN_IS_WIN
     char back{this->name_.back()};
     std::size_t needSize{this->name_.size() + 1};
-    if (back != '/' || back != '\\')
-    {
+    if (back != '/' || back != '\\') {
         needSize += 1;
     }
-    if (needSize > sharpen::GetMaxPath())
-    {
+    if (needSize > sharpen::GetMaxPath()) {
         sharpen::ThrowSystemError(sharpen::ErrorNameTooLong);
     }
     WIN32_FIND_DATA findData;
     char path[sharpen::GetMaxPath() + 1] = {0};
     std::memcpy(path, this->name_.c_str(), this->name_.size());
     std::size_t index{this->name_.size()};
-    if (back != '\\')
-    {
-        if (back != '/')
-        {
+    if (back != '\\') {
+        if (back != '/') {
             path[index++] = '\\';
-        }
-        else
-        {
+        } else {
             path[index - 1] = '\\';
         }
     }
     path[index] = '*';
     bool found{false};
-    if (this->handle_ == invalidHandle)
-    {
+    if (this->handle_ == invalidHandle) {
         sharpen::FileHandle handle{::FindFirstFileA(path, &findData)};
-        if (handle == invalidHandle)
-        {
+        if (handle == invalidHandle) {
             sharpen::ThrowLastError();
         }
         this->handle_ = handle;
         found = true;
-    }
-    else
-    {
+    } else {
         found = ::FindNextFileA(this->handle_, &findData) == TRUE;
     }
-    if (found)
-    {
-        if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-        {
+    if (found) {
+        if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
             type = sharpen::DentryType::Directory;
         }
         name.assign(findData.cFileName);
     }
 #else
-    if (this->handle_ == invalidHandle)
-    {
+    if (this->handle_ == invalidHandle) {
         DIR *dir{::opendir(this->name_.c_str())};
-        if (!dir)
-        {
+        if (!dir) {
             sharpen::ThrowLastError();
         }
         this->handle_ = dir;
     }
-    dirent *dentry{::readdir(reinterpret_cast<DIR*>(this->handle_))};
-    if (dentry != nullptr)
-    {
-        if (dentry->d_type == DT_DIR || dentry->d_type == DT_REG)
-        {
-            if (dentry->d_type == DT_DIR)
-            {
+    dirent *dentry{::readdir(reinterpret_cast<DIR *>(this->handle_))};
+    if (dentry != nullptr) {
+        if (dentry->d_type == DT_DIR || dentry->d_type == DT_REG) {
+            if (dentry->d_type == DT_DIR) {
                 type = sharpen::DentryType::Directory;
             }
             name.assign(dentry->d_name);
         }
-    }
-    else if (errno)
-    {
+    } else if (errno) {
         sharpen::ThrowLastError();
     }
 #endif
     return sharpen::Dentry{type, std::move(name)};
 }
 
-sharpen::Dentry sharpen::Directory::GetNextEntry(bool excludeUpper) const
-{
-    if(excludeUpper)
-    {
+sharpen::Dentry sharpen::Directory::GetNextEntry(bool excludeUpper) const {
+    if (excludeUpper) {
         sharpen::Dentry entry{this->GetNextEntry()};
-        if(entry.Valid() && entry.Name() == "..")
-        {
+        if (entry.Valid() && entry.Name() == "..") {
             entry = this->GetNextEntry();
         }
         return entry;

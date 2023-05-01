@@ -4,10 +4,8 @@
 
 #include "IHost.hpp"
 
-namespace sharpen
-{
-    class IHostLifetime
-    {
+namespace sharpen {
+    class IHostLifetime {
     private:
         using Self = sharpen::IHostLifetime;
 
@@ -25,8 +23,7 @@ namespace sharpen
 
         virtual ~IHostLifetime() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

@@ -9,10 +9,8 @@
 #include <cstdint>
 #include <utility>
 
-namespace sharpen
-{
-    class RaftSnapshotRequest : public sharpen::BinarySerializable<sharpen::RaftSnapshotRequest>
-    {
+namespace sharpen {
+    class RaftSnapshotRequest : public sharpen::BinarySerializable<sharpen::RaftSnapshotRequest> {
     private:
         using Self = sharpen::RaftSnapshotRequest;
 
@@ -30,10 +28,8 @@ namespace sharpen
 
         RaftSnapshotRequest(Self &&other) noexcept;
 
-        inline Self &operator=(const Self &other)
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -44,68 +40,55 @@ namespace sharpen
 
         ~RaftSnapshotRequest() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline sharpen::RaftSnapshotMetadata &Metadata() noexcept
-        {
+        inline sharpen::RaftSnapshotMetadata &Metadata() noexcept {
             return this->metadata_;
         }
 
-        inline const sharpen::RaftSnapshotMetadata &Metadata() const noexcept
-        {
+        inline const sharpen::RaftSnapshotMetadata &Metadata() const noexcept {
             return this->metadata_;
         }
 
-        inline sharpen::ByteBuffer &Data() noexcept
-        {
+        inline sharpen::ByteBuffer &Data() noexcept {
             return this->data_;
         }
 
-        inline const sharpen::ByteBuffer &Data() const noexcept
-        {
+        inline const sharpen::ByteBuffer &Data() const noexcept {
             return this->data_;
         }
 
-        inline bool IsLast() const noexcept
-        {
+        inline bool IsLast() const noexcept {
             return this->last_;
         }
 
-        inline void SetLast(bool last) noexcept
-        {
+        inline void SetLast(bool last) noexcept {
             this->last_ = last;
         }
 
-        inline std::uint64_t GetTerm() const noexcept
-        {
+        inline std::uint64_t GetTerm() const noexcept {
             return this->term_;
         }
 
-        inline void SetTerm(std::uint64_t term) noexcept
-        {
+        inline void SetTerm(std::uint64_t term) noexcept {
             this->term_ = term;
         }
 
-        inline std::uint64_t GetLeaderId() const noexcept
-        {
+        inline std::uint64_t GetLeaderId() const noexcept {
             return this->leaderId_;
         }
 
-        inline void SetLeaderId(std::uint64_t leaderId) noexcept
-        {
+        inline void SetLeaderId(std::uint64_t leaderId) noexcept {
             this->leaderId_ = leaderId;
         }
 
-        inline std::uint64_t GetOffset() const noexcept
-        {
+        inline std::uint64_t GetOffset() const noexcept {
             return this->offset_;
         }
 
-        inline void SetOffset(std::uint64_t offset) noexcept
-        {
+        inline void SetOffset(std::uint64_t offset) noexcept {
             this->offset_ = offset;
         }
 

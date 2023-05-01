@@ -14,8 +14,7 @@
 
 #include <simpletest/TestRunner.hpp>
 
-class AsyncTest : public simpletest::ITypenamedTest<AsyncTest>
-{
+class AsyncTest : public simpletest::ITypenamedTest<AsyncTest> {
 private:
     using Self = AsyncTest;
 
@@ -24,15 +23,13 @@ public:
 
     ~AsyncTest() noexcept = default;
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         auto future{sharpen::Async([]() { return 1; })};
         return this->Assert(future->Await() == 1, "Await() return wrong anwser");
     }
 };
 
-class AwaitAllTest : public simpletest::ITypenamedTest<AwaitAllTest>
-{
+class AwaitAllTest : public simpletest::ITypenamedTest<AwaitAllTest> {
 private:
     using Self = AwaitAllTest;
 
@@ -41,20 +38,16 @@ public:
 
     ~AwaitAllTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         auto f1 = sharpen::Async([]() { return 1; });
         auto f2 = sharpen::Async([]() { return 1.1; });
-        auto f3 = sharpen::Async(
-            []()
-            {
-                // do nothing
-            });
+        auto f3 = sharpen::Async([]() {
+            // do nothing
+        });
         std::int32_t r1;
         double r2;
         std::tie(r1, r2, std::ignore) = sharpen::AwaitAll(*f1, *f2, *f3);
@@ -62,8 +55,7 @@ public:
     }
 };
 
-class DelayTest : public simpletest::ITypenamedTest<DelayTest>
-{
+class DelayTest : public simpletest::ITypenamedTest<DelayTest> {
 private:
     using Self = DelayTest;
 
@@ -72,13 +64,11 @@ public:
 
     ~DelayTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         auto t1{std::chrono::steady_clock::now()};
         sharpen::Delay(std::chrono::seconds(1));
         auto t2{std::chrono::steady_clock::now()};
@@ -89,8 +79,7 @@ public:
     }
 };
 
-class AwaitAnyTest : public simpletest::ITypenamedTest<AwaitAnyTest>
-{
+class AwaitAnyTest : public simpletest::ITypenamedTest<AwaitAnyTest> {
 private:
     using Self = AwaitAnyTest;
 
@@ -99,13 +88,11 @@ public:
 
     ~AwaitAnyTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         auto f1 = sharpen::Async([]() { return 0; });
         auto f2 = sharpen::Async([]() { sharpen::Delay(std::chrono::seconds(1)); });
         sharpen::AwaitAny(*f1, *f2);
@@ -116,8 +103,7 @@ public:
     }
 };
 
-class ResetTest : public simpletest::ITypenamedTest<ResetTest>
-{
+class ResetTest : public simpletest::ITypenamedTest<ResetTest> {
 private:
     using Self = ResetTest;
 
@@ -126,13 +112,11 @@ public:
 
     ~ResetTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         sharpen::AwaitableFuture<std::int32_t> future;
         sharpen::Launch([&future]() { future.Complete(1); });
         future.WaitAsync();
@@ -142,8 +126,7 @@ public:
     }
 };
 
-class WorkerGroupTest : public simpletest::ITest
-{
+class WorkerGroupTest : public simpletest::ITest {
 private:
     using Self = WorkerGroupTest;
     using Base = simpletest::ITest;
@@ -151,13 +134,10 @@ private:
     std::unique_ptr<sharpen::IWorkerGroup> workers_;
     std::size_t testCount_;
 
-    inline static bool Check(std::vector<sharpen::AwaitableFuture<std::size_t>> &futures)
-    {
+    inline static bool Check(std::vector<sharpen::AwaitableFuture<std::size_t>> &futures) {
         bool status{true};
-        for (std::size_t i = 0; i != futures.size(); ++i)
-        {
-            if (futures[i].Await() != i)
-            {
+        for (std::size_t i = 0; i != futures.size(); ++i) {
+            if (futures[i].Await() != i) {
                 status = false;
             }
         }
@@ -169,30 +149,24 @@ public:
     WorkerGroupTest(_Impl *workers, std::size_t testCount) noexcept
         : Base(simpletest::GetReadableTypeName<_Impl>())
         , workers_(workers)
-        , testCount_(testCount)
-    {
+        , testCount_(testCount) {
     }
 
     ~WorkerGroupTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         std::vector<sharpen::AwaitableFuture<std::size_t>> futures;
         futures.resize(this->testCount_);
-        for (std::size_t i = 0; i != this->testCount_; ++i)
-        {
-            this->workers_->Invoke(futures[i],
-                                   [i]()
-                                   {
-                                       // long operation
-                                       sharpen::YieldCycle();
-                                       return i;
-                                   });
+        for (std::size_t i = 0; i != this->testCount_; ++i) {
+            this->workers_->Invoke(futures[i], [i]() {
+                // long operation
+                sharpen::YieldCycle();
+                return i;
+            });
         }
         auto result{this->Assert(this->Check(futures), "WorkerGroup return wrong answer")};
         this->workers_->Stop();
@@ -201,8 +175,7 @@ public:
     }
 };
 
-class FiberLocalTest : public simpletest::ITypenamedTest<FiberLocalTest>
-{
+class FiberLocalTest : public simpletest::ITypenamedTest<FiberLocalTest> {
 private:
     using Self = FiberLocalTest;
 
@@ -211,33 +184,26 @@ public:
 
     ~FiberLocalTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         sharpen::FiberLocal<std::uint64_t> local;
         local.New(static_cast<std::uint64_t>(1));
         auto result =
-            sharpen::Async(
-                [&local]()
-                {
-                    local.New(static_cast<std::uint64_t>(0));
-                    return Self::Assert(*local.Lookup() == 0, "*local.Lookup() should = 0,but not");
-                })
-                ->Await();
-        if (result.Fail())
-        {
+            sharpen::Async([&local]() {
+                local.New(static_cast<std::uint64_t>(0));
+                return Self::Assert(*local.Lookup() == 0, "*local.Lookup() should = 0,but not");
+            })->Await();
+        if (result.Fail()) {
             return result;
         }
         return this->Assert(*local.Lookup() == 1, "*local.Lookup() should = 1,but not");
     }
 };
 
-static int Test()
-{
+static int Test() {
     constexpr std::size_t workerGroupJobs{256 * 1024};
     simpletest::TestRunner runner;
     runner.Register<AsyncTest>();
@@ -256,8 +222,7 @@ static int Test()
     return runner.Run();
 }
 
-int main()
-{
+int main() {
     sharpen::EventEngine &engine = sharpen::EventEngine::SetupEngine();
     return engine.StartupWithCode(&Test);
 }

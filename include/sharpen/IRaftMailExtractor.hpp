@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_IRAFTMAILEXTRACTOR_HPP
 #define _SHARPEN_IRAFTMAILEXTRACTOR_HPP
 
-#include "CorruptedDataError.hpp" // IWYU pragma: keep
+#include "CorruptedDataError.hpp"   // IWYU pragma: keep
 #include "Mail.hpp"
 #include "RaftHeartbeatRequest.hpp"
 #include "RaftHeartbeatResponse.hpp"
@@ -15,10 +15,8 @@
 #include "RaftVoteForResponse.hpp"
 #include <stdexcept>
 
-namespace sharpen
-{
-    class IRaftMailExtractor
-    {
+namespace sharpen {
+    class IRaftMailExtractor {
     private:
         using Self = sharpen::IRaftMailExtractor;
 
@@ -64,104 +62,83 @@ namespace sharpen
 
         virtual ~IRaftMailExtractor() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline sharpen::RaftMailType GetMailType(const sharpen::Mail &mail) const noexcept
-        {
-            if (!this->IsRaftMail(mail))
-            {
+        inline sharpen::RaftMailType GetMailType(const sharpen::Mail &mail) const noexcept {
+            if (!this->IsRaftMail(mail)) {
                 return sharpen::RaftMailType::Unknown;
             }
             return this->NviGetMailType(mail);
         }
 
-        inline bool IsRaftMail(const sharpen::Mail &mail) const noexcept
-        {
-            if (mail.Empty())
-            {
+        inline bool IsRaftMail(const sharpen::Mail &mail) const noexcept {
+            if (mail.Empty()) {
                 return false;
             }
             return this->NviIsRaftMail(mail);
         }
 
         inline sharpen::Optional<sharpen::RaftVoteForRequest> ExtractVoteRequest(
-            const sharpen::Mail &mail) const noexcept
-        {
-            if (!this->IsRaftMail(mail))
-            {
+            const sharpen::Mail &mail) const noexcept {
+            if (!this->IsRaftMail(mail)) {
                 return sharpen::EmptyOpt;
             }
             return this->NviExtractVoteRequest(mail);
         }
 
         inline sharpen::Optional<sharpen::RaftVoteForResponse> ExtractVoteResponse(
-            const sharpen::Mail &mail) const noexcept
-        {
-            if (!this->IsRaftMail(mail))
-            {
+            const sharpen::Mail &mail) const noexcept {
+            if (!this->IsRaftMail(mail)) {
                 return sharpen::EmptyOpt;
             }
             return this->NviExtractVoteResponse(mail);
         }
 
         inline sharpen::Optional<sharpen::RaftHeartbeatRequest> ExtractHeartbeatRequest(
-            const sharpen::Mail &mail) const noexcept
-        {
-            if (!this->IsRaftMail(mail))
-            {
+            const sharpen::Mail &mail) const noexcept {
+            if (!this->IsRaftMail(mail)) {
                 return sharpen::EmptyOpt;
             }
             return this->NviExtractHeartbeatRequest(mail);
         }
 
         inline sharpen::Optional<sharpen::RaftHeartbeatResponse> ExtractHeartbeatResponse(
-            const sharpen::Mail &mail) const noexcept
-        {
-            if (!this->IsRaftMail(mail))
-            {
+            const sharpen::Mail &mail) const noexcept {
+            if (!this->IsRaftMail(mail)) {
                 return sharpen::EmptyOpt;
             }
             return this->NviExtractHeartbeatResponse(mail);
         }
 
         inline sharpen::Optional<sharpen::RaftPrevoteRequest> ExtractPrevoteRequest(
-            const sharpen::Mail &mail) const noexcept
-        {
-            if (!this->IsRaftMail(mail))
-            {
+            const sharpen::Mail &mail) const noexcept {
+            if (!this->IsRaftMail(mail)) {
                 return sharpen::EmptyOpt;
             }
             return this->NviExtractPrevoteRequest(mail);
         }
 
         inline sharpen::Optional<sharpen::RaftPrevoteResponse> ExtractPrevoteResponse(
-            const sharpen::Mail &mail) const noexcept
-        {
-            if (!this->IsRaftMail(mail))
-            {
+            const sharpen::Mail &mail) const noexcept {
+            if (!this->IsRaftMail(mail)) {
                 return sharpen::EmptyOpt;
             }
             return this->NviExtractPrevoteResponse(mail);
         }
 
         inline sharpen::Optional<sharpen::RaftSnapshotRequest> ExtractSnapshotRequest(
-            const sharpen::Mail &mail) const noexcept
-        {
-            if (!this->IsRaftMail(mail))
-            {
+            const sharpen::Mail &mail) const noexcept {
+            if (!this->IsRaftMail(mail)) {
                 return sharpen::EmptyOpt;
             }
             return this->NviExtractSnapshotRequest(mail);
         }
 
         inline sharpen::Optional<sharpen::RaftSnapshotResponse> ExtractSnapshotResponse(
-            const sharpen::Mail &mail) const noexcept
-        {
-            if (!this->IsRaftMail(mail))
-            {
+            const sharpen::Mail &mail) const noexcept {
+            if (!this->IsRaftMail(mail)) {
                 return sharpen::EmptyOpt;
             }
             return this->NviExtractSnapshotResponse(mail);

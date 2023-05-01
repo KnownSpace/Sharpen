@@ -4,11 +4,9 @@
 
 #include <exception>
 
-namespace sharpen
-{
+namespace sharpen {
     template<typename _Exception, bool _IsEmpty>
-    class InternalRemotePosterOpenError : public _Exception
-    {
+    class InternalRemotePosterOpenError : public _Exception {
     private:
         using Self = InternalRemotePosterOpenError<_Exception, _IsEmpty>;
 
@@ -18,8 +16,7 @@ namespace sharpen
         InternalRemotePosterOpenError() noexcept = default;
 
         explicit InternalRemotePosterOpenError(const char *msg)
-            : msg_(msg)
-        {
+            : msg_(msg) {
         }
 
         InternalRemotePosterOpenError(const Self &other) noexcept = default;
@@ -32,16 +29,14 @@ namespace sharpen
 
         Self &operator=(Self &&other) noexcept = default;
 
-        virtual const char *what() const noexcept override
-        {
+        virtual const char *what() const noexcept override {
             return this->msg_;
         }
     };
 
     // msvc exception
     template<typename _Exception>
-    class InternalRemotePosterOpenError<_Exception, false> : public _Exception
-    {
+    class InternalRemotePosterOpenError<_Exception, false> : public _Exception {
     private:
         using Self = InternalRemotePosterOpenError<_Exception, false>;
         using Base = _Exception;
@@ -50,8 +45,7 @@ namespace sharpen
         InternalRemotePosterOpenError() noexcept = default;
 
         explicit InternalRemotePosterOpenError(const char *msg) noexcept
-            : Base(msg)
-        {
+            : Base(msg) {
         }
 
         InternalRemotePosterOpenError(const Self &other) noexcept = default;
@@ -69,8 +63,7 @@ namespace sharpen
     // exception class defination
     class RemotePosterOpenError
         : public InternalRemotePosterOpenError<std::exception,
-                                               sizeof(std::exception) == sizeof(void *)>
-    {
+                                               sizeof(std::exception) == sizeof(void *)> {
     private:
         using Self = RemotePosterOpenError;
         using Base =
@@ -80,8 +73,7 @@ namespace sharpen
         RemotePosterOpenError() noexcept = default;
 
         explicit RemotePosterOpenError(const char *msg) noexcept
-            : Base(msg)
-        {
+            : Base(msg) {
         }
 
         RemotePosterOpenError(const Self &other) noexcept = default;

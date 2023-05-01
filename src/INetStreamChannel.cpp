@@ -17,31 +17,23 @@
 #include <mstcpip.h>
 #endif
 
-sharpen::NetStreamChannelPtr sharpen::OpenTcpChannel(sharpen::AddressFamily af)
-{
+sharpen::NetStreamChannelPtr sharpen::OpenTcpChannel(sharpen::AddressFamily af) {
     sharpen::NetStreamChannelPtr channel;
     int afValue;
-    if (af == sharpen::AddressFamily::Ip)
-    {
+    if (af == sharpen::AddressFamily::Ip) {
         afValue = AF_INET;
-    }
-    else
-    {
+    } else {
         afValue = AF_INET6;
     }
 #ifdef SHARPEN_HAS_WINSOCKET
     SOCKET s = ::socket(afValue, SOCK_STREAM, IPPROTO_TCP);
-    if (s == INVALID_SOCKET)
-    {
+    if (s == INVALID_SOCKET) {
         sharpen::ThrowLastError();
     }
-    try
-    {
+    try {
         channel = std::make_shared<sharpen::WinNetStreamChannel>(
             reinterpret_cast<sharpen::FileHandle>(s), afValue);
-    }
-    catch (const std::exception &rethrow)
-    {
+    } catch (const std::exception &rethrow) {
         ::closesocket(s);
         throw;
         (void)rethrow;
@@ -49,16 +41,12 @@ sharpen::NetStreamChannelPtr sharpen::OpenTcpChannel(sharpen::AddressFamily af)
 #else
     sharpen::FileHandle s =
         ::socket(afValue, SOCK_STREAM | SOCK_CLOEXEC | SOCK_NONBLOCK, IPPROTO_TCP);
-    if (s == -1)
-    {
+    if (s == -1) {
         sharpen::ThrowLastError();
     }
-    try
-    {
+    try {
         channel = std::make_shared<sharpen::PosixNetStreamChannel>(s);
-    }
-    catch (const std::exception &rethrow)
-    {
+    } catch (const std::exception &rethrow) {
         sharpen::CloseFileHandle(s);
         throw;
         (void)rethrow;
@@ -67,14 +55,12 @@ sharpen::NetStreamChannelPtr sharpen::OpenTcpChannel(sharpen::AddressFamily af)
     return channel;
 }
 
-void sharpen::StartupNetSupport()
-{
+void sharpen::StartupNetSupport() {
 #ifdef SHARPEN_HAS_WINSOCKET
     WORD version = MAKEWORD(2, 2);
     WSADATA data;
     int r = WSAStartup(version, &data);
-    if (r != 0)
-    {
+    if (r != 0) {
         sharpen::ThrowLastError();
     }
 #else
@@ -84,8 +70,7 @@ void sharpen::StartupNetSupport()
 #endif
 }
 
-void sharpen::CleanupNetSupport()
-{
+void sharpen::CleanupNetSupport() {
 #ifdef SHARPEN_HAS_WINSOCKET
     WSACleanup();
 #else
@@ -95,15 +80,13 @@ void sharpen::CleanupNetSupport()
 #endif
 }
 
-void sharpen::INetStreamChannel::ConnectAsync(const sharpen::IEndPoint &endpoint)
-{
+void sharpen::INetStreamChannel::ConnectAsync(const sharpen::IEndPoint &endpoint) {
     sharpen::AwaitableFuture<void> future;
     this->ConnectAsync(endpoint, future);
     future.Await();
 }
 
-sharpen::NetStreamChannelPtr sharpen::INetStreamChannel::AcceptAsync()
-{
+sharpen::NetStreamChannelPtr sharpen::INetStreamChannel::AcceptAsync() {
     sharpen::AwaitableFuture<sharpen::NetStreamChannelPtr> future;
     this->AcceptAsync(future);
     return future.Await();
@@ -111,49 +94,42 @@ sharpen::NetStreamChannelPtr sharpen::INetStreamChannel::AcceptAsync()
 
 std::size_t sharpen::INetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,
                                                       std::uint64_t size,
-                                                      std::uint64_t offset)
-{
+                                                      std::uint64_t offset) {
     sharpen::AwaitableFuture<std::size_t> future;
     this->SendFileAsync(file, size, offset, future);
     return future.Await();
 }
 
-std::size_t sharpen::INetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file)
-{
+std::size_t sharpen::INetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file) {
     sharpen::AwaitableFuture<std::size_t> future;
     this->SendFileAsync(file, future);
     return future.Await();
 }
 
-void sharpen::INetStreamChannel::Bind(const sharpen::IEndPoint &endpoint)
-{
+void sharpen::INetStreamChannel::Bind(const sharpen::IEndPoint &endpoint) {
 #ifdef SHARPEN_HAS_WINSOCKET
     int r = ::bind(
         reinterpret_cast<SOCKET>(this->handle_), endpoint.GetAddrPtr(), endpoint.GetAddrLen());
 #else
     int r = ::bind(this->handle_, endpoint.GetAddrPtr(), endpoint.GetAddrLen());
 #endif
-    if (r != 0)
-    {
+    if (r != 0) {
         sharpen::ThrowLastError();
     }
 }
 
-void sharpen::INetStreamChannel::Listen(std::uint16_t queueLength)
-{
+void sharpen::INetStreamChannel::Listen(std::uint16_t queueLength) {
 #ifdef SHARPEN_HAS_WINSOCKET
     int r = ::listen(reinterpret_cast<SOCKET>(this->handle_), queueLength);
 #else
     int r = ::listen(this->handle_, queueLength);
 #endif
-    if (r != 0)
-    {
+    if (r != 0) {
         sharpen::ThrowLastError();
     }
 }
 
-void sharpen::INetStreamChannel::GetLocalEndPoint(sharpen::IEndPoint &endPoint) const
-{
+void sharpen::INetStreamChannel::GetLocalEndPoint(sharpen::IEndPoint &endPoint) const {
 #ifdef SHARPEN_HAS_WINSOCKET
     int len = endPoint.GetAddrLen();
     int r = ::getsockname(reinterpret_cast<SOCKET>(this->handle_), endPoint.GetAddrPtr(), &len);
@@ -161,14 +137,12 @@ void sharpen::INetStreamChannel::GetLocalEndPoint(sharpen::IEndPoint &endPoint) 
     socklen_t len = endPoint.GetAddrLen();
     int r = ::getsockname(this->handle_, endPoint.GetAddrPtr(), &len);
 #endif
-    if (r != 0)
-    {
+    if (r != 0) {
         sharpen::ThrowLastError();
     }
 }
 
-void sharpen::INetStreamChannel::GetRemoteEndPoint(sharpen::IEndPoint &endPoint) const
-{
+void sharpen::INetStreamChannel::GetRemoteEndPoint(sharpen::IEndPoint &endPoint) const {
 #ifdef SHARPEN_HAS_WINSOCKET
     int len = endPoint.GetAddrLen();
     int r = ::getpeername(reinterpret_cast<SOCKET>(this->handle_), endPoint.GetAddrPtr(), &len);
@@ -176,14 +150,12 @@ void sharpen::INetStreamChannel::GetRemoteEndPoint(sharpen::IEndPoint &endPoint)
     socklen_t len = endPoint.GetAddrLen();
     int r = ::getpeername(this->handle_, endPoint.GetAddrPtr(), &len);
 #endif
-    if (r != 0)
-    {
+    if (r != 0) {
         sharpen::ThrowLastError();
     }
 }
 
-void sharpen::INetStreamChannel::SetKeepAlive(bool val)
-{
+void sharpen::INetStreamChannel::SetKeepAlive(bool val) {
 #ifdef SHARPEN_IS_WIN
     tcp_keepalive keepin;
     tcp_keepalive keepout;
@@ -203,15 +175,13 @@ void sharpen::INetStreamChannel::SetKeepAlive(bool val)
 #else
     int opt = val ? 1 : 0;
     int r = ::setsockopt(this->handle_, SOL_SOCKET, SO_KEEPALIVE, &opt, sizeof(opt));
-    if (r == -1)
-    {
+    if (r == -1) {
         sharpen::ThrowLastError();
     }
 #endif
 }
 
-void sharpen::INetStreamChannel::SetReuseAddress(bool val)
-{
+void sharpen::INetStreamChannel::SetReuseAddress(bool val) {
 #ifdef SHARPEN_IS_WIN
     BOOL opt = val ? TRUE : FALSE;
     ::setsockopt(reinterpret_cast<SOCKET>(this->handle_),
@@ -225,8 +195,7 @@ void sharpen::INetStreamChannel::SetReuseAddress(bool val)
 #endif
 }
 
-int sharpen::INetStreamChannel::GetErrorCode() const noexcept
-{
+int sharpen::INetStreamChannel::GetErrorCode() const noexcept {
     int err{0};
 #ifdef SHARPEN_IS_WIN
     int errSize = sizeof(err);
@@ -242,15 +211,13 @@ int sharpen::INetStreamChannel::GetErrorCode() const noexcept
     return err;
 }
 
-void sharpen::INetStreamChannel::PollReadAsync()
-{
+void sharpen::INetStreamChannel::PollReadAsync() {
     sharpen::AwaitableFuture<void> future;
     this->PollReadAsync(future);
     future.Await();
 }
 
-void sharpen::INetStreamChannel::PollWriteAsync()
-{
+void sharpen::INetStreamChannel::PollWriteAsync() {
     sharpen::AwaitableFuture<void> future;
     this->PollWriteAsync(future);
     future.Await();

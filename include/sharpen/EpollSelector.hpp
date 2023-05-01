@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_EPOLLSELECTOR_HPP
 #define _SHARPEN_EPOLLSELECTOR_HPP
 
-#include "Epoll.hpp" // IWYU pragma: keep
+#include "Epoll.hpp"   // IWYU pragma: keep
 
 #ifdef SHARPEN_HAS_EPOLL
 
@@ -17,13 +17,11 @@
 #include <map>
 #include <vector>
 
-namespace sharpen
-{
+namespace sharpen {
     class EpollSelector
         : public sharpen::ISelector
         , public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using Event = sharpen::EpollEventStruct;
         using Map = std::map<sharpen::FileHandle, Event>;

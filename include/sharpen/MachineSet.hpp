@@ -3,15 +3,13 @@
 #define _SHARPEN_MACHINESET_HPP
 
 #include "ByteBuffer.hpp"
-#include "Optional.hpp" // IWYU pragma: keep
+#include "Optional.hpp"   // IWYU pragma: keep
 #include <cstddef>
 #include <cstdint>
 #include <map>
 
-namespace sharpen
-{
-    class MachineSet
-    {
+namespace sharpen {
+    class MachineSet {
     private:
         using Self = sharpen::MachineSet;
         using Map = std::map<std::uint64_t, sharpen::ByteBuffer>;
@@ -27,20 +25,16 @@ namespace sharpen
 
         MachineSet(Self &&other) noexcept = default;
 
-        inline Self &operator=(const Self &other)
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
             return *this;
         }
 
-        inline Self &operator=(Self &&other) noexcept
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(Self &&other) noexcept {
+            if (this != std::addressof(other)) {
                 this->map_ = std::move(other.map_);
             }
             return *this;
@@ -48,39 +42,32 @@ namespace sharpen
 
         ~MachineSet() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline Iterator Begin() noexcept
-        {
+        inline Iterator Begin() noexcept {
             return this->map_.begin();
         }
 
-        inline ConstIterator Begin() const noexcept
-        {
+        inline ConstIterator Begin() const noexcept {
             return this->map_.begin();
         }
 
-        inline Iterator End() noexcept
-        {
+        inline Iterator End() noexcept {
             return this->map_.end();
         }
 
-        inline ConstIterator End() const noexcept
-        {
+        inline ConstIterator End() const noexcept {
             return this->map_.end();
         }
 
-        inline Iterator Find(std::uint64_t actorId) noexcept
-        {
+        inline Iterator Find(std::uint64_t actorId) noexcept {
             auto ite = this->map_.find(actorId);
             return ite;
         }
 
-        inline ConstIterator Find(std::uint64_t actorId) const noexcept
-        {
+        inline ConstIterator Find(std::uint64_t actorId) const noexcept {
             auto ite = this->map_.find(actorId);
             return ite;
         }

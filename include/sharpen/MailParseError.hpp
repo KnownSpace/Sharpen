@@ -4,11 +4,9 @@
 
 #include <exception>
 
-namespace sharpen
-{
+namespace sharpen {
     template<typename _Exception, bool _IsEmpty>
-    class InternalMailParseError : public _Exception
-    {
+    class InternalMailParseError : public _Exception {
     private:
         using Self = sharpen::InternalMailParseError<_Exception, _IsEmpty>;
 
@@ -18,8 +16,7 @@ namespace sharpen
         InternalMailParseError() noexcept = default;
 
         explicit InternalMailParseError(const char *msg)
-            : msg_(msg)
-        {
+            : msg_(msg) {
         }
 
         InternalMailParseError(const Self &other) noexcept = default;
@@ -32,16 +29,14 @@ namespace sharpen
 
         Self &operator=(Self &&other) noexcept = default;
 
-        virtual const char *what() const noexcept override
-        {
+        virtual const char *what() const noexcept override {
             return this->msg_;
         }
     };
 
     // msvc exception
     template<typename _Exception>
-    class InternalMailParseError<_Exception, false> : public _Exception
-    {
+    class InternalMailParseError<_Exception, false> : public _Exception {
     private:
         using Self = sharpen::InternalMailParseError<_Exception, false>;
         using Base = _Exception;
@@ -50,8 +45,7 @@ namespace sharpen
         InternalMailParseError() noexcept = default;
 
         explicit InternalMailParseError(const char *msg) noexcept
-            : Base(msg)
-        {
+            : Base(msg) {
         }
 
         InternalMailParseError(const Self &other) noexcept = default;
@@ -68,8 +62,7 @@ namespace sharpen
     // if sizeof(std::exception) == sizeof(void*),std::exception is a interface class
     // exception class defination
     class MailParseError
-        : public InternalMailParseError<std::exception, sizeof(std::exception) == sizeof(void *)>
-    {
+        : public InternalMailParseError<std::exception, sizeof(std::exception) == sizeof(void *)> {
     private:
         using Self = sharpen::MailParseError;
         using Base = sharpen::InternalMailParseError<std::exception,
@@ -79,8 +72,7 @@ namespace sharpen
         MailParseError() noexcept = default;
 
         explicit MailParseError(const char *msg) noexcept
-            : Base(msg)
-        {
+            : Base(msg) {
         }
 
         MailParseError(const Self &other) noexcept = default;

@@ -8,10 +8,8 @@
 #include <cstdint>
 #include <stdexcept>
 
-namespace sharpen
-{
-    class IConsensusChanges
-    {
+namespace sharpen {
+    class IConsensusChanges {
     private:
         using Self = sharpen::IConsensusChanges;
 
@@ -22,11 +20,9 @@ namespace sharpen
 
         virtual void NviMoveToBindedBatch() = 0;
 
-        inline static void CheckData(const sharpen::ByteBuffer &log)
-        {
+        inline static void CheckData(const sharpen::ByteBuffer &log) {
             assert(!log.Empty());
-            if (log.Empty())
-            {
+            if (log.Empty()) {
                 throw std::invalid_argument{"log could not be empty"};
             }
         }
@@ -44,8 +40,7 @@ namespace sharpen
 
         virtual ~IConsensusChanges() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
@@ -53,21 +48,17 @@ namespace sharpen
 
         virtual bool Removeable() const noexcept = 0;
 
-        inline void InsertMachine(std::uint64_t actorId, sharpen::ByteBuffer log)
-        {
+        inline void InsertMachine(std::uint64_t actorId, sharpen::ByteBuffer log) {
             this->CheckData(log);
-            if (!this->Insertable())
-            {
+            if (!this->Insertable()) {
                 throw std::logic_error{"cannot insert to machine set"};
             }
             this->NviInsertMachine(actorId, std::move(log));
         }
 
-        inline void RemoveMachine(std::uint64_t actorId, sharpen::ByteBuffer log)
-        {
+        inline void RemoveMachine(std::uint64_t actorId, sharpen::ByteBuffer log) {
             this->CheckData(log);
-            if (!this->Removeable())
-            {
+            if (!this->Removeable()) {
                 throw std::logic_error{"cannot remove from machine set"};
             }
             this->NviRemoveMachine(actorId, std::move(log));
@@ -77,10 +68,8 @@ namespace sharpen
 
         virtual const sharpen::MachineSet &GetRemoveSet() const noexcept = 0;
 
-        inline void MoveToBindedBatch()
-        {
-            if (this->GetInsertSet().Empty() && this->GetRemoveSet().Empty())
-            {
+        inline void MoveToBindedBatch() {
+            if (this->GetInsertSet().Empty() && this->GetRemoveSet().Empty()) {
                 return;
             }
             this->NviMoveToBindedBatch();

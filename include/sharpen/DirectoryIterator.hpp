@@ -5,31 +5,28 @@
 #include "Dentry.hpp"
 #include "Noncopyable.hpp"
 
-namespace sharpen
-{
+namespace sharpen {
     class Directory;
 
-    class DirectoryIterator:public sharpen::Noncopyable
-    {
+    class DirectoryIterator : public sharpen::Noncopyable {
     private:
         using Self = sharpen::DirectoryIterator;
-    
+
         sharpen::Directory *dir_;
         sharpen::Dentry dentry_;
 
         void Next();
+
     public:
-    
         explicit DirectoryIterator(sharpen::Directory *dir) noexcept;
-    
+
         DirectoryIterator(Self &&other) noexcept;
-    
+
         Self &operator=(Self &&other) noexcept;
-    
+
         ~DirectoryIterator() noexcept = default;
-    
-        inline const Self &Const() const noexcept
-        {
+
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
@@ -45,6 +42,6 @@ namespace sharpen
 
         bool operator!=(const Self &other) const noexcept;
     };
-}
+}   // namespace sharpen
 
 #endif

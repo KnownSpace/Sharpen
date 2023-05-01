@@ -6,10 +6,8 @@
 #include <cstdint>
 #include <set>
 
-namespace sharpen
-{
-    class RaftPrevoteRecord
-    {
+namespace sharpen {
+    class RaftPrevoteRecord {
     private:
         using Self = sharpen::RaftPrevoteRecord;
 
@@ -23,10 +21,8 @@ namespace sharpen
 
         RaftPrevoteRecord(Self &&other) noexcept;
 
-        inline Self &operator=(const Self &other)
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -37,13 +33,11 @@ namespace sharpen
 
         ~RaftPrevoteRecord() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline std::uint64_t GetTerm() const noexcept
-        {
+        inline std::uint64_t GetTerm() const noexcept {
             return this->term_;
         }
 

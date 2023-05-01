@@ -6,10 +6,9 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace sharpen
-{
-    class RaftHeartbeatResponse : public sharpen::BinarySerializable<sharpen::RaftHeartbeatResponse>
-    {
+namespace sharpen {
+    class RaftHeartbeatResponse
+        : public sharpen::BinarySerializable<sharpen::RaftHeartbeatResponse> {
     private:
         using Self = sharpen::RaftHeartbeatResponse;
 
@@ -26,10 +25,8 @@ namespace sharpen
 
         RaftHeartbeatResponse(Self &&other) noexcept;
 
-        inline Self &operator=(const Self &other) noexcept
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) noexcept {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -40,38 +37,31 @@ namespace sharpen
 
         ~RaftHeartbeatResponse() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline bool GetStatus() const noexcept
-        {
+        inline bool GetStatus() const noexcept {
             return this->status_;
         }
 
-        inline void SetStatus(bool status) noexcept
-        {
+        inline void SetStatus(bool status) noexcept {
             this->status_ = static_cast<std::uint8_t>(status);
         }
 
-        inline std::uint64_t GetTerm() const noexcept
-        {
+        inline std::uint64_t GetTerm() const noexcept {
             return this->term_;
         }
 
-        inline void SetTerm(std::uint64_t term) noexcept
-        {
+        inline void SetTerm(std::uint64_t term) noexcept {
             this->term_ = term;
         }
 
-        inline std::uint64_t GetMatchIndex() const noexcept
-        {
+        inline std::uint64_t GetMatchIndex() const noexcept {
             return this->matchIndex_;
         }
 
-        inline void SetMatchIndex(std::uint64_t matchIndex) noexcept
-        {
+        inline void SetMatchIndex(std::uint64_t matchIndex) noexcept {
             this->matchIndex_ = matchIndex;
         }
 

@@ -7,10 +7,8 @@
 #include <cstdint>
 #include <utility>
 
-namespace sharpen
-{
-    class RaftPrevoteRequest : public sharpen::BinarySerializable<sharpen::RaftPrevoteRequest>
-    {
+namespace sharpen {
+    class RaftPrevoteRequest : public sharpen::BinarySerializable<sharpen::RaftPrevoteRequest> {
     private:
         using Self = sharpen::RaftPrevoteRequest;
 
@@ -24,10 +22,8 @@ namespace sharpen
 
         RaftPrevoteRequest(Self &&other) noexcept;
 
-        inline Self &operator=(const Self &other) noexcept
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) noexcept {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -38,28 +34,23 @@ namespace sharpen
 
         ~RaftPrevoteRequest() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline std::uint64_t GetLastIndex() const noexcept
-        {
+        inline std::uint64_t GetLastIndex() const noexcept {
             return this->lastIndex_;
         }
 
-        inline void SetLastIndex(std::uint64_t index) noexcept
-        {
+        inline void SetLastIndex(std::uint64_t index) noexcept {
             this->lastIndex_ = index;
         }
 
-        inline std::uint64_t GetLastTerm() const noexcept
-        {
+        inline std::uint64_t GetLastTerm() const noexcept {
             return this->lastTerm_;
         }
 
-        inline void SetLastTerm(std::uint64_t term) noexcept
-        {
+        inline void SetLastTerm(std::uint64_t term) noexcept {
             this->lastTerm_ = term;
         }
 

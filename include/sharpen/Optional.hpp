@@ -13,31 +13,24 @@
 #include <optional>
 #endif
 
-namespace sharpen
-{
-    struct InternalOptionDummpType
-    {
-        constexpr InternalOptionDummpType() noexcept
-        {
+namespace sharpen {
+    struct InternalOptionDummpType {
+        constexpr InternalOptionDummpType() noexcept {
         }
     };
 
-    class EmptyOptional
-    {
-    };
+    class EmptyOptional {};
 
     constexpr sharpen::EmptyOptional EmptyOpt;
 
-    class BadOptionError : public std::logic_error
-    {
+    class BadOptionError : public std::logic_error {
     private:
         using Base = std::logic_error;
         using Self = sharpen::BadOptionError;
 
     public:
         explicit BadOptionError(const char *str) noexcept
-            : Base(str)
-        {
+            : Base(str) {
         }
 
         BadOptionError(const Self &other) noexcept = default;
@@ -52,14 +45,12 @@ namespace sharpen
     };
 
     template<typename _T, bool _IsTrivial>
-    class InternalOptional
-    {
+    class InternalOptional {
     private:
         using Self = sharpen::InternalOptional<_T, _IsTrivial>;
 
         bool existValue_;
-        union
-        {
+        union {
             _T value_;
             sharpen::InternalOptionDummpType dummy_;
         };
@@ -67,16 +58,13 @@ namespace sharpen
     public:
         InternalOptional() noexcept
             : existValue_(false)
-            , dummy_()
-        {
+            , dummy_() {
         }
 
         InternalOptional(const Self &other)
             : existValue_(false)
-            , dummy_()
-        {
-            if (other.existValue_)
-            {
+            , dummy_() {
+            if (other.existValue_) {
                 this->value_ = other.value_;
                 this->existValue_ = other.existValue_;
             }
@@ -84,10 +72,8 @@ namespace sharpen
 
         InternalOptional(Self &&other) noexcept
             : existValue_(false)
-            , dummy_()
-        {
-            if (other.existValue_)
-            {
+            , dummy_() {
+            if (other.existValue_) {
                 this->value_ = other.value_;
                 this->existValue_ = true;
                 other.existValue_ = false;
@@ -97,82 +83,66 @@ namespace sharpen
         template<typename... _Args, typename _Check = decltype(_T{std::declval<_Args>()...})>
         InternalOptional(_Args &&...args) SHARPEN_NOEXCEPT_IF(_T{std::declval<_Args>()...})
             : existValue_(false)
-            , dummy_()
-        {
+            , dummy_() {
             ::new (&this->value_) _T{std::forward<_Args>(args)...};
             this->existValue_ = true;
         }
 
         InternalOptional(sharpen::EmptyOptional)
             : existValue_(false)
-            , dummy_()
-        {
+            , dummy_() {
         }
 
-        inline Self &operator=(const Self &other)
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) {
+            if (this != std::addressof(other)) {
                 this->existValue_ = other.existValue_;
-                if (this->existValue_)
-                {
+                if (this->existValue_) {
                     this->value_ = other.value_;
                 }
             }
             return *this;
         }
 
-        inline Self &operator=(Self &&other) noexcept
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(Self &&other) noexcept {
+            if (this != std::addressof(other)) {
                 this->existValue_ = false;
                 std::swap(this->existValue_, other.existValue_);
-                if (this->existValue_)
-                {
+                if (this->existValue_) {
                     this->value_ = std::move(other.value_);
                 }
             }
             return *this;
         }
 
-        inline Self &operator=(sharpen::EmptyOptional) noexcept
-        {
+        inline Self &operator=(sharpen::EmptyOptional) noexcept {
             this->Reset();
             return *this;
         }
 
-        inline _T &Get()
-        {
-            if (this->existValue_)
-            {
+        inline _T &Get() {
+            if (this->existValue_) {
                 return this->value_;
             }
             throw sharpen::BadOptionError("this option is null");
         }
 
-        inline const _T &Get() const
-        {
-            if (this->existValue_)
-            {
+        inline const _T &Get() const {
+            if (this->existValue_) {
                 return this->value_;
             }
             throw sharpen::BadOptionError("this option is null");
         }
 
-        inline bool Exist() const noexcept
-        {
+        inline bool Exist() const noexcept {
             return this->existValue_;
         }
 
-        inline void Reset() noexcept
-        {
+        inline void Reset() noexcept {
             this->existValue_ = false;
         }
 
         template<typename... _Args, typename _Check = decltype(_T{std::declval<_Args>()...})>
-        inline void Construct(_Args &&...args) SHARPEN_NOEXCEPT_IF(_T{std::declval<_Args>()...})
-        {
+        inline void Construct(_Args &&...args) SHARPEN_NOEXCEPT_IF(_T{std::declval<_Args>()...}) {
             this->existValue_ = true;
             ::new (&this->value_) _T{std::forward<_Args>(args)...};
         }
@@ -181,14 +151,12 @@ namespace sharpen
     };
 
     template<typename _T>
-    class InternalOptional<_T, false>
-    {
+    class InternalOptional<_T, false> {
     private:
         using Self = sharpen::InternalOptional<_T, false>;
 
         _T *launderPtr_;
-        union
-        {
+        union {
             _T value_;
             sharpen::InternalOptionDummpType dummy_;
         };
@@ -196,26 +164,21 @@ namespace sharpen
     public:
         InternalOptional() noexcept
             : launderPtr_(nullptr)
-            , dummy_()
-        {
+            , dummy_() {
         }
 
         InternalOptional(const Self &other)
             : launderPtr_(nullptr)
-            , dummy_()
-        {
-            if (other.launderPtr_)
-            {
+            , dummy_() {
+            if (other.launderPtr_) {
                 this->launderPtr_ = ::new (&this->value_) _T{other.Get()};
             }
         }
 
         InternalOptional(Self &&other) noexcept
             : launderPtr_(nullptr)
-            , dummy_()
-        {
-            if (other.launderPtr_)
-            {
+            , dummy_() {
+            if (other.launderPtr_) {
                 this->launderPtr_ = ::new (&this->value_) _T{std::move(other.Get())};
             }
             other.Reset();
@@ -224,37 +187,29 @@ namespace sharpen
         template<typename... _Args, typename _Check = decltype(_T{std::declval<_Args>()...})>
         InternalOptional(_Args &&...args) SHARPEN_NOEXCEPT_IF(_T{std::declval<_Args>()...})
             : launderPtr_(nullptr)
-            , dummy_()
-        {
+            , dummy_() {
             this->launderPtr_ = ::new (&this->value_) _T{std::forward<_Args>(args)...};
         }
 
         InternalOptional(sharpen::EmptyOptional)
             : launderPtr_(nullptr)
-            , dummy_()
-        {
+            , dummy_() {
         }
 
-        inline Self &operator=(const Self &other)
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(*this, tmp);
             }
             return *this;
         }
 
-        inline Self &operator=(Self &&other) noexcept
-        {
-            if (this != std::addressof(other))
-            {
-                if (this->launderPtr_)
-                {
+        inline Self &operator=(Self &&other) noexcept {
+            if (this != std::addressof(other)) {
+                if (this->launderPtr_) {
                     this->Reset();
                 }
-                if (other.launderPtr_)
-                {
+                if (other.launderPtr_) {
                     this->launderPtr_ = ::new (&this->value_) _T{std::move(other.Get())};
                     other.Reset();
                 }
@@ -262,87 +217,71 @@ namespace sharpen
             return *this;
         }
 
-        inline Self &operator=(sharpen::EmptyOptional) noexcept
-        {
+        inline Self &operator=(sharpen::EmptyOptional) noexcept {
             this->Reset();
             return *this;
         }
 
-        inline _T &Get()
-        {
-            if (this->launderPtr_)
-            {
+        inline _T &Get() {
+            if (this->launderPtr_) {
                 return *this->launderPtr_;
             }
             throw sharpen::BadOptionError("this option is null");
         }
 
-        inline const _T &Get() const
-        {
-            if (this->launderPtr_)
-            {
+        inline const _T &Get() const {
+            if (this->launderPtr_) {
                 return *this->launderPtr_;
             }
             throw sharpen::BadOptionError("this option is null");
         }
 
-        inline bool Exist() const noexcept
-        {
+        inline bool Exist() const noexcept {
             return this->launderPtr_;
         }
 
-        inline void Reset() noexcept
-        {
+        inline void Reset() noexcept {
             _T *ptr{nullptr};
             std::swap(ptr, this->launderPtr_);
-            if (ptr)
-            {
+            if (ptr) {
                 ptr->~_T();
             }
         }
 
         template<typename... _Args, typename _Check = decltype(_T{std::declval<_Args>()...})>
-        inline void Construct(_Args &&...args) SHARPEN_NOEXCEPT_IF(_T{std::declval<_Args>()...})
-        {
+        inline void Construct(_Args &&...args) SHARPEN_NOEXCEPT_IF(_T{std::declval<_Args>()...}) {
             this->Reset();
             this->launderPtr_ = ::new (&this->value_) _T{std::forward<_Args>(args)...};
         }
 
-        ~InternalOptional() noexcept
-        {
+        ~InternalOptional() noexcept {
             this->Reset();
         }
     };
 
     template<typename _T>
-    class Optional : public sharpen::InternalOptional<_T, std::is_trivial<_T>::value>
-    {
+    class Optional : public sharpen::InternalOptional<_T, std::is_trivial<_T>::value> {
     private:
         using Self = sharpen::Optional<_T>;
         using Base = sharpen::InternalOptional<_T, std::is_trivial<_T>::value>;
 
     public:
         Optional() noexcept
-            : Base()
-        {
+            : Base() {
         }
 
         Optional(const Self &other)
-            : Base(other)
-        {
+            : Base(other) {
         }
 
         Optional(Self &&other) noexcept
-            : Base(std::move(other))
-        {
+            : Base(std::move(other)) {
         }
 
 #if SHARPEN_CPP_STANDARD >= 17
         Optional(std::optional<_T> stdOpt) noexcept
-            : Base(sharpen::EmptyOpt)
-        {
-            if (stdOpt.has_value())
-            {
+            : Base(sharpen::EmptyOpt) {
+            if (stdOpt.has_value()) {
                 this->Construct(std::move(stdOpt.value()));
             }
         }
@@ -350,39 +289,32 @@ namespace sharpen
 
         template<typename... _Args, typename _Check = decltype(_T{std::declval<_Args>()...})>
         Optional(_Args &&...args) SHARPEN_NOEXCEPT_IF(_T{std::declval<_Args>()...})
-            : Base(std::forward<_Args>(args)...)
-        {
+            : Base(std::forward<_Args>(args)...) {
         }
 
         Optional(sharpen::EmptyOptional empty) noexcept
-            : Base(empty)
-        {
+            : Base(empty) {
         }
 
-        inline Self &operator=(const Self &other)
-        {
+        inline Self &operator=(const Self &other) {
             Base::operator=(other);
             return *this;
         }
 
-        inline Self &operator=(Self &&other) noexcept
-        {
+        inline Self &operator=(Self &&other) noexcept {
             Base::operator=(std::move(other));
             return *this;
         }
 
-        inline Self &operator=(sharpen::EmptyOptional empty) noexcept
-        {
+        inline Self &operator=(sharpen::EmptyOptional empty) noexcept {
             Base::operator=(empty);
             return *this;
         }
 
 #if SHARPEN_CPP_STANDARD >= 17
-        inline Self &operator=(std::optional<_T> stdOpt) noexcept
-        {
+        inline Self &operator=(std::optional<_T> stdOpt) noexcept {
             Base::operator=(sharpen::EmptyOpt);
-            if (stdOpt.has_value())
-            {
+            if (stdOpt.has_value()) {
                 Base::operator=(std::move(stdOpt.value()));
             }
             return *this;
@@ -391,16 +323,13 @@ namespace sharpen
 
         ~Optional() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
 #if SHARPEN_CPP_STANDARD >= 17
-        std::optional<_T> ReleaseStdOptional() noexcept
-        {
-            if (this->Exist())
-            {
+        std::optional<_T> ReleaseStdOptional() noexcept {
+            if (this->Exist()) {
                 return std::move(this->Get());
             }
             return std::nullopt;

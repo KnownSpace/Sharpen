@@ -2,31 +2,25 @@
 #ifndef _SHARPEN_INTOPS_HPP
 #define _SHARPEN_INTOPS_HPP
 
-#include "ByteOrder.hpp" // IWYU pragma: keep
+#include "ByteOrder.hpp"   // IWYU pragma: keep
 #include "TypeTraits.hpp"
 #include <limits>
 #include <stdexcept>
 #include <utility>
 
-namespace sharpen
-{
+namespace sharpen {
     template<typename _T, typename _Check = sharpen::EnableIf<std::is_integral<_T>::value>>
-    inline std::size_t MinSizeof(_T val)
-    {
+    inline std::size_t MinSizeof(_T val) {
         const char *data = reinterpret_cast<const char *>(&val);
 #ifdef SHARPEN_IS_BIG_ENDIAN
-        for (std::size_t i = sizeof(val); i != 0; --i)
-        {
-            if (data[sizeof(val) - i] != 0)
-            {
+        for (std::size_t i = sizeof(val); i != 0; --i) {
+            if (data[sizeof(val) - i] != 0) {
                 return i;
             }
         }
 #else
-        for (std::size_t i = sizeof(val); i != 0; --i)
-        {
-            if (data[i - 1] != 0)
-            {
+        for (std::size_t i = sizeof(val); i != 0; --i) {
+            if (data[i - 1] != 0) {
                 return i;
             }
         }
@@ -35,22 +29,19 @@ namespace sharpen
     }
 
     template<typename _T1, typename _T2>
-    constexpr inline auto Max(_T1 a, _T2 b) noexcept -> decltype(false ? a : b)
-    {
+    constexpr inline auto Max(_T1 a, _T2 b) noexcept -> decltype(false ? a : b) {
         return a > b ? a : b;
     }
 
     template<std::size_t _Size>
-    union UintUnion
-    {
+    union UintUnion {
     private:
         using Self = sharpen::UintUnion<_Size>;
 
         static constexpr std::size_t halfSize_{_Size / 2};
 
     public:
-        struct
-        {
+        struct {
 #ifdef SHARPEN_IS_BIG_ENDIAN
             sharpen::UintType<_halfSize> height_;
             sharpen::UintType<_halfSize> low_;
@@ -64,22 +55,19 @@ namespace sharpen
     };
 
     template<>
-    union UintUnion<8>
-    {
+    union UintUnion<8> {
         std::uint8_t value_;
     };
 
     template<std::size_t _Size>
-    union IntUnion
-    {
+    union IntUnion {
     private:
         using Self = sharpen::IntUnion<_Size>;
 
         static constexpr std::size_t halfSize_{_Size / 2};
 
     public:
-        struct
-        {
+        struct {
 #ifdef SHARPEN_IS_BIG_ENDIAN
             sharpen::IntType<_halfSize> height_;
             sharpen::UintType<_halfSize> low_;
@@ -93,8 +81,7 @@ namespace sharpen
     };
 
     template<>
-    union IntUnion<8>
-    {
+    union IntUnion<8> {
         std::int8_t value_;
     };
 
@@ -109,8 +96,7 @@ namespace sharpen
              typename _Check =
                  sharpen::EnableIf<std::is_integral<_To>::value && std::is_integral<_From>::value &&
                                    std::is_unsigned<_To>::value>>
-    inline bool InternalCheckIntCast(_From from, ...)
-    {
+    inline bool InternalCheckIntCast(_From from, ...) {
         return from >= 0 && static_cast<typename std::make_unsigned<_From>::type>(from) <=
                                 (std::numeric_limits<_To>::max)();
     }
@@ -121,8 +107,7 @@ namespace sharpen
              typename _Check =
                  sharpen::EnableIf<std::is_integral<_To>::value && std::is_integral<_From>::value &&
                                    std::is_unsigned<_From>::value>>
-    inline bool InternalCheckIntCast(_From from, int, ...)
-    {
+    inline bool InternalCheckIntCast(_From from, int, ...) {
         return static_cast<typename std::make_unsigned<_To>::type>(
                    (std::numeric_limits<_To>::max)()) >= from;
     }
@@ -134,8 +119,7 @@ namespace sharpen
              typename _Check =
                  sharpen::EnableIf<std::is_integral<_To>::value && std::is_integral<_From>::value &&
                                    sharpen::IsSameSigned<_To, _From>::Value>>
-    inline bool InternalCheckIntCast(_From from, int, int, ...)
-    {
+    inline bool InternalCheckIntCast(_From from, int, int, ...) {
         return from <= (std::numeric_limits<_To>::max)() &&
                from >= (std::numeric_limits<_To>::min)();
     }
@@ -151,8 +135,7 @@ namespace sharpen
                  ((sizeof(_To) > sizeof(_From)) ||
                   ((sizeof(_To) == sizeof(_From)) && std::is_unsigned<_To>::value)) &&
                  std::is_unsigned<_From>::value>>
-    constexpr inline bool InternalCheckIntCast(_From from, int, int, int, ...)
-    {
+    constexpr inline bool InternalCheckIntCast(_From from, int, int, int, ...) {
         (void)from;
         return true;
     }
@@ -163,16 +146,14 @@ namespace sharpen
              typename _Check =
                  sharpen::EnableIf<std::is_integral<_To>::value && std::is_integral<_From>::value &&
                                    std::is_same<_To, _From>::value>>
-    constexpr inline bool InternalCheckIntCast(_From from, int, int, int, int, ...)
-    {
+    constexpr inline bool InternalCheckIntCast(_From from, int, int, int, int, ...) {
         (void)from;
         return true;
     }
 
     template<typename _To, typename _From>
     constexpr inline auto CheckIntCast(_From from)
-        -> decltype(sharpen::InternalCheckIntCast<_To>(from, 0, 0, 0))
-    {
+        -> decltype(sharpen::InternalCheckIntCast<_To>(from, 0, 0, 0)) {
         return sharpen::InternalCheckIntCast<_To>(from, 0, 0, 0, 0);
     }
 
@@ -182,11 +163,9 @@ namespace sharpen
              typename _Check =
                  sharpen::EnableIf<std::is_integral<_To>::value && std::is_integral<_From>::value &&
                                    std::is_unsigned<_To>::value>>
-    inline _To InternalIntCast(_From from, ...)
-    {
+    inline _To InternalIntCast(_From from, ...) {
         if (from >= 0 && static_cast<typename std::make_unsigned<_From>::type>(from) <=
-                             (std::numeric_limits<_To>::max)())
-        {
+                             (std::numeric_limits<_To>::max)()) {
             return static_cast<_To>(from);
         }
         throw std::bad_cast{};
@@ -198,11 +177,9 @@ namespace sharpen
              typename _Check =
                  sharpen::EnableIf<std::is_integral<_To>::value && std::is_integral<_From>::value &&
                                    std::is_unsigned<_From>::value>>
-    inline _To InternalIntCast(_From from, int, ...)
-    {
+    inline _To InternalIntCast(_From from, int, ...) {
         if (static_cast<typename std::make_unsigned<_To>::type>(
-                (std::numeric_limits<_To>::max)()) >= from)
-        {
+                (std::numeric_limits<_To>::max)()) >= from) {
             return static_cast<_To>(from);
         }
         throw std::bad_cast{};
@@ -215,10 +192,9 @@ namespace sharpen
              typename _Check =
                  sharpen::EnableIf<std::is_integral<_To>::value && std::is_integral<_From>::value &&
                                    sharpen::IsSameSigned<_To, _From>::Value>>
-    inline _To InternalIntCast(_From from, int, int, ...)
-    {
-        if (from <= (std::numeric_limits<_To>::max)() && from >= (std::numeric_limits<_To>::min)())
-        {
+    inline _To InternalIntCast(_From from, int, int, ...) {
+        if (from <= (std::numeric_limits<_To>::max)() &&
+            from >= (std::numeric_limits<_To>::min)()) {
             return static_cast<_To>(from);
         }
         throw std::bad_cast{};
@@ -235,8 +211,7 @@ namespace sharpen
                  ((sizeof(_To) > sizeof(_From)) ||
                   ((sizeof(_To) == sizeof(_From)) && std::is_unsigned<_To>::value)) &&
                  std::is_unsigned<_From>::value>>
-    constexpr inline _To InternalIntCast(_From from, int, int, int, ...)
-    {
+    constexpr inline _To InternalIntCast(_From from, int, int, int, ...) {
         return static_cast<_To>(from);
     }
 
@@ -246,15 +221,13 @@ namespace sharpen
              typename _Check =
                  sharpen::EnableIf<std::is_integral<_To>::value && std::is_integral<_From>::value &&
                                    std::is_same<_To, _From>::value>>
-    constexpr inline _To InternalIntCast(_From from, int, int, int, int, ...)
-    {
+    constexpr inline _To InternalIntCast(_From from, int, int, int, int, ...) {
         return static_cast<_To>(from);
     }
 
     template<typename _To, typename _From>
     constexpr inline auto IntCast(_From from)
-        -> decltype(sharpen::InternalIntCast<_To>(from, 0, 0, 0))
-    {
+        -> decltype(sharpen::InternalIntCast<_To>(from, 0, 0, 0)) {
         return sharpen::InternalIntCast<_To>(from, 0, 0, 0, 0);
     }
 }   // namespace sharpen
