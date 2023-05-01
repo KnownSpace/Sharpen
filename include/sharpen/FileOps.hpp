@@ -58,6 +58,20 @@ namespace sharpen {
     extern void MakeDirectory(const char *name);
 
     extern void DeleteDirectory(const char *name);
+
+    extern void MakeLink(const char *oldName,const char *newName);
+
+    extern void MakeSymLink(const char *oldName,const char *newName,bool isDir);
+
+    inline void MakeSymLink(const char *oldName,const char *newName)
+    {
+        return sharpen::MakeSymLink(oldName,newName,false);
+    }
+
+    inline void MakeDirectorySymLink(const char *oldName,const char *newName)
+    {
+        return sharpen::MakeSymLink(oldName,newName,true);
+    }
 }   // namespace sharpen
 
 #endif

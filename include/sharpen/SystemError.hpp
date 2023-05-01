@@ -52,6 +52,8 @@ namespace sharpen {
     constexpr sharpen::ErrorCode ErrorNoDevice = ERROR_BAD_UNIT;
     constexpr sharpen::ErrorCode ErrorShutdown = WSAESHUTDOWN;
     constexpr sharpen::ErrorCode ErrorTimeout = WSAETIMEDOUT;
+    constexpr sharpen::ErrorCode ErrorTooManyLinks = ERROR_TOO_MANY_LINKS;
+    constexpr sharpen::ErrorCode ErrorDirNotEmpty = ERROR_DIR_NOT_EMPTY;
 #else
     constexpr sharpen::ErrorCode ErrorCancel = ECANCELED;
     constexpr sharpen::ErrorCode ErrorConnectionAborted = ECONNABORTED;
@@ -89,6 +91,12 @@ namespace sharpen {
     constexpr sharpen::ErrorCode ErrorNoDevice = ENODEV;
     constexpr sharpen::ErrorCode ErrorShutdown = ESHUTDOWN;
     constexpr sharpen::ErrorCode ErrorTimeout = ETIMEDOUT;
+    constexpr sharpen::ErrorCode ErrorTooManyLinks = EMLINK;
+#ifdef ENOTEMPTY
+    constexpr sharpen::ErrorCode ErrorDirNotEmpty = ENOTEMPTY;
+#else
+    constexpr sharpen::ErrorCode ErrorDirNotEmpty = EEXIST;
+#endif
 #endif
 
     inline bool IsFatalError(sharpen::ErrorCode code) noexcept {
