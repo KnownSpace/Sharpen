@@ -4,8 +4,7 @@
 
 #include "ISelector.hpp"
 
-namespace sharpen
-{
+namespace sharpen {
     sharpen::SelectorPtr MakeDefaultSelector();
 }
 

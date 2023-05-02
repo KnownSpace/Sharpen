@@ -9,10 +9,8 @@
 #include "IChannel.hpp"
 #include "IoEvent.hpp"
 
-namespace sharpen
-{
-    struct EpollEventStruct
-    {
+namespace sharpen {
+    struct EpollEventStruct {
         using WeakChannelPtr = std::weak_ptr<sharpen::IChannel>;
         using EpollEvent = ::epoll_event;
 

@@ -8,10 +8,8 @@
 #include <cstdint>
 #include <utility>
 
-namespace sharpen
-{
-    class GenericMailParserFactory : public sharpen::IMailParserFactory
-    {
+namespace sharpen {
+    class GenericMailParserFactory : public sharpen::IMailParserFactory {
     private:
         using Self = sharpen::GenericMailParserFactory;
 
@@ -24,10 +22,8 @@ namespace sharpen
 
         GenericMailParserFactory(Self &&other) noexcept;
 
-        inline Self &operator=(const Self &other) noexcept
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) noexcept {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -38,8 +34,7 @@ namespace sharpen
 
         virtual ~GenericMailParserFactory() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

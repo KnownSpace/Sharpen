@@ -9,15 +9,12 @@
 #include <map>
 #include <memory>
 
-namespace sharpen
-{
-    class FiberLocalStorage : public sharpen::Noncopyable
-    {
+namespace sharpen {
+    class FiberLocalStorage : public sharpen::Noncopyable {
     private:
         using Dtor = void (*)(void *);
 
-        struct AnyPointer
-        {
+        struct AnyPointer {
             void *pointer_;
             Dtor dtor_;
         };
@@ -38,8 +35,7 @@ namespace sharpen
 
         ~FiberLocalStorage() noexcept;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

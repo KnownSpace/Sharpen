@@ -10,26 +10,21 @@
 #include <sys/signal.h>
 #endif
 
-void sharpen::SuspendProcess(std::uint32_t processId)
-{
+void sharpen::SuspendProcess(std::uint32_t processId) {
 #ifdef SHARPEN_IS_WIN
     HANDLE snapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, processId);
-    if (snapshot == INVALID_HANDLE_VALUE)
-    {
+    if (snapshot == INVALID_HANDLE_VALUE) {
         sharpen::ThrowLastError();
     }
     THREADENTRY32 te;
     te.dwSize = static_cast<DWORD>(sizeof(te));
-    if (::Thread32First(snapshot, &te) == TRUE)
-    {
+    if (::Thread32First(snapshot, &te) == TRUE) {
         do {
             if (te.th32OwnerProcessID == processId &&
-                te.dwSize >=
-                    FIELD_OFFSET(THREADENTRY32, th32OwnerProcessID) + sizeof(te.th32OwnerProcessID))
-            {
+                te.dwSize >= FIELD_OFFSET(THREADENTRY32, th32OwnerProcessID) +
+                                 sizeof(te.th32OwnerProcessID)) {
                 HANDLE thrd = ::OpenThread(THREAD_SUSPEND_RESUME, FALSE, te.th32ThreadID);
-                if (thrd != nullptr)
-                {
+                if (thrd != nullptr) {
                     ::SuspendThread(thrd);
                     ::CloseHandle(thrd);
                 }
@@ -39,33 +34,27 @@ void sharpen::SuspendProcess(std::uint32_t processId)
     }
     ::CloseHandle(snapshot);
 #else
-    if (::kill(processId, SIGSTOP) == -1)
-    {
+    if (::kill(processId, SIGSTOP) == -1) {
         sharpen::ThrowLastError();
     }
 #endif
 }
 
-void sharpen::ResumeProcess(std::uint32_t processId)
-{
+void sharpen::ResumeProcess(std::uint32_t processId) {
 #ifdef SHARPEN_IS_WIN
     HANDLE snapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, processId);
-    if (snapshot == INVALID_HANDLE_VALUE)
-    {
+    if (snapshot == INVALID_HANDLE_VALUE) {
         sharpen::ThrowLastError();
     }
     THREADENTRY32 te;
     te.dwSize = static_cast<DWORD>(sizeof(te));
-    if (::Thread32First(snapshot, &te) == TRUE)
-    {
+    if (::Thread32First(snapshot, &te) == TRUE) {
         do {
             if (te.th32OwnerProcessID == processId &&
-                te.dwSize >=
-                    FIELD_OFFSET(THREADENTRY32, th32OwnerProcessID) + sizeof(te.th32OwnerProcessID))
-            {
+                te.dwSize >= FIELD_OFFSET(THREADENTRY32, th32OwnerProcessID) +
+                                 sizeof(te.th32OwnerProcessID)) {
                 HANDLE thrd = ::OpenThread(THREAD_SUSPEND_RESUME, FALSE, te.th32ThreadID);
-                if (thrd != nullptr)
-                {
+                if (thrd != nullptr) {
                     ::ResumeThread(thrd);
                     ::CloseHandle(thrd);
                 }
@@ -75,8 +64,7 @@ void sharpen::ResumeProcess(std::uint32_t processId)
     }
     ::CloseHandle(snapshot);
 #else
-    if (::kill(processId, SIGCONT) == -1)
-    {
+    if (::kill(processId, SIGCONT) == -1) {
         sharpen::ThrowLastError();
     }
 #endif

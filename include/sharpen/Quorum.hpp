@@ -5,10 +5,8 @@
 #include "IQuorum.hpp"
 #include <map>
 
-namespace sharpen
-{
-    class Quorum : public sharpen::IQuorum
-    {
+namespace sharpen {
+    class Quorum : public sharpen::IQuorum {
     private:
         using Self = Quorum;
 
@@ -34,15 +32,13 @@ namespace sharpen
 
         virtual ~Quorum() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
         virtual void Remove(std::uint64_t actorId) noexcept override;
 
-        inline virtual std::size_t GetSize() const noexcept override
-        {
+        inline virtual std::size_t GetSize() const noexcept override {
             return this->builders_.size();
         }
 

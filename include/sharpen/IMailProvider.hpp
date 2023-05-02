@@ -4,10 +4,8 @@
 
 #include "Mail.hpp"
 
-namespace sharpen
-{
-    class IMailProvider
-    {
+namespace sharpen {
+    class IMailProvider {
     private:
         using Self = sharpen::IMailProvider;
 
@@ -25,8 +23,7 @@ namespace sharpen
 
         virtual ~IMailProvider() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

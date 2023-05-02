@@ -5,10 +5,8 @@
 #include "IRaftMailExtractor.hpp"
 #include "RaftMailType.hpp"
 
-namespace sharpen
-{
-    class RaftMailExtractor : public sharpen::IRaftMailExtractor
-    {
+namespace sharpen {
+    class RaftMailExtractor : public sharpen::IRaftMailExtractor {
     private:
         using Self = sharpen::RaftMailExtractor;
 
@@ -52,10 +50,8 @@ namespace sharpen
 
         RaftMailExtractor(Self &&other) noexcept;
 
-        inline Self &operator=(const Self &other) noexcept
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) noexcept {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -66,8 +62,7 @@ namespace sharpen
 
         virtual ~RaftMailExtractor() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
     };

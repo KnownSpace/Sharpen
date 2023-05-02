@@ -5,7 +5,7 @@
 #include "Future.hpp"
 #include "IChannel.hpp"
 #include "SignalBuffer.hpp"
-#include "SignalFd.hpp" // IWYU pragma: keep
+#include "SignalFd.hpp"   // IWYU pragma: keep
 #include "SignalMap.hpp"
 #include <cstddef>
 #include <cstdint>
@@ -19,28 +19,25 @@
 
 #ifdef SHARPEN_USE_PIPESIGNAL
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
-    // Until C++17:
-    // Signal handlers are expected to have C linkage and, in general, only use the features from
-    // the common subset of C and C++. It is implementation-defined if a function with C++ linkage
-    // can be used as a signal handler.
-    extern void SHARPEN_SignalHandler(int sig);
+// Until C++17:
+// Signal handlers are expected to have C linkage and, in general, only use the features from
+// the common subset of C and C++. It is implementation-defined if a function with C++ linkage
+// can be used as a signal handler.
+extern void SHARPEN_SignalHandler(int sig);
 
 #ifdef __cplusplus
 }
 #endif
 #endif
 
-namespace sharpen
-{
+namespace sharpen {
 
 #ifdef SHARPEN_USE_PIPESIGNAL
 
-    class SignalStorage
-    {
+    class SignalStorage {
     private:
         using Self = sharpen::SignalStorage;
 
@@ -60,8 +57,7 @@ namespace sharpen
 
         ~SignalStorage() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
@@ -76,8 +72,7 @@ namespace sharpen
 
 #endif
 
-    class ISignalChannel : public sharpen::IChannel
-    {
+    class ISignalChannel : public sharpen::IChannel {
     private:
         using Self = sharpen::ISignalChannel;
 
@@ -87,8 +82,7 @@ namespace sharpen
 
         virtual ~ISignalChannel() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

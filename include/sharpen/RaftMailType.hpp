@@ -5,10 +5,8 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace sharpen
-{
-    enum class RaftMailType : std::uint32_t
-    {
+namespace sharpen {
+    enum class RaftMailType : std::uint32_t {
         Unknown = 0,
         HeartbeatRequest = 1,
         HeartbeatResponse = 2,
@@ -22,8 +20,7 @@ namespace sharpen
         MaxValue = 9
     };
 
-    constexpr inline static bool IsValiedRaftMailType(std::uint32_t type) noexcept
-    {
+    constexpr inline static bool IsValiedRaftMailType(std::uint32_t type) noexcept {
         return type > static_cast<std::uint32_t>(RaftMailType::Unknown) &&
                type < static_cast<std::uint32_t>(RaftMailType::MaxValue);
     }

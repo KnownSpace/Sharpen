@@ -9,13 +9,11 @@
 #ifdef SHARPEN_IS_WIN
 #define SHARPEN_HAS_WINOUTPUTPIPE
 
-namespace sharpen
-{
+namespace sharpen {
     class WinOutputPipeChannel
         : public sharpen::IOutputPipeChannel
         , public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using Mybase = sharpen::IOutputPipeChannel;
         using Self = sharpen::WinOutputPipeChannel;

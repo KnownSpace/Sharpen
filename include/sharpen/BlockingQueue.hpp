@@ -12,13 +12,11 @@
 #include <mutex>
 #include <thread>
 
-namespace sharpen
-{
+namespace sharpen {
     template<typename _T>
     class BlockingQueue
         : public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using Storage = std::deque<_T>;
         using Lock = std::mutex;
@@ -33,8 +31,7 @@ namespace sharpen
 
         ~BlockingQueue() noexcept = default;
 
-        void Push(_T object)
-        {
+        void Push(_T object) {
             {
                 std::unique_lock<Lock> lock(this->lock_);
                 this->storage_.push_back(std::move(object));
@@ -43,8 +40,7 @@ namespace sharpen
         }
 
         template<typename... _Args, typename _Check = decltype(_T{std::declval<_Args>()...})>
-        void Emplace(_Args &&...args)
-        {
+        void Emplace(_Args &&...args) {
             {
                 std::unique_lock<Lock> lock(this->lock_);
                 this->storage_.emplace_back(std::forward<_Args>(args)...);
@@ -52,11 +48,9 @@ namespace sharpen
             this->cond_.notify_one();
         }
 
-        _T Pop() noexcept
-        {
+        _T Pop() noexcept {
             std::unique_lock<Lock> lock(this->lock_);
-            while (this->storage_.empty())
-            {
+            while (this->storage_.empty()) {
                 this->cond_.wait(lock);
             }
             _T obj{std::move(this->storage_.front())};
@@ -65,14 +59,11 @@ namespace sharpen
         }
 
         template<class _Rep, class _Period>
-        bool Pop(_T &obj, const std::chrono::duration<_Rep, _Period> &timeout) noexcept
-        {
+        bool Pop(_T &obj, const std::chrono::duration<_Rep, _Period> &timeout) noexcept {
             std::unique_lock<Lock> lock(this->lock_);
-            while (this->storage_.empty())
-            {
+            while (this->storage_.empty()) {
                 std::cv_status status = this->cond_.wait_for(lock, timeout);
-                if (status == std::cv_status::timeout)
-                {
+                if (status == std::cv_status::timeout) {
                     return false;
                 }
             }

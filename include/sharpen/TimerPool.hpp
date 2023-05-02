@@ -7,13 +7,11 @@
 #include <mutex>
 #include <vector>
 
-namespace sharpen
-{
+namespace sharpen {
     class TimerPool
         : public sharpen::ITimerPool
         , public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using Self = TimerPool;
         using TimerMaker = sharpen::TimerPtr (*)(sharpen::IEventLoopGroup *);
@@ -25,10 +23,8 @@ namespace sharpen
         TimerMaker maker_;
         sharpen::IEventLoopGroup *loopGroup_;
 
-        inline sharpen::TimerPtr MakeTimer() const
-        {
-            if (this->maker_)
-            {
+        inline sharpen::TimerPtr MakeTimer() const {
+            if (this->maker_) {
                 return this->maker_(this->loopGroup_);
             }
             return sharpen::MakeTimer(*this->loopGroup_);
@@ -36,26 +32,22 @@ namespace sharpen
 
     public:
         explicit TimerPool(sharpen::IEventLoopGroup &loopGroup)
-            : TimerPool(loopGroup, static_cast<std::size_t>(0))
-        {
+            : TimerPool(loopGroup, static_cast<std::size_t>(0)) {
         }
 
         TimerPool(sharpen::IEventLoopGroup &loopGroup, std::size_t reserveCount)
-            : TimerPool(loopGroup, nullptr, reserveCount)
-        {
+            : TimerPool(loopGroup, nullptr, reserveCount) {
         }
 
         TimerPool(sharpen::IEventLoopGroup &loopGroup, TimerMaker maker)
-            : TimerPool(loopGroup, maker, 0)
-        {
+            : TimerPool(loopGroup, maker, 0) {
         }
 
         TimerPool(sharpen::IEventLoopGroup &loopGroup, TimerMaker maker, std::size_t reserveCount);
 
         ~TimerPool() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

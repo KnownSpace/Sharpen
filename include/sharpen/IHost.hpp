@@ -7,10 +7,8 @@
 #include <cassert>
 #include <memory>
 
-namespace sharpen
-{
-    class IHost
-    {
+namespace sharpen {
+    class IHost {
     private:
         using Self = sharpen::IHost;
 
@@ -30,8 +28,7 @@ namespace sharpen
 
         virtual ~IHost() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
@@ -39,8 +36,7 @@ namespace sharpen
 
         virtual void Stop() noexcept = 0;
 
-        inline void SetPipeline(std::unique_ptr<sharpen::IHostPipeline> pipeline) noexcept
-        {
+        inline void SetPipeline(std::unique_ptr<sharpen::IHostPipeline> pipeline) noexcept {
             assert(pipeline != nullptr);
             this->NviSetPipeline(std::move(pipeline));
         }
@@ -51,8 +47,7 @@ namespace sharpen
                      sharpen::IsCompletedBindableReturned<std::unique_ptr<sharpen::IHostPipeline>,
                                                           _Fn,
                                                           _Args...>::Value>>
-        inline void ConfiguratePipeline(_Fn &&fn, _Args &&...args)
-        {
+        inline void ConfiguratePipeline(_Fn &&fn, _Args &&...args) {
             std::unique_ptr<sharpen::IHostPipeline> pipeline{
                 std::bind(std::forward<_Fn>(fn), std::forward<_Args>(args)...)()};
             this->SetPipeline(std::move(pipeline));

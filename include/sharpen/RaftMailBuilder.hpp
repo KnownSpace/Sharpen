@@ -5,10 +5,8 @@
 #include "IRaftMailBuilder.hpp"
 #include "RaftForm.hpp"
 
-namespace sharpen
-{
-    class RaftMailBuilder : public sharpen::IRaftMailBuilder
-    {
+namespace sharpen {
+    class RaftMailBuilder : public sharpen::IRaftMailBuilder {
     private:
         using Self = sharpen::RaftMailBuilder;
 
@@ -27,10 +25,8 @@ namespace sharpen
 
         RaftMailBuilder(Self &&other) noexcept;
 
-        inline Self &operator=(const Self &other) noexcept
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) noexcept {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -41,8 +37,7 @@ namespace sharpen
 
         virtual ~RaftMailBuilder() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

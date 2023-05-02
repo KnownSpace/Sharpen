@@ -182,15 +182,13 @@ std::uint32_t sharpen::Crc32Table[256] = {
 
     0xC30C8EA1, 0x5A05DF1B, 0x2D02EF8D};
 
-std::uint16_t sharpen::Crc16(const char *data, std::size_t size) noexcept
-{
+std::uint16_t sharpen::Crc16(const char *data, std::size_t size) noexcept {
     sharpen::UintUnion<16> crc;
     crc.value_ = 0xFFFF;
     for (const std::uint8_t *begin = reinterpret_cast<const std::uint8_t *>(data),
                             *end = begin + size;
          begin != end;
-         ++begin)
-    {
+         ++begin) {
         std::uint8_t index{static_cast<std::uint8_t>(crc.union_.height_ ^ *begin)};
         crc.union_.height_ = crc.union_.low_ ^ Crc16TableHeight[index];
         crc.union_.low_ = Crc16TableLow[index];
@@ -199,25 +197,21 @@ std::uint16_t sharpen::Crc16(const char *data, std::size_t size) noexcept
     return crc.value_;
 }
 
-std::uint32_t sharpen::Crc32(const char *data, std::size_t size) noexcept
-{
+std::uint32_t sharpen::Crc32(const char *data, std::size_t size) noexcept {
     std::uint32_t crc = 0xFFFFFFFF;
     for (const std::uint8_t *begin = reinterpret_cast<const std::uint8_t *>(data),
                             *end = begin + size;
          begin != end;
-         ++begin)
-    {
+         ++begin) {
         crc = sharpen::Crc32Table[(crc ^ *begin) & 0xFF] ^ (crc >> 8);
     }
     return crc ^ 0xFFFFFFFF;
 }
 
-std::uint32_t sharpen::Adler32(const char *data, std::size_t size) noexcept
-{
+std::uint32_t sharpen::Adler32(const char *data, std::size_t size) noexcept {
     sharpen::UintUnion<32> adler32{};
     adler32.union_.low_ = 1;
-    for (const char *end = data + size; data != end; ++data)
-    {
+    for (const char *end = data + size; data != end; ++data) {
         adler32.union_.low_ += *data;
         adler32.union_.low_ %= 65521;
         adler32.union_.height_ += adler32.union_.low_;
@@ -226,13 +220,11 @@ std::uint32_t sharpen::Adler32(const char *data, std::size_t size) noexcept
     return adler32.value_;
 }
 
-std::size_t sharpen::ComputeBase64EncodeSize(std::size_t size) noexcept
-{
+std::size_t sharpen::ComputeBase64EncodeSize(std::size_t size) noexcept {
     return size / 3 * 4 + ((size % 3) ? 4 : 0);
 }
 
-std::size_t sharpen::ComputeBase64DecodeSize(std::size_t size) noexcept
-{
+std::size_t sharpen::ComputeBase64DecodeSize(std::size_t size) noexcept {
     assert(size % 4 == 0);
     return size / 4 * 3;
 }
@@ -240,14 +232,11 @@ std::size_t sharpen::ComputeBase64DecodeSize(std::size_t size) noexcept
 bool sharpen::Base64Encode(char *dst,
                            std::size_t dstSize,
                            const char *src,
-                           std::size_t srcSize) noexcept
-{
-    if (dstSize < sharpen::ComputeBase64EncodeSize(srcSize))
-    {
+                           std::size_t srcSize) noexcept {
+    if (dstSize < sharpen::ComputeBase64EncodeSize(srcSize)) {
         return false;
     }
-    if (!srcSize)
-    {
+    if (!srcSize) {
         return true;
     }
     static const char *base64Hex =
@@ -255,11 +244,9 @@ bool sharpen::Base64Encode(char *dst,
     unsigned char srcBuf[3] = {};
     const char *srcEnd = src + srcSize;
     std::size_t i{0};
-    while (src != srcEnd)
-    {
+    while (src != srcEnd) {
         srcBuf[i++] = static_cast<unsigned char>(*(src++));
-        if (i == 3)
-        {
+        if (i == 3) {
             // convert to base 64
             *(dst++) = base64Hex[srcBuf[0] >> 2];
             *(dst++) = base64Hex[(srcBuf[0] & 0x03) << 4 | srcBuf[1] >> 4];
@@ -269,10 +256,8 @@ bool sharpen::Base64Encode(char *dst,
             continue;
         }
     }
-    if (i != 0)
-    {
-        for (std::size_t j = i; j != 3; ++j)
-        {
+    if (i != 0) {
+        for (std::size_t j = i; j != 3; ++j) {
             srcBuf[j] = 0;
         }
         *(dst++) = base64Hex[srcBuf[0] >> 2];
@@ -283,26 +268,16 @@ bool sharpen::Base64Encode(char *dst,
     return true;
 }
 
-char sharpen::Base64DecodeMapping(unsigned char c) noexcept
-{
-    if (c >= 'A' && c <= 'Z')
-    {
+char sharpen::Base64DecodeMapping(unsigned char c) noexcept {
+    if (c >= 'A' && c <= 'Z') {
         return c - 'A';
-    }
-    else if (c >= 'a' && c <= 'z')
-    {
+    } else if (c >= 'a' && c <= 'z') {
         return c - 'a' + 26;
-    }
-    else if (c == '+')
-    {
+    } else if (c == '+') {
         return 62;
-    }
-    else if (c == '=')
-    {
+    } else if (c == '=') {
         return 0;
-    }
-    else if (c >= '0' && c <= '9')
-    {
+    } else if (c >= '0' && c <= '9') {
         return c - '0' + 52;
     }
     return 63;
@@ -311,24 +286,19 @@ char sharpen::Base64DecodeMapping(unsigned char c) noexcept
 bool sharpen::Base64Decode(char *dst,
                            std::size_t dstSize,
                            const char *src,
-                           std::size_t srcSize) noexcept
-{
-    if (dstSize < sharpen::ComputeBase64DecodeSize(srcSize) || srcSize % 4)
-    {
+                           std::size_t srcSize) noexcept {
+    if (dstSize < sharpen::ComputeBase64DecodeSize(srcSize) || srcSize % 4) {
         return false;
     }
-    if (!srcSize)
-    {
+    if (!srcSize) {
         return true;
     }
     unsigned char srcBuf[4] = {};
     const char *srcEnd = src + srcSize;
     std::size_t i{0};
-    while (src != srcEnd)
-    {
+    while (src != srcEnd) {
         srcBuf[i++] = static_cast<unsigned char>(*(src++));
-        if (i == 4)
-        {
+        if (i == 4) {
             char tmp{sharpen::Base64DecodeMapping(srcBuf[0])};
             tmp <<= 2;
             tmp |= sharpen::Base64DecodeMapping(srcBuf[1]) >> 4;
@@ -347,36 +317,28 @@ bool sharpen::Base64Decode(char *dst,
     return true;
 }
 
-std::uint32_t sharpen::BufferHash32(const char *data, std::size_t size) noexcept
-{
+std::uint32_t sharpen::BufferHash32(const char *data, std::size_t size) noexcept {
     return sharpen::BufferHash32(data, data + size);
 }
 
-std::uint64_t sharpen::BufferHash64(const char *data, std::size_t size) noexcept
-{
+std::uint64_t sharpen::BufferHash64(const char *data, std::size_t size) noexcept {
     return sharpen::BufferHash64(data, data + size);
 }
 
 std::int32_t sharpen::BufferCompare(const char *leftBuf,
                                     std::size_t leftSize,
                                     const char *rightBuf,
-                                    std::size_t rightSize) noexcept
-{
+                                    std::size_t rightSize) noexcept {
     std::int32_t r{0};
-    if (leftBuf && rightBuf)
-    {
+    if (leftBuf && rightBuf) {
         r = std::memcmp(leftBuf, rightBuf, (std::min)(leftSize, rightSize));
     }
-    if (r != 0)
-    {
+    if (r != 0) {
         return r > 0 ? 1 : -1;
     }
-    if (leftSize > rightSize)
-    {
+    if (leftSize > rightSize) {
         return 1;
-    }
-    else if (rightSize > leftSize)
-    {
+    } else if (rightSize > leftSize) {
         return -1;
     }
     return 0;

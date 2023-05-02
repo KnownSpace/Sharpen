@@ -2,17 +2,15 @@
 #ifndef _SHARPEN_ISELECTOR_HPP
 #define _SHARPEN_ISELECTOR_HPP
 
-#include "FileTypeDef.hpp" // IWYU pragma: keep
+#include "FileTypeDef.hpp"   // IWYU pragma: keep
 #include "IoEvent.hpp"
 #include <memory>
 #include <vector>
 
-namespace sharpen
-{
+namespace sharpen {
     class IChannel;
 
-    class ISelector
-    {
+    class ISelector {
     private:
         using Self = sharpen::ISelector;
 

@@ -15,32 +15,25 @@
 sharpen::SignalMap::SignalMap()
     : map_()
     , remap_()
-    , lock_()
-{
+    , lock_() {
 }
 
 void sharpen::SignalMap::Register(sharpen::FileHandle handle,
                                   std::int32_t *sigs,
-                                  std::size_t sigSize)
-{
+                                  std::size_t sigSize) {
     {
         std::unique_lock<Lock> lock{this->lock_};
         // register to map
-        for (std::size_t i = 0; i != sigSize; ++i)
-        {
+        for (std::size_t i = 0; i != sigSize; ++i) {
             std::int32_t sig{sigs[i]};
             auto ite = this->map_.find(sig);
-            if (ite != this->map_.end())
-            {
+            if (ite != this->map_.end()) {
                 bool exist{std::find(ite->second.begin(), ite->second.end(), handle) !=
                            ite->second.end()};
-                if (!exist)
-                {
+                if (!exist) {
                     ite->second.emplace_back(handle);
                 }
-            }
-            else
-            {
+            } else {
                 std::vector<sharpen::FileHandle> handles;
                 handles.resize(1);
                 handles[0] = handle;
@@ -49,25 +42,19 @@ void sharpen::SignalMap::Register(sharpen::FileHandle handle,
         }
         // register to remap
         auto ite = this->remap_.find(handle);
-        if (ite != this->remap_.end())
-        {
-            for (std::size_t i = 0; i != sigSize; ++i)
-            {
+        if (ite != this->remap_.end()) {
+            for (std::size_t i = 0; i != sigSize; ++i) {
                 std::int32_t sig{sigs[i]};
                 bool exist{std::find(ite->second.begin(), ite->second.end(), sig) !=
                            ite->second.end()};
-                if (!exist)
-                {
+                if (!exist) {
                     ite->second.emplace_back(sig);
                 }
             }
-        }
-        else
-        {
+        } else {
             std::vector<std::int32_t> sigVec;
             sigVec.resize(sigSize);
-            for (std::size_t i = 0; i != sigSize; ++i)
-            {
+            for (std::size_t i = 0; i != sigSize; ++i) {
                 sigVec[i] = sigs[i];
             }
             this->remap_.emplace(handle, std::move(sigVec));
@@ -75,15 +62,12 @@ void sharpen::SignalMap::Register(sharpen::FileHandle handle,
     }
 }
 
-void sharpen::SignalMap::Raise(std::int32_t sig) const noexcept
-{
+void sharpen::SignalMap::Raise(std::int32_t sig) const noexcept {
     {
         std::unique_lock<Lock> lock{this->lock_};
         auto ite = this->map_.find(sig);
-        if (ite != this->map_.end())
-        {
-            for (auto begin = ite->second.begin(), end = ite->second.end(); begin != end; ++begin)
-            {
+        if (ite != this->map_.end()) {
+            for (auto begin = ite->second.begin(), end = ite->second.end(); begin != end; ++begin) {
                 std::uint8_t sigBit{static_cast<std::uint8_t>(sig)};
 #ifdef SHARPEN_IS_WIN
                 BOOL r{::WriteFile(*begin, &sigBit, sizeof(sigBit), nullptr, nullptr)};
@@ -100,21 +84,17 @@ void sharpen::SignalMap::Raise(std::int32_t sig) const noexcept
     }
 }
 
-void sharpen::SignalMap::Unregister(sharpen::FileHandle handle) noexcept
-{
+void sharpen::SignalMap::Unregister(sharpen::FileHandle handle) noexcept {
     {
         std::unique_lock<Lock> lock{this->lock_};
         auto ite = this->remap_.find(handle);
-        if (ite != this->remap_.end())
-        {
-            for (auto begin = ite->second.begin(), end = ite->second.end(); begin != end; ++begin)
-            {
+        if (ite != this->remap_.end()) {
+            for (auto begin = ite->second.begin(), end = ite->second.end(); begin != end; ++begin) {
                 std::int32_t sig{*begin};
                 auto it = this->map_.find(sig);
                 assert(it != this->map_.end());
                 auto handleIt = std::find(it->second.begin(), it->second.end(), handle);
-                if (handleIt != it->second.end())
-                {
+                if (handleIt != it->second.end()) {
                     it->second.erase(handleIt);
                 }
             }

@@ -5,13 +5,11 @@
 #include "AsyncSemaphore.hpp"
 #include <deque>
 
-namespace sharpen
-{
+namespace sharpen {
     template<typename _T>
     class AsyncBlockingQueue
         : public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using Storage = std::deque<_T>;
 
@@ -23,14 +21,12 @@ namespace sharpen
         AsyncBlockingQueue()
             : lock_()
             , sign_(0)
-            , storage_()
-        {
+            , storage_() {
         }
 
         ~AsyncBlockingQueue() noexcept = default;
 
-        _T Pop()
-        {
+        _T Pop() {
             this->sign_.LockAsync();
             {
                 std::unique_lock<sharpen::SpinLock> lock(this->lock_);
@@ -40,8 +36,7 @@ namespace sharpen
             }
         }
 
-        void Push(_T obj)
-        {
+        void Push(_T obj) {
             {
                 std::unique_lock<sharpen::SpinLock> lock(this->lock_);
                 this->storage_.push_back(std::move(obj));
@@ -50,8 +45,7 @@ namespace sharpen
         }
 
         template<typename... _Args, typename _Check = decltype(_T{std::declval<_Args>()...})>
-        void Emplace(_Args &&...args)
-        {
+        void Emplace(_Args &&...args) {
             {
                 std::unique_lock<sharpen::SpinLock> lock(this->lock_);
                 this->storage_.emplace_back(std::forward<_Args>(args)...);

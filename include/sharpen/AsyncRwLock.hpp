@@ -6,10 +6,8 @@
 #include <mutex>
 #include <vector>
 
-namespace sharpen
-{
-    enum class RwLockState
-    {
+namespace sharpen {
+    enum class RwLockState {
         Free,
         SharedReading,
         UniquedWriting
@@ -17,8 +15,7 @@ namespace sharpen
 
     class AsyncRwLock
         : public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using Self = sharpen::AsyncRwLock;
         using MyFuture = sharpen::AwaitableFuture<sharpen::RwLockState>;
@@ -40,8 +37,7 @@ namespace sharpen
         // basic lockable requirement
         // never use me
         // you should use LockWrite or LockRead
-        inline void lock()
-        {
+        inline void lock() {
             this->LockWrite();
         }
 
@@ -70,8 +66,7 @@ namespace sharpen
 
         void Unlock() noexcept;
 
-        inline void unlock() noexcept
-        {
+        inline void unlock() noexcept {
             this->Unlock();
         }
 

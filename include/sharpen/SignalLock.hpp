@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_SIGNALLOCK_HPP
 #define _SHARPEN_SIGNALLOCK_HPP
 
-#include "IntOps.hpp" // IWYU pragma: keep
+#include "IntOps.hpp"   // IWYU pragma: keep
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "SystemMacro.hpp"
@@ -13,12 +13,10 @@
 #include <signal.h>
 #endif
 
-namespace sharpen
-{
+namespace sharpen {
     class SignalLock
         : public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using Self = sharpen::SignalLock;
 
@@ -33,22 +31,19 @@ namespace sharpen
 
         ~SignalLock() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
         void Lock() noexcept;
 
-        inline void lock() noexcept
-        {
+        inline void lock() noexcept {
             this->Lock();
         }
 
         void Unlock() noexcept;
 
-        inline void unlock() noexcept
-        {
+        inline void unlock() noexcept {
             this->Unlock();
         }
     };

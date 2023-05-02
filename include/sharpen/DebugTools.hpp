@@ -4,8 +4,7 @@
 
 #include <cstdio>
 
-namespace sharpen
-{
+namespace sharpen {
     class AsyncMutex;
 
     extern sharpen::AsyncMutex *InternalSyncPrintMutex() noexcept;

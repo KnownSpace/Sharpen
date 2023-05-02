@@ -10,12 +10,10 @@
 #include "Noncopyable.hpp"
 #include "RemotePosterOpenError.hpp"
 
-namespace sharpen
-{
+namespace sharpen {
     class TcpPoster
         : public sharpen::IRemotePoster
-        , public sharpen::Noncopyable
-    {
+        , public sharpen::Noncopyable {
     private:
         using Self = sharpen::TcpPoster;
 
@@ -54,8 +52,7 @@ namespace sharpen
 
         virtual ~TcpPoster() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

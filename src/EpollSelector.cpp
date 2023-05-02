@@ -22,11 +22,9 @@ sharpen::EpollSelector::EpollSelector()
     // register event fd
     this->RegisterInternalEventFd(this->eventfd_.GetHandle(), 1);
 #ifdef SHARPEN_HAS_IOURING
-    if (sharpen::TestIoUring())
-    {
+    if (sharpen::TestIoUring()) {
         this->ring_.reset(new (std::nothrow) sharpen::IoUringQueue());
-        if (!this->ring_)
-        {
+        if (!this->ring_) {
             throw std::bad_alloc{};
         }
         this->RegisterInternalEventFd(this->ring_->EventFd().GetHandle(), 2);
@@ -34,8 +32,7 @@ sharpen::EpollSelector::EpollSelector()
 #endif
 }
 
-void sharpen::EpollSelector::RegisterInternalEventFd(int fd, char internalVal)
-{
+void sharpen::EpollSelector::RegisterInternalEventFd(int fd, char internalVal) {
     Event &event = (this->map_[fd] = std::move(Event()));
     event.epollEvent_.data.ptr = &event;
     event.epollEvent_.events = EPOLLIN | EPOLLET;
@@ -43,96 +40,77 @@ void sharpen::EpollSelector::RegisterInternalEventFd(int fd, char internalVal)
     this->epoll_.Add(fd, &(event.epollEvent_));
 }
 
-bool sharpen::EpollSelector::CheckChannel(sharpen::ChannelPtr channel) noexcept
-{
+bool sharpen::EpollSelector::CheckChannel(sharpen::ChannelPtr channel) noexcept {
     return channel && channel->GetHandle() != -1;
 }
 
 
-void sharpen::EpollSelector::Select(EventVector &events)
-{
+void sharpen::EpollSelector::Select(EventVector &events) {
     assert(events.size() <= (std::numeric_limits<std::uint32_t>::max)());
     std::uint32_t count = this->epoll_.Wait(this->eventBuf_.data(), this->eventBuf_.size(), -1);
 #ifdef SHARPEN_HAS_IOURING
     bool ringNotify{false};
 #endif
-    for (std::size_t i = 0; i != count; ++i)
-    {
+    for (std::size_t i = 0; i != count; ++i) {
         auto &e = this->eventBuf_[i];
         auto *event = reinterpret_cast<Self::Event *>(e.data.ptr);
-        if (!event->internalEventfd_)
-        {
+        if (!event->internalEventfd_) {
             std::uint32_t eventMask = e.events;
             std::uint32_t eventType = 0;
-            if (eventMask & EPOLLIN)
-            {
+            if (eventMask & EPOLLIN) {
                 eventType |= sharpen::IoEvent::EventTypeEnum::Read;
             }
-            if (eventMask & EPOLLOUT)
-            {
+            if (eventMask & EPOLLOUT) {
                 eventType |= sharpen::IoEvent::EventTypeEnum::Write;
             }
-            if (eventMask & EPOLLERR)
-            {
+            if (eventMask & EPOLLERR) {
                 eventType |= sharpen::IoEvent::EventTypeEnum::Error;
             }
-            if (eventMask & EPOLLHUP)
-            {
+            if (eventMask & EPOLLHUP) {
                 eventType |= sharpen::IoEvent::EventTypeEnum::Read;
             }
             event->ioEvent_.SetEvent(eventType);
             events.push_back(&(event->ioEvent_));
         }
 #ifdef SHARPEN_HAS_IOURING
-        else if (event->internalEventfd_ == 2)
-        {
+        else if (event->internalEventfd_ == 2) {
             ringNotify = true;
         }
 #endif
     }
-    if (count == this->eventBuf_.size() && count != Self::maxEventBufLength_)
-    {
+    if (count == this->eventBuf_.size() && count != Self::maxEventBufLength_) {
         this->eventBuf_.resize(count * 2);
     }
 #ifdef SHARPEN_HAS_IOURING
-    if (this->ring_ && ringNotify)
-    {
+    if (this->ring_ && ringNotify) {
         std::size_t size = this->ring_->GetCompletionStatus(this->cqes_.data(), this->cqes_.size());
-        for (std::size_t i = 0; i != size; ++i)
-        {
+        for (std::size_t i = 0; i != size; ++i) {
             sharpen::IoUringStruct *st =
                 reinterpret_cast<sharpen::IoUringStruct *>(this->cqes_[i].user_data);
             assert(st != nullptr);
-            if (this->cqes_[i].res < 0)
-            {
+            if (this->cqes_[i].res < 0) {
                 st->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Error);
                 st->event_.SetErrorCode(-this->cqes_[i].res);
-            }
-            else
-            {
+            } else {
                 st->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Completed);
                 st->length_ = this->cqes_[i].res;
             }
             events.push_back(&(st->event_));
         }
-        if (size == this->cqes_.size() && size != Self::maxEventBufLength_)
-        {
+        if (size == this->cqes_.size() && size != Self::maxEventBufLength_) {
             this->cqes_.resize(size * 2);
         }
     }
 #endif
 }
 
-void sharpen::EpollSelector::Notify()
-{
+void sharpen::EpollSelector::Notify() {
     this->eventfd_.Write(1);
 }
 
-void sharpen::EpollSelector::Resister(WeakChannelPtr channel)
-{
+void sharpen::EpollSelector::Resister(WeakChannelPtr channel) {
     sharpen::ChannelPtr ch = channel.lock();
-    if (!ch)
-    {
+    if (!ch) {
         return;
     }
     epoll_event *eventStruct{nullptr};
@@ -150,8 +128,7 @@ void sharpen::EpollSelector::Resister(WeakChannelPtr channel)
 }
 
 #ifdef SHARPEN_HAS_IOURING
-sharpen::IoUringQueue *sharpen::EpollSelector::GetIoUring() const noexcept
-{
+sharpen::IoUringQueue *sharpen::EpollSelector::GetIoUring() const noexcept {
     return this->ring_.get();
 }
 #endif

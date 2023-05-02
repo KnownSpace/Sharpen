@@ -2,15 +2,13 @@
 #ifndef _SHARPEN_IREMOTEACTOR_HPP
 #define _SHARPEN_IREMOTEACTOR_HPP
 
-#include "Future.hpp" // IWYU pragma: keep
+#include "Future.hpp"   // IWYU pragma: keep
 #include "IMailParser.hpp"
 #include "Mail.hpp"
 #include <memory>
 
-namespace sharpen
-{
-    class IRemotePoster
-    {
+namespace sharpen {
+    class IRemotePoster {
     private:
         using Self = sharpen::IRemotePoster;
 
@@ -41,39 +39,33 @@ namespace sharpen
 
         virtual ~IRemotePoster() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline void Open(std::unique_ptr<sharpen::IMailParser> parser)
-        {
+        inline void Open(std::unique_ptr<sharpen::IMailParser> parser) {
             assert(parser != nullptr);
             return this->NviOpen(std::move(parser));
         }
 
-        inline void Close() noexcept
-        {
+        inline void Close() noexcept {
             return this->NviClose();
         }
 
         // if there are errors occurred
         // return a empty mail
-        inline sharpen::Mail Post(const sharpen::Mail &mail) noexcept
-        {
+        inline sharpen::Mail Post(const sharpen::Mail &mail) noexcept {
             assert(!mail.Empty());
             return this->NviPost(mail);
         }
 
-        void Post(const sharpen::Mail &mail, std::function<void(sharpen::Mail)> cb) noexcept
-        {
+        void Post(const sharpen::Mail &mail, std::function<void(sharpen::Mail)> cb) noexcept {
             assert(!mail.Empty());
             assert(cb);
             return this->NviPost(mail, std::move(cb));
         }
 
-        inline std::uint64_t GetId() const noexcept
-        {
+        inline std::uint64_t GetId() const noexcept {
             return this->NviGetId();
         }
 

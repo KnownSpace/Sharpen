@@ -4,10 +4,8 @@
 
 #include "ITimer.hpp"
 
-namespace sharpen
-{
-    class ITimerPool
-    {
+namespace sharpen {
+    class ITimerPool {
     private:
         using Self = ITimerPool;
 
@@ -25,8 +23,7 @@ namespace sharpen
 
         virtual ~ITimerPool() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

@@ -9,10 +9,8 @@
 #include <deque>
 #include <vector>
 
-namespace sharpen
-{
-    class IoUringQueue
-    {
+namespace sharpen {
+    class IoUringQueue {
     private:
         using Self = sharpen::IoUringQueue;
         using Cqe = struct io_uring_cqe;
@@ -38,13 +36,11 @@ namespace sharpen
 
         ~IoUringQueue() noexcept;
 
-        sharpen::EventFd &EventFd() noexcept
-        {
+        sharpen::EventFd &EventFd() noexcept {
             return this->eventFd_;
         }
 
-        const sharpen::EventFd &EventFd() const noexcept
-        {
+        const sharpen::EventFd &EventFd() const noexcept {
             return this->eventFd_;
         }
 

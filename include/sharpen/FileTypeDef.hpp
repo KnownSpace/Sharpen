@@ -4,30 +4,26 @@
 
 #include "SystemMacro.hpp"
 
-namespace sharpen
-{
+namespace sharpen {
 #ifdef SHARPEN_IS_WIN
     using FileHandle = void *;
 #else
     using FileHandle = int;
 #endif
 
-    enum class FileOpenMethod
-    {
+    enum class FileOpenMethod {
         Open,
         CreateNew,
         CreateOrOpen
     };
 
-    enum class FileAccessMethod
-    {
+    enum class FileAccessMethod {
         Read,
         Write,
         All
     };
 
-    enum class FileIoMethod
-    {
+    enum class FileIoMethod {
         Normal,
         Direct,
         Sync,

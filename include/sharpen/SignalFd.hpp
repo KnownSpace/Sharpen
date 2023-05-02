@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_SIGNALFD_HPP
 #define _SHARPEN_SIGNALFD_HPP
 
-#include "SystemMacro.hpp" // IWYU pragma: keep
+#include "SystemMacro.hpp"   // IWYU pragma: keep
 
 #ifdef SHARPEN_IS_LINUX
 
@@ -12,8 +12,7 @@
 #include <sys/signalfd.h>
 #include <unistd.h>
 
-namespace sharpen
-{
+namespace sharpen {
     extern sharpen::FileHandle OpenSignalFd(const sigset_t &sigs) noexcept;
 
     extern ssize_t ReadSignalFd(sharpen::FileHandle fd, signalfd_siginfo &sigInfo) noexcept;

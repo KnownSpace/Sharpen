@@ -3,15 +3,13 @@
 #define _SHARPEN_RAFTVOTEFORRESPONSE_HPP
 
 #include "BinarySerializable.hpp"
-#include "CorruptedDataError.hpp" // IWYU pragma: keep
+#include "CorruptedDataError.hpp"   // IWYU pragma: keep
 #include <cstddef>
 #include <cstdint>
 #include <utility>
 
-namespace sharpen
-{
-    class RaftVoteForResponse : public sharpen::BinarySerializable<sharpen::RaftVoteForResponse>
-    {
+namespace sharpen {
+    class RaftVoteForResponse : public sharpen::BinarySerializable<sharpen::RaftVoteForResponse> {
     private:
         using Self = sharpen::RaftVoteForResponse;
 
@@ -27,10 +25,8 @@ namespace sharpen
 
         RaftVoteForResponse(Self &&other) noexcept;
 
-        inline Self &operator=(const Self &other) noexcept
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) noexcept {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -47,28 +43,23 @@ namespace sharpen
 
         std::size_t UnsafeStoreTo(char *data) const noexcept;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline bool GetStatus() const noexcept
-        {
+        inline bool GetStatus() const noexcept {
             return this->status_;
         }
 
-        inline void SetStatus(bool status) noexcept
-        {
+        inline void SetStatus(bool status) noexcept {
             this->status_ = status;
         }
 
-        inline std::uint64_t GetTerm() const noexcept
-        {
+        inline std::uint64_t GetTerm() const noexcept {
             return this->term_;
         }
 
-        inline void SetTerm(std::uint64_t term) noexcept
-        {
+        inline void SetTerm(std::uint64_t term) noexcept {
             this->term_ = term;
         }
     };

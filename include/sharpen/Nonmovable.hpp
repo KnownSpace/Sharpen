@@ -1,10 +1,8 @@
 #pragma once
 #ifndef _SHARPEN_NONMOVABLE_HPP
 
-namespace sharpen
-{
-    class Nonmovable
-    {
+namespace sharpen {
+    class Nonmovable {
         using Self = sharpen::Nonmovable;
 
     public:

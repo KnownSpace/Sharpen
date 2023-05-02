@@ -10,12 +10,10 @@
 #include "INetStreamChannel.hpp"
 #include "WSAOverlappedStruct.hpp"
 
-namespace sharpen
-{
+namespace sharpen {
     class WinNetStreamChannel
         : public sharpen::INetStreamChannel
-        , public sharpen::Noncopyable
-    {
+        , public sharpen::Noncopyable {
     private:
         using Mybase = sharpen::INetStreamChannel;
 

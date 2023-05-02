@@ -9,10 +9,8 @@
 #include "IChannel.hpp"
 #include "IoEvent.hpp"
 
-namespace sharpen
-{
-    struct IocpOverlappedStruct
-    {
+namespace sharpen {
+    struct IocpOverlappedStruct {
         OVERLAPPED ol_;
         sharpen::IoEvent event_;
         void *data_;

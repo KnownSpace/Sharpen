@@ -13,24 +13,20 @@
 #include <cxxabi.h>
 #endif
 
-namespace sharpen
-{
+namespace sharpen {
     template<typename _Type, _Type _Value>
-    struct ConstValue
-    {
+    struct ConstValue {
     private:
         using Self = sharpen::ConstValue<_Type, _Value>;
 
     public:
         constexpr static _Type Value{_Value};
 
-        constexpr _Type operator()() const noexcept
-        {
+        constexpr _Type operator()() const noexcept {
             return Self::Value;
         }
 
-        constexpr operator _Type() const noexcept
-        {
+        constexpr operator _Type() const noexcept {
             return Self::Value;
         }
     };
@@ -43,32 +39,27 @@ namespace sharpen
     using FalseType = sharpen::BoolType<false>;
 
     template<std::size_t _Size>
-    struct InternalIntType
-    {
+    struct InternalIntType {
         using Type = std::int32_t;
     };
 
     template<>
-    struct InternalIntType<8>
-    {
+    struct InternalIntType<8> {
         using Type = std::int8_t;
     };
 
     template<>
-    struct InternalIntType<16>
-    {
+    struct InternalIntType<16> {
         using Type = std::int16_t;
     };
 
     template<>
-    struct InternalIntType<32>
-    {
+    struct InternalIntType<32> {
         using Type = std::int32_t;
     };
 
     template<>
-    struct InternalIntType<64>
-    {
+    struct InternalIntType<64> {
         using Type = std::int64_t;
     };
 
@@ -76,32 +67,27 @@ namespace sharpen
     using IntType = typename sharpen::InternalIntType<_Size>::Type;
 
     template<std::size_t _Size>
-    struct InternalUintType
-    {
+    struct InternalUintType {
         using Type = std::uint32_t;
     };
 
     template<>
-    struct InternalUintType<8>
-    {
+    struct InternalUintType<8> {
         using Type = std::uint8_t;
     };
 
     template<>
-    struct InternalUintType<16>
-    {
+    struct InternalUintType<16> {
         using Type = std::uint16_t;
     };
 
     template<>
-    struct InternalUintType<32>
-    {
+    struct InternalUintType<32> {
         using Type = std::uint32_t;
     };
 
     template<>
-    struct InternalUintType<64>
-    {
+    struct InternalUintType<64> {
         using Type = std::uint64_t;
     };
 
@@ -109,8 +95,7 @@ namespace sharpen
     using UintType = typename sharpen::InternalUintType<_Size>::Type;
 
     template<typename _Fn, typename... _Args>
-    struct InternalIsCallable
-    {
+    struct InternalIsCallable {
     private:
         class TestFalse;
 
@@ -135,51 +120,43 @@ namespace sharpen
     using TypeChecker = void;
 
     template<typename _Checker>
-    struct ValidContainer
-    {
+    struct ValidContainer {
     private:
         template<typename _Arg,
                  typename _Check = decltype(std::declval<_Checker>()(std::declval<_Arg>()))>
-        constexpr sharpen::TrueType Test(int) noexcept
-        {
+        constexpr sharpen::TrueType Test(int) noexcept {
             return sharpen::TrueType{};
         }
 
         template<typename _Arg>
-        constexpr sharpen::FalseType Test(...) noexcept
-        {
+        constexpr sharpen::FalseType Test(...) noexcept {
             return sharpen::FalseType{};
         }
 
     public:
         template<typename _Arg>
-        constexpr auto operator()(_Arg &&arg) noexcept -> decltype(Test<_Arg>(0))
-        {
+        constexpr auto operator()(_Arg &&arg) noexcept -> decltype(Test<_Arg>(0)) {
             (void)arg;
             return Test<_Arg>(0);
         }
     };
 
     template<typename _Check>
-    constexpr sharpen::ValidContainer<_Check> InternalIsValid() noexcept
-    {
+    constexpr sharpen::ValidContainer<_Check> InternalIsValid() noexcept {
         return sharpen::ValidContainer<_Check>();
     }
 
     template<typename _Check, typename _T>
     using IsValid = decltype(sharpen::InternalIsValid<_Check>()(std::declval<_T>()));
 
-    struct MatchesContainer
-    {
+    struct MatchesContainer {
         template<template<class...> class _Tmp, typename... _T, typename _Check = _Tmp<_T...>>
-        constexpr static sharpen::TrueType Matches(int) noexcept
-        {
+        constexpr static sharpen::TrueType Matches(int) noexcept {
             return sharpen::TrueType();
         }
 
         template<template<class...> class _Tmp, typename... _T>
-        constexpr static sharpen::FalseType Matches(...) noexcept
-        {
+        constexpr static sharpen::FalseType Matches(...) noexcept {
             return sharpen::FalseType();
         }
     };
@@ -191,14 +168,12 @@ namespace sharpen
     using EnableIf = typename std::enable_if<_Cond, _T>::type;
 
     template<bool _Cond, typename _TrueType, typename _FalseType>
-    struct InternalTypeIfElse
-    {
+    struct InternalTypeIfElse {
         using Type = _TrueType;
     };
 
     template<typename _TrueType, typename _FalseType>
-    struct InternalTypeIfElse<false, _TrueType, _FalseType>
-    {
+    struct InternalTypeIfElse<false, _TrueType, _FalseType> {
         using Type = _FalseType;
     };
 
@@ -211,65 +186,45 @@ namespace sharpen
     template<typename _T>
     using IsCompletedType = sharpen::IsMatches<sharpen::InternalIsCompletedType, _T>;
 
-    struct InternalEmptyTestBase
-    {
+    struct InternalEmptyTestBase {
         char flag_;
     };
 
-    struct InternalEmptyType
-    {
-    };
+    struct InternalEmptyType {};
 
     template<typename _T>
     struct InternalEmptyTest
         : public _T
-        , public sharpen::InternalEmptyTestBase
-    {
-    };
+        , public sharpen::InternalEmptyTestBase {};
 
     template<typename _T, std::size_t _Size>
-    struct InternalIsEmptyType : sharpen::FalseType
-    {
-    };
+    struct InternalIsEmptyType : sharpen::FalseType {};
 
     template<std::size_t _Size>
-    struct InternalIsEmptyType<bool, _Size> : public sharpen::FalseType
-    {
-    };
+    struct InternalIsEmptyType<bool, _Size> : public sharpen::FalseType {};
 
     template<std::size_t _Size>
-    struct InternalIsEmptyType<char, _Size> : public sharpen::FalseType
-    {
-    };
+    struct InternalIsEmptyType<char, _Size> : public sharpen::FalseType {};
 
     template<std::size_t _Size>
-    struct InternalIsEmptyType<unsigned char, _Size> : public sharpen::FalseType
-    {
-    };
+    struct InternalIsEmptyType<unsigned char, _Size> : public sharpen::FalseType {};
 
     template<typename _T>
     struct InternalIsEmptyType<_T, sizeof(sharpen::InternalEmptyType)>
         : public sharpen::EnableIfElse<(sizeof(sharpen::InternalEmptyTest<_T>) ==
                                         sizeof(sharpen::InternalEmptyTestBase)),
                                        sharpen::TrueType,
-                                       sharpen::FalseType>
-    {
-    };
+                                       sharpen::FalseType> {};
 
     template<typename _T, typename _Check = void>
-    struct IsEmptyType : public sharpen::FalseType
-    {
-    };
+    struct IsEmptyType : public sharpen::FalseType {};
 
     template<typename _T>
     struct IsEmptyType<_T, sharpen::EnableIf<sharpen::IsCompletedType<_T>::Value>>
-        : public sharpen::InternalIsEmptyType<_T, sizeof(_T)>
-    {
-    };
+        : public sharpen::InternalIsEmptyType<_T, sizeof(_T)> {};
 
     template<template<class> class _Matches, typename _Arg, typename... _Args>
-    struct InternalMultiMatches
-    {
+    struct InternalMultiMatches {
     public:
         static constexpr bool Value = sharpen::IsMatches<_Matches, _Arg>::Value;
 
@@ -278,8 +233,7 @@ namespace sharpen
     };
 
     template<template<class> class _Matches, typename _Arg>
-    struct InternalMultiMatches<_Matches, _Arg>
-    {
+    struct InternalMultiMatches<_Matches, _Arg> {
     public:
         static constexpr bool Value = sharpen::IsMatches<_Matches, _Arg>::Value;
 
@@ -290,15 +244,13 @@ namespace sharpen
     using MultiMatches = typename sharpen::InternalMultiMatches<_Matches, _Arg, _Args...>::Type;
 
     template<typename _Int, _Int _First, _Int _Second, _Int... _Values>
-    struct MaxValue
-    {
+    struct MaxValue {
         static constexpr _Int Value = sharpen::MaxValue < _Int,
                               (_First > _Second) ? _First : _Second, _Values... > ::Value;
     };
 
     template<typename _Int, _Int _First, _Int _Second>
-    struct MaxValue<_Int, _First, _Second>
-    {
+    struct MaxValue<_Int, _First, _Second> {
         static constexpr _Int Value = _First > _Second ? _First : _Second;
     };
 
@@ -306,8 +258,7 @@ namespace sharpen
     struct TypeList;
 
     template<>
-    struct TypeList<>
-    {
+    struct TypeList<> {
         template<typename _U>
         using PushBack = sharpen::TypeList<_U>;
 
@@ -315,8 +266,7 @@ namespace sharpen
         using PushFront = sharpen::TypeList<_U>;
 
         template<typename _U>
-        struct Find
-        {
+        struct Find {
             constexpr static std::size_t Index = 0;
         };
 
@@ -329,14 +279,12 @@ namespace sharpen
     };
 
     template<typename _TL, std::size_t _Index>
-    struct InternalTypeListAt
-    {
+    struct InternalTypeListAt {
         using Type = typename sharpen::InternalTypeListAt<typename _TL::SubList, _Index - 1>::Type;
     };
 
     template<typename _TL>
-    struct InternalTypeListAt<_TL, 0>
-    {
+    struct InternalTypeListAt<_TL, 0> {
         using Type = typename _TL::First;
     };
 
@@ -344,8 +292,7 @@ namespace sharpen
     struct InternalTypeListPushFront;
 
     template<typename _U, typename... _Types>
-    struct InternalTypeListPushFront<sharpen::TypeList<_Types...>, _U>
-    {
+    struct InternalTypeListPushFront<sharpen::TypeList<_Types...>, _U> {
         using Type = sharpen::TypeList<_U, _Types...>;
     };
 
@@ -353,69 +300,59 @@ namespace sharpen
     struct InternalTypeListPushBack;
 
     template<typename _U, typename... _Types>
-    struct InternalTypeListPushBack<sharpen::TypeList<_Types...>, _U>
-    {
+    struct InternalTypeListPushBack<sharpen::TypeList<_Types...>, _U> {
         using Type = sharpen::TypeList<_Types..., _U>;
     };
 
     template<typename _TL, std::size_t _Index>
-    struct InternalTypeListErase
-    {
+    struct InternalTypeListErase {
         using Sub =
             typename sharpen::InternalTypeListErase<typename _TL::SubList, (_Index - 1)>::Type;
         using Type = typename sharpen::InternalTypeListPushFront<Sub, typename _TL::First>;
     };
 
     template<typename _TL>
-    struct InternalTypeListErase<_TL, 0>
-    {
+    struct InternalTypeListErase<_TL, 0> {
         using Type = typename _TL::SubList;
     };
 
     template<typename _TL, std::size_t _Index, typename _U, std::size_t _Size>
-    struct InternalTypeListInsert
-    {
+    struct InternalTypeListInsert {
         using Sub = typename sharpen::
             InternalTypeListInsert<typename _TL::SubList, _Index - 1, _U, _TL::SubList::Size>::Type;
         using Type = typename sharpen::InternalTypeListPushFront<Sub, typename _TL::First>::Type;
     };
 
     template<typename _TL, typename _U, std::size_t _Size>
-    struct InternalTypeListInsert<_TL, 0, _U, _Size>
-    {
+    struct InternalTypeListInsert<_TL, 0, _U, _Size> {
         using Type = typename sharpen::InternalTypeListPushFront<_TL, _U>::Type;
     };
 
     template<typename _TL, typename _U, std::size_t _Size>
-    struct InternalTypeListInsert<_TL, _Size, _U, _Size>
-    {
+    struct InternalTypeListInsert<_TL, _Size, _U, _Size> {
         using Type = typename sharpen::InternalTypeListPushBack<_TL, _U>::Type;
     };
 
     template<typename _TL, typename _U, typename _First>
-    struct InternalTypeListFind
-    {
+    struct InternalTypeListFind {
         using SubList = typename _TL::SubList;
         using Sub = typename sharpen::InternalTypeListFind<SubList, _U, typename SubList::First>;
         constexpr static std::size_t Index = 1 + Sub::Index;
     };
 
     template<typename _U, typename _First>
-    struct InternalTypeListFind<sharpen::TypeList<>, _U, _First>
-    {
+    struct InternalTypeListFind<sharpen::TypeList<>, _U, _First> {
         constexpr static std::size_t Index = 0;
     };
 
 
     template<typename _TL, typename _First>
-    struct InternalTypeListFind<_TL, _First, _First>
-    {
+    struct InternalTypeListFind<_TL, _First, _First> {
         constexpr static std::size_t Index = 0;
     };
 
     template<typename _T, typename... _Types>
-    struct TypeList<_T, _Types...>
-    {
+    struct TypeList<_T, _Types...> {
         using Self = sharpen::TypeList<_T, _Types...>;
         using First = _T;
         using SubList = sharpen::TypeList<_Types...>;
@@ -438,8 +375,7 @@ namespace sharpen
         using Insert = typename InternalTypeListInsert<Self, _Index, _U, Size>::Type;
 
         template<typename _U>
-        struct Find
-        {
+        struct Find {
             constexpr static std::size_t Index = sharpen::InternalTypeListFind<Self, _U, _T>::Index;
         };
 
@@ -478,8 +414,7 @@ namespace sharpen
         sharpen::IsMatches<sharpen::InternalIsCompletedBindableReturned, _R, _Fn, _Args...>;
 
 #ifndef SHARPEN_COMPILER_MSVC
-    inline static const char *Demangle(const char *name) noexcept
-    {
+    inline static const char *Demangle(const char *name) noexcept {
         int status{0};
         // drop status
         (void)status;
@@ -489,8 +424,7 @@ namespace sharpen
 #endif
 
     template<typename _T>
-    constexpr inline static const char *GetReadableTypeName() noexcept
-    {
+    constexpr inline static const char *GetReadableTypeName() noexcept {
 #ifdef SHARPEN_COMPILER_MSVC
         // remove "class "
         return typeid(_T).name() + 6;
@@ -499,8 +433,7 @@ namespace sharpen
 #endif
     }
 
-    constexpr inline static bool DynamicAllocatedReableTypeName() noexcept
-    {
+    constexpr inline static bool DynamicAllocatedReableTypeName() noexcept {
 #ifdef SHARPEN_COMPILER_MSVC
         return false;
 #else

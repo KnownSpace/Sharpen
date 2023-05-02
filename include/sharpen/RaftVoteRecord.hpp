@@ -3,15 +3,13 @@
 #define _SHARPEN_RAFTVOTERECORD_HPP
 
 #include "BinarySerializable.hpp"
-#include "CorruptedDataError.hpp" // IWYU pragma: keep
+#include "CorruptedDataError.hpp"   // IWYU pragma: keep
 #include <cstddef>
 #include <cstdint>
 #include <utility>
 
-namespace sharpen
-{
-    class RaftVoteRecord : public sharpen::BinarySerializable<sharpen::RaftVoteRecord>
-    {
+namespace sharpen {
+    class RaftVoteRecord : public sharpen::BinarySerializable<sharpen::RaftVoteRecord> {
     private:
         using Self = sharpen::RaftVoteRecord;
 
@@ -27,10 +25,8 @@ namespace sharpen
 
         RaftVoteRecord(Self &&other) noexcept;
 
-        inline Self &operator=(const Self &other) noexcept
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) noexcept {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -41,28 +37,23 @@ namespace sharpen
 
         ~RaftVoteRecord() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline std::uint64_t GetTerm() const noexcept
-        {
+        inline std::uint64_t GetTerm() const noexcept {
             return this->term_;
         }
 
-        inline void SetTerm(std::uint64_t term) noexcept
-        {
+        inline void SetTerm(std::uint64_t term) noexcept {
             this->term_ = term;
         }
 
-        inline std::uint64_t GetActorId() const noexcept
-        {
+        inline std::uint64_t GetActorId() const noexcept {
             return this->actorId_;
         }
 
-        inline void SetActorId(std::uint64_t actorId) noexcept
-        {
+        inline void SetActorId(std::uint64_t actorId) noexcept {
             this->actorId_ = actorId;
         }
 

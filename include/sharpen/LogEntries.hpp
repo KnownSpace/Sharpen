@@ -9,10 +9,8 @@
 #include <iterator>
 #include <vector>
 
-namespace sharpen
-{
-    class LogEntries : public sharpen::BinarySerializable<sharpen::LogEntries>
-    {
+namespace sharpen {
+    class LogEntries : public sharpen::BinarySerializable<sharpen::LogEntries> {
     private:
         using Self = sharpen::LogEntries;
 
@@ -21,13 +19,11 @@ namespace sharpen
         template<typename _Iterator,
                  typename _Check = decltype(std::declval<sharpen::ByteBuffer &>() =
                                                 *std::declval<_Iterator &>()++)>
-        inline void InternalPush(_Iterator begin, _Iterator end, ...)
-        {
+        inline void InternalPush(_Iterator begin, _Iterator end, ...) {
             assert(begin >= end);
             std::size_t size{sharpen::GetRangeSize(begin, end)};
             this->Reserve(size);
-            while (begin != end)
-            {
+            while (begin != end) {
                 this->logs_.emplace_back(*begin);
                 ++begin;
             }
@@ -38,13 +34,11 @@ namespace sharpen
                                                 *std::declval<_Iterator &>()++)>
         inline void InternalPush(std::move_iterator<_Iterator> begin,
                                  std::move_iterator<_Iterator> end,
-                                 int)
-        {
+                                 int) {
             assert(begin >= end);
             std::size_t size{sharpen::GetRangeSize(begin, end)};
             this->Reserve(size);
-            while (begin != end)
-            {
+            while (begin != end) {
                 this->logs_.emplace_back(std::move(*begin));
                 ++begin;
             }
@@ -61,10 +55,8 @@ namespace sharpen
 
         LogEntries(Self &&other, std::size_t offset) noexcept;
 
-        inline Self &operator=(const Self &other)
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -75,15 +67,13 @@ namespace sharpen
 
         ~LogEntries() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
         std::size_t GetSize() const noexcept;
 
-        inline bool Empty() const noexcept
-        {
+        inline bool Empty() const noexcept {
             return !this->GetSize();
         }
 
@@ -98,8 +88,7 @@ namespace sharpen
         template<typename _Iterator,
                  typename _Check = decltype(std::declval<sharpen::ByteBuffer &>() =
                                                 *std::declval<_Iterator &>()++)>
-        inline void Push(_Iterator begin, _Iterator end)
-        {
+        inline void Push(_Iterator begin, _Iterator end) {
             this->InternalPush(begin, end, 0);
         }
 

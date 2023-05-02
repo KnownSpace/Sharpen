@@ -2,10 +2,8 @@
 #ifndef _SHARPEN_NONCOPYABLE_HPP
 #define _SHARPEN_NONCOPYABLE_HPP
 
-namespace sharpen
-{
-    class Noncopyable
-    {
+namespace sharpen {
+    class Noncopyable {
     private:
         using Self = sharpen::Noncopyable;
 

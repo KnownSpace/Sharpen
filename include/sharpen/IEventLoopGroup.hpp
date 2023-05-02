@@ -4,10 +4,8 @@
 
 #include "EventLoop.hpp"
 
-namespace sharpen
-{
-    class IEventLoopGroup
-    {
+namespace sharpen {
+    class IEventLoopGroup {
     private:
         using Self = sharpen::IEventLoopGroup;
 
@@ -25,8 +23,7 @@ namespace sharpen
 
         virtual ~IEventLoopGroup() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

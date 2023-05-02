@@ -14,12 +14,10 @@
 #include "Optional.hpp"
 #include "RaftReplicatedState.hpp"
 
-namespace sharpen
-{
+namespace sharpen {
     class RaftHeartbeatMailProvider
         : public sharpen::IMailProvider
-        , public sharpen::Noncopyable
-    {
+        , public sharpen::Noncopyable {
     private:
         using Self = sharpen::RaftHeartbeatMailProvider;
 
@@ -66,8 +64,7 @@ namespace sharpen
 
         virtual ~RaftHeartbeatMailProvider() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
@@ -101,14 +98,12 @@ namespace sharpen
 
         std::uint64_t GetCommitIndex() const noexcept;
 
-        inline sharpen::IRaftLogAccesser &LogAccesser() noexcept
-        {
+        inline sharpen::IRaftLogAccesser &LogAccesser() noexcept {
             assert(this->logAccesser_ != nullptr);
             return *this->logAccesser_;
         }
 
-        inline const sharpen::IRaftLogAccesser &LogAccesser() const noexcept
-        {
+        inline const sharpen::IRaftLogAccesser &LogAccesser() const noexcept {
             assert(this->logAccesser_ != nullptr);
             return *this->logAccesser_;
         }

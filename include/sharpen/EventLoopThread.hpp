@@ -5,12 +5,10 @@
 #include "EventLoop.hpp"
 #include <thread>
 
-namespace sharpen
-{
+namespace sharpen {
     class EventLoopThread
         : public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         sharpen::EventLoop loop_;
         std::thread thread_;

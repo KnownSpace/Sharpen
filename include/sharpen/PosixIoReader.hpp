@@ -6,10 +6,8 @@
 
 #ifdef SHARPEN_IS_NIX
 
-namespace sharpen
-{
-    class PosixIoReader : public sharpen::IPosixIoOperator
-    {
+namespace sharpen {
+    class PosixIoReader : public sharpen::IPosixIoOperator {
     private:
         using Mybase = sharpen::IPosixIoOperator;
 

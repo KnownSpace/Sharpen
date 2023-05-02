@@ -8,8 +8,7 @@ sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(
     const sharpen::ILogStorage &log,
     sharpen::IRaftLogAccesser &logAccesser,
     sharpen::IRaftSnapshotProvider *snapshotProvider)
-    : Self{id, builder, log, logAccesser, snapshotProvider, defaultBatchSize_}
-{
+    : Self{id, builder, log, logAccesser, snapshotProvider, defaultBatchSize_} {
 }
 
 sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(
@@ -27,8 +26,7 @@ sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(
     , batchSize_(batchSize)
     , states_()
     , term_(0)
-    , commitIndex_(0)
-{
+    , commitIndex_(0) {
     assert(this->batchSize_ >= 1);
 }
 
@@ -40,8 +38,7 @@ sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(Self &&other) noex
     , batchSize_(other.batchSize_)
     , states_(std::move(other.states_))
     , term_(other.term_)
-    , commitIndex_(other.commitIndex_)
-{
+    , commitIndex_(other.commitIndex_) {
     other.id_ = 0;
     other.builder_ = nullptr;
     other.logs_ = nullptr;
@@ -52,10 +49,8 @@ sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(Self &&other) noex
 }
 
 sharpen::RaftHeartbeatMailProvider &sharpen::RaftHeartbeatMailProvider::operator=(
-    Self &&other) noexcept
-{
-    if (this != std::addressof(other))
-    {
+    Self &&other) noexcept {
+    if (this != std::addressof(other)) {
         this->id_ = other.id_;
         this->builder_ = other.builder_;
         this->logs_ = other.logs_;
@@ -76,79 +71,63 @@ sharpen::RaftHeartbeatMailProvider &sharpen::RaftHeartbeatMailProvider::operator
 }
 
 const sharpen::RaftReplicatedState *sharpen::RaftHeartbeatMailProvider::LookupState(
-    std::uint64_t actorId) const noexcept
-{
+    std::uint64_t actorId) const noexcept {
     auto ite = this->states_.find(actorId);
-    if (ite != this->states_.end())
-    {
+    if (ite != this->states_.end()) {
         return &ite->second;
     }
     return nullptr;
 }
 
 sharpen::Optional<std::uint64_t> sharpen::RaftHeartbeatMailProvider::LookupMatchIndex(
-    std::uint64_t actorId) const noexcept
-{
+    std::uint64_t actorId) const noexcept {
     const sharpen::RaftReplicatedState *state{this->LookupState(actorId)};
-    if (state)
-    {
+    if (state) {
         return state->GetMatchIndex();
     }
     return sharpen::EmptyOpt;
 }
 
 sharpen::RaftReplicatedState *sharpen::RaftHeartbeatMailProvider::LookupMutableState(
-    std::uint64_t actorId) const noexcept
-{
+    std::uint64_t actorId) const noexcept {
     auto ite = this->states_.find(actorId);
-    if (ite != this->states_.end())
-    {
+    if (ite != this->states_.end()) {
         return &ite->second;
     }
     return nullptr;
 }
 
-void sharpen::RaftHeartbeatMailProvider::RemoveState(std::uint64_t actorId) noexcept
-{
+void sharpen::RaftHeartbeatMailProvider::RemoveState(std::uint64_t actorId) noexcept {
     auto ite = this->states_.find(actorId);
-    if (ite != this->states_.end())
-    {
+    if (ite != this->states_.end()) {
         this->states_.erase(ite);
     }
 }
 
-std::size_t sharpen::RaftHeartbeatMailProvider::GetSize() const noexcept
-{
+std::size_t sharpen::RaftHeartbeatMailProvider::GetSize() const noexcept {
     return this->states_.size();
 }
 
-bool sharpen::RaftHeartbeatMailProvider::Empty() const noexcept
-{
+bool sharpen::RaftHeartbeatMailProvider::Empty() const noexcept {
     return this->states_.empty();
 }
 
-void sharpen::RaftHeartbeatMailProvider::Clear() noexcept
-{
+void sharpen::RaftHeartbeatMailProvider::Clear() noexcept {
     return this->states_.clear();
 }
 
 sharpen::Optional<std::uint64_t>
-sharpen::RaftHeartbeatMailProvider::GetSynchronizedIndex() const noexcept
-{
-    if (!this->states_.empty())
-    {
+sharpen::RaftHeartbeatMailProvider::GetSynchronizedIndex() const noexcept {
+    if (!this->states_.empty()) {
         auto begin = this->states_.begin();
         auto end = this->states_.end();
         std::uint64_t index{begin->second.GetNextIndex()};
-        if (begin->second.LookupSnapshot())
-        {
+        if (begin->second.LookupSnapshot()) {
             return sharpen::EmptyOpt;
         }
         ++begin;
-        while (begin != end)
-        {
-            if (begin->second.GetNextIndex() != index || begin->second.LookupSnapshot())
-            {
+        while (begin != end) {
+            if (begin->second.GetNextIndex() != index || begin->second.LookupSnapshot()) {
                 return sharpen::EmptyOpt;
             }
             ++begin;
@@ -158,54 +137,41 @@ sharpen::RaftHeartbeatMailProvider::GetSynchronizedIndex() const noexcept
     return this->GetCommitIndex();
 }
 
-void sharpen::RaftHeartbeatMailProvider::ReComputeCommitIndex() noexcept
-{
+void sharpen::RaftHeartbeatMailProvider::ReComputeCommitIndex() noexcept {
     std::uint64_t index{this->commitIndex_};
-    if (!this->states_.empty())
-    {
+    if (!this->states_.empty()) {
         std::size_t majority{this->states_.size() + 1};
         majority /= 2;
         // nested loop aggregation
-        for (auto begin = this->states_.begin(), end = this->states_.end(); begin != end; ++begin)
-        {
+        for (auto begin = this->states_.begin(), end = this->states_.end(); begin != end; ++begin) {
             std::uint64_t matchIndex{begin->second.GetMatchIndex()};
-            if (matchIndex > index)
-            {
+            if (matchIndex > index) {
                 std::size_t count{1};
-                for (auto ite = this->states_.begin(); ite != end; ++ite)
-                {
-                    if (ite != begin && ite->second.GetMatchIndex() >= matchIndex)
-                    {
+                for (auto ite = this->states_.begin(); ite != end; ++ite) {
+                    if (ite != begin && ite->second.GetMatchIndex() >= matchIndex) {
                         count += 1;
                     }
                 }
-                if (count >= majority)
-                {
+                if (count >= majority) {
                     index = matchIndex;
                 }
             }
         }
-        if (index > this->commitIndex_)
-        {
+        if (index > this->commitIndex_) {
             this->commitIndex_ = index;
         }
     }
 }
 
-std::uint64_t sharpen::RaftHeartbeatMailProvider::GetCommitIndex() const noexcept
-{
+std::uint64_t sharpen::RaftHeartbeatMailProvider::GetCommitIndex() const noexcept {
     return this->commitIndex_;
 }
 
-void sharpen::RaftHeartbeatMailProvider::SetCommitIndex(std::uint64_t index) noexcept
-{
+void sharpen::RaftHeartbeatMailProvider::SetCommitIndex(std::uint64_t index) noexcept {
     std::uint64_t commitIndex{this->GetCommitIndex()};
-    if (commitIndex < index)
-    {
-        for (auto begin = this->states_.begin(), end = this->states_.end(); begin != end; ++begin)
-        {
-            if (begin->second.GetMatchIndex() < index)
-            {
+    if (commitIndex < index) {
+        for (auto begin = this->states_.begin(), end = this->states_.end(); begin != end; ++begin) {
+            if (begin->second.GetMatchIndex() < index) {
                 begin->second.ForwardMatchPoint(index);
             }
         }
@@ -213,17 +179,14 @@ void sharpen::RaftHeartbeatMailProvider::SetCommitIndex(std::uint64_t index) noe
     }
 }
 
-void sharpen::RaftHeartbeatMailProvider::PrepareTerm(std::uint64_t term) noexcept
-{
+void sharpen::RaftHeartbeatMailProvider::PrepareTerm(std::uint64_t term) noexcept {
     this->term_ = term;
 }
 
 sharpen::Mail sharpen::RaftHeartbeatMailProvider::ProvideSnapshotRequest(
-    sharpen::RaftReplicatedState *state) const
-{
+    sharpen::RaftReplicatedState *state) const {
     assert(this->snapshotProvider_ != nullptr);
-    if (!this->snapshotProvider_)
-    {
+    if (!this->snapshotProvider_) {
         // snapshot already disable
         return sharpen::Mail{};
     }
@@ -232,8 +195,7 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::ProvideSnapshotRequest(
     sharpen::Optional<sharpen::RaftSnapshotMetadata> metadataOpt{state->LookupSnapshotMetadata()};
     assert(metadataOpt.Exist());
     assert(snapshot != nullptr);
-    if (snapshot == nullptr || !metadataOpt.Exist())
-    {
+    if (snapshot == nullptr || !metadataOpt.Exist()) {
         return sharpen::Mail{};
     }
     sharpen::RaftSnapshotMetadata metadata{metadataOpt.Get()};
@@ -247,43 +209,36 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::ProvideSnapshotRequest(
     return this->builder_->BuildSnapshotRequest(request);
 }
 
-void sharpen::RaftHeartbeatMailProvider::Register(std::uint64_t actorId)
-{
+void sharpen::RaftHeartbeatMailProvider::Register(std::uint64_t actorId) {
     auto ite = this->states_.find(actorId);
-    if (ite == this->states_.end())
-    {
+    if (ite == this->states_.end()) {
         sharpen::RaftReplicatedState state{this->GetCommitIndex()};
         this->states_.emplace(actorId, std::move(state));
     }
 }
 
 sharpen::Optional<std::uint64_t> sharpen::RaftHeartbeatMailProvider::LookupTerm(
-    std::uint64_t index) const noexcept
-{
+    std::uint64_t index) const noexcept {
     assert(this->logAccesser_ != nullptr);
     assert(this->logs_ != nullptr);
     sharpen::Optional<sharpen::ByteBuffer> entry{this->logs_->Lookup(index)};
-    if (entry.Exist())
-    {
+    if (entry.Exist()) {
         return this->logAccesser_->LookupTerm(entry.Get());
     }
     return sharpen::EmptyOpt;
 }
 
-sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(std::uint64_t actorId) const
-{
+sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(std::uint64_t actorId) const {
     assert(this->builder_);
     assert(this->logs_);
     assert(this->batchSize_ >= 1);
     // lookup next index
     sharpen::RaftReplicatedState *state{this->LookupMutableState(actorId)};
     assert(state != nullptr);
-    if (!state)
-    {
+    if (!state) {
         return sharpen::Mail{};
     }
-    if (state->LookupSnapshot())
-    {
+    if (state->LookupSnapshot()) {
         return this->ProvideSnapshotRequest(state);
     }
     // get next index & match index
@@ -294,8 +249,7 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(std::uint64_t actorId)
     std::uint64_t lastIndex{this->logs_->GetLastIndex()};
     // compute pre index
     std::uint64_t preIndex{nextIndex};
-    if (preIndex)
-    {
+    if (preIndex) {
         preIndex -= 1;
     }
     assert(nextIndex <= lastIndex);
@@ -312,29 +266,23 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(std::uint64_t actorId)
     request.SetTerm(this->term_);
     request.SetPreLogIndex(preIndex);
     sharpen::Optional<std::uint64_t> term{this->LookupTerm(preIndex)};
-    if (!term.Exist())
-    {
+    if (!term.Exist()) {
         assert(this->snapshotProvider_ != nullptr);
-        if (!this->snapshotProvider_)
-        {
+        if (!this->snapshotProvider_) {
             return sharpen::Mail{};
         }
         sharpen::RaftSnapshot snapshot{this->snapshotProvider_->GetSnapshot()};
         state->SetSnapshot(std::move(snapshot));
         return this->ProvideSnapshotRequest(state);
     }
-    if (size)
-    {
+    if (size) {
         // append log entires to request
         request.Entries().Reserve(sharpen::IntCast<std::size_t>(size));
-        while (nextIndex <= lastIndex)
-        {
+        while (nextIndex <= lastIndex) {
             sharpen::Optional<sharpen::ByteBuffer> log{this->logs_->Lookup(nextIndex)};
-            if (!log.Exist())
-            {
+            if (!log.Exist()) {
                 assert(this->snapshotProvider_ != nullptr);
-                if (!this->snapshotProvider_)
-                {
+                if (!this->snapshotProvider_) {
                     return sharpen::Mail{};
                 }
                 sharpen::RaftSnapshot snapshot{this->snapshotProvider_->GetSnapshot()};
@@ -350,32 +298,27 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(std::uint64_t actorId)
     return this->builder_->BuildHeartbeatRequest(request);
 }
 
-sharpen::Mail sharpen::RaftHeartbeatMailProvider::ProvideSynchronizedMail() const
-{
+sharpen::Mail sharpen::RaftHeartbeatMailProvider::ProvideSynchronizedMail() const {
     assert(!this->states_.empty());
     std::uint64_t actorId{this->states_.begin()->first};
     return this->Provide(actorId);
 }
 
 void sharpen::RaftHeartbeatMailProvider::ForwardState(std::uint64_t actorId,
-                                                      std::uint64_t index) noexcept
-{
+                                                      std::uint64_t index) noexcept {
     sharpen::RaftReplicatedState *state{this->LookupMutableState(actorId)};
     assert(state != nullptr);
-    if (state)
-    {
+    if (state) {
         state->ForwardMatchPoint(index);
         this->ReComputeCommitIndex();
     }
 }
 
 void sharpen::RaftHeartbeatMailProvider::BackwardState(std::uint64_t actorId,
-                                                       std::uint64_t index) noexcept
-{
+                                                       std::uint64_t index) noexcept {
     sharpen::RaftReplicatedState *state{this->LookupMutableState(actorId)};
     assert(state != nullptr);
-    if (state)
-    {
+    if (state) {
         state->BackwardMatchPoint(index);
     }
 }

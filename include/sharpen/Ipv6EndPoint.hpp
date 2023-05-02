@@ -4,9 +4,9 @@
 
 #include "BufferOps.hpp"
 #include "IEndPoint.hpp"
-#include "Noncopyable.hpp" // IWYU pragma: keep
-#include "Nonmovable.hpp" // IWYU pragma: keep
-#include "SystemError.hpp" // IWYU pragma: keep
+#include "Noncopyable.hpp"   // IWYU pragma: keep
+#include "Nonmovable.hpp"    // IWYU pragma: keep
+#include "SystemError.hpp"   // IWYU pragma: keep
 #include "SystemMacro.hpp"
 
 #ifdef SHARPEN_IS_NIX
@@ -22,12 +22,10 @@
 #include <functional>
 #include <stdexcept>
 
-namespace sharpen
-{
+namespace sharpen {
     class ByteBuffer;
 
-    class Ipv6EndPoint : public sharpen::IEndPoint
-    {
+    class Ipv6EndPoint : public sharpen::IEndPoint {
     private:
         using Mybase = sharpen::IEndPoint;
         using Self = sharpen::Ipv6EndPoint;
@@ -56,30 +54,25 @@ namespace sharpen
 
         bool operator==(const Self &other) const noexcept;
 
-        inline bool operator!=(const Self &other) const noexcept
-        {
+        inline bool operator!=(const Self &other) const noexcept {
             return !(*this == other);
         }
 
         std::int64_t CompareWith(const Self &other) const noexcept;
 
-        inline bool operator>(const Self &other) const noexcept
-        {
+        inline bool operator>(const Self &other) const noexcept {
             return this->CompareWith(other) > 0;
         }
 
-        inline bool operator<(const Self &other) const noexcept
-        {
+        inline bool operator<(const Self &other) const noexcept {
             return this->CompareWith(other) < 0;
         }
 
-        inline bool operator>=(const Self &other) const noexcept
-        {
+        inline bool operator>=(const Self &other) const noexcept {
             return this->CompareWith(other) >= 0;
         }
 
-        inline bool operator<=(const Self &other) const noexcept
-        {
+        inline bool operator<=(const Self &other) const noexcept {
             return this->CompareWith(other) <= 0;
         }
 
@@ -99,13 +92,11 @@ namespace sharpen
 
         void SetAddrByString(const char *addrStr);
 
-        virtual std::uint32_t GetAddrLen() const override
-        {
+        virtual std::uint32_t GetAddrLen() const override {
             return sizeof(this->addr_);
         }
 
-        constexpr static std::size_t ComputeSize() noexcept
-        {
+        constexpr static std::size_t ComputeSize() noexcept {
             return sizeof(in6_addr) + sizeof(std::uint16_t);
         }
 
@@ -113,8 +104,7 @@ namespace sharpen
 
         std::size_t LoadFrom(const sharpen::ByteBuffer &buf, std::size_t offset);
 
-        inline std::size_t LoadFrom(const sharpen::ByteBuffer &buf)
-        {
+        inline std::size_t LoadFrom(const sharpen::ByteBuffer &buf) {
             return this->LoadFrom(buf, 0);
         }
 
@@ -124,29 +114,25 @@ namespace sharpen
 
         std::size_t StoreTo(sharpen::ByteBuffer &buf, std::size_t offset) const;
 
-        inline std::size_t StoreTo(sharpen::ByteBuffer &buf) const
-        {
+        inline std::size_t StoreTo(sharpen::ByteBuffer &buf) const {
             return this->StoreTo(buf, 0);
         }
 
-        inline virtual std::uint64_t GetHashCode64() const noexcept override
-        {
+        inline virtual std::uint64_t GetHashCode64() const noexcept override {
             char buffer[sizeof(in6_addr) + sizeof(std::uint16_t)] = {};
             this->GetAddr(*reinterpret_cast<in6_addr *>(buffer));
             *reinterpret_cast<std::uint16_t *>(buffer + sizeof(in6_addr)) = this->GetPort();
             return sharpen::BufferHash64(buffer, sizeof(buffer));
         }
 
-        inline virtual std::uint32_t GetHashCode32() const noexcept override
-        {
+        inline virtual std::uint32_t GetHashCode32() const noexcept override {
             char buffer[sizeof(in6_addr) + sizeof(std::uint16_t)] = {};
             this->GetAddr(*reinterpret_cast<in6_addr *>(buffer));
             *reinterpret_cast<std::uint16_t *>(buffer + sizeof(in6_addr)) = this->GetPort();
             return sharpen::BufferHash32(buffer, sizeof(buffer));
         }
 
-        inline virtual std::size_t GetHashCode() const noexcept override
-        {
+        inline virtual std::size_t GetHashCode() const noexcept override {
             char buffer[sizeof(in6_addr) + sizeof(std::uint16_t)] = {};
             this->GetAddr(*reinterpret_cast<in6_addr *>(buffer));
             *reinterpret_cast<std::uint16_t *>(buffer + sizeof(in6_addr)) = this->GetPort();
@@ -156,13 +142,10 @@ namespace sharpen
 
 }   // namespace sharpen
 
-namespace std
-{
+namespace std {
     template<>
-    struct hash<sharpen::Ipv6EndPoint>
-    {
-        inline std::size_t operator()(const sharpen::Ipv6EndPoint &endpoint) const noexcept
-        {
+    struct hash<sharpen::Ipv6EndPoint> {
+        inline std::size_t operator()(const sharpen::Ipv6EndPoint &endpoint) const noexcept {
             return endpoint.GetHashCode();
         }
     };

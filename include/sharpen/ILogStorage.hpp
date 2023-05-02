@@ -10,10 +10,8 @@
 #include <cstddef>
 #include <utility>
 
-namespace sharpen
-{
-    class ILogStorage
-    {
+namespace sharpen {
+    class ILogStorage {
 
     private:
         using Self = sharpen::ILogStorage;
@@ -44,55 +42,44 @@ namespace sharpen
 
         virtual ~ILogStorage() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
         virtual std::uint64_t GetLastIndex() const = 0;
 
-        inline sharpen::Optional<sharpen::ByteBuffer> Lookup(std::uint64_t index) const
-        {
-            if (index != noneIndex)
-            {
+        inline sharpen::Optional<sharpen::ByteBuffer> Lookup(std::uint64_t index) const {
+            if (index != noneIndex) {
                 return this->NviLookup(index);
             }
             return sharpen::EmptyOpt;
         }
 
-        inline void Write(std::uint64_t index, sharpen::ByteSlice log)
-        {
+        inline void Write(std::uint64_t index, sharpen::ByteSlice log) {
             assert(index != noneIndex);
             assert(!log.Empty());
             this->NviWrite(index, log);
         }
 
-        inline void Write(std::uint64_t index, const sharpen::ByteBuffer &log)
-        {
+        inline void Write(std::uint64_t index, const sharpen::ByteBuffer &log) {
             this->Write(index, log.GetSlice());
         }
 
-        inline void WriteBatch(std::uint64_t beginIndex, sharpen::LogEntries entires)
-        {
+        inline void WriteBatch(std::uint64_t beginIndex, sharpen::LogEntries entires) {
             assert(beginIndex != noneIndex);
-            if (!entires.Empty())
-            {
+            if (!entires.Empty()) {
                 this->NviWriteBatch(beginIndex, std::move(entires));
             }
         }
 
-        inline void DropUntil(std::uint64_t index) noexcept
-        {
-            if (index <= this->GetLastIndex())
-            {
+        inline void DropUntil(std::uint64_t index) noexcept {
+            if (index <= this->GetLastIndex()) {
                 this->NviDropUntil(index);
             }
         }
 
-        inline void TruncateFrom(std::uint64_t index)
-        {
-            if (index <= this->GetLastIndex())
-            {
+        inline void TruncateFrom(std::uint64_t index) {
+            if (index <= this->GetLastIndex()) {
                 this->NviTruncateFrom(index);
             }
         }

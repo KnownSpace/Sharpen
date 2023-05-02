@@ -10,10 +10,8 @@
 #include <memory>
 #include <utility>
 
-namespace sharpen
-{
-    class RaftReplicatedState : public sharpen::Noncopyable
-    {
+namespace sharpen {
+    class RaftReplicatedState : public sharpen::Noncopyable {
     private:
         using Self = RaftReplicatedState;
 
@@ -33,18 +31,15 @@ namespace sharpen
 
         ~RaftReplicatedState() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline std::uint64_t GetMatchIndex() const noexcept
-        {
+        inline std::uint64_t GetMatchIndex() const noexcept {
             return this->matchIndex_;
         }
 
-        inline std::uint64_t GetNextIndex() const noexcept
-        {
+        inline std::uint64_t GetNextIndex() const noexcept {
             return this->nextIndex_;
         }
 

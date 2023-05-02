@@ -9,10 +9,8 @@
 #include <new>
 #include <type_traits>
 
-namespace sharpen
-{
-    class IHostPipeline
-    {
+namespace sharpen {
+    class IHostPipeline {
     private:
         using Self = sharpen::IHostPipeline;
 
@@ -34,8 +32,7 @@ namespace sharpen
 
         virtual ~IHostPipeline() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
@@ -43,16 +40,13 @@ namespace sharpen
 
         virtual void Stop() noexcept = 0;
 
-        inline void Consume(sharpen::NetStreamChannelPtr channel)
-        {
-            if (channel && this->Active())
-            {
+        inline void Consume(sharpen::NetStreamChannelPtr channel) {
+            if (channel && this->Active()) {
                 this->NviConsume(std::move(channel));
             }
         }
 
-        inline Self &Register(std::unique_ptr<sharpen::IHostPipelineStep> step)
-        {
+        inline Self &Register(std::unique_ptr<sharpen::IHostPipelineStep> step) {
             assert(step != nullptr);
             this->NviRegister(std::move(step));
             return *this;
@@ -63,12 +57,10 @@ namespace sharpen
                  typename _Check = decltype(
                      std::declval<sharpen::IHostPipelineStep *&>() = std::declval<_Impl *>(),
                      _Impl{std::declval<_Args>()...})>
-        inline Self &Register(_Args &&...args)
-        {
+        inline Self &Register(_Args &&...args) {
             std::unique_ptr<sharpen::IHostPipelineStep> step{nullptr};
             step.reset(new (std::nothrow) _Impl{std::forward<_Args>(args)...});
-            if (!step)
-            {
+            if (!step) {
                 throw std::bad_alloc{};
             }
             return this->Register(std::move(step));

@@ -2,10 +2,8 @@
 #ifndef _SHARPEN_IASYNCLOCKABLE_HPP
 #define _SHARPEN_IASYNCLOCKABLE_HPP
 
-namespace sharpen
-{
-    class IAsyncLockable
-    {
+namespace sharpen {
+    class IAsyncLockable {
     private:
         using Self = sharpen::IAsyncLockable;
 
@@ -23,14 +21,12 @@ namespace sharpen
         virtual void Unlock() noexcept = 0;
 
         // used by stl
-        inline void lock()
-        {
+        inline void lock() {
             this->LockAsync();
         }
 
         // used by stl
-        inline void unlock() noexcept
-        {
+        inline void unlock() noexcept {
             this->Unlock();
         }
     };

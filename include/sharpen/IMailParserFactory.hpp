@@ -4,10 +4,8 @@
 
 #include "IMailParser.hpp"
 
-namespace sharpen
-{
-    class IMailParserFactory
-    {
+namespace sharpen {
+    class IMailParserFactory {
     private:
         using Self = sharpen::IMailParserFactory;
 
@@ -25,8 +23,7 @@ namespace sharpen
 
         virtual ~IMailParserFactory() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

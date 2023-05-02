@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_IPOSIXIOOPERATOR_HPP
 #define _SHARPEN_IPOSIXOPERATOR_HPP
 
-#include "SystemMacro.hpp" // IWYU pragma: keep
+#include "SystemMacro.hpp"   // IWYU pragma: keep
 
 #ifdef SHARPEN_IS_NIX
 
@@ -16,12 +16,10 @@
 #include <functional>
 #include <vector>
 
-namespace sharpen
-{
+namespace sharpen {
     class IPosixIoOperator
         : public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     protected:
         using IoBuffer = iovec;
         using IoBuffers = std::vector<IoBuffer>;

@@ -5,8 +5,7 @@
 
 #include <simpletest/TestRunner.hpp>
 
-class RedirectTest : public simpletest::ITypenamedTest<RedirectTest>
-{
+class RedirectTest : public simpletest::ITypenamedTest<RedirectTest> {
 private:
     using Self = RedirectTest;
 
@@ -15,13 +14,11 @@ public:
 
     ~RedirectTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
 #ifdef SHARPEN_IS_NIX
         std::vector<std::string> args;
         args.emplace_back("Hello World");
@@ -40,15 +37,13 @@ public:
     }
 };
 
-int Test()
-{
+int Test() {
     simpletest::TestRunner runner;
     runner.Register<RedirectTest>();
     return runner.Run();
 }
 
-int main(int argc, char const *argv[])
-{
+int main(int argc, char const *argv[]) {
     sharpen::EventEngine &engine{sharpen::EventEngine::SetupSingleThreadEngine()};
     return engine.StartupWithCode(&Test);
 }

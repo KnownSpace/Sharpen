@@ -5,17 +5,14 @@
 sharpen::AsyncSemaphore::AsyncSemaphore(std::size_t count)
     : waiters_()
     , lock_()
-    , counter_(count)
-{
+    , counter_(count) {
 }
 
-void sharpen::AsyncSemaphore::LockAsync()
-{
+void sharpen::AsyncSemaphore::LockAsync() {
     sharpen::AsyncSemaphore::MyFuture future;
     {
         std::unique_lock<sharpen::SpinLock> lock(this->lock_);
-        if (!this->NeedWait())
-        {
+        if (!this->NeedWait()) {
             this->counter_ -= 1;
             return;
         }
@@ -24,16 +21,13 @@ void sharpen::AsyncSemaphore::LockAsync()
     future.Await();
 }
 
-bool sharpen::AsyncSemaphore::TryLock() noexcept
-{
-    if (!this->lock_.TryLock())
-    {
+bool sharpen::AsyncSemaphore::TryLock() noexcept {
+    if (!this->lock_.TryLock()) {
         return false;
     }
     {
         std::unique_lock<sharpen::SpinLock> lock{this->lock_, std::adopt_lock};
-        if (!this->NeedWait())
-        {
+        if (!this->NeedWait()) {
             this->counter_ -= 1;
             return true;
         }
@@ -41,51 +35,41 @@ bool sharpen::AsyncSemaphore::TryLock() noexcept
     }
 }
 
-bool sharpen::AsyncSemaphore::NeedWait() const
-{
+bool sharpen::AsyncSemaphore::NeedWait() const {
     return this->counter_ == 0;
 }
 
-void sharpen::AsyncSemaphore::Unlock() noexcept
-{
+void sharpen::AsyncSemaphore::Unlock() noexcept {
     sharpen::AsyncSemaphore::MyFuturePtr futurePtr{nullptr};
     {
         std::unique_lock<sharpen::SpinLock> lock(this->lock_);
-        if (this->waiters_.empty())
-        {
+        if (this->waiters_.empty()) {
             this->counter_ += 1;
             return;
         }
         futurePtr = this->waiters_.back();
         this->waiters_.pop_back();
     }
-    if (futurePtr)
-    {
+    if (futurePtr) {
         futurePtr->Complete();
     }
 }
 
-void sharpen::AsyncSemaphore::Unlock(std::size_t count) noexcept
-{
+void sharpen::AsyncSemaphore::Unlock(std::size_t count) noexcept {
     std::unique_lock<sharpen::SpinLock> lock(this->lock_);
-    if (this->waiters_.empty())
-    {
+    if (this->waiters_.empty()) {
         this->counter_ += count;
         return;
     }
-    if (count >= this->waiters_.size())
-    {
+    if (count >= this->waiters_.size()) {
         sharpen::AsyncSemaphore::Waiters futures;
         this->waiters_.swap(futures);
         this->counter_ += static_cast<std::size_t>(count - this->waiters_.size());
         lock.unlock();
-        for (auto begin = futures.begin(), end = futures.end(); begin != end; ++begin)
-        {
+        for (auto begin = futures.begin(), end = futures.end(); begin != end; ++begin) {
             (*begin)->Complete();
         }
-    }
-    else
-    {
+    } else {
         auto begin = this->waiters_.begin();
         auto end = sharpen::IteratorForward(begin, count);
         sharpen::AsyncSemaphore::Waiters futures(std::make_move_iterator(begin),
@@ -93,8 +77,7 @@ void sharpen::AsyncSemaphore::Unlock(std::size_t count) noexcept
         lock.unlock();
         begin = futures.begin();
         end = futures.end();
-        while (begin != end)
-        {
+        while (begin != end) {
             (*begin)->Complete();
             ++begin;
         }

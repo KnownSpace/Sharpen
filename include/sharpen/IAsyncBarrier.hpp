@@ -5,10 +5,8 @@
 #include "BarrierModel.hpp"
 #include <cstddef>
 
-namespace sharpen
-{
-    class IAsyncBarrier
-    {
+namespace sharpen {
+    class IAsyncBarrier {
     private:
         using Self = sharpen::IAsyncBarrier;
 
@@ -26,15 +24,13 @@ namespace sharpen
 
         virtual ~IAsyncBarrier() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
         virtual void Notify(std::size_t count) noexcept = 0;
 
-        inline void NotifyOnce() noexcept
-        {
+        inline void NotifyOnce() noexcept {
             this->Notify(1);
         }
 

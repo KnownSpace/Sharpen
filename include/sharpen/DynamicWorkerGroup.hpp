@@ -5,18 +5,16 @@
 #include "AsyncBlockingQueue.hpp"
 #include "IFiberScheduler.hpp"
 #include "IWorkerGroup.hpp"
-#include "NoexceptInvoke.hpp" // IWYU pragma: keep
+#include "NoexceptInvoke.hpp"   // IWYU pragma: keep
 #include <functional>
 #include <vector>
 
-namespace sharpen
-{
+namespace sharpen {
 
     class DynamicWorkerGroup
         : public sharpen::IWorkerGroup
         , public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using Self = sharpen::DynamicWorkerGroup;
 
@@ -70,8 +68,7 @@ namespace sharpen
 
         virtual ~DynamicWorkerGroup() noexcept;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
@@ -79,8 +76,7 @@ namespace sharpen
 
         virtual void Join() noexcept override;
 
-        inline virtual bool Running() const noexcept override
-        {
+        inline virtual bool Running() const noexcept override {
             return this->token_;
         }
 

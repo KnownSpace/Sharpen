@@ -14,12 +14,10 @@
 #define SHARPEN_FIBER_STACK_SIZE 64 * 1024
 #endif
 
-namespace sharpen
-{
+namespace sharpen {
     class IFiberScheduler
         : public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         constexpr static std::size_t defaultFiberStackSize_{SHARPEN_FIBER_STACK_SIZE};
 
@@ -32,14 +30,12 @@ namespace sharpen
 
         virtual ~IFiberScheduler() noexcept = default;
 
-        inline void Schedule(sharpen::FiberPtr &&fiber)
-        {
+        inline void Schedule(sharpen::FiberPtr &&fiber) {
             fiber->SetScheduler(this);
             this->NviSchedule(std::move(fiber));
         }
 
-        inline void ScheduleSoon(sharpen::FiberPtr &&fiber)
-        {
+        inline void ScheduleSoon(sharpen::FiberPtr &&fiber) {
             fiber->SetScheduler(this);
             this->NviScheduleSoon(std::move(fiber));
         }
@@ -48,8 +44,7 @@ namespace sharpen
                  typename... _Args,
                  typename _Check = sharpen::EnableIf<
                      sharpen::IsCompletedBindableReturned<void, _Fn, _Args...>::Value>>
-        void Launch(_Fn &&fn, _Args &&...args)
-        {
+        void Launch(_Fn &&fn, _Args &&...args) {
             this->LaunchSpecial(
                 defaultFiberStackSize_, std::forward<_Fn>(fn), std::forward<_Args>(args)...);
         }
@@ -58,8 +53,7 @@ namespace sharpen
                  typename... _Args,
                  typename _Check = sharpen::EnableIf<
                      sharpen::IsCompletedBindableReturned<void, _Fn, _Args...>::Value>>
-        void LaunchSpecial(std::size_t stackSize, _Fn &&fn, _Args &&...args)
-        {
+        void LaunchSpecial(std::size_t stackSize, _Fn &&fn, _Args &&...args) {
             sharpen::FiberPtr fiber = sharpen::Fiber::MakeFiber(
                 stackSize, std::forward<_Fn>(fn), std::forward<_Args>(args)...);
             fiber->SetScheduler(this);
@@ -71,8 +65,7 @@ namespace sharpen
                  typename _R,
                  typename _Check = sharpen::EnableIf<
                      sharpen::IsCompletedBindableReturned<_R, _Fn, _Args...>::Value>>
-        inline void Invoke(sharpen::Future<_R> &future, _Fn &&fn, _Args &&...args)
-        {
+        inline void Invoke(sharpen::Future<_R> &future, _Fn &&fn, _Args &&...args) {
             using FnPtr = void (*)(sharpen::Future<_R> *, std::function<_R()>);
             FnPtr fnPtr{static_cast<FnPtr>(&sharpen::FutureCompletor<_R>::CompleteForBind)};
             std::function<_R()> task{
@@ -88,8 +81,7 @@ namespace sharpen
         inline void InvokeSpecial(std::size_t stackSize,
                                   sharpen::Future<_R> &future,
                                   _Fn &&fn,
-                                  _Args &&...args)
-        {
+                                  _Args &&...args) {
             using FnPtr = void (*)(sharpen::Future<_R> *, std::function<_R()>);
             FnPtr fnPtr{static_cast<FnPtr>(&sharpen::FutureCompletor<_R>::CompleteForBind)};
             std::function<_R()> task{

@@ -8,12 +8,10 @@
 #include <map>
 #include <string>
 
-namespace sharpen
-{
+namespace sharpen {
     class WalStatusMap
         : public sharpen::IStatusMap
-        , public sharpen::Noncopyable
-    {
+        , public sharpen::Noncopyable {
     private:
         using Self = sharpen::WalStatusMap;
         using Map = std::map<sharpen::ByteBuffer, sharpen::ByteBuffer>;
@@ -61,8 +59,7 @@ namespace sharpen
 
         virtual ~WalStatusMap() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
     };

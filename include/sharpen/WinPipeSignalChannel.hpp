@@ -11,13 +11,11 @@
 
 #define SHARPEN_HAS_WINSIGNALPIEPECHANNEL
 
-namespace sharpen
-{
+namespace sharpen {
     class WinPipeSignalChannel
         : public sharpen::ISignalChannel
         , public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using Self = sharpen::WinPipeSignalChannel;
         using Base = sharpen::ISignalChannel;
@@ -46,8 +44,7 @@ namespace sharpen
 
         virtual ~WinPipeSignalChannel() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

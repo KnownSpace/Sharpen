@@ -4,10 +4,8 @@
 
 #include "ByteBuffer.hpp"
 
-namespace sharpen
-{
-    class SignalBuffer
-    {
+namespace sharpen {
+    class SignalBuffer {
     private:
         using Self = sharpen::SignalBuffer;
 
@@ -21,10 +19,8 @@ namespace sharpen
 
         SignalBuffer(Self &&other) noexcept;
 
-        inline Self &operator=(const Self &other)
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -35,30 +31,25 @@ namespace sharpen
 
         ~SignalBuffer() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
         std::int32_t PopSignal() noexcept;
 
-        inline std::size_t GetSize() const noexcept
-        {
+        inline std::size_t GetSize() const noexcept {
             return this->buf_.GetSize();
         }
 
-        inline std::size_t GetSignalCount() const noexcept
-        {
+        inline std::size_t GetSignalCount() const noexcept {
             return this->buf_.GetSize() - this->offset_;
         }
 
-        inline char *Data() noexcept
-        {
+        inline char *Data() noexcept {
             return this->buf_.Data();
         }
 
-        inline const char *Data() const noexcept
-        {
+        inline const char *Data() const noexcept {
             return this->buf_.Data();
         }
     };

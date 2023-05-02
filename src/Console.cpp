@@ -9,8 +9,7 @@
 #include <unistd.h>
 #endif
 
-void sharpen::ClearConsole()
-{
+void sharpen::ClearConsole() {
 #ifdef SHARPEN_IS_WIN
     HANDLE hStdOut{::GetStdHandle(STD_OUTPUT_HANDLE)};
     COORD coord = {0, 0};
@@ -23,8 +22,7 @@ void sharpen::ClearConsole()
     (void)count;
 #else
     ssize_t size{::write(STDOUT_FILENO, "\x1b[1J", 4)};
-    while (size == -1 && errno == EINTR)
-    {
+    while (size == -1 && errno == EINTR) {
         size = ::write(STDOUT_FILENO, "\x1b[1J", 4);
     }
 #endif

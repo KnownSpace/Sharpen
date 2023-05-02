@@ -7,10 +7,8 @@
 #include <exception>
 #include <stdexcept>
 
-namespace sharpen
-{
-    class MemoryPage
-    {
+namespace sharpen {
+    class MemoryPage {
     private:
         using Self = sharpen::MemoryPage;
         using ConstPtr = const char *;
@@ -29,10 +27,8 @@ namespace sharpen
 
         MemoryPage(Self &&other) noexcept;
 
-        inline Self &operator=(const Self &other)
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -43,84 +39,69 @@ namespace sharpen
 
         ~MemoryPage() noexcept;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
         void Free() noexcept;
 
-        inline char *Data() noexcept
-        {
+        inline char *Data() noexcept {
             return this->data_;
         }
 
-        inline const char *Data() const noexcept
-        {
+        inline const char *Data() const noexcept {
             return this->data_;
         }
 
-        inline char &Get(std::size_t index) noexcept
-        {
+        inline char &Get(std::size_t index) noexcept {
             assert(this->data_);
             return this->data_[index];
         }
 
-        inline const char &Get(std::size_t index) const noexcept
-        {
+        inline const char &Get(std::size_t index) const noexcept {
             assert(this->data_);
             return this->data_[index];
         }
 
-        inline operator char *() noexcept
-        {
+        inline operator char *() noexcept {
             return this->Data();
         }
 
-        inline operator ConstPtr() const noexcept
-        {
+        inline operator ConstPtr() const noexcept {
             return this->Data();
         }
 
-        inline char &operator*() noexcept
-        {
+        inline char &operator*() noexcept {
             return this->Get(0);
         }
 
-        inline const char &operator*() const noexcept
-        {
+        inline const char &operator*() const noexcept {
             return this->Get(0);
         }
 
-        inline char &operator[](std::size_t index) noexcept
-        {
+        inline char &operator[](std::size_t index) noexcept {
             return this->Get(index);
         }
 
-        inline const char &operator[](std::size_t index) const noexcept
-        {
+        inline const char &operator[](std::size_t index) const noexcept {
             return this->Get(index);
         }
 
-        inline std::size_t GetPageCount() const noexcept
-        {
+        inline std::size_t GetPageCount() const noexcept {
             return this->pageCount_;
         }
 
-        inline std::size_t GetSize() const noexcept
-        {
+        inline std::size_t GetSize() const noexcept {
             return this->GetPageCount() * pageSize_;
         }
 
-        bool Empty() const noexcept
-        {
+        bool Empty() const noexcept {
             return this->pageCount_;
         }
 
         sharpen::ByteSlice GetSlice(std::size_t index, std::size_t size) const;
 
-        inline sharpen::ByteSlice GetSlice() const noexcept
-        {
+        inline sharpen::ByteSlice GetSlice() const noexcept {
             return sharpen::ByteSlice{this->Data(), this->GetSize()};
         }
     };

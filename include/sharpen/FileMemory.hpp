@@ -8,10 +8,8 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace sharpen
-{
-    class FileMemory : public sharpen::Noncopyable
-    {
+namespace sharpen {
+    class FileMemory : public sharpen::Noncopyable {
     private:
         using Self = sharpen::FileMemory;
 

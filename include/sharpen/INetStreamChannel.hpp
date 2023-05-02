@@ -11,8 +11,7 @@
 #include "Noncopyable.hpp"
 #include "Optional.hpp"
 
-namespace sharpen
-{
+namespace sharpen {
 
     class INetStreamChannel;
 
@@ -21,16 +20,13 @@ namespace sharpen
     class INetStreamChannel
         : public sharpen::IChannel
         , public sharpen::IAsyncWritable
-        , public sharpen::IAsyncReadable
-    {
+        , public sharpen::IAsyncReadable {
     private:
         using Self = sharpen::INetStreamChannel;
 
         inline static void CancelCallback(sharpen::Future<bool> &future,
-                                          sharpen::INetStreamChannel *channel)
-        {
-            if (future.Get())
-            {
+                                          sharpen::INetStreamChannel *channel) {
+            if (future.Get()) {
                 channel->Cancel();
             }
         }
@@ -77,13 +73,11 @@ namespace sharpen
 
         void SetKeepAlive(bool val);
 
-        inline void DisableKeepAlive()
-        {
+        inline void DisableKeepAlive() {
             this->SetKeepAlive(false);
         }
 
-        inline void EnableKeepAlive()
-        {
+        inline void EnableKeepAlive() {
             this->SetKeepAlive(true);
         }
 
@@ -106,8 +100,7 @@ namespace sharpen
         ReadWithTimeout(sharpen::TimerPtr timer,
                         const std::chrono::duration<_Rep, _Period> &duration,
                         char *buf,
-                        std::size_t size)
-        {
+                        std::size_t size) {
             sharpen::AwaitableFuture<bool> timeout;
             sharpen::AwaitableFuture<std::size_t> future;
             using CancelFn = void (*)(sharpen::Future<bool> &, sharpen::INetStreamChannel *);
@@ -117,13 +110,11 @@ namespace sharpen
             timer->WaitAsync(timeout, duration);
             future.WaitAsync();
             // timeout
-            if (future.IsError() && timeout.IsCompleted())
-            {
+            if (future.IsError() && timeout.IsCompleted()) {
                 return sharpen::EmptyOpt;
             }
             // cancel timer
-            if (timeout.IsPending())
-            {
+            if (timeout.IsPending()) {
                 timer->Cancel();
                 timeout.WaitAsync();
             }
@@ -135,8 +126,7 @@ namespace sharpen
         ReadWithTimeout(sharpen::TimerPtr timer,
                         const std::chrono::duration<_Rep, _Period> &duration,
                         sharpen::ByteBuffer &buf,
-                        std::size_t offset)
-        {
+                        std::size_t offset) {
             assert(buf.GetSize() >= offset);
             return this->ReadWithTimeout(
                 std::move(timer), duration, buf.Data() + offset, buf.GetSize() - offset);
@@ -146,16 +136,14 @@ namespace sharpen
         inline sharpen::Optional<std::size_t>
         ReadWithTimeout(sharpen::TimerPtr timer,
                         const std::chrono::duration<_Rep, _Period> &duration,
-                        sharpen::ByteBuffer &buf)
-        {
+                        sharpen::ByteBuffer &buf) {
             return this->ReadWithTimeout(std::move(timer), duration, buf, 0);
         }
 
         template<typename _Rep, typename _Period>
         inline bool ConnectWithTimeout(sharpen::TimerPtr timer,
                                        const std::chrono::duration<_Rep, _Period> &duration,
-                                       const sharpen::IEndPoint &ep)
-        {
+                                       const sharpen::IEndPoint &ep) {
             sharpen::AwaitableFuture<bool> timeout;
             sharpen::AwaitableFuture<void> future;
             using CancelFn = void (*)(sharpen::Future<bool> &, sharpen::INetStreamChannel *);
@@ -165,13 +153,11 @@ namespace sharpen
             timer->WaitAsync(timeout, duration);
             future.WaitAsync();
             // timeout
-            if (future.IsError() && timeout.IsCompleted())
-            {
+            if (future.IsError() && timeout.IsCompleted()) {
                 return false;
             }
             // cancel timer
-            if (timeout.IsPending())
-            {
+            if (timeout.IsPending()) {
                 timer->Cancel();
                 timeout.WaitAsync();
             }

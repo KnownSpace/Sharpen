@@ -5,8 +5,7 @@
 #include "PosixFileChannel.hpp"
 #include "WinFileChannel.hpp"
 
-namespace sharpen
-{
+namespace sharpen {
 #ifdef SHARPEN_HAS_WINFILE
     using FileChannelImpl = sharpen::WinFileChannel;
 #else

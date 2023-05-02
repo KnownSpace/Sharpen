@@ -7,10 +7,8 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace sharpen
-{
-    class MultiRaftMailBuilder : public sharpen::IRaftMailBuilder
-    {
+namespace sharpen {
+    class MultiRaftMailBuilder : public sharpen::IRaftMailBuilder {
     private:
         using Self = sharpen::MultiRaftMailBuilder;
 
@@ -30,10 +28,8 @@ namespace sharpen
 
         MultiRaftMailBuilder(Self &&other) noexcept;
 
-        inline Self &operator=(const Self &other) noexcept
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) noexcept {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -44,8 +40,7 @@ namespace sharpen
 
         virtual ~MultiRaftMailBuilder() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

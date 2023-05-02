@@ -9,59 +9,47 @@
 #include <cassert>
 
 sharpen::EventFd::EventFd(std::uint32_t initVal, int flags)
-    : handle_(::eventfd(initVal, flags))
-{
-    if (handle_ == -1)
-    {
+    : handle_(::eventfd(initVal, flags)) {
+    if (handle_ == -1) {
         sharpen::ThrowLastError();
     }
 }
 
 sharpen::EventFd::EventFd(sharpen::EventFd &&other) noexcept
-    : handle_(other.handle_)
-{
+    : handle_(other.handle_) {
     other.handle_ = -1;
 }
 
-sharpen::EventFd::~EventFd() noexcept
-{
-    if (this->handle_ != -1)
-    {
+sharpen::EventFd::~EventFd() noexcept {
+    if (this->handle_ != -1) {
         ::close(this->handle_);
     }
 }
 
-sharpen::EventFd::EventFdValue sharpen::EventFd::Read()
-{
+sharpen::EventFd::EventFdValue sharpen::EventFd::Read() {
     assert(this->handle_ != -1);
     sharpen::EventFd::EventFdValue val;
     int r = ::read(this->handle_, &val, sizeof(val));
-    if (r == -1)
-    {
+    if (r == -1) {
         sharpen::ThrowLastError();
     }
     return val;
 }
 
-void sharpen::EventFd::Write(sharpen::EventFd::EventFdValue value)
-{
+void sharpen::EventFd::Write(sharpen::EventFd::EventFdValue value) {
     assert(this->handle_ != -1);
     int r = ::write(this->handle_, &value, sizeof(value));
-    if (r == -1)
-    {
+    if (r == -1) {
         sharpen::ThrowLastError();
     }
 }
 
-sharpen::FileHandle sharpen::EventFd::GetHandle() const noexcept
-{
+sharpen::FileHandle sharpen::EventFd::GetHandle() const noexcept {
     return this->handle_;
 }
 
-sharpen::EventFd &sharpen::EventFd::operator=(sharpen::EventFd &&other) noexcept
-{
-    if (this == std::addressof(other))
-    {
+sharpen::EventFd &sharpen::EventFd::operator=(sharpen::EventFd &&other) noexcept {
+    if (this == std::addressof(other)) {
         return *this;
     }
     this->handle_ = other.handle_;

@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_IENDPOINT_HPP
 #define _SHARPEN_IENDPOINT_HPP
 
-#include "NetTypeDef.hpp" // IWYU pragma: keep
+#include "NetTypeDef.hpp"   // IWYU pragma: keep
 #include "SystemMacro.hpp"
 #include <cstddef>
 #include <cstdint>
@@ -13,10 +13,8 @@
 #include <sys/socket.h>
 #endif
 
-namespace sharpen
-{
-    class IEndPoint
-    {
+namespace sharpen {
+    class IEndPoint {
     private:
         using Self = sharpen::IEndPoint;
 
@@ -43,8 +41,7 @@ namespace sharpen
 
         virtual std::size_t GetHashCode() const noexcept = 0;
 
-        inline std::uint64_t GetActorId() const noexcept
-        {
+        inline std::uint64_t GetActorId() const noexcept {
             return this->GetHashCode64();
         }
     };

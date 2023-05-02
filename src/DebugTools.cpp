@@ -4,14 +4,12 @@
 #include <cstdarg>
 #include <mutex>
 
-sharpen::AsyncMutex *sharpen::InternalSyncPrintMutex() noexcept
-{
+sharpen::AsyncMutex *sharpen::InternalSyncPrintMutex() noexcept {
     static sharpen::AsyncMutex mutex;
     return &mutex;
 }
 
-int sharpen::SyncPrintf(const char *format, ...) noexcept
-{
+int sharpen::SyncPrintf(const char *format, ...) noexcept {
     sharpen::AsyncMutex *mutex{sharpen::InternalSyncPrintMutex()};
     std::unique_lock<sharpen::AsyncMutex> lock{*mutex};
     std::va_list args;
@@ -21,8 +19,7 @@ int sharpen::SyncPrintf(const char *format, ...) noexcept
     return result;
 }
 
-int sharpen::SyncPuts(const char *str) noexcept
-{
+int sharpen::SyncPuts(const char *str) noexcept {
     sharpen::AsyncMutex *mutex{sharpen::InternalSyncPrintMutex()};
     std::unique_lock<sharpen::AsyncMutex> lock{*mutex};
     return std::puts(str);

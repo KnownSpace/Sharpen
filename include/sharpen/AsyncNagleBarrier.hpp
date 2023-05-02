@@ -11,13 +11,11 @@
 #include <utility>
 #include <vector>
 
-namespace sharpen
-{
+namespace sharpen {
     class AsyncNagleBarrier
         : public sharpen::IAsyncBarrier
         , public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using Self = sharpen::AsyncNagleBarrier;
         using MyFuture = sharpen::AwaitableFuture<std::size_t>;
@@ -47,8 +45,7 @@ namespace sharpen
         AsyncNagleBarrier(sharpen::TimerPtr timer,
                           const std::chrono::duration<_Rep, _Period> &timeout,
                           std::size_t count)
-            : AsyncNagleBarrier(sharpen::BarrierModel::Flush, std::move(timer), timeout, count)
-        {
+            : AsyncNagleBarrier(sharpen::BarrierModel::Flush, std::move(timer), timeout, count) {
         }
 
         template<typename _Rep, typename _Period>
@@ -64,15 +61,13 @@ namespace sharpen
             , timeoutFuture_()
             , waiters_()
             , lock_()
-            , model_(model)
-        {
+            , model_(model) {
             assert(this->count_);
         }
 
         virtual ~AsyncNagleBarrier() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
@@ -82,8 +77,7 @@ namespace sharpen
 
         virtual void Reset() noexcept override;
 
-        inline virtual sharpen::BarrierModel GetModel() const noexcept override
-        {
+        inline virtual sharpen::BarrierModel GetModel() const noexcept override {
             return this->model_;
         }
     };

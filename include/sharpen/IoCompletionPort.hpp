@@ -14,12 +14,10 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace sharpen
-{
+namespace sharpen {
     class IoCompletionPort
         : public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         sharpen::FileHandle handle_;
 

@@ -15,8 +15,7 @@
 
 static const char data[] = "hello world\n";
 
-class PingpoingTest : public simpletest::ITypenamedTest<PingpoingTest>
-{
+class PingpoingTest : public simpletest::ITypenamedTest<PingpoingTest> {
 private:
     using Self = PingpoingTest;
 
@@ -25,13 +24,11 @@ public:
 
     ~PingpoingTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         sharpen::NetStreamChannelPtr server = sharpen::OpenTcpChannel(sharpen::AddressFamily::Ip);
         sharpen::IpEndPoint serverEndpoint;
         serverEndpoint.SetAddrByString("127.0.0.1");
@@ -45,12 +42,10 @@ public:
         clientEndpoint.SetPort(0);
         client->Bind(clientEndpoint);
         client->Register(sharpen::GetLocalLoopGroup());
-        auto future = sharpen::Async(
-            [&serverEndpoint, client]() mutable
-            {
-                client->ConnectAsync(serverEndpoint);
-                client->WriteAsync(data, sizeof(data) - 1);
-            });
+        auto future = sharpen::Async([&serverEndpoint, client]() mutable {
+            client->ConnectAsync(serverEndpoint);
+            client->WriteAsync(data, sizeof(data) - 1);
+        });
         char buf[sizeof(data)] = {0};
         client = server->AcceptAsync();
         client->Register(sharpen::GetLocalLoopGroup());
@@ -61,8 +56,7 @@ public:
     }
 };
 
-class CancelTest : public simpletest::ITypenamedTest<CancelTest>
-{
+class CancelTest : public simpletest::ITypenamedTest<CancelTest> {
 private:
     using Self = CancelTest;
 
@@ -71,13 +65,11 @@ public:
 
     ~CancelTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         sharpen::NetStreamChannelPtr server = sharpen::OpenTcpChannel(sharpen::AddressFamily::Ip);
         sharpen::NetStreamChannelPtr client = sharpen::OpenTcpChannel(sharpen::AddressFamily::Ip);
         sharpen::IpEndPoint addr;
@@ -93,17 +85,14 @@ public:
         addr.SetPort(8081);
         client->ConnectAsync(addr);
         char buf[512] = {0};
-        for (std::size_t i = 0; i != sizeof(future) / sizeof(*future); ++i)
-        {
+        for (std::size_t i = 0; i != sizeof(future) / sizeof(*future); ++i) {
             client->ReadAsync(buf, 512, future[i]);
         }
         client->Cancel();
         bool status{true};
-        for (std::size_t i = 0; i != sizeof(future) / sizeof(*future); ++i)
-        {
+        for (std::size_t i = 0; i != sizeof(future) / sizeof(*future); ++i) {
             std::size_t size{future[i].Await()};
-            if (size)
-            {
+            if (size) {
                 status = false;
             }
         }
@@ -111,8 +100,7 @@ public:
     }
 };
 
-class TimeoutTest : public simpletest::ITypenamedTest<TimeoutTest>
-{
+class TimeoutTest : public simpletest::ITypenamedTest<TimeoutTest> {
 private:
     using Self = TimeoutTest;
 
@@ -121,13 +109,11 @@ public:
 
     ~TimeoutTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         sharpen::NetStreamChannelPtr server = sharpen::OpenTcpChannel(sharpen::AddressFamily::Ip);
         sharpen::NetStreamChannelPtr client = sharpen::OpenTcpChannel(sharpen::AddressFamily::Ip);
         sharpen::IpEndPoint ep{0, 0};
@@ -150,8 +136,7 @@ public:
     }
 };
 
-class CloseTest : public simpletest::ITypenamedTest<CloseTest>
-{
+class CloseTest : public simpletest::ITypenamedTest<CloseTest> {
 private:
     using Self = CloseTest;
 
@@ -160,13 +145,11 @@ public:
 
     ~CloseTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         sharpen::NetStreamChannelPtr server = sharpen::OpenTcpChannel(sharpen::AddressFamily::Ip);
         sharpen::NetStreamChannelPtr client = sharpen::OpenTcpChannel(sharpen::AddressFamily::Ip);
         sharpen::IpEndPoint ep{0, 0};
@@ -183,21 +166,18 @@ public:
         future.Await();
         chd->Register(sharpen::GetLocalLoopGroup());
         char buf[6] = {0};
-        sharpen::Launch(
-            [chd]()
-            {
-                sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::GetLocalLoopGroup());
-                timer->Await(std::chrono::seconds(3));
-                chd->Close();
-            });
+        sharpen::Launch([chd]() {
+            sharpen::TimerPtr timer = sharpen::MakeTimer(sharpen::GetLocalLoopGroup());
+            timer->Await(std::chrono::seconds(3));
+            chd->Close();
+        });
         std::size_t size{chd->ReadAsync(buf, sizeof(buf))};
         return this->Assert(size == 0, "size should == 0,but it not");
     }
 };
 
 
-static int Test()
-{
+static int Test() {
     sharpen::StartupNetSupport();
     simpletest::TestRunner runner;
     runner.Register<PingpoingTest>();
@@ -209,8 +189,7 @@ static int Test()
     return code;
 }
 
-int main()
-{
+int main() {
     sharpen::EventEngine &engine = sharpen::EventEngine::SetupSingleThreadEngine();
     return engine.StartupWithCode(&Test);
 }

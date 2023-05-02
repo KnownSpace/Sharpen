@@ -4,33 +4,26 @@
 #include <sharpen/RaftForm.hpp>
 
 sharpen::RaftMailExtractor::RaftMailExtractor(std::uint32_t magic) noexcept
-    : magic_(magic)
-{
+    : magic_(magic) {
 }
 
 sharpen::RaftMailExtractor::RaftMailExtractor(Self &&other) noexcept
-    : magic_(other.magic_)
-{
+    : magic_(other.magic_) {
     other.magic_ = 0;
 }
 
-sharpen::RaftMailExtractor &sharpen::RaftMailExtractor::operator=(Self &&other) noexcept
-{
-    if (this != std::addressof(other))
-    {
+sharpen::RaftMailExtractor &sharpen::RaftMailExtractor::operator=(Self &&other) noexcept {
+    if (this != std::addressof(other)) {
         this->magic_ = other.magic_;
         other.magic_ = 0;
     }
     return *this;
 }
 
-bool sharpen::RaftMailExtractor::NviIsRaftMail(const sharpen::Mail &mail) const noexcept
-{
-    if (mail.Header().GetSize() == sizeof(sharpen::GenericMailHeader))
-    {
+bool sharpen::RaftMailExtractor::NviIsRaftMail(const sharpen::Mail &mail) const noexcept {
+    if (mail.Header().GetSize() == sizeof(sharpen::GenericMailHeader)) {
         const sharpen::GenericMailHeader &header{mail.Header().As<sharpen::GenericMailHeader>()};
-        if (header.GetMagic() == this->magic_)
-        {
+        if (header.GetMagic() == this->magic_) {
             const sharpen::RaftForm &form{header.Form<sharpen::RaftForm>()};
             return form.CheckMagic() && form.GetType() != sharpen::RaftMailType::Unknown;
         }
@@ -39,8 +32,7 @@ bool sharpen::RaftMailExtractor::NviIsRaftMail(const sharpen::Mail &mail) const 
 }
 
 sharpen::RaftMailType sharpen::RaftMailExtractor::NviGetMailType(
-    const sharpen::Mail &mail) const noexcept
-{
+    const sharpen::Mail &mail) const noexcept {
     assert(mail.Header().GetSize() == sizeof(sharpen::GenericMailHeader));
     const sharpen::GenericMailHeader &header{mail.Header().As<sharpen::GenericMailHeader>()};
     assert(header.GetMagic() == this->magic_);
@@ -49,8 +41,7 @@ sharpen::RaftMailType sharpen::RaftMailExtractor::NviGetMailType(
 }
 
 bool sharpen::RaftMailExtractor::CheckMail(sharpen::RaftMailType expect,
-                                           const sharpen::Mail &mail) const noexcept
-{
+                                           const sharpen::Mail &mail) const noexcept {
     assert(mail.Header().GetSize() == sizeof(sharpen::GenericMailHeader));
     const sharpen::GenericMailHeader &header{mail.Header().As<sharpen::GenericMailHeader>()};
     assert(header.GetMagic() == this->magic_);
@@ -61,19 +52,14 @@ bool sharpen::RaftMailExtractor::CheckMail(sharpen::RaftMailType expect,
 }
 
 sharpen::Optional<sharpen::RaftVoteForRequest> sharpen::RaftMailExtractor::NviExtractVoteRequest(
-    const sharpen::Mail &mail) const noexcept
-{
-    if (!this->CheckMail(sharpen::RaftMailType::VoteRequest, mail))
-    {
+    const sharpen::Mail &mail) const noexcept {
+    if (!this->CheckMail(sharpen::RaftMailType::VoteRequest, mail)) {
         return sharpen::EmptyOpt;
     }
     sharpen::RaftVoteForRequest request;
-    try
-    {
+    try {
         request.Unserialize().LoadFrom(mail.Content());
-    }
-    catch (const sharpen::CorruptedDataError &error)
-    {
+    } catch (const sharpen::CorruptedDataError &error) {
         (void)error;
         return sharpen::EmptyOpt;
     }
@@ -82,19 +68,14 @@ sharpen::Optional<sharpen::RaftVoteForRequest> sharpen::RaftMailExtractor::NviEx
 
 
 sharpen::Optional<sharpen::RaftVoteForResponse> sharpen::RaftMailExtractor::NviExtractVoteResponse(
-    const sharpen::Mail &mail) const noexcept
-{
-    if (!this->CheckMail(sharpen::RaftMailType::VoteResponse, mail))
-    {
+    const sharpen::Mail &mail) const noexcept {
+    if (!this->CheckMail(sharpen::RaftMailType::VoteResponse, mail)) {
         return sharpen::EmptyOpt;
     }
     sharpen::RaftVoteForResponse response;
-    try
-    {
+    try {
         response.Unserialize().LoadFrom(mail.Content());
-    }
-    catch (const sharpen::CorruptedDataError &error)
-    {
+    } catch (const sharpen::CorruptedDataError &error) {
         (void)error;
         return sharpen::EmptyOpt;
     }
@@ -102,19 +83,14 @@ sharpen::Optional<sharpen::RaftVoteForResponse> sharpen::RaftMailExtractor::NviE
 }
 
 sharpen::Optional<sharpen::RaftHeartbeatRequest>
-sharpen::RaftMailExtractor::NviExtractHeartbeatRequest(const sharpen::Mail &mail) const noexcept
-{
-    if (!this->CheckMail(sharpen::RaftMailType::HeartbeatRequest, mail))
-    {
+sharpen::RaftMailExtractor::NviExtractHeartbeatRequest(const sharpen::Mail &mail) const noexcept {
+    if (!this->CheckMail(sharpen::RaftMailType::HeartbeatRequest, mail)) {
         return sharpen::EmptyOpt;
     }
     sharpen::RaftHeartbeatRequest request;
-    try
-    {
+    try {
         request.Unserialize().LoadFrom(mail.Content());
-    }
-    catch (const sharpen::CorruptedDataError &error)
-    {
+    } catch (const sharpen::CorruptedDataError &error) {
         (void)error;
         return sharpen::EmptyOpt;
     }
@@ -122,19 +98,14 @@ sharpen::RaftMailExtractor::NviExtractHeartbeatRequest(const sharpen::Mail &mail
 }
 
 sharpen::Optional<sharpen::RaftHeartbeatResponse>
-sharpen::RaftMailExtractor::NviExtractHeartbeatResponse(const sharpen::Mail &mail) const noexcept
-{
-    if (!this->CheckMail(sharpen::RaftMailType::HeartbeatResponse, mail))
-    {
+sharpen::RaftMailExtractor::NviExtractHeartbeatResponse(const sharpen::Mail &mail) const noexcept {
+    if (!this->CheckMail(sharpen::RaftMailType::HeartbeatResponse, mail)) {
         return sharpen::EmptyOpt;
     }
     sharpen::RaftHeartbeatResponse response;
-    try
-    {
+    try {
         response.Unserialize().LoadFrom(mail.Content());
-    }
-    catch (const sharpen::CorruptedDataError &error)
-    {
+    } catch (const sharpen::CorruptedDataError &error) {
         (void)error;
         return sharpen::EmptyOpt;
     }
@@ -142,19 +113,14 @@ sharpen::RaftMailExtractor::NviExtractHeartbeatResponse(const sharpen::Mail &mai
 }
 
 sharpen::Optional<sharpen::RaftPrevoteRequest> sharpen::RaftMailExtractor::NviExtractPrevoteRequest(
-    const sharpen::Mail &mail) const noexcept
-{
-    if (!this->CheckMail(sharpen::RaftMailType::PrevoteRequest, mail))
-    {
+    const sharpen::Mail &mail) const noexcept {
+    if (!this->CheckMail(sharpen::RaftMailType::PrevoteRequest, mail)) {
         return sharpen::EmptyOpt;
     }
     sharpen::RaftPrevoteRequest request;
-    try
-    {
+    try {
         request.Unserialize().LoadFrom(mail.Content());
-    }
-    catch (const sharpen::CorruptedDataError &error)
-    {
+    } catch (const sharpen::CorruptedDataError &error) {
         (void)error;
         return sharpen::EmptyOpt;
     }
@@ -162,19 +128,14 @@ sharpen::Optional<sharpen::RaftPrevoteRequest> sharpen::RaftMailExtractor::NviEx
 }
 
 sharpen::Optional<sharpen::RaftPrevoteResponse>
-sharpen::RaftMailExtractor::NviExtractPrevoteResponse(const sharpen::Mail &mail) const noexcept
-{
-    if (!this->CheckMail(sharpen::RaftMailType::PrevoteResponse, mail))
-    {
+sharpen::RaftMailExtractor::NviExtractPrevoteResponse(const sharpen::Mail &mail) const noexcept {
+    if (!this->CheckMail(sharpen::RaftMailType::PrevoteResponse, mail)) {
         return sharpen::EmptyOpt;
     }
     sharpen::RaftPrevoteResponse response;
-    try
-    {
+    try {
         response.Unserialize().LoadFrom(mail.Content());
-    }
-    catch (const sharpen::CorruptedDataError &error)
-    {
+    } catch (const sharpen::CorruptedDataError &error) {
         (void)error;
         return sharpen::EmptyOpt;
     }
@@ -182,19 +143,14 @@ sharpen::RaftMailExtractor::NviExtractPrevoteResponse(const sharpen::Mail &mail)
 }
 
 sharpen::Optional<sharpen::RaftSnapshotRequest>
-sharpen::RaftMailExtractor::NviExtractSnapshotRequest(const sharpen::Mail &mail) const noexcept
-{
-    if (!this->CheckMail(sharpen::RaftMailType::InstallSnapshotRequest, mail))
-    {
+sharpen::RaftMailExtractor::NviExtractSnapshotRequest(const sharpen::Mail &mail) const noexcept {
+    if (!this->CheckMail(sharpen::RaftMailType::InstallSnapshotRequest, mail)) {
         return sharpen::EmptyOpt;
     }
     sharpen::RaftSnapshotRequest request;
-    try
-    {
+    try {
         request.Unserialize().LoadFrom(mail.Content());
-    }
-    catch (const sharpen::CorruptedDataError &error)
-    {
+    } catch (const sharpen::CorruptedDataError &error) {
         (void)error;
         return sharpen::EmptyOpt;
     }
@@ -202,19 +158,14 @@ sharpen::RaftMailExtractor::NviExtractSnapshotRequest(const sharpen::Mail &mail)
 }
 
 sharpen::Optional<sharpen::RaftSnapshotResponse>
-sharpen::RaftMailExtractor::NviExtractSnapshotResponse(const sharpen::Mail &mail) const noexcept
-{
-    if (!this->CheckMail(sharpen::RaftMailType::InstallSnapshotResponse, mail))
-    {
+sharpen::RaftMailExtractor::NviExtractSnapshotResponse(const sharpen::Mail &mail) const noexcept {
+    if (!this->CheckMail(sharpen::RaftMailType::InstallSnapshotResponse, mail)) {
         return sharpen::EmptyOpt;
     }
     sharpen::RaftSnapshotResponse response;
-    try
-    {
+    try {
         response.Unserialize().LoadFrom(mail.Content());
-    }
-    catch (const sharpen::CorruptedDataError &error)
-    {
+    } catch (const sharpen::CorruptedDataError &error) {
         (void)error;
         return sharpen::EmptyOpt;
     }

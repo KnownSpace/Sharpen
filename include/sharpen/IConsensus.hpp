@@ -10,10 +10,8 @@
 #include "WriteLogsResult.hpp"
 #include <memory>
 
-namespace sharpen
-{
-    class IConsensus
-    {
+namespace sharpen {
+    class IConsensus {
     private:
         using Self = sharpen::IConsensus;
 
@@ -45,8 +43,7 @@ namespace sharpen
 
         virtual ~IConsensus() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
@@ -54,8 +51,7 @@ namespace sharpen
 
         virtual bool Writable() const = 0;
 
-        inline sharpen::WriteLogsResult Write(const sharpen::LogBatch &logs)
-        {
+        inline sharpen::WriteLogsResult Write(const sharpen::LogBatch &logs) {
             return this->NviWrite(logs);
         }
 
@@ -63,14 +59,12 @@ namespace sharpen
 
         // returns current advanced count
         // FIXME:refactor interface
-        inline void WaitNextConsensus(sharpen::Future<void> &future)
-        {
+        inline void WaitNextConsensus(sharpen::Future<void> &future) {
             this->NviWaitNextConsensus(future);
         }
 
         // returns current advanced count
-        inline void WaitNextConsensus()
-        {
+        inline void WaitNextConsensus() {
             sharpen::AwaitableFuture<void> future;
             this->NviWaitNextConsensus(future);
             return future.Await();
@@ -78,10 +72,8 @@ namespace sharpen
 
         virtual const sharpen::ILogStorage &ImmutableLogs() const noexcept = 0;
 
-        inline bool IsConsensusMail(const sharpen::Mail &mail) const noexcept
-        {
-            if (mail.Empty())
-            {
+        inline bool IsConsensusMail(const sharpen::Mail &mail) const noexcept {
+            if (mail.Empty()) {
                 return false;
             }
             return this->NviIsConsensusMail(mail);
@@ -91,25 +83,20 @@ namespace sharpen
 
         virtual const sharpen::IMailReceiver &GetReceiver() const noexcept = 0;
 
-        inline sharpen::Mail GenerateResponse(sharpen::Mail request)
-        {
-            if (!request.Empty() && this->IsConsensusMail(request))
-            {
+        inline sharpen::Mail GenerateResponse(sharpen::Mail request) {
+            if (!request.Empty() && this->IsConsensusMail(request)) {
                 return this->NviGenerateResponse(std::move(request));
             }
             return sharpen::Mail{};
         }
 
-        inline void DropLogsUntil(std::uint64_t index)
-        {
+        inline void DropLogsUntil(std::uint64_t index) {
             this->NviDropLogsUntil(index);
         }
 
         inline void ConfigurateQuorum(
-            std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater)
-        {
-            if (configurater)
-            {
+            std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater) {
+            if (configurater) {
                 this->NviConfigurateQuorum(std::move(configurater));
             }
         }
@@ -121,8 +108,7 @@ namespace sharpen
                                                           _Fn,
                                                           sharpen::IQuorum *,
                                                           _Args...>::Value>>
-        inline void ConfigurateQuorum(_Fn &&fn, _Args &&...args)
-        {
+        inline void ConfigurateQuorum(_Fn &&fn, _Args &&...args) {
             std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> config{std::bind(
                 std::forward<_Fn>(fn), std::placeholders::_1, std::forward<_Args>(args)...)};
             this->ConfigurateQuorum(std::move(config));

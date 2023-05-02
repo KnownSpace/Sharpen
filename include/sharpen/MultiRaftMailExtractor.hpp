@@ -7,10 +7,8 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace sharpen
-{
-    class MultiRaftMailExtractor : public sharpen::IRaftMailExtractor
-    {
+namespace sharpen {
+    class MultiRaftMailExtractor : public sharpen::IRaftMailExtractor {
     private:
         using Self = sharpen::MultiRaftMailExtractor;
 
@@ -55,10 +53,8 @@ namespace sharpen
 
         MultiRaftMailExtractor(Self &&other) noexcept;
 
-        inline Self &operator=(const Self &other) noexcept
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) noexcept {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -69,8 +65,7 @@ namespace sharpen
 
         virtual ~MultiRaftMailExtractor() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
     };

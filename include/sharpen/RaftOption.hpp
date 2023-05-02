@@ -6,10 +6,8 @@
 #include <cstdint>
 #include <utility>
 
-namespace sharpen
-{
-    class RaftOption
-    {
+namespace sharpen {
+    class RaftOption {
     private:
         using Self = sharpen::RaftOption;
 
@@ -28,10 +26,8 @@ namespace sharpen
 
         RaftOption(Self &&other) noexcept;
 
-        inline Self &operator=(const Self &other) noexcept
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) noexcept {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -42,33 +38,27 @@ namespace sharpen
 
         ~RaftOption() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline bool IsLearner() const noexcept
-        {
+        inline bool IsLearner() const noexcept {
             return this->isLearner_;
         }
 
-        inline void SetLearner(bool learner) noexcept
-        {
+        inline void SetLearner(bool learner) noexcept {
             this->isLearner_ = learner;
         }
 
-        inline bool EnablePrevote() const noexcept
-        {
+        inline bool EnablePrevote() const noexcept {
             return this->enablePrevote_;
         }
 
-        inline void SetPrevote(bool prevote) noexcept
-        {
+        inline void SetPrevote(bool prevote) noexcept {
             this->enablePrevote_ = prevote;
         }
 
-        inline std::uint32_t GetBatchSize() const noexcept
-        {
+        inline std::uint32_t GetBatchSize() const noexcept {
             return this->batchSize_;
         }
 

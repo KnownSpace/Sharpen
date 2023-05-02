@@ -12,8 +12,7 @@
 #include <cstdint>
 
 sharpen::WalLogStorage::WalLogStorage(std::string name)
-    : Self{sharpen::GetLocalLoopGroup(), std::move(name)}
-{
+    : Self{sharpen::GetLocalLoopGroup(), std::move(name)} {
 }
 
 sharpen::WalLogStorage::WalLogStorage(sharpen::IEventLoopGroup &loopGroup, std::string name)
@@ -24,12 +23,10 @@ sharpen::WalLogStorage::WalLogStorage(sharpen::IEventLoopGroup &loopGroup, std::
     , lock_(nullptr)
     , logs_()
     , offset_(0)
-    , contentSize_(0)
-{
+    , contentSize_(0) {
     assert(!this->name_.empty());
     sharpen::AsyncRwLock *lock{new (std::nothrow) sharpen::AsyncRwLock{}};
-    if (!lock)
-    {
+    if (!lock) {
         throw std::bad_alloc{};
     }
     this->lock_.reset(lock);
@@ -47,21 +44,16 @@ sharpen::WalLogStorage::WalLogStorage(sharpen::IEventLoopGroup &loopGroup, std::
     this->contentSize_ = this->ComputeContentSize();
 }
 
-bool sharpen::WalLogStorage::Insert(std::uint64_t index, sharpen::ByteBuffer log)
-{
+bool sharpen::WalLogStorage::Insert(std::uint64_t index, sharpen::ByteBuffer log) {
     auto ite = this->logs_.find(index);
-    if (ite != this->logs_.end())
-    {
-        if (ite->second == log)
-        {
+    if (ite != this->logs_.end()) {
+        if (ite->second == log) {
             return false;
         }
         this->contentSize_ -= ite->second.GetSize();
         this->contentSize_ += log.GetSize();
         ite->second = std::move(log);
-    }
-    else
-    {
+    } else {
         sharpen::Varuint64 builder{index};
         this->contentSize_ += builder.ComputeSize();
         this->contentSize_ += log.GetSize();
@@ -70,11 +62,9 @@ bool sharpen::WalLogStorage::Insert(std::uint64_t index, sharpen::ByteBuffer log
     return true;
 }
 
-bool sharpen::WalLogStorage::Erase(std::uint64_t index) noexcept
-{
+bool sharpen::WalLogStorage::Erase(std::uint64_t index) noexcept {
     auto ite = this->logs_.find(index);
-    if (ite != this->logs_.end())
-    {
+    if (ite != this->logs_.end()) {
         sharpen::Varuint64 builder{ite->first};
         this->contentSize_ -= builder.ComputeSize();
         this->contentSize_ -= ite->second.GetSize();
@@ -84,35 +74,27 @@ bool sharpen::WalLogStorage::Erase(std::uint64_t index) noexcept
     return false;
 }
 
-void sharpen::WalLogStorage::Load()
-{
+void sharpen::WalLogStorage::Load() {
     std::uint64_t size{this->channel_->GetFileSize()};
-    if (size)
-    {
+    if (size) {
         sharpen::ByteBuffer buf{sharpen::IntCast<std::size_t>(size)};
         std::size_t sz{this->channel_->ReadAsync(buf, 0)};
         assert(sz == size);
         (void)sz;
         sharpen::BufferReader reader{buf};
-        while (reader.GetOffset() != buf.GetSize())
-        {
+        while (reader.GetOffset() != buf.GetSize()) {
             std::size_t offset{reader.GetOffset()};
             std::uint8_t tag{0};
             reader.Read(tag);
             std::uint64_t index{0};
-            switch (tag)
-            {
-            case Self::writeTag_:
-            {
+            switch (tag) {
+            case Self::writeTag_: {
                 sharpen::Varuint64 builder{0};
                 sharpen::ByteBuffer log;
-                try
-                {
+                try {
                     reader.Read(builder);
                     reader.Read(log);
-                }
-                catch (const std::out_of_range &error)
-                {
+                } catch (const std::out_of_range &error) {
                     (void)error;
                     this->channel_->Truncate(offset);
                     this->offset_ = offset;
@@ -122,17 +104,12 @@ void sharpen::WalLogStorage::Load()
                 bool result{this->Insert(index, std::move(log))};
                 assert(result);
                 (void)result;
-            }
-            break;
-            case Self::removeTag_:
-            {
+            } break;
+            case Self::removeTag_: {
                 sharpen::Varuint64 builder{0};
-                try
-                {
+                try {
                     reader.Read(builder);
-                }
-                catch (const std::out_of_range &error)
-                {
+                } catch (const std::out_of_range &error) {
                     (void)error;
                     this->channel_->Truncate(offset);
                     this->offset_ = offset;
@@ -142,8 +119,7 @@ void sharpen::WalLogStorage::Load()
                 bool result{this->Erase(index)};
                 assert(result);
                 (void)result;
-            }
-            break;
+            } break;
             default:
                 this->channel_->Truncate(offset);
                 break;
@@ -153,11 +129,9 @@ void sharpen::WalLogStorage::Load()
     }
 }
 
-std::size_t sharpen::WalLogStorage::ComputeContentSize() const noexcept
-{
+std::size_t sharpen::WalLogStorage::ComputeContentSize() const noexcept {
     std::size_t size{0};
-    for (auto begin = this->logs_.begin(), end = this->logs_.end(); begin != end; ++begin)
-    {
+    for (auto begin = this->logs_.begin(), end = this->logs_.end(); begin != end; ++begin) {
         sharpen::Varuint64 builder{begin->first};
         size += builder.ComputeSize();
         size += begin->second.ComputeSize();
@@ -165,8 +139,7 @@ std::size_t sharpen::WalLogStorage::ComputeContentSize() const noexcept
     return size;
 }
 
-void sharpen::WalLogStorage::RebuildFile()
-{
+void sharpen::WalLogStorage::RebuildFile() {
     assert(this->loopGroup_);
     assert(!this->name_.empty());
     assert(!this->tempName_.empty());
@@ -175,11 +148,9 @@ void sharpen::WalLogStorage::RebuildFile()
                                                              sharpen::FileOpenMethod::CreateNew)};
     std::uint64_t offset{0};
     channel->Register(*this->loopGroup_);
-    if (!this->logs_.empty())
-    {
+    if (!this->logs_.empty()) {
         sharpen::ByteBuffer buf{4096};
-        for (auto begin = this->logs_.begin(), end = this->logs_.end(); begin != end; ++begin)
-        {
+        for (auto begin = this->logs_.begin(), end = this->logs_.end(); begin != end; ++begin) {
             sharpen::BufferWriter writer{buf};
             std::uint8_t tag{writeTag_};
             writer.Write(tag);
@@ -188,8 +159,7 @@ void sharpen::WalLogStorage::RebuildFile()
             writer.Write(begin->second);
             std::size_t sz{channel->WriteAsync(buf.Data(), writer.GetLength(), offset)};
             assert(sz == writer.GetLength());
-            if (sz != writer.GetLength())
-            {
+            if (sz != writer.GetLength()) {
                 sharpen::ThrowSystemError(sharpen::ErrorIo);
             }
             offset += sz;
@@ -207,32 +177,28 @@ void sharpen::WalLogStorage::RebuildFile()
     this->contentSize_ = this->ComputeContentSize();
 }
 
-sharpen::Optional<sharpen::ByteBuffer> sharpen::WalLogStorage::NviLookup(std::uint64_t index) const
-{
+sharpen::Optional<sharpen::ByteBuffer> sharpen::WalLogStorage::NviLookup(
+    std::uint64_t index) const {
     {
         this->lock_->LockRead();
         std::unique_lock<sharpen::AsyncRwLock> lock{*this->lock_, std::adopt_lock};
         auto ite = this->logs_.find(index);
-        if (ite != this->logs_.end())
-        {
+        if (ite != this->logs_.end()) {
             return sharpen::EmptyOpt;
         }
         return ite->second;
     }
 }
 
-void sharpen::WalLogStorage::NviWrite(std::uint64_t index, sharpen::ByteSlice log)
-{
+void sharpen::WalLogStorage::NviWrite(std::uint64_t index, sharpen::ByteSlice log) {
     {
         this->lock_->LockWrite();
         std::unique_lock<sharpen::AsyncRwLock> lock{*this->lock_, std::adopt_lock};
         sharpen::ByteBuffer buf{log};
         bool result{this->Insert(index, std::move(buf))};
-        if (result)
-        {
+        if (result) {
             std::size_t contentSize{this->contentSize_};
-            if (contentSize && this->offset_ >= contentSize * limitFactor_)
-            {
+            if (contentSize && this->offset_ >= contentSize * limitFactor_) {
                 this->RebuildFile();
                 return;
             }
@@ -246,8 +212,7 @@ void sharpen::WalLogStorage::NviWrite(std::uint64_t index, sharpen::ByteSlice lo
             writer.Write(log);
             std::size_t sz{this->channel_->WriteAsync(buf, this->offset_)};
             assert(sz == buf.GetSize());
-            if (sz != buf.GetSize())
-            {
+            if (sz != buf.GetSize()) {
                 this->channel_->Truncate(this->offset_);
                 sharpen::ThrowSystemError(sharpen::ErrorIo);
             }
@@ -257,12 +222,10 @@ void sharpen::WalLogStorage::NviWrite(std::uint64_t index, sharpen::ByteSlice lo
     }
 }
 
-void sharpen::WalLogStorage::NviWriteBatch(std::uint64_t beginIndex, sharpen::LogEntries entries)
-{
+void sharpen::WalLogStorage::NviWriteBatch(std::uint64_t beginIndex, sharpen::LogEntries entries) {
     {
         std::size_t size{0};
-        for (std::size_t i = 0; i != entries.GetSize(); ++i)
-        {
+        for (std::size_t i = 0; i != entries.GetSize(); ++i) {
             std::size_t sz{sizeof(std::uint8_t)};
             std::uint64_t index{i + beginIndex};
             sharpen::Varuint64 builder{index};
@@ -270,17 +233,14 @@ void sharpen::WalLogStorage::NviWriteBatch(std::uint64_t beginIndex, sharpen::Lo
             sz += sharpen::BinarySerializator::ComputeSize(entries.Get(i));
             size += sz;
         }
-        if (size)
-        {
+        if (size) {
             this->lock_->LockWrite();
             std::unique_lock<sharpen::AsyncRwLock> lock{*this->lock_, std::adopt_lock};
             sharpen::ByteBuffer buf{size};
             sharpen::BufferWriter writer{buf};
-            for (std::size_t i = 0; i != entries.GetSize(); ++i)
-            {
+            for (std::size_t i = 0; i != entries.GetSize(); ++i) {
                 std::uint64_t index{i + beginIndex};
-                if (this->Insert(index, entries.Get(i)))
-                {
+                if (this->Insert(index, entries.Get(i))) {
                     writer.Write(writeTag_);
                     sharpen::Varuint64 builder{index};
                     writer.Write(builder);
@@ -288,12 +248,10 @@ void sharpen::WalLogStorage::NviWriteBatch(std::uint64_t beginIndex, sharpen::Lo
                 }
             }
             size = writer.GetLength();
-            if (size)
-            {
+            if (size) {
                 std::size_t sz{this->channel_->WriteAsync(buf, this->offset_)};
                 assert(sz == size);
-                if (sz != size)
-                {
+                if (sz != size) {
                     this->channel_->Truncate(this->offset_);
                     sharpen::ThrowSystemError(sharpen::ErrorIo);
                 }
@@ -304,32 +262,27 @@ void sharpen::WalLogStorage::NviWriteBatch(std::uint64_t beginIndex, sharpen::Lo
     }
 }
 
-void sharpen::WalLogStorage::NviDropUntil(std::uint64_t index) noexcept
-{
+void sharpen::WalLogStorage::NviDropUntil(std::uint64_t index) noexcept {
     {
         this->lock_->LockWrite();
         std::unique_lock<sharpen::AsyncRwLock> lock{*this->lock_, std::adopt_lock};
         std::size_t size{0};
         for (auto begin = this->logs_.begin(), end = this->logs_.end();
              begin != end && begin->first < index;
-             ++begin)
-        {
+             ++begin) {
             sharpen::Varuint64 builder{begin->first};
             size += builder.ComputeSize();
             size += begin->second.GetSize();
         }
-        if (!size)
-        {
+        if (!size) {
             return;
         }
         std::size_t contentSize{this->contentSize_};
         contentSize -= size;
-        if (this->offset_ >= contentSize * limitFactor_)
-        {
+        if (this->offset_ >= contentSize * limitFactor_) {
             for (auto begin = this->logs_.begin(), end = this->logs_.end();
                  begin != end && begin->first < index;
-                 ++begin)
-            {
+                 ++begin) {
                 begin = this->logs_.erase(begin);
             }
             this->RebuildFile();
@@ -337,8 +290,7 @@ void sharpen::WalLogStorage::NviDropUntil(std::uint64_t index) noexcept
         }
         for (auto begin = this->logs_.begin(), end = this->logs_.end();
              begin != end && begin->first < index;
-             ++begin)
-        {
+             ++begin) {
             size += sizeof(std::uint8_t);
             size -= begin->second.GetSize();
         }
@@ -346,16 +298,14 @@ void sharpen::WalLogStorage::NviDropUntil(std::uint64_t index) noexcept
         sharpen::BufferWriter writer{buf};
         for (auto begin = this->logs_.begin(), end = this->logs_.end();
              begin != end && begin->first < index;
-             ++begin)
-        {
+             ++begin) {
             writer.Write(removeTag_);
             sharpen::Varuint64 builder{begin->first};
             writer.Write(builder);
         }
         std::size_t sz{this->channel_->WriteAsync(buf, this->offset_)};
         assert(sz == buf.GetSize());
-        if (sz != buf.GetSize())
-        {
+        if (sz != buf.GetSize()) {
             this->channel_->Truncate(this->offset_);
             return;
         }
@@ -365,32 +315,27 @@ void sharpen::WalLogStorage::NviDropUntil(std::uint64_t index) noexcept
     }
 }
 
-void sharpen::WalLogStorage::NviTruncateFrom(std::uint64_t index)
-{
+void sharpen::WalLogStorage::NviTruncateFrom(std::uint64_t index) {
     {
         this->lock_->LockWrite();
         std::unique_lock<sharpen::AsyncRwLock> lock{*this->lock_, std::adopt_lock};
         std::size_t size{0};
         for (auto begin = this->logs_.begin(), end = this->logs_.end();
              begin != end && begin->first >= index;
-             ++begin)
-        {
+             ++begin) {
             sharpen::Varuint64 builder{begin->first};
             size += builder.ComputeSize();
             size += begin->second.GetSize();
         }
-        if (!size)
-        {
+        if (!size) {
             return;
         }
         std::size_t contentSize{this->contentSize_};
         contentSize -= size;
-        if (this->offset_ >= contentSize * limitFactor_)
-        {
+        if (this->offset_ >= contentSize * limitFactor_) {
             for (auto begin = this->logs_.begin(), end = this->logs_.end();
                  begin != end && begin->first >= index;
-                 ++begin)
-            {
+                 ++begin) {
                 begin = this->logs_.erase(begin);
             }
             this->RebuildFile();
@@ -398,8 +343,7 @@ void sharpen::WalLogStorage::NviTruncateFrom(std::uint64_t index)
         }
         for (auto begin = this->logs_.begin(), end = this->logs_.end();
              begin != end && begin->first >= index;
-             ++begin)
-        {
+             ++begin) {
             size += sizeof(std::uint8_t);
             size -= begin->second.GetSize();
         }
@@ -407,16 +351,14 @@ void sharpen::WalLogStorage::NviTruncateFrom(std::uint64_t index)
         sharpen::BufferWriter writer{buf};
         for (auto begin = this->logs_.begin(), end = this->logs_.end();
              begin != end && begin->first >= index;
-             ++begin)
-        {
+             ++begin) {
             writer.Write(removeTag_);
             sharpen::Varuint64 builder{begin->first};
             writer.Write(builder);
         }
         std::size_t sz{this->channel_->WriteAsync(buf, this->offset_)};
         assert(sz == buf.GetSize());
-        if (sz != buf.GetSize())
-        {
+        if (sz != buf.GetSize()) {
             this->channel_->Truncate(this->offset_);
             sharpen::ThrowSystemError(sharpen::ErrorIo);
         }
@@ -426,14 +368,12 @@ void sharpen::WalLogStorage::NviTruncateFrom(std::uint64_t index)
     }
 }
 
-std::uint64_t sharpen::WalLogStorage::GetLastIndex() const
-{
+std::uint64_t sharpen::WalLogStorage::GetLastIndex() const {
     {
         this->lock_->LockRead();
         std::unique_lock<sharpen::AsyncRwLock> lock{*this->lock_, std::adopt_lock};
         std::uint64_t index{0};
-        if (!this->logs_.empty())
-        {
+        if (!this->logs_.empty()) {
             return this->logs_.rbegin()->first;
         }
         return index;
@@ -448,17 +388,14 @@ sharpen::WalLogStorage::WalLogStorage(Self &&other) noexcept
     , lock_(std::move(other.lock_))
     , logs_(std::move(other.logs_))
     , offset_(other.offset_)
-    , contentSize_(other.contentSize_)
-{
+    , contentSize_(other.contentSize_) {
     other.loopGroup_ = nullptr;
     other.offset_ = 0;
     other.contentSize_ = 0;
 }
 
-sharpen::WalLogStorage &sharpen::WalLogStorage::operator=(Self &&other) noexcept
-{
-    if (this != std::addressof(other))
-    {
+sharpen::WalLogStorage &sharpen::WalLogStorage::operator=(Self &&other) noexcept {
+    if (this != std::addressof(other)) {
         this->name_ = std::move(other.name_);
         this->tempName_ = std::move(other.tempName_);
         this->channel_ = std::move(other.channel_);

@@ -12,24 +12,21 @@
 #include <memory>
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
-    typedef void *fcontext_t;
+typedef void *fcontext_t;
 
-    typedef struct
-    {
-        fcontext_t fctx;
-        void *data;
-    } transfer_t;
+typedef struct {
+    fcontext_t fctx;
+    void *data;
+} transfer_t;
 
 #ifdef __cplusplus
 }
 #endif
 
-namespace sharpen
-{
+namespace sharpen {
 
     class Fiber;
 
@@ -40,8 +37,7 @@ namespace sharpen
     class Fiber
         : public sharpen::Noncopyable
         , public sharpen::Nonmovable
-        , public std::enable_shared_from_this<sharpen::Fiber>
-    {
+        , public std::enable_shared_from_this<sharpen::Fiber> {
     private:
         using Handle = fcontext_t;
         using Task = std::function<void()>;
@@ -99,8 +95,7 @@ namespace sharpen
                  typename... _Args,
                  typename _Check = sharpen::EnableIf<
                      sharpen::IsCompletedBindableReturned<void, _Fn, _Args...>::Value>>
-        static sharpen::FiberPtr MakeFiber(std::size_t stackSize, _Fn &&fn, _Args &&...args)
-        {
+        static sharpen::FiberPtr MakeFiber(std::size_t stackSize, _Fn &&fn, _Args &&...args) {
             sharpen::FiberPtr fiber = std::make_shared<sharpen::Fiber>();
             fiber->stack_ = sharpen::MemoryStack(nullptr, stackSize);
             fiber->task_ =
@@ -108,13 +103,11 @@ namespace sharpen
             return fiber;
         }
 
-        inline sharpen::FiberLocalStorage &LocalStorage() noexcept
-        {
+        inline sharpen::FiberLocalStorage &LocalStorage() noexcept {
             return this->localStorage_;
         }
 
-        inline const sharpen::FiberLocalStorage &LocalStorage() const noexcept
-        {
+        inline const sharpen::FiberLocalStorage &LocalStorage() const noexcept {
             return this->localStorage_;
         }
 
@@ -123,8 +116,7 @@ namespace sharpen
 
     extern sharpen::IFiberScheduler *GetLocalSchedulerPtr() noexcept;
 
-    inline sharpen::IFiberScheduler &GetLocalScheduler() noexcept
-    {
+    inline sharpen::IFiberScheduler &GetLocalScheduler() noexcept {
         sharpen::IFiberScheduler *scheduler{sharpen::GetLocalSchedulerPtr()};
         assert(scheduler != nullptr);
         return *scheduler;

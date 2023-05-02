@@ -5,10 +5,8 @@
 #include "HostPipelineResult.hpp"
 #include "INetStreamChannel.hpp"
 
-namespace sharpen
-{
-    class IHostPipelineStep
-    {
+namespace sharpen {
+    class IHostPipelineStep {
     private:
         using Self = sharpen::IHostPipelineStep;
 
@@ -26,8 +24,7 @@ namespace sharpen
 
         virtual ~IHostPipelineStep() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

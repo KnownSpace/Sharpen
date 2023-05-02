@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_LINUXTIMER_HPP
 #define _SHARPEN_LINUXTIMER_HPP
 
-#include "SystemMacro.hpp" // IWYU pragma: keep
+#include "SystemMacro.hpp"   // IWYU pragma: keep
 
 #ifdef SHARPEN_IS_LINUX
 
@@ -14,15 +14,13 @@
 
 #define SHARPEN_HAS_TIMERFD
 
-namespace sharpen
-{
+namespace sharpen {
     // use timer fd
     class LinuxTimer
         : public sharpen::ITimer
         , public sharpen::IChannel
         , public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using Mybase = sharpen::IChannel;
         using MyTimerBase = sharpen::ITimer;

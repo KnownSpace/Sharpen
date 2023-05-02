@@ -8,8 +8,7 @@
 #include <stdexcept>
 #include <type_traits>
 
-namespace sharpen
-{
+namespace sharpen {
     template<
         typename _T,
         typename _RawType =
@@ -17,8 +16,7 @@ namespace sharpen
         typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value ||
                                                   std::is_floating_point<_RawType>::value>::type,
         typename _IsUnsig = typename std::enable_if<std::is_unsigned<_RawType>::value>::type>
-    inline auto InternalGetAbs(_T &&v, int) -> decltype(std::forward<_T>(v))
-    {
+    inline auto InternalGetAbs(_T &&v, int) -> decltype(std::forward<_T>(v)) {
         return std::forward<_T>(v);
     }
 
@@ -28,14 +26,12 @@ namespace sharpen
             typename std::remove_const<typename std::remove_reference<_T>::type>::type,
         typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value ||
                                                   std::is_floating_point<_RawType>::value>::type>
-    inline auto InternalGetAbs(_T &&v, ...) -> decltype(v < 0 ? -v : v)
-    {
+    inline auto InternalGetAbs(_T &&v, ...) -> decltype(v < 0 ? -v : v) {
         return v < 0 ? -v : v;
     }
 
     template<typename _T>
-    inline auto GetAbs(_T &&v) -> decltype(sharpen::InternalGetAbs(v, 0))
-    {
+    inline auto GetAbs(_T &&v) -> decltype(sharpen::InternalGetAbs(v, 0)) {
         return sharpen::InternalGetAbs(v, 0);
     }
 
@@ -43,24 +39,21 @@ namespace sharpen
              typename _Check = typename std::enable_if<(std::is_integral<_T>::value &&
                                                         std::is_signed<_T>::value) ||
                                                        std::is_floating_point<_T>::value>::type>
-    constexpr bool InternalIsNegative(const _T &value, ...) noexcept
-    {
+    constexpr bool InternalIsNegative(const _T &value, ...) noexcept {
         return value < 0;
     }
 
     template<typename _T,
              typename _Check = typename std::enable_if<std::is_integral<_T>::value &&
                                                        std::is_unsigned<_T>::value>::type>
-    constexpr bool InternalIsNegative(const _T &value, int) noexcept
-    {
+    constexpr bool InternalIsNegative(const _T &value, int) noexcept {
         (void)value;
         return false;
     }
 
     template<typename _T>
     constexpr auto IsNegative(const _T &value) noexcept
-        -> decltype(sharpen::InternalIsNegative(value, 0))
-    {
+        -> decltype(sharpen::InternalIsNegative(value, 0)) {
         return sharpen::IsNegative(value, 0);
     }
 
@@ -70,41 +63,34 @@ namespace sharpen
              typename _RawType =
                  typename std::remove_const<typename std::remove_reference<_T>::type>::type,
              typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value>::type>
-    inline std::size_t Itoa(_T &&val, unsigned char radix, char *buf)
-    {
-        if (!buf)
-        {
+    inline std::size_t Itoa(_T &&val, unsigned char radix, char *buf) {
+        if (!buf) {
             return 0;
         }
         const char *index = "0123456789ABCDEF";
         std::size_t i{0};
         std::size_t s{0};
         _RawType num{sharpen::GetAbs(val)};
-        if (val < 0)
-        {
+        if (val < 0) {
             buf[0] = '-';
             i++;
         }
-        if (num == 0)
-        {
+        if (num == 0) {
             buf[0] = '0';
             return 1;
         }
-        while (num)
-        {
+        while (num) {
             buf[i] = index[num % radix];
             i++;
             num /= radix;
         }
         s = i;
         i--;
-        if (buf[0] == '-')
-        {
+        if (buf[0] == '-') {
             buf += 1;
             i--;
         }
-        for (std::size_t t = 0, size = i + 1, count = size / 2; t < count; ++t)
-        {
+        for (std::size_t t = 0, size = i + 1, count = size / 2; t < count; ++t) {
             char tmp = buf[t];
             buf[t] = buf[i - t];
             buf[i - t] = tmp;
@@ -117,38 +103,26 @@ namespace sharpen
                  typename std::remove_const<typename std::remove_reference<_T>::type>::type,
              typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value &&
                                                        !std::is_unsigned<_RawType>::value>::type>
-    inline _T InternalAtoi(const char *str, std::size_t size, std::size_t radix, int)
-    {
+    inline _T InternalAtoi(const char *str, std::size_t size, std::size_t radix, int) {
         _T data{0};
         bool n{false};
         const char *end = str + size;
-        while (str != end)
-        {
+        while (str != end) {
             data *= static_cast<_T>(radix);
-            if (*str == '-')
-            {
+            if (*str == '-') {
                 n = true;
-            }
-            else if (radix == 16 && *str >= 'A' && *str <= 'F')
-            {
+            } else if (radix == 16 && *str >= 'A' && *str <= 'F') {
                 data += *str - 'A' + 10;
-            }
-            else if (radix == 16 && *str >= 'a' && *str <= 'f')
-            {
+            } else if (radix == 16 && *str >= 'a' && *str <= 'f') {
                 data += *str - 'a' + 10;
-            }
-            else if (*str >= '0' && *str <= '9')
-            {
+            } else if (*str >= '0' && *str <= '9') {
                 data += *str - '0';
-            }
-            else
-            {
+            } else {
                 throw std::invalid_argument("string is not a number");
             }
             ++str;
         }
-        if (n)
-        {
+        if (n) {
             data = -data;
         }
         return data;
@@ -158,31 +132,20 @@ namespace sharpen
              typename _RawType =
                  typename std::remove_const<typename std::remove_reference<_T>::type>::type,
              typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value>::type>
-    inline _T InternalAtoi(const char *str, std::size_t size, std::size_t radix, ...)
-    {
+    inline _T InternalAtoi(const char *str, std::size_t size, std::size_t radix, ...) {
         _T data{0};
         const char *end = str + size;
-        while (str != end)
-        {
+        while (str != end) {
             data *= static_cast<_T>(radix);
-            if (*str == '-')
-            {
+            if (*str == '-') {
                 throw std::invalid_argument("string is not a unsigned number");
-            }
-            else if (radix == 16 && *str >= 'A' && *str <= 'F')
-            {
+            } else if (radix == 16 && *str >= 'A' && *str <= 'F') {
                 data += *str - 'A' + 10;
-            }
-            else if (radix == 16 && *str >= 'a' && *str <= 'f')
-            {
+            } else if (radix == 16 && *str >= 'a' && *str <= 'f') {
                 data += *str - 'a' + 10;
-            }
-            else if (*str >= '0' && *str <= '9')
-            {
+            } else if (*str >= '0' && *str <= '9') {
                 data += *str - '0';
-            }
-            else
-            {
+            } else {
                 throw std::invalid_argument("string is not a number");
             }
             ++str;
@@ -194,8 +157,7 @@ namespace sharpen
              typename _RawType =
                  typename std::remove_const<typename std::remove_reference<_T>::type>::type,
              typename _IsNum = typename std::enable_if<std::is_integral<_RawType>::value>::type>
-    inline _T Atoi(const char *str, std::size_t size, std::size_t radix = 10)
-    {
+    inline _T Atoi(const char *str, std::size_t size, std::size_t radix = 10) {
         return sharpen::InternalAtoi<_T>(str, size, radix, 0);
     }
 }   // namespace sharpen

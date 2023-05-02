@@ -8,23 +8,19 @@
 #include <cstdlib>
 #include <cstring>
 
-namespace sharpen
-{
-    class MemoryStack : public sharpen::Noncopyable
-    {
+namespace sharpen {
+    class MemoryStack : public sharpen::Noncopyable {
     private:
         using Self = sharpen::MemoryStack;
 
         void *mem_;
         std::size_t size_;
 
-        inline static void *Alloc(std::size_t size) noexcept
-        {
+        inline static void *Alloc(std::size_t size) noexcept {
             return std::calloc(size, sizeof(char));
         }
 
-        inline static void Free(void *mem) noexcept
-        {
+        inline static void Free(void *mem) noexcept {
             return std::free(mem);
         }
 
@@ -41,13 +37,11 @@ namespace sharpen
 
         void *Top() const noexcept;
 
-        inline void *Bottom() const noexcept
-        {
+        inline void *Bottom() const noexcept {
             return this->mem_;
         }
 
-        inline std::size_t GetSize() const noexcept
-        {
+        inline std::size_t GetSize() const noexcept {
             return this->size_;
         }
 
@@ -59,21 +53,17 @@ namespace sharpen
 
         void ExtendNoSave(std::size_t newSize);
 
-        inline void Clean() noexcept
-        {
-            if (this->mem_)
-            {
+        inline void Clean() noexcept {
+            if (this->mem_) {
                 std::memset(this->mem_, 0, this->size_);
             }
         }
 
-        inline bool Validate() const noexcept
-        {
+        inline bool Validate() const noexcept {
             return this->mem_;
         }
 
-        inline operator bool() const noexcept
-        {
+        inline operator bool() const noexcept {
             return this->Validate();
         }
     };

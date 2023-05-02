@@ -7,25 +7,21 @@
 #include <unistd.h>
 #endif
 
-sharpen::IChannel::~IChannel() noexcept
-{
+sharpen::IChannel::~IChannel() noexcept {
     this->Close();
 }
 
-void sharpen::IChannel::Register(sharpen::EventLoop &loop)
-{
+void sharpen::IChannel::Register(sharpen::EventLoop &loop) {
     loop.Bind(this->shared_from_this());
     this->loop_ = &loop;
 }
 
-void sharpen::IChannel::Register(sharpen::IEventLoopGroup &loopGroup)
-{
+void sharpen::IChannel::Register(sharpen::IEventLoopGroup &loopGroup) {
     sharpen::EventLoop &loop = loopGroup.RoundRobinLoop();
     this->Register(loop);
 }
 
-void sharpen::CloseFileHandle(sharpen::FileHandle handle) noexcept
-{
+void sharpen::CloseFileHandle(sharpen::FileHandle handle) noexcept {
 #ifdef SHARPEN_IS_WIN
     ::CloseHandle(handle);
 #else
@@ -33,8 +29,7 @@ void sharpen::CloseFileHandle(sharpen::FileHandle handle) noexcept
 #endif
 }
 
-void sharpen::IChannel::Close() noexcept
-{
+void sharpen::IChannel::Close() noexcept {
 #ifdef SHARPEN_IS_WIN
     const sharpen::FileHandle invalidHandle{static_cast<sharpen::FileHandle>(INVALID_HANDLE_VALUE)};
 #else
@@ -42,21 +37,16 @@ void sharpen::IChannel::Close() noexcept
 #endif
     sharpen::FileHandle handle{invalidHandle};
     std::swap(this->handle_, handle);
-    if (handle != invalidHandle)
-    {
-        if (this->closer_)
-        {
+    if (handle != invalidHandle) {
+        if (this->closer_) {
             this->closer_(handle);
-        }
-        else
-        {
+        } else {
             sharpen::CloseFileHandle(handle);
         }
     }
 }
 
-bool sharpen::IChannel::IsClosed() const noexcept
-{
+bool sharpen::IChannel::IsClosed() const noexcept {
 #ifdef SHARPEN_IS_WIN
     return this->handle_ == INVALID_HANDLE_VALUE;
 #else

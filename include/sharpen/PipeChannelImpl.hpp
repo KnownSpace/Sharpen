@@ -7,8 +7,7 @@
 #include "WinInputPipeChannel.hpp"
 #include "WinOutputPipeChannel.hpp"
 
-namespace sharpen
-{
+namespace sharpen {
     // input pipe
 #ifdef SHARPEN_HAS_WININPUTPIPE
     using InputPipeChannelImpl = sharpen::WinInputPipeChannel;

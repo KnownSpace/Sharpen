@@ -5,10 +5,8 @@
 #include "ITcpSteamFactory.hpp"
 #include "Ipv6EndPoint.hpp"
 
-namespace sharpen
-{
-    class Ipv6TcpStreamFactory : public sharpen::ITcpSteamFactory
-    {
+namespace sharpen {
+    class Ipv6TcpStreamFactory : public sharpen::ITcpSteamFactory {
     private:
         using Self = sharpen::Ipv6TcpStreamFactory;
 
@@ -27,25 +25,20 @@ namespace sharpen
 
         Ipv6TcpStreamFactory(Self &&other) noexcept
             : loopGroup_(other.loopGroup_)
-            , localEndpoint_(std::move(other.localEndpoint_))
-        {
+            , localEndpoint_(std::move(other.localEndpoint_)) {
             other.loopGroup_ = nullptr;
         }
 
-        inline Self &operator=(const Self &other)
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
             return *this;
         }
 
-        inline Self &operator=(Self &&other) noexcept
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(Self &&other) noexcept {
+            if (this != std::addressof(other)) {
                 this->loopGroup_ = other.loopGroup_;
                 this->localEndpoint_ = std::move(other.localEndpoint_);
                 other.loopGroup_ = nullptr;
@@ -55,13 +48,11 @@ namespace sharpen
 
         ~Ipv6TcpStreamFactory() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline virtual sharpen::IEventLoopGroup &GetLoopGroup() const noexcept override
-        {
+        inline virtual sharpen::IEventLoopGroup &GetLoopGroup() const noexcept override {
             assert(this->loopGroup_ != nullptr);
             return *this->loopGroup_;
         }

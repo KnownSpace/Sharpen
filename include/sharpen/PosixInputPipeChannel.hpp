@@ -2,7 +2,7 @@
 #ifndef _SHARPEN_POSIXINPUTPIPECHANNEL_HPP
 #define _SHARPEN_POSIXINPUTPIPECHANNEL_HPP
 
-#include "SystemMacro.hpp" // IWYU pragma: keep
+#include "SystemMacro.hpp"   // IWYU pragma: keep
 #ifdef SHARPEN_IS_NIX
 
 #include "IInputPipeChannel.hpp"
@@ -13,13 +13,11 @@
 
 #define SHARPEN_HAS_POSIXINPUTPIPE
 
-namespace sharpen
-{
+namespace sharpen {
     class PosixInputPipeChannel
         : public sharpen::IInputPipeChannel
         , public sharpen::Noncopyable
-        , public sharpen::Nonmovable
-    {
+        , public sharpen::Nonmovable {
     private:
         using Mybase = sharpen::IInputPipeChannel;
         using Callback = std::function<void(ssize_t)>;

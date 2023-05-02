@@ -1,69 +1,55 @@
 #include <sharpen/FixedWorkerGroup.hpp>
 
 sharpen::FixedWorkerGroup::FixedWorkerGroup()
-    : FixedWorkerGroup(sharpen::GetLocalScheduler())
-{
+    : FixedWorkerGroup(sharpen::GetLocalScheduler()) {
 }
 
 sharpen::FixedWorkerGroup::FixedWorkerGroup(sharpen::IFiberScheduler &scheduler)
-    : FixedWorkerGroup(scheduler, scheduler.GetParallelCount())
-{
+    : FixedWorkerGroup(scheduler, scheduler.GetParallelCount()) {
 }
 
 sharpen::FixedWorkerGroup::FixedWorkerGroup(sharpen::IFiberScheduler &scheduler,
                                             std::size_t workerCount)
     : token_(true)
     , queue_()
-    , workers_(workerCount)
-{
+    , workers_(workerCount) {
     assert(workerCount != 0);
-    for (std::size_t i = 0; i != workerCount; ++i)
-    {
+    for (std::size_t i = 0; i != workerCount; ++i) {
         scheduler.Launch(&Self::Entry, this, i);
     }
 }
 
-void sharpen::FixedWorkerGroup::Stop() noexcept
-{
+void sharpen::FixedWorkerGroup::Stop() noexcept {
     bool token{this->token_.exchange(false)};
-    if (token)
-    {
-        for (std::size_t i = 0; i != this->workers_.size(); ++i)
-        {
+    if (token) {
+        for (std::size_t i = 0; i != this->workers_.size(); ++i) {
             this->queue_.Emplace();
         }
     }
 }
 
-void sharpen::FixedWorkerGroup::Join() noexcept
-{
-    for (auto begin = this->workers_.begin(), end = this->workers_.end(); begin != end; ++begin)
-    {
-        if (begin->IsPending())
-        {
+void sharpen::FixedWorkerGroup::Join() noexcept {
+    for (auto begin = this->workers_.begin(), end = this->workers_.end(); begin != end; ++begin) {
+        if (begin->IsPending()) {
             begin->WaitAsync();
         }
     }
 }
 
-void sharpen::FixedWorkerGroup::Entry(std::size_t index) noexcept
-{
+void sharpen::FixedWorkerGroup::Entry(std::size_t index) noexcept {
     sharpen::AwaitableFuture<void> *future{&this->workers_[index]};
     assert(future != nullptr);
     std::function<void()> task;
-    while (this->token_.load())
-    {
+    while (this->token_.load()) {
         task = this->queue_.Pop();
-        if (task)
-        {
+        if (task) {
             sharpen::NonexceptInvoke(task);
         }
     }
     future->Complete();
 }
 
-void sharpen::FixedWorkerGroup::NviSubmit(std::function<void()> task)
-{
+void sharpen::FixedWorkerGroup::NviSubmit(std::function<void()> task) {
     assert(this->token_.load());
     this->queue_.Emplace(std::move(task));
 }

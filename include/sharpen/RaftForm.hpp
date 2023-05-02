@@ -8,11 +8,9 @@
 #include <cstdint>
 #include <utility>
 
-namespace sharpen
-{
+namespace sharpen {
 #pragma pack(push, 1)
-    class RaftForm
-    {
+    class RaftForm {
     private:
         using Self = sharpen::RaftForm;
 
@@ -39,8 +37,7 @@ namespace sharpen
 
         ~RaftForm() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 

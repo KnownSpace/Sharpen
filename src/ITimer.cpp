@@ -3,13 +3,11 @@
 #include <sharpen/LinuxTimer.hpp>
 #include <sharpen/WinTimer.hpp>
 
-sharpen::TimerPtr sharpen::MakeTimer()
-{
+sharpen::TimerPtr sharpen::MakeTimer() {
     return sharpen::MakeTimer(sharpen::GetLocalLoopGroup());
 }
 
-sharpen::TimerPtr sharpen::MakeTimer(sharpen::EventLoop &loop)
-{
+sharpen::TimerPtr sharpen::MakeTimer(sharpen::EventLoop &loop) {
 #ifdef SHARPEN_HAS_WAITABLETIMER
     (void)loop;
     sharpen::TimerPtr timer = std::make_shared<sharpen::WinTimer>();
@@ -21,7 +19,6 @@ sharpen::TimerPtr sharpen::MakeTimer(sharpen::EventLoop &loop)
 #endif
 }
 
-sharpen::TimerPtr sharpen::MakeTimer(sharpen::IEventLoopGroup &loopGroup)
-{
+sharpen::TimerPtr sharpen::MakeTimer(sharpen::IEventLoopGroup &loopGroup) {
     return sharpen::MakeTimer(loopGroup.RoundRobinLoop());
 }

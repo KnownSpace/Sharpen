@@ -5,10 +5,8 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace sharpen
-{
-    struct FilePointer
-    {
+namespace sharpen {
+    struct FilePointer {
         std::uint64_t offset_;
         std::uint64_t size_;
     };

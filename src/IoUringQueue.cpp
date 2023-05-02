@@ -7,35 +7,29 @@
 #include <cstring>
 
 sharpen::IoUringQueue::IoUringQueue()
-    : IoUringQueue(false)
-{
+    : IoUringQueue(false) {
 }
 
 sharpen::IoUringQueue::IoUringQueue(bool blockEventFd)
     : eventFd_(0, O_CLOEXEC | (blockEventFd ? 0 : O_NONBLOCK))
     , ring_(Self::queueLength_, 0, 0, 0, 0)
     , compQueue_()
-    , subQueue_()
-{
+    , subQueue_() {
     this->compQueue_.reserve(reservedCqSize_);
     this->ring_.RegisterEventFd(this->eventFd_);
 }
 
-sharpen::IoUringQueue::~IoUringQueue() noexcept
-{
+sharpen::IoUringQueue::~IoUringQueue() noexcept {
     this->ring_.UnregisterEventFd();
 }
 
-void sharpen::IoUringQueue::Submit()
-{
-    if (this->subQueue_.empty())
-    {
+void sharpen::IoUringQueue::Submit() {
+    if (this->subQueue_.empty()) {
         return;
     }
     auto ite = this->subQueue_.begin();
     std::size_t moved{0};
-    while (this->ring_.Requestable())
-    {
+    while (this->ring_.Requestable()) {
         this->ring_.SubmitToSring(&*ite);
         ++ite;
         ++moved;
@@ -44,10 +38,8 @@ void sharpen::IoUringQueue::Submit()
     this->ring_.Enter(moved, 0, 0);
 }
 
-void sharpen::IoUringQueue::SubmitIoRequest(const Sqe &sqe)
-{
-    if (this->ring_.Requestable())
-    {
+void sharpen::IoUringQueue::SubmitIoRequest(const Sqe &sqe) {
+    if (this->ring_.Requestable()) {
         this->ring_.SubmitToSring(&sqe);
         this->ring_.Enter(1, 0, 0);
         return;
@@ -56,17 +48,14 @@ void sharpen::IoUringQueue::SubmitIoRequest(const Sqe &sqe)
     return;
 }
 
-std::size_t sharpen::IoUringQueue::GetCompletionStatus(Cqe *cqes, std::size_t size)
-{
+std::size_t sharpen::IoUringQueue::GetCompletionStatus(Cqe *cqes, std::size_t size) {
     std::size_t cqeNum{0};
-    if (!this->compQueue_.empty())
-    {
+    if (!this->compQueue_.empty()) {
         cqeNum = (std::min)(this->compQueue_.size(), size);
         auto begin = this->compQueue_.rbegin();
         auto end = sharpen::IteratorForward(begin, cqeNum);
         std::size_t index{0};
-        while (begin != end)
-        {
+        while (begin != end) {
             std::memcpy(cqes + index, std::addressof(*begin), sizeof(*begin));
             ++begin;
             ++index;
@@ -75,21 +64,17 @@ std::size_t sharpen::IoUringQueue::GetCompletionStatus(Cqe *cqes, std::size_t si
                                this->compQueue_.end());
     }
     bool moreEv{false};
-    while (cqeNum != size)
-    {
+    while (cqeNum != size) {
         moreEv = this->ring_.GetFromCring(cqes + cqeNum);
-        if (!moreEv)
-        {
+        if (!moreEv) {
             break;
         }
         ++cqeNum;
     }
-    while (moreEv)
-    {
+    while (moreEv) {
         this->compQueue_.emplace_back();
         moreEv = this->ring_.GetFromCring(&this->compQueue_.back());
-        if (!moreEv)
-        {
+        if (!moreEv) {
             this->compQueue_.pop_back();
         }
     }
@@ -97,19 +82,14 @@ std::size_t sharpen::IoUringQueue::GetCompletionStatus(Cqe *cqes, std::size_t si
     return cqeNum;
 }
 
-bool sharpen::TestIoUring() noexcept
-{
+bool sharpen::TestIoUring() noexcept {
     static int status{0};
-    if (!status)
-    {
-        try
-        {
+    if (!status) {
+        try {
             sharpen::IoUringQueue queue;
             status = 1;
             static_cast<void>(queue);
-        }
-        catch (const std::system_error &ignore)
-        {
+        } catch (const std::system_error &ignore) {
             (void)ignore;
             status = 2;
         }

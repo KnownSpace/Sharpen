@@ -8,18 +8,16 @@
 
 #include "IChannel.hpp"
 #include "ISelector.hpp"
-#include "IocpOverlappedStruct.hpp" // IWYU pragma: keep
+#include "IocpOverlappedStruct.hpp"   // IWYU pragma: keep
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include <vector>
 
-namespace sharpen
-{
+namespace sharpen {
     class IocpSelector
         : public sharpen::ISelector
         , public sharpen::Nonmovable
-        , public sharpen::Noncopyable
-    {
+        , public sharpen::Noncopyable {
     private:
         using EventBuf = std::vector<sharpen::IoCompletionPort::Event>;
         using Self = sharpen::IocpSelector;

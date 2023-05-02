@@ -7,10 +7,8 @@
 #include <cstdint>
 #include <utility>
 
-namespace sharpen
-{
-    class RaftPrevoteResponse : public sharpen::BinarySerializable<sharpen::RaftPrevoteResponse>
-    {
+namespace sharpen {
+    class RaftPrevoteResponse : public sharpen::BinarySerializable<sharpen::RaftPrevoteResponse> {
     private:
         using Self = sharpen::RaftPrevoteResponse;
 
@@ -24,10 +22,8 @@ namespace sharpen
 
         RaftPrevoteResponse(Self &&other) noexcept;
 
-        inline Self &operator=(const Self &other) noexcept
-        {
-            if (this != std::addressof(other))
-            {
+        inline Self &operator=(const Self &other) noexcept {
+            if (this != std::addressof(other)) {
                 Self tmp{other};
                 std::swap(tmp, *this);
             }
@@ -38,28 +34,23 @@ namespace sharpen
 
         ~RaftPrevoteResponse() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
-        inline bool GetStatus() const noexcept
-        {
+        inline bool GetStatus() const noexcept {
             return this->status_;
         }
 
-        inline void SetStatus(bool status) noexcept
-        {
+        inline void SetStatus(bool status) noexcept {
             this->status_ = status;
         }
 
-        inline std::uint64_t GetTerm() const noexcept
-        {
+        inline std::uint64_t GetTerm() const noexcept {
             return this->term_;
         }
 
-        inline void SetTerm(std::uint64_t term) noexcept
-        {
+        inline void SetTerm(std::uint64_t term) noexcept {
             this->term_ = term;
         }
 

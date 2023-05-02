@@ -7,11 +7,9 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace sharpen
-{
+namespace sharpen {
 
-    class IAsyncRandomReadable
-    {
+    class IAsyncRandomReadable {
     private:
         using Self = sharpen::IAsyncRandomReadable;
 
@@ -44,8 +42,7 @@ namespace sharpen
 
         template<typename _T,
                  typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>
-        inline std::size_t ReadObjectAsync(_T &obj, std::uint64_t offset)
-        {
+        inline std::size_t ReadObjectAsync(_T &obj, std::uint64_t offset) {
             return this->ReadAsync(reinterpret_cast<char *>(&obj), sizeof(obj), offset);
         }
     };

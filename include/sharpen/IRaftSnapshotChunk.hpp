@@ -6,10 +6,8 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace sharpen
-{
-    class IRaftSnapshotChunk
-    {
+namespace sharpen {
+    class IRaftSnapshotChunk {
     private:
         using Self = sharpen::IRaftSnapshotChunk;
 
@@ -27,8 +25,7 @@ namespace sharpen
 
         virtual ~IRaftSnapshotChunk() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
