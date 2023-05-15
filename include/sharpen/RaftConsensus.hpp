@@ -108,8 +108,6 @@ namespace sharpen {
 
         std::uint64_t GetId() const noexcept;
 
-        std::uint64_t GetCommitIndex() const noexcept;
-
         std::uint64_t GetLastIndex() const;
 
         sharpen::IRaftSnapshotProvider &GetSnapshotProvider() noexcept;
@@ -257,6 +255,8 @@ namespace sharpen {
         //     config{std::bind(std::forward<_Fn>(fn),std::placeholders::_1,std::forward<_Args>(args)...)};
         //     this->ConfigurateLearners(config);
         // }
+
+        std::uint64_t GetCommitIndex() const noexcept override;
     };
 }   // namespace sharpen
 
