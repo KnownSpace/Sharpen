@@ -10,7 +10,7 @@ add_executable(BufferCompareTest "${TEST_DIR}/BufferTest/BufferCompareTest.cpp")
 
 target_link_libraries(BufferCompareTest sharpen)
 
-add_test(NAME BufferCompare_Test COMMAND "./BufferCompareTestextname")
+add_test(NAME BufferCompare_Test COMMAND "./BufferCompareTest${extname}")
 
 add_executable(ChecksumTest "${TEST_DIR}/BufferTest/ChecksumTest.cpp")
 
