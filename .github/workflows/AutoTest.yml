@@ -20,7 +20,7 @@ jobs:
       uses: lukka/get-cmake@latest
       with:
         cmakeVersion: latest
-        ninjaVersion: latest
+        ninjaVersion: 1.11.1
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
