@@ -14,7 +14,7 @@ endif()
 
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/test")
 
-set(COMMON_INCLUDE_DIR "${TEST_DIR}/common/include")
+set(COMMON_INCLUDE_DIR "${TEST_DIR}/Common/include")
 
 add_subdirectory("${TEST_DIR}/Common")
 
