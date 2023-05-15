@@ -37,10 +37,6 @@ jobs:
       with:
         cmakeVersion: latest
         ninjaVersion: latest
-    - name: Check GCC Version
-      run: gcc --version
-    - name: Check G++ Version
-      run: g++ --version
       
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
