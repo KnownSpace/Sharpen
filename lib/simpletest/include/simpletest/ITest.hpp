@@ -15,58 +15,50 @@
 
 #include <cxxabi.h>
 
-namespace simpletest
-{
-    inline static char *Demangle(const char *name) noexcept
-    {
+namespace simpletest {
+    inline static char *Demangle(const char *name) noexcept {
         int status{0};
-        //drop status
+        // drop status
         (void)status;
-        return abi::__cxa_demangle(name,0,0,&status);
+        return abi::__cxa_demangle(name, 0, 0, &status);
     }
-}
+}   // namespace simpletest
 
 #define SIMPLETEST_TYPENAME(x) simpletest::Demangle(typeid(x).name())
 #else
-#define SIMPLETEST_TYPENAME(x) typeid(x).name()+6
+#define SIMPLETEST_TYPENAME(x) typeid(x).name() + 6
 #endif
 
 #include "TestResult.hpp"
 
-namespace simpletest
-{
+namespace simpletest {
 
-    class ITest
-    {
+    class ITest {
     private:
         using Self = simpletest::ITest;
-    protected:
 
-        inline static simpletest::TestResult Success() noexcept
-        {
+    protected:
+        inline static simpletest::TestResult Success() noexcept {
             return simpletest::TestResult{};
         }
 
-        inline static simpletest::TestResult Fail(std::string reason) noexcept
-        {
+        inline static simpletest::TestResult Fail(std::string reason) noexcept {
             return simpletest::TestResult{std::move(reason)};
         }
 
-        inline static simpletest::TestResult Assert(bool expr,std::string reason) noexcept
-        {
-            if(expr)
-            {
+        inline static simpletest::TestResult Assert(bool expr, std::string reason) noexcept {
+            if (expr) {
                 return Success();
             }
             return Fail(std::move(reason));
         }
 
         std::string name_;
-    public:
 
+    public:
         ITest(std::string name) noexcept
-            :name_(std::move(name))
-        {}
+            : name_(std::move(name)) {
+        }
 
         ITest(const Self &other) noexcept = delete;
 
@@ -78,34 +70,28 @@ namespace simpletest
 
         virtual ~ITest() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
 
         virtual simpletest::TestResult Run() noexcept = 0;
 
-        inline const std::string &Name() const noexcept
-        {
+        inline const std::string &Name() const noexcept {
             return this->name_;
         }
     };
 
     template<typename _T>
-    inline static std::string GetReadableTypeName()
-    {
+    inline static std::string GetReadableTypeName() {
 #ifdef SIMPLETEST_MSVC
         return std::string{SIMPLETEST_TYPENAME(_T)};
 #else
         char *name{SIMPLETEST_TYPENAME(_T)};
-        try
-        {
+        try {
             std::string realName{name};
             std::free(name);
             return realName;
-        }
-        catch(const std::exception &rethrow)
-        {
+        } catch (const std::exception &rethrow) {
             std::free(name);
             throw;
         }
@@ -113,16 +99,15 @@ namespace simpletest
     }
 
     template<typename _T>
-    class ITypenamedTest:public simpletest::ITest
-    {
+    class ITypenamedTest : public simpletest::ITest {
     private:
         using Self = simpletest::ITypenamedTest<_T>;
         using Base = simpletest::ITest;
-    public:
 
+    public:
         ITypenamedTest() noexcept
-            :Base(simpletest::GetReadableTypeName<_T>())
-        {}
+            : Base(simpletest::GetReadableTypeName<_T>()) {
+        }
 
         ITypenamedTest(const Self &other) noexcept = default;
 
@@ -134,12 +119,11 @@ namespace simpletest
 
         virtual ~ITypenamedTest() noexcept = default;
 
-        inline const Self &Const() const noexcept
-        {
+        inline const Self &Const() const noexcept {
             return *this;
         }
     };
-}
+}   // namespace simpletest
 
 #ifdef _MSC_VER
 #undef SIMPLETEST_MSVC
