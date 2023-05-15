@@ -1,4 +1,4 @@
-#include <EchoReceiver.hpp>
+#include <common/EchoReceiver.hpp>
 
 #include <sharpen/DebugTools.hpp>
 #include <sharpen/GenericMail.hpp>

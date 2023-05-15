@@ -1,8 +1,8 @@
-#include <BatchHandler.hpp>
-#include <DropStep.hpp>
-#include <EchoReceiver.hpp>
-#include <HandleStep.hpp>
-#include <LogStep.hpp>
+#include <common/BatchHandler.hpp>
+#include <common/DropStep.hpp>
+#include <common/EchoReceiver.hpp>
+#include <common/HandleStep.hpp>
+#include <common/LogStep.hpp>
 #include <sharpen/BinarySerializable.hpp>
 #include <sharpen/BufferWriter.hpp>
 #include <sharpen/DebugTools.hpp>
