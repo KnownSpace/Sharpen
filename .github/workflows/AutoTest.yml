@@ -14,17 +14,10 @@ jobs:
     # See: https://docs.github.com/en/actions/configuring-and-managing-workflows/configuring-a-workflow#configuring-a-build-matrix
     runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@v2
-    - name: Get latest CMake and Ninja
-      uses: lukka/get-cmake@latest
-      with:
-        cmakeVersion: latest
-        ninjaVersion: latest
-        
+    steps:    
     - name: Install GCC
-    # You may pin to the exact commit or the version.
-    # uses: egor-tensin/setup-gcc@eaa888eb19115a521fa72b65cd94fe1f25bbcaac
+      # You may pin to the exact commit or the version.
+      # uses: egor-tensin/setup-gcc@eaa888eb19115a521fa72b65cd94fe1f25bbcaac
       uses: egor-tensin/setup-gcc@v1
       with:
         # GCC version to install
@@ -37,6 +30,17 @@ jobs:
         cc: 1 # optional, default is 1
         # On Cygwin, replace executable symlinks with hardlinks
         hardlinks: 0 # optional, default is 0
+        
+    - uses: actions/checkout@v2
+    - name: Get latest CMake and Ninja
+      uses: lukka/get-cmake@latest
+      with:
+        cmakeVersion: latest
+        ninjaVersion: latest
+    - name: Check GCC Version
+      run: gcc --version
+    - name: Check G++ Version
+      run: g++ --version
       
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
