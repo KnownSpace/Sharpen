@@ -21,7 +21,7 @@ jobs:
       uses: egor-tensin/setup-gcc@v1
       with:
         # GCC version to install
-        version: 12.2.0 # optional, default is latest
+        version: latest # optional, default is latest
         # Target platform
         platform: x64 # optional, default is x64
         # Install Cygwin packages
