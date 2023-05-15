@@ -48,6 +48,18 @@ namespace sharpen {
 
         virtual sharpen::RemoteActorStatus GetStatus() const noexcept = 0;
 
+        inline const char *GetStatusName() const noexcept {
+            switch (this->GetStatus()) {
+            case sharpen::RemoteActorStatus::Opened:
+                return "Opened";
+            case sharpen::RemoteActorStatus::Closed:
+                return "Closed";
+            case sharpen::RemoteActorStatus::InProgress:
+                return "InProgress";
+            }
+            return "Unknow";
+        }
+
         virtual void Cancel() noexcept = 0;
 
         inline std::uint64_t GetId() const noexcept {
