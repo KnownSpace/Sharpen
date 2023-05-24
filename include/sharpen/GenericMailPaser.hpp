@@ -2,8 +2,9 @@
 #ifndef _SHARPEN_GENERICMAILPASER_HPP
 #define _SHARPEN_GENERICMAILPASER_HPP
 
-#include "GenericMailHeader.hpp"
+#include "GenericMailHeader.hpp"   // IWYU pragma: export
 #include "IMailParser.hpp"
+#include <deque>
 
 namespace sharpen {
     class GenericMailPaser : public sharpen::IMailParser {
@@ -14,6 +15,7 @@ namespace sharpen {
         std::size_t parsedSize_;
         sharpen::ByteBuffer header_;
         sharpen::ByteBuffer content_;
+        std::deque<sharpen::Mail> completedMails_;
 
         virtual sharpen::Mail NviPopCompletedMail() noexcept override;
 

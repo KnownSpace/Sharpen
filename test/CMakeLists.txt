@@ -12,94 +12,20 @@ else()
     set(extname "")
 endif()
 
-#Async Test
-add_executable(AsyncTest "${PROJECT_SOURCE_DIR}/test/AsyncTest.cpp")
+set(TEST_DIR "${PROJECT_SOURCE_DIR}/test")
 
-target_link_libraries(AsyncTest sharpen)
+set(COMMON_INCLUDE_DIR "${TEST_DIR}/Common/include")
 
-add_test(NAME Async_Test COMMAND "./AsyncTest${extname}")
+add_subdirectory("${TEST_DIR}/Common")
 
-#Timer Test
-add_executable(TimerTest "${PROJECT_SOURCE_DIR}/test/TimerTest.cpp")
+add_subdirectory("${TEST_DIR}/CoTest")
 
-target_link_libraries(TimerTest sharpen)
+add_subdirectory("${TEST_DIR}/FsTest")
 
-add_test(NAME Timer_Test COMMAND "./TimerTest${extname}")
+add_subdirectory("${TEST_DIR}/BufferTest")
 
-#File Test
-add_executable(FileTest "${PROJECT_SOURCE_DIR}/test/FileTest.cpp")
+add_subdirectory("${TEST_DIR}/NetTest")
 
-target_link_libraries(FileTest sharpen)
+add_subdirectory("${TEST_DIR}/ProcTest")
 
-add_test(NAME File_Test COMMAND "./FileTest${extname}")
-
-#Network Test
-add_executable(NetworkTest "${PROJECT_SOURCE_DIR}/test/NetworkTest.cpp")
-
-target_link_libraries(NetworkTest sharpen)
-
-add_test(NAME Network_Test COMMAND "./NetworkTest${extname}")
-
-#Chksum Test
-add_executable(ChksumTest "${PROJECT_SOURCE_DIR}/test/ChecksumTest.cpp")
-
-target_link_libraries(ChksumTest sharpen)
-
-add_test(NAME Chksum_Test COMMAND "./ChksumTest${extname}")
-
-#BufferCompare Test
-add_executable(BufferCompareTest "${PROJECT_SOURCE_DIR}/test/BufferCompareTest.cpp")
-
-target_link_libraries(BufferCompareTest sharpen)
-
-add_test(NAME BufferCompare_Test COMMAND "./BufferCompareTest${extname}")
-
-#Base64 Test
-add_executable(Base64Test "${PROJECT_SOURCE_DIR}/test/Base64Test.cpp")
-
-target_link_libraries(Base64Test sharpen)
-
-add_test(NAME Base64_Test COMMAND "./Base64Test${extname}")
-
-#Dns Test
-add_executable(DnsTest "${PROJECT_SOURCE_DIR}/test/DnsTest.cpp")
-
-target_link_libraries(DnsTest sharpen)
-
-add_test(NAME Dns_Test COMMAND "./DnsTest${extname}")
-
-#Serializable Test
-
-add_executable(SerializableTest "${PROJECT_SOURCE_DIR}/test/SerializableTest.cpp")
-
-target_link_libraries(SerializableTest sharpen)
-
-add_test(NAME Serializable_Test COMMAND "./SerializableTest${extname}")
-
-#StatusMap Test
-add_executable(StatusMapTest "${PROJECT_SOURCE_DIR}/test/StatusMapTest.cpp")
-
-target_link_libraries(StatusMapTest sharpen)
-
-add_test(NAME StatusMap_Test COMMAND "./StatusMapTest${extname}")
-
-#Signal Test
-add_executable(SignalTest "${PROJECT_SOURCE_DIR}/test/SignalTest.cpp")
-
-target_link_libraries(SignalTest sharpen)
-
-add_test(NAME Signal_Test COMMAND "./SignalTest${extname}")
-
-#Process Test
-add_executable(ProcessTest "${PROJECT_SOURCE_DIR}/test/ProcessTest.cpp")
-
-target_link_libraries(ProcessTest sharpen)
-
-add_test(NAME Process_Test COMMAND "./ProcessTest${extname}")
-
-#Directory Test
-add_executable(DirectoryTest "${PROJECT_SOURCE_DIR}/test/DirectoryTest.cpp")
-
-target_link_libraries(DirectoryTest sharpen)
-
-add_test(NAME Directory_Test COMMAND "./DirectoryTest${extname}")
+add_subdirectory("${TEST_DIR}/ActorTest")

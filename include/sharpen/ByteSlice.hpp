@@ -180,6 +180,10 @@ namespace sharpen {
         std::size_t UnsafeStoreTo(char *data) const noexcept;
 
         std::size_t StoreTo(char *data, std::size_t size) const;
+
+        Self Sub(std::size_t begin,std::size_t end) noexcept;
+
+        Self Sub(std::size_t begin) noexcept;
     };
 }   // namespace sharpen
 

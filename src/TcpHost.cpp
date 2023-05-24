@@ -30,7 +30,7 @@ void sharpen::TcpHost::NviSetPipeline(std::unique_ptr<sharpen::IHostPipeline> pi
 void sharpen::TcpHost::ConsumeChannel(sharpen::NetStreamChannelPtr channel,
                                       std::atomic_size_t *counter) noexcept {
     this->pipeline_->Consume(std::move(channel));
-    *counter -= 1;
+    counter->fetch_sub(1,std::memory_order_relaxed);
 }
 
 void sharpen::TcpHost::Stop() noexcept {
@@ -59,13 +59,13 @@ void sharpen::TcpHost::Run() {
         if (this->token_) {
             assert(channel);
             channel->Register(*this->loopGroup_);
-            counter += 1;
+            counter.fetch_add(1,std::memory_order_relaxed);
             // launch
             this->scheduler_->Launch(&Self::ConsumeChannel, this, std::move(channel), &counter);
         }
     }
     // FIXME:busy loop
-    while (counter != 0) {
+    while (counter.load(std::memory_order_relaxed) != 0) {
         sharpen::YieldCycle();
     }
 }

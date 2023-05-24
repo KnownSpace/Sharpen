@@ -89,3 +89,27 @@ std::size_t sharpen::ByteSlice::StoreTo(char *data, std::size_t size) const {
     }
     return this->UnsafeStoreTo(data);
 }
+
+sharpen::ByteSlice sharpen::ByteSlice::Sub(std::size_t begin,std::size_t end) noexcept {
+    if (this->Empty() || begin >= this->size_) {
+        return sharpen::ByteSlice{};
+    }
+    assert(end >= begin);
+    std::size_t size{end - begin};
+    size = (std::min)(this->GetSize() - begin,size);
+    if (!size) {
+        return sharpen::ByteSlice{};
+    }
+    return sharpen::ByteSlice{this->data_ + begin,size};
+}
+
+sharpen::ByteSlice sharpen::ByteSlice::Sub(std::size_t begin) noexcept {
+    if (this->Empty() || begin >= this->size_) {
+        return sharpen::ByteSlice{};
+    }
+    std::size_t size{this->GetSize() - begin};
+    if (!size) {
+        return sharpen::ByteSlice{};
+    }
+    return sharpen::ByteSlice{this->data_ + begin,size};
+}

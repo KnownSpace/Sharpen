@@ -115,6 +115,8 @@ namespace sharpen {
         }
 
         virtual sharpen::Optional<std::uint64_t> GetWriterId() const noexcept = 0;
+
+        virtual std::uint64_t GetCommitIndex() const noexcept = 0;
     };
 }   // namespace sharpen
 
