@@ -44,6 +44,16 @@ namespace sharpen {
             this->sign_.Unlock();
         }
 
+        bool TryPush(_T &&item) noexcept {
+            this->Push(std::move(item));
+            return true;
+        }
+
+        bool TryPush(const _T &item) noexcept {
+           _T copy{item};
+           return this->TryPush(std::move(item));
+        }
+
         template<typename... _Args, typename _Check = decltype(_T{std::declval<_Args>()...})>
         void Emplace(_Args &&...args) {
             {
@@ -51,6 +61,18 @@ namespace sharpen {
                 this->storage_.emplace_back(std::forward<_Args>(args)...);
             }
             this->sign_.Unlock();
+        }
+
+        sharpen::Optional<_T> TryPop() noexcept {
+            if (!this->sign_.TryLock()) {
+                return sharpen::EmptyOpt;
+            }
+            {
+                std::unique_lock<sharpen::SpinLock> lock(this->lock_);
+                _T obj{std::move(this->storage_.front())};
+                this->storage_.pop_front();
+                return obj;
+            }
         }
     };
 }   // namespace sharpen
