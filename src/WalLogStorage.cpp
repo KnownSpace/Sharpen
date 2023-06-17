@@ -298,7 +298,8 @@ void sharpen::WalLogStorage::NviDropUntil(std::uint64_t index) noexcept {
         for (auto begin = this->logs_.begin(), end = this->logs_.end();
              begin != end && begin->first < index;
              ++begin) {
-            writer.Write(removeTag_);
+            std::uint8_t tag{removeTag_};
+            writer.Write(tag);
             sharpen::Varuint64 builder{begin->first};
             writer.Write(builder);
         }
@@ -354,7 +355,8 @@ void sharpen::WalLogStorage::NviTruncateFrom(std::uint64_t index) {
         for (auto begin = this->logs_.lower_bound(6), end = this->logs_.end();
              begin != end && begin->first >= index;
              ++begin) {
-            writer.Write(removeTag_);
+            std::uint8_t tag{removeTag_};
+            writer.Write(tag);
             sharpen::Varuint64 builder{begin->first};
             writer.Write(builder);
         }
