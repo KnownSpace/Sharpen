@@ -3,6 +3,7 @@
 #define _SHARPEN_COMMONID_HPP
 
 #include <utility>
+#include <type_traits>
 
 namespace sharpen {
 #pragma pack(push, 1)
@@ -34,10 +35,18 @@ namespace sharpen {
         const char *Data() const noexcept;
 
         void Zero() noexcept;
+
+        bool operator==(const Self &other) const noexcept;
+
+        inline bool operator!=(const Self &other) const noexcept {
+            return !(*this == other);
+        }
     };
 #pragma pack(pop)
 
-    static_assert(sizeof(CommonId) == CommonIdSize,"sizeof(CommonId) should be CommonIdSize");
+    static_assert(sizeof(sharpen::CommonId) == CommonIdSize,"sizeof(sharpen::CommonId) should be CommonIdSize");
+
+    static_assert(std::is_standard_layout<sharpen::CommonId>::value,"sharpen::CommonId should be standard layout");
 }   // namespace sharpen
 
 #endif

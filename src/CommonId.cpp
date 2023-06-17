@@ -44,3 +44,7 @@ const char *sharpen::CommonId::Data() const noexcept {
 void sharpen::CommonId::Zero() noexcept {
     std::memset(this->data_,0,CommonIdSize);
 }
+
+bool sharpen::CommonId::operator==(const Self &other) const noexcept {
+    return std::memcmp(this->data_,other.data_,CommonIdSize) == 0;
+}
