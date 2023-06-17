@@ -46,7 +46,7 @@ namespace sharpen {
 
         void Push(_T item) noexcept {
             this->inbond_.LockAsync();
-            std::uint32_t index{this->pushIndex_.fetch_add(1) % this->items_.size()};
+            std::size_t index{this->pushIndex_.fetch_add(1) % this->items_.size()};
             this->items_[index] = std::move(item);
             this->outbond_.Unlock();
         }
@@ -55,7 +55,7 @@ namespace sharpen {
             if (!this->inbond_.TryLock()) {
                 return false;
             }
-            std::uint32_t index{this->pushIndex_.fetch_add(1) % this->items_.size()};
+            std::size_t index{this->pushIndex_.fetch_add(1) % this->items_.size()};
             this->items_[index] = std::move(item);
             this->outbond_.Unlock();
             return true;
@@ -68,7 +68,7 @@ namespace sharpen {
 
         _T Pop() noexcept {
             this->outbond_.LockAsync();
-            std::uint32_t index{this->popIndex_.fetch_add(1) % this->items_.size()};
+            std::size_t index{this->popIndex_.fetch_add(1) % this->items_.size()};
             _T item{std::move(this->items_[index])};
             this->inbond_.Unlock();
             return item;
@@ -78,7 +78,7 @@ namespace sharpen {
             if (!this->outbond_.TryLock()) {
                 return sharpen::EmptyOpt;
             }
-            std::uint32_t index{this->popIndex_.fetch_add(1) % this->items_.size()};
+            std::size_t index{this->popIndex_.fetch_add(1) % this->items_.size()};
             _T item{std::move(this->items_[index])};
             this->inbond_.Unlock();
             return item;
