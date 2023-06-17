@@ -3,8 +3,10 @@
 
 #include <sharpen/AsyncOps.hpp>
 #include <sharpen/EventEngine.hpp>
+#include <sharpen/LeaseLock.hpp>
 #include <sharpen/StopWatcher.hpp>
 #include <sharpen/TimerOps.hpp>
+
 
 #include <simpletest/TestRunner.hpp>
 
@@ -85,11 +87,78 @@ public:
     }
 };
 
+class LeaseLockTest : public simpletest::ITypenamedTest<LeaseLockTest> {
+private:
+    using Self = LeaseLockTest;
+
+public:
+    LeaseLockTest() noexcept = default;
+
+    ~LeaseLockTest() noexcept = default;
+
+    inline const Self &Const() const noexcept {
+        return *this;
+    }
+
+    inline virtual simpletest::TestResult Run() noexcept {
+        sharpen::LeaseLock lock{std::chrono::seconds{1}};
+        auto first{std::chrono::steady_clock::now()};
+        sharpen::AwaitableFuture<void> future;
+        sharpen::Launch([&lock,&future]() {
+            std::unique_lock<sharpen::LeaseLock> _lock{lock};
+            future.Complete();
+        });
+        future.Await();
+        {
+            std::unique_lock<sharpen::LeaseLock> _lock{lock};
+            auto second{std::chrono::steady_clock::now()};
+            return this->Assert(std::chrono::duration_cast<std::chrono::seconds>(second - first).count() == 0,"should not use 1 sec");
+        }
+    }
+};
+
+class LeaseLockTimeoutTest:public simpletest::ITypenamedTest<LeaseLockTimeoutTest>
+{
+private:
+    using Self = LeaseLockTimeoutTest;
+
+public:
+
+    LeaseLockTimeoutTest() noexcept = default;
+
+    ~LeaseLockTimeoutTest() noexcept = default;
+
+    inline const Self &Const() const noexcept
+    {
+        return *this;
+    }
+
+    inline virtual simpletest::TestResult Run() noexcept
+    {
+        sharpen::LeaseLock lock{std::chrono::seconds{1}};
+        auto first{std::chrono::steady_clock::now()};
+        sharpen::AwaitableFuture<void> future;
+        sharpen::Launch([&lock,&future]() {
+            lock.LockAsync();
+            future.Complete();
+        });
+        future.Await();
+        {
+            std::unique_lock<sharpen::LeaseLock> _lock{lock};
+            auto second{std::chrono::steady_clock::now()};
+            auto time{std::chrono::duration_cast<std::chrono::milliseconds>(second - first)};
+            return this->Assert(time.count() >= 1,"should use 1 sec or more");
+        }
+    }
+};
+
 static int Test() {
     simpletest::TestRunner runner;
     runner.Register<CancelTest>();
     runner.Register<AwaitForTest>();
     runner.Register<AwaitForCompletedTest>();
+    runner.Register<LeaseLockTest>();
+    runner.Register<LeaseLockTimeoutTest>();
     return runner.Run();
 }
 
