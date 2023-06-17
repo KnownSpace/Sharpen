@@ -1,7 +1,6 @@
-#include <cassert>
-#include <cstdio>
-
+#include <sharpen/AsyncBlockingQueue.hpp>
 #include <sharpen/AsyncLeaseBarrier.hpp>
+#include <sharpen/AsyncLimitedQueue.hpp>
 #include <sharpen/AsyncOps.hpp>
 #include <sharpen/AwaitOps.hpp>
 #include <sharpen/DynamicWorkerGroup.hpp>
@@ -11,8 +10,10 @@
 #include <sharpen/SingleWorkerGroup.hpp>
 #include <sharpen/TimerOps.hpp>
 #include <sharpen/YieldOps.hpp>
-
 #include <simpletest/TestRunner.hpp>
+#include <cassert>
+#include <cstdio>
+
 
 class AsyncTest : public simpletest::ITypenamedTest<AsyncTest> {
 private:
@@ -203,6 +204,29 @@ public:
     }
 };
 
+class AsyncBlockingQueueTest : public simpletest::ITypenamedTest<AsyncBlockingQueueTest> {
+private:
+    using Self = AsyncBlockingQueueTest;
+
+public:
+    AsyncBlockingQueueTest() noexcept = default;
+
+    ~AsyncBlockingQueueTest() noexcept = default;
+
+    inline const Self &Const() const noexcept {
+        return *this;
+    }
+
+    inline virtual simpletest::TestResult Run() noexcept {
+        sharpen::AsyncBlockingQueue<std::int32_t> queue;
+        if (queue.TryPop().Exist()) {
+            return this->Fail("queue should be empty");
+        }
+        queue.Push(0);
+        return this->Assert(queue.Pop() == 0,"front should be 0");
+    }
+};
+
 static int Test() {
     constexpr std::size_t workerGroupJobs{256 * 1024};
     simpletest::TestRunner runner;
@@ -219,6 +243,7 @@ static int Test() {
         new (std::nothrow) sharpen::DynamicWorkerGroup{*sharpen::GetLocalSchedulerPtr()},
         workerGroupJobs);
     runner.Register<FiberLocalTest>();
+    runner.Register<AsyncBlockingQueueTest>();
     return runner.Run();
 }
 
