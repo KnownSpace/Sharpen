@@ -2,17 +2,21 @@
 #ifndef _SHARPEN_ASYNCLEASELOCK_HPP
 #define _SHARPEN_ASYNCLEASELOCK_HPP
 
-#include "SpinLock.hpp"
-#include "IAsyncLockable.hpp"
 #include "AsyncMutex.hpp"
+#include "IAsyncLockable.hpp"
 #include "ITimer.hpp"
-#include <utility>
+#include "SpinLock.hpp"
 #include <chrono>
-#include <stdexcept> // IWYU pragma: export
+#include <stdexcept>   // IWYU pragma: export
+#include <utility>
+
 
 namespace sharpen {
     // this lock should not be used in thread sync
-    class AsyncLeaseLock:public sharpen::IAsyncLockable {
+    class AsyncLeaseLock
+        : public sharpen::IAsyncLockable
+        , public sharpen::Noncopyable
+        , public sharpen::Nonmovable {
     private:
         using Self = sharpen::AsyncLeaseLock;
         using TimePoint = std::chrono::time_point<std::chrono::steady_clock>;
@@ -25,10 +29,11 @@ namespace sharpen {
         sharpen::ITimer *waiter_;
 
         explicit AsyncLeaseLock(std::uint32_t waitMs);
+
     public:
-        template<typename _Rep,typename _Period>
-        explicit AsyncLeaseLock(const std::chrono::duration<_Rep,_Period> &leaseDuration) 
-            : Self{leaseDuration.count()}{
+        template<typename _Rep, typename _Period>
+        explicit AsyncLeaseLock(const std::chrono::duration<_Rep, _Period> &leaseDuration)
+            : Self{leaseDuration.count()} {
         }
 
         virtual ~AsyncLeaseLock() noexcept = default;

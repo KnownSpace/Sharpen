@@ -223,7 +223,33 @@ public:
             return this->Fail("queue should be empty");
         }
         queue.Push(0);
-        return this->Assert(queue.Pop() == 0,"front should be 0");
+        return this->Assert(queue.Pop() == 0, "front should be 0");
+    }
+};
+
+class AsyncLimitedQueueTest : public simpletest::ITypenamedTest<AsyncLimitedQueueTest> {
+private:
+    using Self = AsyncLimitedQueueTest;
+
+public:
+    AsyncLimitedQueueTest() noexcept = default;
+
+    ~AsyncLimitedQueueTest() noexcept = default;
+
+    inline const Self &Const() const noexcept {
+        return *this;
+    }
+
+    inline virtual simpletest::TestResult Run() noexcept {
+        sharpen::AsyncLimitedQueue<std::int32_t> queue{1};
+        if (queue.TryPop().Exist()) {
+            return this->Fail("queue should be empty");
+        }
+        queue.Push(0);
+        if (queue.TryPush(1)) {
+            return this->Fail("queue should be full");
+        }
+        return this->Assert(queue.Pop() == 0, "front should be 0");
     }
 };
 
@@ -244,6 +270,7 @@ static int Test() {
         workerGroupJobs);
     runner.Register<FiberLocalTest>();
     runner.Register<AsyncBlockingQueueTest>();
+    runner.Register<AsyncLimitedQueueTest>();
     return runner.Run();
 }
 
