@@ -1,7 +1,7 @@
 #include <cassert>
 #include <cstdio>
 
-#include <sharpen/AsyncNagleBarrier.hpp>
+#include <sharpen/AsyncLeaseBarrier.hpp>
 #include <sharpen/AsyncOps.hpp>
 #include <sharpen/AwaitOps.hpp>
 #include <sharpen/DynamicWorkerGroup.hpp>
