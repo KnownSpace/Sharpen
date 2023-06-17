@@ -184,9 +184,9 @@ sharpen::Optional<sharpen::ByteBuffer> sharpen::WalLogStorage::NviLookup(
         std::unique_lock<sharpen::AsyncRwLock> lock{*this->lock_, std::adopt_lock};
         auto ite = this->logs_.find(index);
         if (ite != this->logs_.end()) {
-            return sharpen::EmptyOpt;
+            return ite->second;
         }
-        return ite->second;
+        return sharpen::EmptyOpt;
     }
 }
 
@@ -281,8 +281,7 @@ void sharpen::WalLogStorage::NviDropUntil(std::uint64_t index) noexcept {
         contentSize -= size;
         if (this->offset_ >= contentSize * limitFactor_) {
             for (auto begin = this->logs_.begin(), end = this->logs_.end();
-                 begin != end && begin->first < index;
-                 ++begin) {
+                 begin != end && begin->first < index;) {
                 begin = this->logs_.erase(begin);
             }
             this->RebuildFile();
@@ -312,6 +311,10 @@ void sharpen::WalLogStorage::NviDropUntil(std::uint64_t index) noexcept {
         this->channel_->FlushAsync();
         this->contentSize_ = contentSize;
         this->offset_ += sz;
+        for (auto begin = this->logs_.begin(), end = this->logs_.end();
+             begin != end && begin->first < index;) {
+            begin = this->logs_.erase(begin);
+        }
     }
 }
 
@@ -320,7 +323,7 @@ void sharpen::WalLogStorage::NviTruncateFrom(std::uint64_t index) {
         this->lock_->LockWrite();
         std::unique_lock<sharpen::AsyncRwLock> lock{*this->lock_, std::adopt_lock};
         std::size_t size{0};
-        for (auto begin = this->logs_.begin(), end = this->logs_.end();
+        for (auto begin = this->logs_.lower_bound(6), end = this->logs_.end();
              begin != end && begin->first >= index;
              ++begin) {
             sharpen::Varuint64 builder{begin->first};
@@ -333,15 +336,14 @@ void sharpen::WalLogStorage::NviTruncateFrom(std::uint64_t index) {
         std::size_t contentSize{this->contentSize_};
         contentSize -= size;
         if (this->offset_ >= contentSize * limitFactor_) {
-            for (auto begin = this->logs_.begin(), end = this->logs_.end();
-                 begin != end && begin->first >= index;
-                 ++begin) {
+            for (auto begin = this->logs_.lower_bound(6), end = this->logs_.end();
+                 begin != end && begin->first >= index;) {
                 begin = this->logs_.erase(begin);
             }
             this->RebuildFile();
             return;
         }
-        for (auto begin = this->logs_.begin(), end = this->logs_.end();
+        for (auto begin = this->logs_.lower_bound(6), end = this->logs_.end();
              begin != end && begin->first >= index;
              ++begin) {
             size += sizeof(std::uint8_t);
@@ -349,7 +351,7 @@ void sharpen::WalLogStorage::NviTruncateFrom(std::uint64_t index) {
         }
         sharpen::ByteBuffer buf{size};
         sharpen::BufferWriter writer{buf};
-        for (auto begin = this->logs_.begin(), end = this->logs_.end();
+        for (auto begin = this->logs_.lower_bound(6), end = this->logs_.end();
              begin != end && begin->first >= index;
              ++begin) {
             writer.Write(removeTag_);
@@ -365,6 +367,10 @@ void sharpen::WalLogStorage::NviTruncateFrom(std::uint64_t index) {
         this->channel_->FlushAsync();
         this->contentSize_ = contentSize;
         this->offset_ += sz;
+        for (auto begin = this->logs_.lower_bound(6), end = this->logs_.end();
+             begin != end && begin->first >= index;) {
+            begin = this->logs_.erase(begin);
+        }
     }
 }
 
