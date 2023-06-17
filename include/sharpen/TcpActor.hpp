@@ -32,7 +32,7 @@ namespace sharpen {
 
         void DoPost(sharpen::Mail mail) noexcept;
 
-        inline virtual std::uint64_t NviGetId() const noexcept override {
+        inline virtual sharpen::ActorId NviGetId() const noexcept override {
             assert(this->poster_);
             return this->poster_->GetId();
         }

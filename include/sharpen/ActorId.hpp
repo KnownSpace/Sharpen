@@ -5,7 +5,7 @@
 #include "CommonId.hpp"
 
 namespace sharpen {
-    class ActorId:public sharpen::CommonId {
+    class ActorId : public sharpen::CommonId {
     private:
         using Self = sharpen::ActorId;
 
@@ -25,7 +25,43 @@ namespace sharpen {
         inline const Self &Const() const noexcept {
             return *this;
         }
+
+        inline bool operator==(const Self &other) const noexcept {
+            return this->CompareWith(other) == 0;
+        }
+
+        inline bool operator!=(const Self &other) const noexcept {
+            return this->CompareWith(other) != 0;
+        }
+
+        inline bool operator<(const Self &other) const noexcept {
+            return this->CompareWith(other) < 0;
+        }
+
+        inline bool operator>(const Self &other) const noexcept {
+            return this->CompareWith(other) > 0;
+        }
+
+        inline bool operator>=(const Self &other) const noexcept {
+            return this->CompareWith(other) >= 0;
+        }
+
+        inline bool operator<=(const Self &other) const noexcept {
+            return this->CompareWith(other) <= 0;
+        }
     };
 }   // namespace sharpen
+
+namespace std {
+    template<typename _T>
+    struct hash;
+
+    template<>
+    struct hash<sharpen::ActorId> {
+        std::size_t operator()(const sharpen::ActorId &id) const noexcept {
+            return hash<sharpen::CommonId>{}(id);
+        }
+    };
+}   // namespace std
 
 #endif

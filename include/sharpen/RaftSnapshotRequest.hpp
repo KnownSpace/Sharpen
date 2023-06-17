@@ -2,6 +2,7 @@
 #ifndef _SHARPEN_RAFTSNAPSHOTREQUEST_HPP
 #define _SHARPEN_RAFTSNAPSHOTREQUEST_HPP
 
+#include "ActorId.hpp"
 #include "BinarySerializable.hpp"
 #include "ByteBuffer.hpp"
 #include "RaftSnapshotMetadata.hpp"
@@ -9,13 +10,14 @@
 #include <cstdint>
 #include <utility>
 
+
 namespace sharpen {
     class RaftSnapshotRequest : public sharpen::BinarySerializable<sharpen::RaftSnapshotRequest> {
     private:
         using Self = sharpen::RaftSnapshotRequest;
 
         std::uint64_t term_;
-        std::uint64_t leaderId_;
+        sharpen::ActorId leaderActorId_;
         std::uint64_t offset_;
         bool last_;
         sharpen::RaftSnapshotMetadata metadata_;
@@ -76,12 +78,12 @@ namespace sharpen {
             this->term_ = term;
         }
 
-        inline std::uint64_t GetLeaderId() const noexcept {
-            return this->leaderId_;
+        inline sharpen::ActorId &LeaderActorId() noexcept {
+            return this->leaderActorId_;
         }
 
-        inline void SetLeaderId(std::uint64_t leaderId) noexcept {
-            this->leaderId_ = leaderId;
+        inline const sharpen::ActorId &LeaderActorId() const noexcept {
+            return this->leaderActorId_;
         }
 
         inline std::uint64_t GetOffset() const noexcept {

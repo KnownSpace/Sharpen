@@ -27,7 +27,7 @@ std::unique_ptr<sharpen::Broadcaster> sharpen::Quorum::NviCreateBroadcaster(
     return broadcaster;
 }
 
-sharpen::IRemoteActorBuilder *sharpen::Quorum::NviLookup(std::uint64_t actorId) noexcept {
+sharpen::IRemoteActorBuilder *sharpen::Quorum::NviLookup(const sharpen::ActorId &actorId) noexcept {
     sharpen::IRemoteActorBuilder *builder{nullptr};
     auto ite = this->builders_.find(actorId);
     if (ite != this->builders_.end()) {
@@ -38,7 +38,7 @@ sharpen::IRemoteActorBuilder *sharpen::Quorum::NviLookup(std::uint64_t actorId) 
 }
 
 const sharpen::IRemoteActorBuilder *sharpen::Quorum::NviLookup(
-    std::uint64_t actorId) const noexcept {
+    const sharpen::ActorId &actorId) const noexcept {
     sharpen::IRemoteActorBuilder *builder{nullptr};
     auto ite = this->builders_.find(actorId);
     if (ite != this->builders_.end()) {
@@ -48,7 +48,7 @@ const sharpen::IRemoteActorBuilder *sharpen::Quorum::NviLookup(
     return builder;
 }
 
-void sharpen::Quorum::NviRegister(std::uint64_t actorId,
+void sharpen::Quorum::NviRegister(const sharpen::ActorId &actorId,
                                   std::unique_ptr<sharpen::IRemoteActorBuilder> builder) {
     auto ite = this->builders_.find(actorId);
     if (ite != this->builders_.end()) {
@@ -58,15 +58,15 @@ void sharpen::Quorum::NviRegister(std::uint64_t actorId,
     }
 }
 
-void sharpen::Quorum::Remove(std::uint64_t actorId) noexcept {
+void sharpen::Quorum::Remove(const sharpen::ActorId &actorId) noexcept {
     auto ite = this->builders_.find(actorId);
     if (ite != this->builders_.end()) {
         this->builders_.erase(ite);
     }
 }
 
-std::set<std::uint64_t> sharpen::Quorum::GenerateActorsSet() const {
-    std::set<std::uint64_t> actors;
+std::set<sharpen::ActorId> sharpen::Quorum::GenerateActorsSet() const {
+    std::set<sharpen::ActorId> actors;
     for (auto begin = this->builders_.begin(), end = this->builders_.end(); begin != end; ++begin) {
         actors.emplace(begin->first);
     }

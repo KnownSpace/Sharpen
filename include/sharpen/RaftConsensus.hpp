@@ -37,7 +37,7 @@ namespace sharpen {
         sharpen::IFiberScheduler *scheduler_;
 
         // the id of current actor
-        std::uint64_t id_;
+        sharpen::ActorId id_;
         // persistent status map
         std::unique_ptr<sharpen::IStatusMap> statusMap_;
         // storage logs
@@ -106,8 +106,6 @@ namespace sharpen {
 
         void SetVote(sharpen::RaftVoteRecord vote);
 
-        std::uint64_t GetId() const noexcept;
-
         std::uint64_t GetLastIndex() const;
 
         sharpen::IRaftSnapshotProvider &GetSnapshotProvider() noexcept;
@@ -141,24 +139,26 @@ namespace sharpen {
         // vote
         sharpen::Mail OnVoteRequest(const sharpen::RaftVoteForRequest &request);
 
-        void OnVoteResponse(const sharpen::RaftVoteForResponse &response, std::uint64_t actorId);
+        void OnVoteResponse(const sharpen::RaftVoteForResponse &response,
+                            const sharpen::ActorId &actorId);
 
         // prevote
         sharpen::Mail OnPrevoteRequest(const sharpen::RaftPrevoteRequest &request);
 
-        void OnPrevoteResponse(const sharpen::RaftPrevoteResponse &response, std::uint64_t actorId);
+        void OnPrevoteResponse(const sharpen::RaftPrevoteResponse &response,
+                               const sharpen::ActorId &actorId);
 
         // heartbeat
         sharpen::Mail OnHeartbeatRequest(const sharpen::RaftHeartbeatRequest &request);
 
         void OnHeartbeatResponse(const sharpen::RaftHeartbeatResponse &response,
-                                 std::uint64_t actorId);
+                                 const sharpen::ActorId &actorId);
 
         // snapshot
         sharpen::Mail OnSnapshotRequest(const sharpen::RaftSnapshotRequest &request);
 
         void OnSnapshotResponse(const sharpen::RaftSnapshotResponse &response,
-                                std::uint64_t actorId);
+                                const sharpen::ActorId &actorId);
 
         void NotifyWaiter(sharpen::Future<void> *future) noexcept;
 
@@ -170,9 +170,9 @@ namespace sharpen {
 
         sharpen::Mail DoGenerateResponse(sharpen::Mail request);
 
-        virtual void NviReceive(sharpen::Mail mail, std::uint64_t actorId) override;
+        virtual void NviReceive(sharpen::Mail mail, const sharpen::ActorId &actorId) override;
 
-        void DoReceive(sharpen::Mail mail, std::uint64_t actorId);
+        void DoReceive(sharpen::Mail mail, sharpen::ActorId actorId);
 
         virtual void NviConfigurateQuorum(
             std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater)
@@ -196,14 +196,14 @@ namespace sharpen {
 
         constexpr static sharpen::ByteSlice lastAppiledKey{"lastAppiled", 11};
 
-        RaftConsensus(std::uint64_t id,
+        RaftConsensus(const sharpen::ActorId &id,
                       std::unique_ptr<sharpen::IStatusMap> statusMap,
                       std::unique_ptr<sharpen::ILogStorage> logs,
                       std::unique_ptr<sharpen::IRaftLogAccesser> logAccesser,
                       std::unique_ptr<sharpen::IRaftSnapshotController> snapshotController,
                       const sharpen::RaftOption &option);
 
-        RaftConsensus(std::uint64_t id,
+        RaftConsensus(const sharpen::ActorId &id,
                       std::unique_ptr<sharpen::IStatusMap> statusMap,
                       std::unique_ptr<sharpen::ILogStorage> logs,
                       std::unique_ptr<sharpen::IRaftLogAccesser> logAccesser,
@@ -243,7 +243,7 @@ namespace sharpen {
         //     return *this->quorum_;
         // }
 
-        virtual sharpen::Optional<std::uint64_t> GetWriterId() const noexcept override;
+        virtual sharpen::Optional<sharpen::ActorId> GetWriterId() const noexcept override;
 
         // void ConfigurateLearners(std::function<void(sharpen::IQuorum&)> configurater);
 

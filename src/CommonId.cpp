@@ -12,8 +12,8 @@ sharpen::CommonId::CommonId(const Self &other) noexcept
     std::memcpy(this->data_, other.data_, CommonIdSize);
 }
 
-sharpen::CommonId::CommonId(Self &&other) noexcept 
-    : data_(){
+sharpen::CommonId::CommonId(Self &&other) noexcept
+    : data_() {
     std::memcpy(this->data_, other.data_, CommonIdSize);
     other.Zero();
 }
@@ -42,9 +42,9 @@ const char *sharpen::CommonId::Data() const noexcept {
 }
 
 void sharpen::CommonId::Zero() noexcept {
-    std::memset(this->data_,0,CommonIdSize);
+    std::memset(this->data_, 0, CommonIdSize);
 }
 
-bool sharpen::CommonId::operator==(const Self &other) const noexcept {
-    return std::memcmp(this->data_,other.data_,CommonIdSize) == 0;
+std::int32_t sharpen::CommonId::CompareWith(const Self &other) const noexcept {
+    return std::memcmp(this->data_, other.data_, CommonIdSize);
 }

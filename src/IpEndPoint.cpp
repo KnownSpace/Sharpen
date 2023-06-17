@@ -174,3 +174,29 @@ std::size_t sharpen::IpEndPoint::StoreTo(sharpen::ByteBuffer &buf, std::size_t o
     }
     return this->UnsafeStoreTo(buf.Data() + offset);
 }
+
+sharpen::ActorId sharpen::IpEndPoint::GetActorId() const noexcept {
+    sharpen::ActorId id;
+    this->UnsafeStoreTo(id.Data());
+    return id;
+}
+
+sharpen::IpEndPoint sharpen::IpEndPoint::FromActorId(const sharpen::ActorId &id) noexcept {
+    sharpen::IpEndPoint endPoint;
+    std::uint32_t ip{0};
+    const char *data{id.Data()};
+    std::size_t offset{0};
+    std::memcpy(&ip, data, sizeof(ip));
+#if (SHARPEN_BYTEORDER != SHARPEN_LIL_ENDIAN)
+    sharpen::ConvertEndian(ip);
+#endif
+    endPoint.SetAddr(ip);
+    offset += sizeof(ip);
+    std::uint16_t port;
+    std::memcpy(&port, data + offset, sizeof(port));
+#if (SHARPEN_BYTEORDER != SHARPEN_LIL_ENDIAN)
+    sharpen::ConvertEndian(port);
+#endif
+    endPoint.SetPort(port);
+    return endPoint;
+}

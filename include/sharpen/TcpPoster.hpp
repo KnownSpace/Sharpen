@@ -8,7 +8,7 @@
 #include "ITcpSteamFactory.hpp"
 #include "IWorkerGroup.hpp"
 #include "Noncopyable.hpp"
-#include "RemotePosterOpenError.hpp"
+#include "RemotePosterOpenError.hpp"   // IWYU pragma: export
 
 namespace sharpen {
     class TcpPoster
@@ -24,12 +24,12 @@ namespace sharpen {
         std::shared_ptr<sharpen::ITcpSteamFactory> factory_;
         std::unique_ptr<sharpen::IWorkerGroup> pipelineWorker_;
 
-        virtual std::uint64_t NviGetId() const noexcept override;
+        virtual sharpen::ActorId NviGetId() const noexcept override;
 
         virtual sharpen::Mail NviPost(const sharpen::Mail &mail) noexcept override;
 
         virtual void NviPost(const sharpen::Mail &mail,
-                             std::function<void(sharpen::Mail)> cb) noexcept;
+                             std::function<void(sharpen::Mail)> cb) noexcept override;
 
         virtual void NviClose() noexcept override;
 

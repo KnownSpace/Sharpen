@@ -3,28 +3,27 @@
 #include <sharpen/Varint.hpp>
 
 sharpen::RaftVoteForRequest::RaftVoteForRequest() noexcept
-    : id_(0)
+    : actorId_()
     , term_(0)
     , lastIndex_(0)
     , lastTerm_(0) {
 }
 
-sharpen::RaftVoteForRequest::RaftVoteForRequest(std::uint64_t id,
+sharpen::RaftVoteForRequest::RaftVoteForRequest(const sharpen::ActorId &actorId,
                                                 std::uint64_t term,
                                                 std::uint64_t lastIndex,
                                                 std::uint64_t lastTerm) noexcept
-    : id_(id)
+    : actorId_(actorId)
     , term_(term)
     , lastIndex_(lastIndex)
     , lastTerm_(lastTerm) {
 }
 
 sharpen::RaftVoteForRequest::RaftVoteForRequest(Self &&other) noexcept
-    : id_(other.id_)
+    : actorId_(std::move(other.actorId_))
     , term_(other.term_)
     , lastIndex_(other.lastIndex_)
     , lastTerm_(other.lastTerm_) {
-    other.id_ = 0;
     other.term_ = 0;
     other.lastIndex_ = 0;
     other.lastTerm_ = 0;
@@ -32,11 +31,10 @@ sharpen::RaftVoteForRequest::RaftVoteForRequest(Self &&other) noexcept
 
 sharpen::RaftVoteForRequest &sharpen::RaftVoteForRequest::operator=(Self &&other) noexcept {
     if (this != std::addressof(other)) {
-        this->id_ = other.id_;
+        this->actorId_ = std::move(other.actorId_);
         this->term_ = other.term_;
         this->lastIndex_ = other.lastIndex_;
         this->lastTerm_ = other.lastTerm_;
-        other.id_ = 0;
         other.term_ = 0;
         other.lastIndex_ = 0;
         other.lastTerm_ = 0;
@@ -45,8 +43,8 @@ sharpen::RaftVoteForRequest &sharpen::RaftVoteForRequest::operator=(Self &&other
 }
 
 std::size_t sharpen::RaftVoteForRequest::ComputeSize() const noexcept {
-    sharpen::Varuint64 builder{this->GetId()};
-    std::size_t size{builder.ComputeSize()};
+    sharpen::Varuint64 builder{0};
+    std::size_t size{sharpen::BinarySerializator::ComputeSize(this->actorId_)};
     builder.Set(this->GetTerm());
     size += builder.ComputeSize();
     builder.Set(this->GetLastIndex());
@@ -57,13 +55,12 @@ std::size_t sharpen::RaftVoteForRequest::ComputeSize() const noexcept {
 }
 
 std::size_t sharpen::RaftVoteForRequest::LoadFrom(const char *data, std::size_t size) {
-    if (size < 4) {
+    if (size < 3 + sizeof(sharpen::ActorId)) {
         throw sharpen::CorruptedDataError{"corrupted vote request"};
     }
     std::size_t offset{0};
     sharpen::Varuint64 builder{0};
-    offset += builder.LoadFrom(data, size);
-    this->id_ = builder.Get();
+    offset += sharpen::BinarySerializator::LoadFrom(this->actorId_, data, size);
     if (size < 3 + offset) {
         throw sharpen::CorruptedDataError{"corrupted vote request"};
     }
@@ -84,9 +81,8 @@ std::size_t sharpen::RaftVoteForRequest::LoadFrom(const char *data, std::size_t 
 
 std::size_t sharpen::RaftVoteForRequest::UnsafeStoreTo(char *data) const noexcept {
     std::size_t offset{0};
-    sharpen::Varuint64 builder{this->GetId()};
-    offset += builder.UnsafeStoreTo(data + offset);
-    builder.Set(this->GetTerm());
+    sharpen::Varuint64 builder{this->GetTerm()};
+    offset += sharpen::BinarySerializator::UnsafeStoreTo(this->actorId_, data);
     offset += builder.UnsafeStoreTo(data + offset);
     builder.Set(this->GetLastIndex());
     offset += builder.UnsafeStoreTo(data + offset);

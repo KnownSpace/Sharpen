@@ -169,3 +169,29 @@ std::size_t sharpen::Ipv6EndPoint::StoreTo(sharpen::ByteBuffer &buf, std::size_t
     }
     return this->UnsafeStoreTo(buf.Data() + offset);
 }
+
+sharpen::ActorId sharpen::Ipv6EndPoint::GetActorId() const noexcept {
+    sharpen::ActorId id;
+    this->UnsafeStoreTo(id.Data());
+    return id;
+}
+
+sharpen::Ipv6EndPoint sharpen::Ipv6EndPoint::FromActorId(const sharpen::ActorId &id) noexcept {
+    sharpen::Ipv6EndPoint endPoint;
+    const char *data{id.Data()};
+    std::size_t offset{0};
+#ifdef SHARPEN_IS_WIN
+    std::memcpy(endPoint.addr_.sin6_addr.u.Byte, data, sizeof(endPoint.addr_.sin6_addr.u.Byte));
+    offset += sizeof(endPoint.addr_.sin6_addr.u.Byte);
+#else
+    std::memcpy(endPoint.addr_.sin6_addr.s6_addr, data, sizeof(endPoint.addr_.sin6_addr.s6_addr));
+    offset += sizeof(endPoint.addr_.sin6_addr.s6_addr);
+#endif
+    std::uint16_t port;
+    std::memcpy(&port, data + offset, sizeof(port));
+#if (SHARPEN_BYTEORDER != SHARPEN_LIL_ENDIAN)
+    sharpen::ConvertEndian(port);
+#endif
+    endPoint.SetPort(port);
+    return endPoint;
+}

@@ -2,6 +2,7 @@
 #ifndef _SHARPEN_RAFTVOTEFORREQUEST_HPP
 #define _SHARPEN_RAFTVOTEFORREQUEST_HPP
 
+#include "ActorId.hpp"
 #include "BinarySerializable.hpp"
 #include "CorruptedDataError.hpp"   // IWYU pragma: keep
 #include <cstddef>
@@ -13,7 +14,7 @@ namespace sharpen {
     private:
         using Self = sharpen::RaftVoteForRequest;
 
-        std::uint64_t id_;
+        sharpen::ActorId actorId_;
         std::uint64_t term_;
         std::uint64_t lastIndex_;
         std::uint64_t lastTerm_;
@@ -21,7 +22,7 @@ namespace sharpen {
     public:
         RaftVoteForRequest() noexcept;
 
-        RaftVoteForRequest(std::uint64_t id,
+        RaftVoteForRequest(const sharpen::ActorId &actorId,
                            std::uint64_t term,
                            std::uint64_t lastIndex,
                            std::uint64_t lastTerm) noexcept;
@@ -52,12 +53,12 @@ namespace sharpen {
 
         std::size_t UnsafeStoreTo(char *data) const noexcept;
 
-        inline std::uint64_t GetId() const noexcept {
-            return this->id_;
+        inline sharpen::ActorId &ActorId() noexcept {
+            return this->actorId_;
         }
 
-        inline void SetId(std::uint64_t id) noexcept {
-            this->id_ = id;
+        inline const sharpen::ActorId &ActorId() const noexcept {
+            return this->actorId_;
         }
 
         inline std::uint64_t GetTerm() const noexcept {

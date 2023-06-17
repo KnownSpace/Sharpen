@@ -9,7 +9,7 @@
 #include <utility>
 
 sharpen::RaftConsensus::RaftConsensus(
-    std::uint64_t id,
+    const sharpen::ActorId &id,
     std::unique_ptr<sharpen::IStatusMap> statusMap,
     std::unique_ptr<sharpen::ILogStorage> logs,
     std::unique_ptr<sharpen::IRaftLogAccesser> logAccesser,
@@ -24,12 +24,12 @@ sharpen::RaftConsensus::RaftConsensus(
     , snapshotController_(std::move(snapshotController))
     , option_(option)
     , term_(0)
-    , vote_(0, 0)
+    , vote_(0, sharpen::ActorId{})
     , commitIndex_(0)
     , role_(sharpen::RaftRole::Follower)
     , electionRecord_(0, 0)
     , prevoteRecord_()
-    , leaderRecord_(0, 0)
+    , leaderRecord_(0, sharpen::ActorId{})
     , waiter_(nullptr)
     , advancedCount_(0)
     , reachAdvancedCount_(0)
@@ -39,7 +39,6 @@ sharpen::RaftConsensus::RaftConsensus(
     , quorumBroadcaster_(nullptr)
     , heartbeatProvider_(nullptr)
     , worker_(nullptr) {
-    assert(this->id_ != 0);
     assert(this->statusMap_ != nullptr);
     assert(this->logs_ != nullptr);
     assert(this->logAccesser_ != nullptr);
@@ -60,7 +59,7 @@ sharpen::RaftConsensus::RaftConsensus(
 }
 
 sharpen::RaftConsensus::RaftConsensus(
-    std::uint64_t id,
+    const sharpen::ActorId &id,
     std::unique_ptr<sharpen::IStatusMap> statusMap,
     std::unique_ptr<sharpen::ILogStorage> logs,
     std::unique_ptr<sharpen::IRaftLogAccesser> logAccesser,
@@ -174,10 +173,6 @@ std::uint64_t sharpen::RaftConsensus::GetTerm() const noexcept {
 void sharpen::RaftConsensus::SetTerm(std::uint64_t term) {
     this->SetUint64(termKey, term);
     this->term_ = term;
-}
-
-std::uint64_t sharpen::RaftConsensus::GetId() const noexcept {
-    return this->id_;
 }
 
 std::uint64_t sharpen::RaftConsensus::GetCommitIndex() const noexcept {
@@ -337,7 +332,7 @@ sharpen::Mail sharpen::RaftConsensus::OnVoteRequest(const sharpen::RaftVoteForRe
     response.SetStatus(false);
     response.SetTerm(this->GetTerm());
     // if term >= current term
-    if (this->quorum_->Exist(request.GetId()) && request.GetTerm() >= this->GetTerm()) {
+    if (this->quorum_->Exist(request.ActorId()) && request.GetTerm() >= this->GetTerm()) {
         // set current term = term
         if (request.GetTerm() > this->GetTerm()) {
             std::uint64_t newTerm{request.GetTerm()};
@@ -351,7 +346,7 @@ sharpen::Mail sharpen::RaftConsensus::OnVoteRequest(const sharpen::RaftVoteForRe
         if (vote.GetTerm() == this->GetTerm()) {
             assert(vote.GetTerm() != 0);
             // set true if voteid == id
-            if (vote.GetActorId() == request.GetId()) {
+            if (vote.ActorId() == request.ActorId()) {
                 response.SetStatus(true);
             }
         } else {
@@ -368,7 +363,7 @@ sharpen::Mail sharpen::RaftConsensus::OnVoteRequest(const sharpen::RaftVoteForRe
             if (request.GetLastTerm() > lastTerm ||
                 (request.GetLastIndex() >= lastIndex && request.GetLastTerm() >= lastTerm)) {
                 // save vote record
-                vote.SetActorId(request.GetId());
+                vote.ActorId() = request.ActorId();
                 vote.SetTerm(this->GetTerm());
                 this->SetVote(vote);
                 // set status to true
@@ -390,9 +385,10 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(
     response.SetStatus(false);
     response.SetTerm(this->GetTerm());
     // check leader id
-    std::pair<std::uint64_t, std::uint64_t> leaderRecord{this->leaderRecord_.GetRecord()};
-    if (this->quorum_->Exist(request.GetLeaderId()) && request.GetTerm() >= this->GetTerm() &&
-        (leaderRecord.first != request.GetTerm() || leaderRecord.second == request.GetLeaderId())) {
+    std::pair<std::uint64_t, sharpen::ActorId> leaderRecord{this->leaderRecord_.GetRecord()};
+    if (this->quorum_->Exist(request.LeaderActorId()) && request.GetTerm() >= this->GetTerm() &&
+        (leaderRecord.first != request.GetTerm() ||
+         leaderRecord.second == request.LeaderActorId())) {
         // if term > current term
         if (request.GetTerm() > this->GetTerm()) {
             std::uint64_t newTerm{request.GetTerm()};
@@ -455,7 +451,7 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(
                 response.SetMatchIndex(matchIndex);
                 // flush leader id if we need
                 if (leaderRecord.first < request.GetTerm()) {
-                    this->leaderRecord_.Flush(request.GetTerm(), request.GetLeaderId());
+                    this->leaderRecord_.Flush(request.GetTerm(), request.LeaderActorId());
                 }
                 // set commit index
                 this->commitIndex_ = request.GetCommitIndex();
@@ -482,9 +478,10 @@ sharpen::Mail sharpen::RaftConsensus::OnSnapshotRequest(
     response.SetTerm(this->GetTerm());
     response.SetStatus(false);
     // check leader id
-    std::pair<std::uint64_t, std::uint64_t> leaderRecord{this->leaderRecord_.GetRecord()};
-    if (this->quorum_->Exist(request.GetLeaderId()) && request.GetTerm() >= this->GetTerm() &&
-        (leaderRecord.first != request.GetTerm() || leaderRecord.second == request.GetLeaderId())) {
+    std::pair<std::uint64_t, sharpen::ActorId> leaderRecord{this->leaderRecord_.GetRecord()};
+    if (this->quorum_->Exist(request.LeaderActorId()) && request.GetTerm() >= this->GetTerm() &&
+        (leaderRecord.first != request.GetTerm() ||
+         leaderRecord.second == request.LeaderActorId())) {
         // if term > current term
         if (request.GetTerm() > this->GetTerm()) {
             // set new term
@@ -511,7 +508,7 @@ sharpen::Mail sharpen::RaftConsensus::OnSnapshotRequest(
             response.SetStatus(true);
             // flush leader id if we need
             if (this->leaderRecord_.GetRecord().first < request.GetTerm()) {
-                this->leaderRecord_.Flush(request.GetTerm(), request.GetLeaderId());
+                this->leaderRecord_.Flush(request.GetTerm(), request.LeaderActorId());
             }
             this->OnStatusChanged();
         }
@@ -570,7 +567,7 @@ void sharpen::RaftConsensus::OnStatusChanged() {
 }
 
 void sharpen::RaftConsensus::OnPrevoteResponse(const sharpen::RaftPrevoteResponse &response,
-                                               std::uint64_t actorId) {
+                                               const sharpen::ActorId &actorId) {
     std::uint64_t term{this->GetTerm()};
     // if term > current term
     if (response.GetTerm() > term) {
@@ -594,7 +591,7 @@ void sharpen::RaftConsensus::OnPrevoteResponse(const sharpen::RaftPrevoteRespons
 }
 
 void sharpen::RaftConsensus::OnVoteResponse(const sharpen::RaftVoteForResponse &response,
-                                            std::uint64_t actorId) {
+                                            const sharpen::ActorId &actorId) {
     assert(this->quorum_);
     assert(this->quorum_->Exist(actorId));
     if (response.GetTerm() > this->GetTerm()) {
@@ -616,7 +613,7 @@ void sharpen::RaftConsensus::OnVoteResponse(const sharpen::RaftVoteForResponse &
 }
 
 void sharpen::RaftConsensus::OnHeartbeatResponse(const sharpen::RaftHeartbeatResponse &response,
-                                                 std::uint64_t actorId) {
+                                                 const sharpen::ActorId &actorId) {
     assert(this->heartbeatProvider_ != nullptr);
     // if term > current term
     // leader abdicate
@@ -645,7 +642,7 @@ void sharpen::RaftConsensus::OnHeartbeatResponse(const sharpen::RaftHeartbeatRes
 }
 
 void sharpen::RaftConsensus::OnSnapshotResponse(const sharpen::RaftSnapshotResponse &response,
-                                                std::uint64_t actorId) {
+                                                const sharpen::ActorId &actorId) {
     assert(this->heartbeatProvider_ != nullptr);
     if (response.GetTerm() > this->GetTerm()) {
         assert(!response.GetStatus());
@@ -699,7 +696,7 @@ sharpen::Mail sharpen::RaftConsensus::DoGenerateResponse(sharpen::Mail request) 
     return response;
 }
 
-void sharpen::RaftConsensus::DoReceive(sharpen::Mail mail, std::uint64_t actorId) {
+void sharpen::RaftConsensus::DoReceive(sharpen::Mail mail, sharpen::ActorId actorId) {
     assert(this->mailExtractor_ != nullptr);
     sharpen::RaftMailType type{this->mailExtractor_->GetMailType(mail)};
     switch (type) {
@@ -737,7 +734,7 @@ void sharpen::RaftConsensus::DoReceive(sharpen::Mail mail, std::uint64_t actorId
     }
 }
 
-void sharpen::RaftConsensus::NviReceive(sharpen::Mail mail, std::uint64_t actorId) {
+void sharpen::RaftConsensus::NviReceive(sharpen::Mail mail, const sharpen::ActorId &actorId) {
     assert(this->worker_ != nullptr);
     if (this->IsConsensusMail(mail)) {
         this->worker_->Submit(&Self::DoReceive, this, std::move(mail), actorId);
@@ -786,11 +783,12 @@ void sharpen::RaftConsensus::RaiseElection() {
     // vote to self
     sharpen::RaftVoteRecord vote{this->GetVote()};
     vote.SetTerm(term);
-    vote.SetActorId(this->GetId());
+    vote.ActorId() = this->id_;
+
     this->SetVote(vote);
     // build vote request
     sharpen::RaftVoteForRequest request;
-    request.SetId(this->GetId());
+    request.ActorId() = this->id_;
     // load last index
     std::uint64_t lastIndex{this->GetLastIndex()};
     // load last term
@@ -844,7 +842,7 @@ void sharpen::RaftConsensus::DoAdvance() {
             // vote to self
             sharpen::RaftVoteRecord vote{this->GetVote()};
             vote.SetTerm(term);
-            vote.SetActorId(this->GetId());
+            vote.ActorId() = this->id_;
             this->SetVote(vote);
             // become leader
             this->ComeToPower();
@@ -896,7 +894,7 @@ void sharpen::RaftConsensus::DoConfigurateQuorum(
     }
     // reset heartbeat provider
     this->heartbeatProvider_->Clear();
-    std::set<std::uint64_t> set{this->quorum_->GenerateActorsSet()};
+    std::set<sharpen::ActorId> set{this->quorum_->GenerateActorsSet()};
     for (auto begin = set.begin(), end = set.end(); begin != end; ++begin) {
         this->heartbeatProvider_->Register(*begin);
     }
@@ -941,8 +939,8 @@ sharpen::WriteLogsResult sharpen::RaftConsensus::DoWrite(const sharpen::LogBatch
     return sharpen::WriteLogsResult{beginIndex, lastIndex};
 }
 
-sharpen::Optional<std::uint64_t> sharpen::RaftConsensus::GetWriterId() const noexcept {
-    std::pair<std::uint64_t, std::uint64_t> record{this->leaderRecord_.GetRecord()};
+sharpen::Optional<sharpen::ActorId> sharpen::RaftConsensus::GetWriterId() const noexcept {
+    std::pair<std::uint64_t, sharpen::ActorId> record{this->leaderRecord_.GetRecord()};
     if (record.first == this->GetTerm()) {
         return record.second;
     }

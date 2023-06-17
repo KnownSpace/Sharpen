@@ -138,6 +138,10 @@ namespace sharpen {
             *reinterpret_cast<std::uint16_t *>(buffer + sizeof(in6_addr)) = this->GetPort();
             return sharpen::BufferHash(buffer, sizeof(buffer));
         }
+
+        virtual sharpen::ActorId GetActorId() const noexcept override;
+
+        static Self FromActorId(const sharpen::ActorId &id) noexcept;
     };
 
 }   // namespace sharpen

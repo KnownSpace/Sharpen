@@ -16,7 +16,7 @@ sharpen::Broadcaster::Broadcaster(std::unique_ptr<sharpen::IRemoteActor> *actor,
     }
     this->actors_.rehash(size);
     for (std::size_t i = 0; i != size; ++i) {
-        std::uint64_t id{actor[i]->GetId()};
+        const sharpen::ActorId &id{actor[i]->GetId()};
         this->actors_.emplace(id, std::move(actor[i]));
     }
     assert(this->pipelineLength_ > 0);
@@ -90,7 +90,7 @@ bool sharpen::Broadcaster::Completed() const noexcept {
     return true;
 }
 
-const sharpen::IRemoteActor &sharpen::Broadcaster::GetActor(std::uint64_t actorId) const {
+const sharpen::IRemoteActor &sharpen::Broadcaster::GetActor(const sharpen::ActorId &actorId) const {
     auto actor{this->FindActor(actorId)};
     if (!actor) {
         throw std::invalid_argument{"unknown actor id"};
@@ -98,11 +98,12 @@ const sharpen::IRemoteActor &sharpen::Broadcaster::GetActor(std::uint64_t actorI
     return *actor;
 }
 
-bool sharpen::Broadcaster::ExistActor(std::uint64_t actorId) const noexcept {
+bool sharpen::Broadcaster::ExistActor(const sharpen::ActorId &actorId) const noexcept {
     return this->FindActor(actorId);
 }
 
-const sharpen::IRemoteActor *sharpen::Broadcaster::FindActor(std::uint64_t actorId) const noexcept {
+const sharpen::IRemoteActor *sharpen::Broadcaster::FindActor(
+    const sharpen::ActorId &actorId) const noexcept {
     auto ite = this->actors_.find(actorId);
     if (ite != this->actors_.end()) {
         return ite->second.get();

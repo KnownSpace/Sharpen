@@ -416,7 +416,7 @@ void sharpen::PosixNetStreamChannel::WriteAsync(const char *buf,
     if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
     }
-    if(this->handle_ == -1) {
+    if (this->handle_ == -1) {
         future.Complete(static_cast<std::size_t>(0));
         return;
     }
@@ -439,7 +439,7 @@ void sharpen::PosixNetStreamChannel::ReadAsync(char *buf,
     if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
     }
-    if(this->handle_ == -1) {
+    if (this->handle_ == -1) {
         future.Complete(static_cast<std::size_t>(0));
         return;
     }
@@ -471,7 +471,7 @@ void sharpen::PosixNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,
     if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
     }
-    if(this->handle_ == -1) {
+    if (this->handle_ == -1) {
         future.Complete(static_cast<std::size_t>(0));
         return;
     }
@@ -488,7 +488,7 @@ void sharpen::PosixNetStreamChannel::AcceptAsync(
     if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
     }
-    if(this->handle_ == -1) {
+    if (this->handle_ == -1) {
         future.Fail(sharpen::MakeSystemErrorPtr(sharpen::ErrorCancel));
         return;
     }
@@ -500,7 +500,7 @@ void sharpen::PosixNetStreamChannel::ConnectAsync(const sharpen::IEndPoint &endp
     if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
     }
-    if(this->handle_ == -1) {
+    if (this->handle_ == -1) {
         future.Fail(sharpen::MakeSystemErrorPtr(sharpen::ErrorConnectionAborted));
         return;
     }
