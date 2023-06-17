@@ -11,8 +11,9 @@ sharpen::HostPipelineResult LogStep::Consume(sharpen::INetStreamChannel &channel
     channel.GetLocalEndPoint(local);
     char remoteIp[25] = {0};
     char localIp[25] = {0};
-    remote.GetAddrString(remoteIp,sizeof(remoteIp));
-    local.GetAddrString(localIp,sizeof(localIp));
-    sharpen::SyncPrintf("New Conn:%s:%u->%s:%u\n",remoteIp,remote.GetPort(),localIp,local.GetPort());
+    remote.GetAddrString(remoteIp, sizeof(remoteIp));
+    local.GetAddrString(localIp, sizeof(localIp));
+    sharpen::SyncPrintf(
+        "New Conn:%s:%u->%s:%u\n", remoteIp, remote.GetPort(), localIp, local.GetPort());
     return sharpen::HostPipelineResult::Continue;
 }

@@ -14,14 +14,14 @@ void BatchHandler::operator()(sharpen::INetStreamChannel *channel, sharpen::Mail
     assert(channel != nullptr);
     {
         std::unique_lock<sharpen::AsyncMutex> lock{this->lock_};
-        this->tasks_.emplace_back(*channel,std::move(mail));
+        this->tasks_.emplace_back(*channel, std::move(mail));
         if (this->tasks_.size() == this->batch_) {
             sharpen::SyncPuts("Start handle tasks");
-            for(auto begin = this->tasks_.begin(),end = this->tasks_.end(); begin != end; ++begin)
-            {
-                if(this->handler_) {
+            for (auto begin = this->tasks_.begin(), end = this->tasks_.end(); begin != end;
+                 ++begin) {
+                if (this->handler_) {
                     this->handler_(&(*begin));
-                }   
+                }
             }
             this->tasks_.clear();
         }
