@@ -158,7 +158,7 @@ sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail) noexcept {
     return response;
 }
 
-std::uint64_t sharpen::TcpPoster::NviGetId() const noexcept {
+sharpen::ActorId sharpen::TcpPoster::NviGetId() const noexcept {
     return this->remoteEndpoint_->GetActorId();
 }
 

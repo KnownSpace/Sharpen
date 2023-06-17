@@ -62,8 +62,8 @@ namespace sharpen {
         }
 
         bool TryPush(const _T &item) noexcept {
-           _T copy{item};
-           return this->TryPush(std::move(item));
+            _T copy{item};
+            return this->TryPush(std::move(item));
         }
 
         _T Pop() noexcept {

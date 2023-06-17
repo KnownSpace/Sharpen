@@ -21,7 +21,7 @@ thread_local sharpen::FiberPtr sharpen::Fiber::currentFiber_;
 std::atomic_uint64_t sharpen::Fiber::idAllocator_{0};
 
 std::uint64_t sharpen::Fiber::AllocId() noexcept {
-    return sharpen::Fiber::idAllocator_.fetch_add(1,std::memory_order_relaxed) + 1;
+    return sharpen::Fiber::idAllocator_.fetch_add(1, std::memory_order_relaxed) + 1;
 }
 
 sharpen::Fiber::Fiber() noexcept

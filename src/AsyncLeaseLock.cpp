@@ -37,7 +37,7 @@ void sharpen::AsyncLeaseLock::LockAsync(sharpen::TimerPtr timer) {
                     std::chrono::duration_cast<std::chrono::milliseconds>(timeout - now)};
                 if (wait.count()) {
                     future.Reset();
-                    timer->WaitAsync(future,wait);
+                    timer->WaitAsync(future, wait);
                     this->waiter_ = timer.get();
                     lock.unlock();
                     bool ok{future.Await()};

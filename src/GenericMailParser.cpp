@@ -78,9 +78,9 @@ void sharpen::GenericMailPaser::NviParse(sharpen::ByteSlice slice) {
         if (this->parsedSize_ == sizeof(sharpen::GenericMailHeader) + contentSize) {
             sharpen::ByteBuffer header{sizeof(sharpen::GenericMailHeader)};
             sharpen::ByteBuffer content;
-            std::swap(header,this->header_);
-            std::swap(content,this->content_);
-            this->completedMails_.emplace_back(std::move(header),std::move(content));
+            std::swap(header, this->header_);
+            std::swap(content, this->content_);
+            this->completedMails_.emplace_back(std::move(header), std::move(content));
             slice = slice.Sub(this->parsedSize_ - copyParsed);
             this->parsedSize_ = 0;
         }

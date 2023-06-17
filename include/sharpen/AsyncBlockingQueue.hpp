@@ -50,8 +50,8 @@ namespace sharpen {
         }
 
         bool TryPush(const _T &item) noexcept {
-           _T copy{item};
-           return this->TryPush(std::move(item));
+            _T copy{item};
+            return this->TryPush(std::move(item));
         }
 
         template<typename... _Args, typename _Check = decltype(_T{std::declval<_Args>()...})>
