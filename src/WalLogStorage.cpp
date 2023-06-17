@@ -241,7 +241,8 @@ void sharpen::WalLogStorage::NviWriteBatch(std::uint64_t beginIndex, sharpen::Lo
             for (std::size_t i = 0; i != entries.GetSize(); ++i) {
                 std::uint64_t index{i + beginIndex};
                 if (this->Insert(index, entries.Get(i))) {
-                    writer.Write(writeTag_);
+                    std::uint8_t tag{writeTag_};
+                    writer.Write(tag);
                     sharpen::Varuint64 builder{index};
                     writer.Write(builder);
                     writer.Write(entries.Get(i));
