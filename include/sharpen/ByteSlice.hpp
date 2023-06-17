@@ -129,6 +129,10 @@ namespace sharpen {
             return sharpen::Crc16(this->Data(), this->GetSize());
         }
 
+        inline std::uint32_t Crc32() const noexcept {
+            return sharpen::Crc32(this->Data(),this->GetSize());
+        }
+
         inline ConstIterator Begin() const noexcept {
             return ConstIterator{this->Data()};
         }

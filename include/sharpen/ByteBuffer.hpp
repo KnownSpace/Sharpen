@@ -176,6 +176,10 @@ namespace sharpen {
             return sharpen::Crc16(this->Data(), this->GetSize());
         }
 
+        inline std::uint32_t Crc32() const noexcept {
+            return sharpen::Crc32(this->Data(),this->GetSize());
+        }
+
         inline sharpen::ByteBuffer Base64Encode() const {
             sharpen::ByteBuffer buf{sharpen::ComputeBase64EncodeSize(this->GetSize())};
             bool success =
