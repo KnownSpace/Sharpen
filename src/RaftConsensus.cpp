@@ -35,10 +35,11 @@ sharpen::RaftConsensus::RaftConsensus(
     , reachAdvancedCount_(0)
     , mailBuilder_(nullptr)
     , mailExtractor_(nullptr)
-    , quorum_(nullptr)
-    , quorumBroadcaster_(nullptr)
+    , peers_(nullptr)
+    , peersBroadcaster_(nullptr)
     , heartbeatProvider_(nullptr)
     , worker_(nullptr) {
+    // check pointers
     assert(this->statusMap_ != nullptr);
     assert(this->logs_ != nullptr);
     assert(this->logAccesser_ != nullptr);
@@ -237,7 +238,7 @@ void sharpen::RaftConsensus::EnsureConfig() const {
     if (!this->mailExtractor_) {
         throw std::logic_error{"should set mail extractor first"};
     }
-    if (!this->quorum_) {
+    if (!this->peers_) {
         throw std::logic_error{"should configurate quorum first"};
     }
 }
@@ -274,9 +275,9 @@ void sharpen::RaftConsensus::NviWaitNextConsensus(sharpen::Future<void> &future)
 }
 
 void sharpen::RaftConsensus::EnsureBroadcaster() {
-    if (!this->quorumBroadcaster_) {
-        assert(this->quorum_ != nullptr);
-        this->quorumBroadcaster_ = this->quorum_->CreateBroadcaster();
+    if (!this->peersBroadcaster_) {
+        assert(this->peers_ != nullptr);
+        this->peersBroadcaster_ = this->peers_->CreateBroadcaster();
     }
 }
 
@@ -332,7 +333,7 @@ sharpen::Mail sharpen::RaftConsensus::OnVoteRequest(const sharpen::RaftVoteForRe
     response.SetStatus(false);
     response.SetTerm(this->GetTerm());
     // if term >= current term
-    if (this->quorum_->Exist(request.ActorId()) && request.GetTerm() >= this->GetTerm()) {
+    if (this->peers_->Exist(request.ActorId()) && request.GetTerm() >= this->GetTerm()) {
         // set current term = term
         if (request.GetTerm() > this->GetTerm()) {
             std::uint64_t newTerm{request.GetTerm()};
@@ -386,7 +387,7 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(
     response.SetTerm(this->GetTerm());
     // check leader id
     std::pair<std::uint64_t, sharpen::ActorId> leaderRecord{this->leaderRecord_.GetRecord()};
-    if (this->quorum_->Exist(request.LeaderActorId()) && request.GetTerm() >= this->GetTerm() &&
+    if (this->peers_->Exist(request.LeaderActorId()) && request.GetTerm() >= this->GetTerm() &&
         (leaderRecord.first != request.GetTerm() ||
          leaderRecord.second == request.LeaderActorId())) {
         // if term > current term
@@ -479,7 +480,7 @@ sharpen::Mail sharpen::RaftConsensus::OnSnapshotRequest(
     response.SetStatus(false);
     // check leader id
     std::pair<std::uint64_t, sharpen::ActorId> leaderRecord{this->leaderRecord_.GetRecord()};
-    if (this->quorum_->Exist(request.LeaderActorId()) && request.GetTerm() >= this->GetTerm() &&
+    if (this->peers_->Exist(request.LeaderActorId()) && request.GetTerm() >= this->GetTerm() &&
         (leaderRecord.first != request.GetTerm() ||
          leaderRecord.second == request.LeaderActorId())) {
         // if term > current term
@@ -541,8 +542,8 @@ void sharpen::RaftConsensus::ComeToPower() {
     this->heartbeatProvider_->SetCommitIndex(this->commitIndex_);
     this->OnStatusChanged();
     // draining pipeline
-    if (this->quorumBroadcaster_) {
-        this->quorumBroadcaster_->Drain();
+    if (this->peersBroadcaster_) {
+        this->peersBroadcaster_->Drain();
     }
 }
 
@@ -583,7 +584,7 @@ void sharpen::RaftConsensus::OnPrevoteResponse(const sharpen::RaftPrevoteRespons
             this->prevoteRecord_.Receive(actorId);
             // if we got a quorum
             // raise election
-            if (this->prevoteRecord_.GetVotes() == this->quorum_->GetMajority()) {
+            if (this->prevoteRecord_.GetVotes() == this->peers_->GetMajority()) {
                 this->RaiseElection();
             }
         }
@@ -592,8 +593,8 @@ void sharpen::RaftConsensus::OnPrevoteResponse(const sharpen::RaftPrevoteRespons
 
 void sharpen::RaftConsensus::OnVoteResponse(const sharpen::RaftVoteForResponse &response,
                                             const sharpen::ActorId &actorId) {
-    assert(this->quorum_);
-    assert(this->quorum_->Exist(actorId));
+    assert(this->peers_);
+    assert(this->peers_->Exist(actorId));
     if (response.GetTerm() > this->GetTerm()) {
         assert(!response.GetStatus());
         this->SetTerm(response.GetTerm());
@@ -606,7 +607,7 @@ void sharpen::RaftConsensus::OnVoteResponse(const sharpen::RaftVoteForResponse &
         votes += 1;
         this->electionRecord_.SetVotes(votes);
         // check if we could be leader
-        if (votes == this->quorum_->GetMajority()) {
+        if (votes == this->peers_->GetMajority()) {
             this->ComeToPower();
         }
     }
@@ -750,7 +751,7 @@ sharpen::Mail sharpen::RaftConsensus::NviGenerateResponse(sharpen::Mail request)
 
 void sharpen::RaftConsensus::RaisePrevote() {
     assert(this->mailBuilder_ != nullptr);
-    assert(this->quorumBroadcaster_ != nullptr);
+    assert(this->peersBroadcaster_ != nullptr);
     assert(this->logs_ != nullptr);
     // load last index
     std::uint64_t lastIndex{this->GetLastIndex()};
@@ -767,12 +768,12 @@ void sharpen::RaftConsensus::RaisePrevote() {
     std::uint64_t term{this->GetTerm()};
     this->prevoteRecord_.Flush(term);
     sharpen::Mail mail{this->mailBuilder_->BuildPrevoteRequest(request)};
-    this->quorumBroadcaster_->Broadcast(std::move(mail));
+    this->peersBroadcaster_->Broadcast(std::move(mail));
 }
 
 void sharpen::RaftConsensus::RaiseElection() {
     assert(this->mailBuilder_ != nullptr);
-    assert(this->quorumBroadcaster_ != nullptr);
+    assert(this->peersBroadcaster_ != nullptr);
     assert(this->logs_ != nullptr);
     // get current term
     std::uint64_t term{this->GetTerm()};
@@ -803,7 +804,7 @@ void sharpen::RaftConsensus::RaiseElection() {
     request.SetTerm(term);
     // broadcast vote request
     sharpen::Mail mail{this->mailBuilder_->BuildVoteRequest(request)};
-    this->quorumBroadcaster_->Broadcast(std::move(mail));
+    this->peersBroadcaster_->Broadcast(std::move(mail));
 }
 
 void sharpen::RaftConsensus::DoAdvance() {
@@ -818,15 +819,15 @@ void sharpen::RaftConsensus::DoAdvance() {
                 this->heartbeatProvider_->GetSynchronizedIndex()};
             if (syncIndex.Exist()) {
                 sharpen::Mail mail{this->heartbeatProvider_->ProvideSynchronizedMail()};
-                this->quorumBroadcaster_->Broadcast(std::move(mail));
+                this->peersBroadcaster_->Broadcast(std::move(mail));
             } else {
-                this->quorumBroadcaster_->Broadcast(*this->heartbeatProvider_);
+                this->peersBroadcaster_->Broadcast(*this->heartbeatProvider_);
             }
         }
         break;
     }
     case sharpen::RaftRole::Follower: {
-        if (!this->quorum_->Empty()) {
+        if (!this->peers_->Empty()) {
             if (!this->option_.EnablePrevote()) {
                 this->RaiseElection();
             } else {
@@ -883,28 +884,37 @@ const sharpen::ILogStorage &sharpen::RaftConsensus::ImmutableLogs() const noexce
     return *this->logs_;
 }
 
-void sharpen::RaftConsensus::DoConfigurateQuorum(
+void sharpen::RaftConsensus::DoConfiguratePeers(
     std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater) {
-    std::unique_ptr<sharpen::IQuorum> quorum{std::move(this->quorum_)};
-    this->quorum_ = configurater(quorum.release());
-    assert(this->quorum_ != nullptr);
-    // release broadcaster
-    if (this->quorumBroadcaster_) {
-        this->quorumBroadcaster_.reset(nullptr);
+    std::unique_ptr<sharpen::IQuorum> quorum{std::move(this->peers_)};
+    this->peers_ = configurater(quorum.release());
+    assert(this->peers_ != nullptr);
+    // close broadcaster
+    if (this->peersBroadcaster_) {
+        this->peersBroadcaster_.reset(nullptr);
     }
     // reset heartbeat provider
     this->heartbeatProvider_->Clear();
-    std::set<sharpen::ActorId> set{this->quorum_->GenerateActorsSet()};
+    std::set<sharpen::ActorId> set{this->peers_->GenerateActorsSet()};
     for (auto begin = set.begin(), end = set.end(); begin != end; ++begin) {
         this->heartbeatProvider_->Register(*begin);
     }
 }
 
-void sharpen::RaftConsensus::NviConfigurateQuorum(
+void sharpen::RaftConsensus::NviConfiguratePeers(
     std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater) {
     sharpen::AwaitableFuture<void> future;
-    this->worker_->Invoke(future, &Self::DoConfigurateQuorum, this, std::move(configurater));
+    this->worker_->Invoke(future, &Self::DoConfiguratePeers, this, std::move(configurater));
     future.Await();
+}
+
+void sharpen::RaftConsensus::DoClosePeers() {
+    this->peersBroadcaster_->Close();
+}
+
+void sharpen::RaftConsensus::ClosePeers() {
+    assert(this->worker_ != nullptr);
+    this->worker_->Submit(&Self::DoClosePeers,this);
 }
 
 void sharpen::RaftConsensus::NviDropLogsUntil(std::uint64_t index) {

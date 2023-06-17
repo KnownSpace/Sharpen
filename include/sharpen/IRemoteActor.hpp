@@ -63,6 +63,8 @@ namespace sharpen {
 
         virtual void Cancel() noexcept = 0;
 
+        virtual void Close() noexcept = 0;
+
         inline sharpen::ActorId GetId() const noexcept {
             return this->NviGetId();
         }

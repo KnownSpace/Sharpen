@@ -27,7 +27,7 @@ namespace sharpen {
 
         virtual void NviDropLogsUntil(std::uint64_t index) = 0;
 
-        virtual void NviConfigurateQuorum(
+        virtual void NviConfiguratePeers(
             std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater) = 0;
 
     public:
@@ -94,10 +94,10 @@ namespace sharpen {
             this->NviDropLogsUntil(index);
         }
 
-        inline void ConfigurateQuorum(
+        inline void ConfiguratePeers(
             std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater) {
             if (configurater) {
-                this->NviConfigurateQuorum(std::move(configurater));
+                this->NviConfiguratePeers(std::move(configurater));
             }
         }
 
@@ -108,11 +108,13 @@ namespace sharpen {
                                                           _Fn,
                                                           sharpen::IQuorum *,
                                                           _Args...>::Value>>
-        inline void ConfigurateQuorum(_Fn &&fn, _Args &&...args) {
+        inline void ConfiguratePeers(_Fn &&fn, _Args &&...args) {
             std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> config{std::bind(
                 std::forward<_Fn>(fn), std::placeholders::_1, std::forward<_Args>(args)...)};
-            this->ConfigurateQuorum(std::move(config));
+            this->ConfiguratePeers(std::move(config));
         }
+
+        virtual void ClosePeers() = 0;
 
         virtual sharpen::Optional<sharpen::ActorId> GetWriterId() const noexcept = 0;
 

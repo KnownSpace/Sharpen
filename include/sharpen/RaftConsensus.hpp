@@ -70,13 +70,11 @@ namespace sharpen {
         std::unique_ptr<sharpen::IRaftMailBuilder> mailBuilder_;
         // mail extractor
         std::unique_ptr<sharpen::IRaftMailExtractor> mailExtractor_;
-        // quorum
-        std::unique_ptr<sharpen::IQuorum> quorum_;
-        // learner quorum
+        // quorums
+        std::unique_ptr<sharpen::IQuorum> peers_;
         // std::unique_ptr<sharpen::IQuorum> learners_;
-        // quorum broadcaster
-        std::unique_ptr<sharpen::Broadcaster> quorumBroadcaster_;
-        // learner quorum broadcaster
+        // quorum broadcasters
+        std::unique_ptr<sharpen::Broadcaster> peersBroadcaster_;
         // std::unique_ptr<sharpen::Broadcaster> learnerBroadcaster_;
 
         // quorum heartbeat provider
@@ -174,12 +172,14 @@ namespace sharpen {
 
         void DoReceive(sharpen::Mail mail, sharpen::ActorId actorId);
 
-        virtual void NviConfigurateQuorum(
+        virtual void NviConfiguratePeers(
             std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater)
             override;
 
-        void DoConfigurateQuorum(
+        void DoConfiguratePeers(
             std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater);
+
+        void DoClosePeers();
 
         sharpen::WriteLogsResult DoWrite(const sharpen::LogBatch *logs);
 
@@ -257,6 +257,8 @@ namespace sharpen {
         // }
 
         std::uint64_t GetCommitIndex() const noexcept override;
+
+        void ClosePeers() override;
     };
 }   // namespace sharpen
 

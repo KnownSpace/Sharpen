@@ -101,6 +101,8 @@ namespace sharpen {
 
         void Cancel() noexcept;
 
+        void Close() noexcept;
+
         void Drain() noexcept;
 
         const sharpen::IRemoteActor &GetActor(const sharpen::ActorId &id) const;
