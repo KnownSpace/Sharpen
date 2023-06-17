@@ -6,6 +6,7 @@
 #include "IAsyncLockable.hpp"
 #include "ITimer.hpp"
 #include "SpinLock.hpp"
+#include "IntOps.hpp"
 #include <chrono>
 #include <stdexcept>   // IWYU pragma: export
 #include <utility>
@@ -33,7 +34,7 @@ namespace sharpen {
     public:
         template<typename _Rep, typename _Period>
         explicit AsyncLeaseLock(const std::chrono::duration<_Rep, _Period> &leaseDuration)
-            : Self{leaseDuration.count()} {
+            : Self{sharpen::IntCast<std::uint32_t>(leaseDuration.count())} {
         }
 
         virtual ~AsyncLeaseLock() noexcept = default;
