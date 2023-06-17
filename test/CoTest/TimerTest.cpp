@@ -3,7 +3,7 @@
 
 #include <sharpen/AsyncOps.hpp>
 #include <sharpen/EventEngine.hpp>
-#include <sharpen/LeaseLock.hpp>
+#include <sharpen/AsyncLeaseLock.hpp>
 #include <sharpen/StopWatcher.hpp>
 #include <sharpen/TimerOps.hpp>
 
@@ -101,16 +101,16 @@ public:
     }
 
     inline virtual simpletest::TestResult Run() noexcept {
-        sharpen::LeaseLock lock{std::chrono::seconds{1}};
+        sharpen::AsyncLeaseLock lock{std::chrono::seconds{1}};
         auto first{std::chrono::steady_clock::now()};
         sharpen::AwaitableFuture<void> future;
         sharpen::Launch([&lock,&future]() {
-            std::unique_lock<sharpen::LeaseLock> _lock{lock};
+            std::unique_lock<sharpen::AsyncLeaseLock> _lock{lock};
             future.Complete();
         });
         future.Await();
         {
-            std::unique_lock<sharpen::LeaseLock> _lock{lock};
+            std::unique_lock<sharpen::AsyncLeaseLock> _lock{lock};
             auto second{std::chrono::steady_clock::now()};
             return this->Assert(std::chrono::duration_cast<std::chrono::seconds>(second - first).count() == 0,"should not use 1 sec");
         }
@@ -135,7 +135,7 @@ public:
 
     inline virtual simpletest::TestResult Run() noexcept
     {
-        sharpen::LeaseLock lock{std::chrono::seconds{1}};
+        sharpen::AsyncLeaseLock lock{std::chrono::seconds{1}};
         auto first{std::chrono::steady_clock::now()};
         sharpen::AwaitableFuture<void> future;
         sharpen::Launch([&lock,&future]() {
@@ -144,7 +144,7 @@ public:
         });
         future.Await();
         {
-            std::unique_lock<sharpen::LeaseLock> _lock{lock};
+            std::unique_lock<sharpen::AsyncLeaseLock> _lock{lock};
             auto second{std::chrono::steady_clock::now()};
             auto time{std::chrono::duration_cast<std::chrono::milliseconds>(second - first)};
             return this->Assert(time.count() >= 1,"should use 1 sec or more");

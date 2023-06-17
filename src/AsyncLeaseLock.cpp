@@ -1,10 +1,10 @@
-#include <sharpen/LeaseLock.hpp>
+#include <sharpen/AsyncLeaseLock.hpp>
 
 #include <sharpen/Fiber.hpp>
 #include <sharpen/TimerOps.hpp>
 #include <cassert>
 
-sharpen::LeaseLock::LeaseLock(std::uint32_t waitMs)
+sharpen::AsyncLeaseLock::AsyncLeaseLock(std::uint32_t waitMs)
     : leaseDuration_(std::chrono::milliseconds{waitMs})
     , lock_()
     , queueLock_()
@@ -17,7 +17,7 @@ sharpen::LeaseLock::LeaseLock(std::uint32_t waitMs)
     }
 }
 
-void sharpen::LeaseLock::LockAsync(sharpen::TimerPtr timer) {
+void sharpen::AsyncLeaseLock::LockAsync(sharpen::TimerPtr timer) {
     assert(timer != nullptr);
     std::uint64_t id{sharpen::GetCurrentFiberId()};
     sharpen::AwaitableFuture<bool> future;
@@ -53,12 +53,12 @@ void sharpen::LeaseLock::LockAsync(sharpen::TimerPtr timer) {
     }
 }
 
-void sharpen::LeaseLock::LockAsync() {
+void sharpen::AsyncLeaseLock::LockAsync() {
     sharpen::UniquedTimerRef timer{sharpen::GetUniquedTimerRef()};
     this->LockAsync(timer.Timer());
 }
 
-void sharpen::LeaseLock::Unlock() noexcept {
+void sharpen::AsyncLeaseLock::Unlock() noexcept {
     std::uint64_t id{sharpen::GetCurrentFiberId()};
     {
         std::unique_lock<sharpen::SpinLock> lock{this->lock_};

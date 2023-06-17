@@ -1,6 +1,6 @@
 #pragma once
-#ifndef _SHARPEN_ASYNCNAGLEBARRIER_HPP
-#define _SHARPEN_ASYNCNAGLEBARRIER_HPP
+#ifndef _SHARPEN_ASYNCLEASEEBARRIER_HPP
+#define _SHARPEN_ASYNCLEASEBARRIER_HPP
 
 #include "IAsyncBarrier.hpp"
 #include "ITimer.hpp"
@@ -12,12 +12,12 @@
 #include <vector>
 
 namespace sharpen {
-    class AsyncNagleBarrier
+    class AsyncLeaseBarrier
         : public sharpen::IAsyncBarrier
         , public sharpen::Noncopyable
         , public sharpen::Nonmovable {
     private:
-        using Self = sharpen::AsyncNagleBarrier;
+        using Self = sharpen::AsyncLeaseBarrier;
         using MyFuture = sharpen::AwaitableFuture<std::size_t>;
         using MyFuturePtr = MyFuture *;
         using Waiters = std::vector<MyFuturePtr>;
@@ -42,14 +42,14 @@ namespace sharpen {
 
     public:
         template<typename _Rep, typename _Period>
-        AsyncNagleBarrier(sharpen::TimerPtr timer,
+        AsyncLeaseBarrier(sharpen::TimerPtr timer,
                           const std::chrono::duration<_Rep, _Period> &timeout,
                           std::size_t count)
-            : AsyncNagleBarrier(sharpen::BarrierModel::Flush, std::move(timer), timeout, count) {
+            : AsyncLeaseBarrier(sharpen::BarrierModel::Flush, std::move(timer), timeout, count) {
         }
 
         template<typename _Rep, typename _Period>
-        AsyncNagleBarrier(sharpen::BarrierModel model,
+        AsyncLeaseBarrier(sharpen::BarrierModel model,
                           sharpen::TimerPtr timer,
                           const std::chrono::duration<_Rep, _Period> &timeout,
                           std::size_t count)
@@ -65,7 +65,7 @@ namespace sharpen {
             assert(this->count_);
         }
 
-        virtual ~AsyncNagleBarrier() noexcept = default;
+        virtual ~AsyncLeaseBarrier() noexcept = default;
 
         inline const Self &Const() const noexcept {
             return *this;

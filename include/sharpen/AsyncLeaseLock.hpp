@@ -1,6 +1,6 @@
 #pragma once
-#ifndef _SHARPEN_LEASELOCK_HPP
-#define _SHARPEN_LEASELOCK_HPP
+#ifndef _SHARPEN_ASYNCLEASELOCK_HPP
+#define _SHARPEN_ASYNCLEASELOCK_HPP
 
 #include "SpinLock.hpp"
 #include "IAsyncLockable.hpp"
@@ -12,9 +12,9 @@
 
 namespace sharpen {
     // this lock should not be used in thread sync
-    class LeaseLock:public sharpen::IAsyncLockable {
+    class AsyncLeaseLock:public sharpen::IAsyncLockable {
     private:
-        using Self = sharpen::LeaseLock;
+        using Self = sharpen::AsyncLeaseLock;
         using TimePoint = std::chrono::time_point<std::chrono::steady_clock>;
 
         std::chrono::milliseconds leaseDuration_;
@@ -24,14 +24,14 @@ namespace sharpen {
         TimePoint grantTime_;
         sharpen::ITimer *waiter_;
 
-        explicit LeaseLock(std::uint32_t waitMs);
+        explicit AsyncLeaseLock(std::uint32_t waitMs);
     public:
         template<typename _Rep,typename _Period>
-        explicit LeaseLock(const std::chrono::duration<_Rep,_Period> &leaseDuration) 
+        explicit AsyncLeaseLock(const std::chrono::duration<_Rep,_Period> &leaseDuration) 
             : Self{leaseDuration.count()}{
         }
 
-        virtual ~LeaseLock() noexcept = default;
+        virtual ~AsyncLeaseLock() noexcept = default;
 
         inline const Self &Const() const noexcept {
             return *this;
