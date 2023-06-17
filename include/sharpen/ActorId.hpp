@@ -5,6 +5,7 @@
 #include "CommonId.hpp"
 
 namespace sharpen {
+#pragma pack(push, 1)
     class ActorId : public sharpen::CommonId {
     private:
         using Self = sharpen::ActorId;
@@ -50,6 +51,7 @@ namespace sharpen {
             return this->CompareWith(other) <= 0;
         }
     };
+#pragma pack(pop)
 }   // namespace sharpen
 
 namespace std {
