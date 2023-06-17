@@ -3,6 +3,7 @@
 #define _SHARPEN_IRAFTLOGACCESSER_HPP
 
 #include "ByteBuffer.hpp"
+#include "Optional.hpp"
 
 namespace sharpen {
     class IRaftLogAccesser {
@@ -11,8 +12,6 @@ namespace sharpen {
 
     protected:
         virtual std::uint64_t NviGetTerm(sharpen::ByteSlice logEntry) const noexcept = 0;
-
-        virtual void NviSetTerm(sharpen::ByteBuffer &logEntry, std::uint64_t term) const = 0;
 
         virtual bool NviIsRaftEntry(sharpen::ByteSlice logEntry) const noexcept = 0;
 
@@ -70,11 +69,6 @@ namespace sharpen {
                 return this->GetTerm(logEntry);
             }
             return sharpen::EmptyOpt;
-        }
-
-        inline void SetTerm(sharpen::ByteBuffer &logEntry, std::uint64_t term) const {
-            assert(this->IsRaftEntry(logEntry));
-            this->NviSetTerm(logEntry, term);
         }
 
         inline sharpen::ByteBuffer CreateEntry(sharpen::ByteSlice bytes, std::uint64_t term) const {
