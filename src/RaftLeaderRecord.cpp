@@ -1,10 +1,11 @@
 #include <sharpen/RaftLeaderRecord.hpp>
 
 #include <mutex>
+#include <sharpen/ConsensusWriter.hpp>
 
 sharpen::RaftLeaderRecord::RaftLeaderRecord() noexcept
     : lock_()
-    , term_(0)
+    , term_(sharpen::ConsensusWriter::noneEpoch)
     , leaderId_() {
 }
 
@@ -15,10 +16,10 @@ sharpen::RaftLeaderRecord::RaftLeaderRecord(std::uint64_t term,
     , leaderId_(leaderId) {
 }
 
-sharpen::ConsensusWriterId sharpen::RaftLeaderRecord::GetRecord() const noexcept {
+sharpen::ConsensusWriter sharpen::RaftLeaderRecord::GetRecord() const noexcept {
     {
         std::unique_lock<sharpen::SpinLock> lock{this->lock_};
-        sharpen::ConsensusWriterId record;
+        sharpen::ConsensusWriter record;
         record.SetEpoch(this->term_);
         record.WriterId() = this->leaderId_;
         return record;

@@ -3,7 +3,7 @@
 #define _SHARPEN_RAFTLEADERRECORD_HPP
 
 #include "ActorId.hpp"
-#include "ConsensusWriterId.hpp"
+#include "ConsensusWriter.hpp"
 #include "Noncopyable.hpp"
 #include "Nonmovable.hpp"
 #include "SpinLock.hpp"
@@ -35,7 +35,7 @@ namespace sharpen {
             return *this;
         }
 
-        sharpen::ConsensusWriterId GetRecord() const noexcept;
+        sharpen::ConsensusWriter GetRecord() const noexcept;
 
         void Flush(std::uint64_t term, const sharpen::ActorId &leaderId) noexcept;
     };

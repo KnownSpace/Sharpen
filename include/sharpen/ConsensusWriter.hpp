@@ -6,9 +6,9 @@
 #include <cstdint>
 
 namespace sharpen {
-    class ConsensusWriterId {
+    class ConsensusWriter {
     private:
-        using Self = sharpen::ConsensusWriterId;
+        using Self = sharpen::ConsensusWriter;
 
         sharpen::ActorId id_;
         std::uint64_t epoch_;
@@ -16,11 +16,11 @@ namespace sharpen {
     public:
         static constexpr std::uint64_t noneEpoch{0};
 
-        ConsensusWriterId() noexcept = default;
+        ConsensusWriter() noexcept = default;
 
-        ConsensusWriterId(const Self &other) noexcept = default;
+        ConsensusWriter(const Self &other) noexcept = default;
 
-        ConsensusWriterId(Self &&other) noexcept = default;
+        ConsensusWriter(Self &&other) noexcept = default;
 
         inline Self &operator=(const Self &other) noexcept {
             if (this != std::addressof(other)) {
@@ -32,7 +32,7 @@ namespace sharpen {
 
         Self &operator=(Self &&other) noexcept = default;
 
-        ~ConsensusWriterId() noexcept = default;
+        ~ConsensusWriter() noexcept = default;
 
         inline const Self &Const() const noexcept {
             return *this;

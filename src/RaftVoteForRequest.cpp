@@ -1,10 +1,11 @@
 #include <sharpen/RaftVoteForRequest.hpp>
 
 #include <sharpen/Varint.hpp>
+#include <sharpen/ConsensusWriter.hpp>
 
 sharpen::RaftVoteForRequest::RaftVoteForRequest() noexcept
     : actorId_()
-    , term_(0)
+    , term_(sharpen::ConsensusWriter::noneEpoch)
     , lastIndex_(0)
     , lastTerm_(0) {
 }
@@ -24,7 +25,7 @@ sharpen::RaftVoteForRequest::RaftVoteForRequest(Self &&other) noexcept
     , term_(other.term_)
     , lastIndex_(other.lastIndex_)
     , lastTerm_(other.lastTerm_) {
-    other.term_ = 0;
+    other.term_ = sharpen::ConsensusWriter::noneEpoch;
     other.lastIndex_ = 0;
     other.lastTerm_ = 0;
 }
@@ -35,7 +36,7 @@ sharpen::RaftVoteForRequest &sharpen::RaftVoteForRequest::operator=(Self &&other
         this->term_ = other.term_;
         this->lastIndex_ = other.lastIndex_;
         this->lastTerm_ = other.lastTerm_;
-        other.term_ = 0;
+        other.term_ = sharpen::ConsensusWriter::noneEpoch;
         other.lastIndex_ = 0;
         other.lastTerm_ = 0;
     }

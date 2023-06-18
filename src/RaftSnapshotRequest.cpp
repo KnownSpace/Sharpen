@@ -1,7 +1,9 @@
 #include <sharpen/RaftSnapshotRequest.hpp>
 
+#include <sharpen/ConsensusWriter.hpp>
+
 sharpen::RaftSnapshotRequest::RaftSnapshotRequest() noexcept
-    : term_(0)
+    : term_(sharpen::ConsensusWriter::noneEpoch)
     , leaderActorId_()
     , offset_(0)
     , last_(false)
@@ -16,7 +18,7 @@ sharpen::RaftSnapshotRequest::RaftSnapshotRequest(Self &&other) noexcept
     , last_(other.last_)
     , metadata_(std::move(other.metadata_))
     , data_(std::move(other.data_)) {
-    other.term_ = 0;
+    other.term_ = sharpen::ConsensusWriter::noneEpoch;
     other.offset_ = 0;
     other.last_ = false;
 }
@@ -29,7 +31,7 @@ sharpen::RaftSnapshotRequest &sharpen::RaftSnapshotRequest::operator=(Self &&oth
         this->last_ = other.last_;
         this->metadata_ = std::move(other.metadata_);
         this->data_ = std::move(other.data_);
-        other.term_ = 0;
+        other.term_ = sharpen::ConsensusWriter::noneEpoch;
         other.offset_ = 0;
         other.last_ = false;
     }

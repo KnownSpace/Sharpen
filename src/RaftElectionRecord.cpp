@@ -1,7 +1,9 @@
 #include <sharpen/RaftElectionRecord.hpp>
 
+#include <sharpen/ConsensusWriter.hpp>
+
 sharpen::RaftElectionRecord::RaftElectionRecord() noexcept
-    : term_(0)
+    : term_(sharpen::ConsensusWriter::noneEpoch)
     , votes_(0) {
 }
 
@@ -13,7 +15,7 @@ sharpen::RaftElectionRecord::RaftElectionRecord(std::uint64_t term, std::uint64_
 sharpen::RaftElectionRecord::RaftElectionRecord(Self &&other) noexcept
     : term_(other.term_)
     , votes_(other.votes_) {
-    other.term_ = 0;
+    other.term_ = sharpen::ConsensusWriter::noneEpoch;
     other.votes_ = 0;
 }
 
@@ -21,7 +23,7 @@ sharpen::RaftElectionRecord &sharpen::RaftElectionRecord::operator=(Self &&other
     if (this != std::addressof(other)) {
         this->term_ = other.term_;
         this->votes_ = other.votes_;
-        other.term_ = 0;
+        other.term_ = sharpen::ConsensusWriter::noneEpoch;
         other.votes_ = 0;
     }
     return *this;

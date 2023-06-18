@@ -3,9 +3,10 @@
 #include <sharpen/BufferReader.hpp>
 #include <sharpen/BufferWriter.hpp>
 #include <sharpen/Varint.hpp>
+#include <sharpen/ConsensusWriter.hpp>
 
 sharpen::RaftHeartbeatRequest::RaftHeartbeatRequest() noexcept
-    : term_(0)
+    : term_(sharpen::ConsensusWriter::noneEpoch)
     , leaderActorId_(sharpen::ActorId{})
     , preLogIndex_(0)
     , preLogTerm_(0)
@@ -20,7 +21,7 @@ sharpen::RaftHeartbeatRequest::RaftHeartbeatRequest(Self &&other) noexcept
     , preLogTerm_(other.preLogTerm_)
     , entries_(std::move(other.entries_))
     , leaderCommitIndex_(other.leaderCommitIndex_) {
-    other.term_ = 0;
+    other.term_ = sharpen::ConsensusWriter::noneEpoch;
     other.preLogIndex_ = 0;
     other.preLogTerm_ = 0;
     other.leaderCommitIndex_ = 0;
@@ -34,7 +35,7 @@ sharpen::RaftHeartbeatRequest &sharpen::RaftHeartbeatRequest::operator=(Self &&o
         this->preLogTerm_ = other.preLogTerm_;
         this->entries_ = std::move(other.entries_);
         this->leaderCommitIndex_ = other.leaderCommitIndex_;
-        other.term_ = 0;
+        other.term_ = sharpen::ConsensusWriter::noneEpoch;
         other.preLogIndex_ = 0;
         other.preLogTerm_ = 0;
         other.leaderCommitIndex_ = 0;

@@ -1,10 +1,11 @@
 #include <sharpen/RaftVoteForResponse.hpp>
 
 #include <sharpen/Varint.hpp>
+#include <sharpen/ConsensusWriter.hpp>
 
 sharpen::RaftVoteForResponse::RaftVoteForResponse() noexcept
     : status_(false)
-    , term_(0) {
+    , term_(sharpen::ConsensusWriter::noneEpoch) {
 }
 
 sharpen::RaftVoteForResponse::RaftVoteForResponse(bool status, std::uint64_t term) noexcept
@@ -16,7 +17,7 @@ sharpen::RaftVoteForResponse::RaftVoteForResponse(Self &&other) noexcept
     : status_(other.status_)
     , term_(other.term_) {
     other.status_ = false;
-    other.term_ = 0;
+    other.term_ = sharpen::ConsensusWriter::noneEpoch;
 }
 
 sharpen::RaftVoteForResponse &sharpen::RaftVoteForResponse::operator=(Self &&other) noexcept {
@@ -24,7 +25,7 @@ sharpen::RaftVoteForResponse &sharpen::RaftVoteForResponse::operator=(Self &&oth
         this->status_ = other.status_;
         this->term_ = other.term_;
         other.status_ = false;
-        other.term_ = 0;
+        other.term_ = sharpen::ConsensusWriter::noneEpoch;
     }
     return *this;
 }

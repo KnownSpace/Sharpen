@@ -1,6 +1,7 @@
 #include <sharpen/RaftHeartbeatMailProvider.hpp>
 
 #include <sharpen/IntOps.hpp>
+#include <sharpen/ConsensusWriter.hpp>
 
 sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(
     const sharpen::ActorId &id,
@@ -25,7 +26,7 @@ sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(
     , snapshotProvider_(snapshotProvider)
     , batchSize_(batchSize)
     , states_()
-    , term_(0)
+    , term_(sharpen::ConsensusWriter::noneEpoch)
     , commitIndex_(0) {
     assert(this->batchSize_ >= 1);
 }
@@ -43,7 +44,7 @@ sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(Self &&other) noex
     other.logs_ = nullptr;
     other.snapshotProvider_ = nullptr;
     other.batchSize_ = 0;
-    other.term_ = 0;
+    other.term_ = sharpen::ConsensusWriter::noneEpoch;
     other.commitIndex_ = 0;
 }
 
@@ -62,7 +63,7 @@ sharpen::RaftHeartbeatMailProvider &sharpen::RaftHeartbeatMailProvider::operator
         other.logs_ = nullptr;
         other.snapshotProvider_ = nullptr;
         other.batchSize_ = 0;
-        other.term_ = 0;
+        other.term_ = sharpen::ConsensusWriter::noneEpoch;
         other.commitIndex_ = 0;
     }
     return *this;

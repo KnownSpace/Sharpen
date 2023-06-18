@@ -243,7 +243,7 @@ namespace sharpen {
         //     return *this->quorum_;
         // }
 
-        virtual sharpen::ConsensusWriterId GetWriterId() const noexcept override;
+        virtual sharpen::ConsensusWriter GetWriterId() const noexcept override;
 
         // void ConfigurateLearners(std::function<void(sharpen::IQuorum&)> configurater);
 

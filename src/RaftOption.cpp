@@ -30,7 +30,11 @@ sharpen::RaftOption &sharpen::RaftOption::operator=(Self &&other) noexcept {
 }
 
 void sharpen::RaftOption::SetBatchSize(std::uint32_t batchSize) noexcept {
-    batchSize = (std::max)(Self::minBatchSize_, batchSize);
-    batchSize = (std::min)(Self::maxBatchSize_, batchSize);
+    if (batchSize > Self::maxBatchSize_) {
+        batchSize = Self::maxBatchSize_;
+    }
+    if (batchSize < Self::minBatchSize_) {
+        batchSize = Self::minBatchSize_;
+    }
     this->batchSize_ = batchSize;
 }

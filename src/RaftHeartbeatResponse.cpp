@@ -1,10 +1,11 @@
 #include <sharpen/RaftHeartbeatResponse.hpp>
 
 #include <sharpen/Varint.hpp>
+#include <sharpen/ConsensusWriter.hpp>
 
 sharpen::RaftHeartbeatResponse::RaftHeartbeatResponse(bool status) noexcept
     : status_(static_cast<std::uint8_t>(status))
-    , term_(0)
+    , term_(sharpen::ConsensusWriter::noneEpoch)
     , matchIndex_(0) {
 }
 
@@ -13,7 +14,7 @@ sharpen::RaftHeartbeatResponse::RaftHeartbeatResponse(Self &&other) noexcept
     , term_(other.term_)
     , matchIndex_(other.matchIndex_) {
     other.status_ = 0;
-    other.term_ = 0;
+    other.term_ = sharpen::ConsensusWriter::noneEpoch;
     other.matchIndex_ = 0;
 }
 
@@ -23,7 +24,7 @@ sharpen::RaftHeartbeatResponse &sharpen::RaftHeartbeatResponse::operator=(Self &
         this->term_ = other.term_;
         this->matchIndex_ = other.matchIndex_;
         other.status_ = 0;
-        other.term_ = 0;
+        other.term_ = sharpen::ConsensusWriter::noneEpoch;
         other.matchIndex_ = 0;
     }
     return *this;

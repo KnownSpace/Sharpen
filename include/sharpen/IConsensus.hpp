@@ -8,7 +8,7 @@
 #include "IQuorum.hpp"
 #include "LogBatch.hpp"
 #include "WriteLogsResult.hpp"
-#include "ConsensusWriterId.hpp"
+#include "ConsensusWriter.hpp"
 #include <memory>
 
 namespace sharpen {
@@ -117,7 +117,7 @@ namespace sharpen {
 
         virtual void ClosePeers() = 0;
 
-        virtual sharpen::ConsensusWriterId GetWriterId() const noexcept = 0;
+        virtual sharpen::ConsensusWriter GetWriterId() const noexcept = 0;
 
         virtual std::uint64_t GetEpoch() const noexcept = 0;
 

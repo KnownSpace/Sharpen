@@ -2,8 +2,10 @@
 
 #include <sharpen/ByteOrder.hpp>
 
+#include <sharpen/ConsensusWriter.hpp>
+
 sharpen::RaftLogHeader::RaftLogHeader() noexcept
-    : Self{0, 0, 0} {
+    : Self{0, 0, sharpen::ConsensusWriter::noneEpoch} {
 }
 
 sharpen::RaftLogHeader::RaftLogHeader(std::uint32_t magic,
@@ -11,7 +13,7 @@ sharpen::RaftLogHeader::RaftLogHeader(std::uint32_t magic,
                                       std::uint64_t term) noexcept
     : magic_(0)
     , checksum_(0)
-    , term_(0) {
+    , term_(sharpen::ConsensusWriter::noneEpoch) {
     this->SetMagic(magic);
     this->SetChecksum(checksum);
     this->SetTerm(term);
@@ -23,7 +25,7 @@ sharpen::RaftLogHeader::RaftLogHeader(Self &&other) noexcept
     , term_(other.term_)  {
     other.magic_ = 0;
     other.checksum_ = 0;
-    other.term_ = 0;
+    other.term_ = sharpen::ConsensusWriter::noneEpoch;
 }
 
 sharpen::RaftLogHeader &sharpen::RaftLogHeader::operator=(Self &&other) noexcept {
@@ -31,6 +33,9 @@ sharpen::RaftLogHeader &sharpen::RaftLogHeader::operator=(Self &&other) noexcept
         this->magic_ = other.magic_;
         this->checksum_ = other.checksum_;
         this->term_ = other.term_;
+        other.magic_ = 0;
+        other.checksum_ = 0;
+        other.term_ = sharpen::ConsensusWriter::noneEpoch;
     }
     return *this;
 }
