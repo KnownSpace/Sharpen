@@ -619,6 +619,7 @@ void sharpen::RaftConsensus::OnVoteResponse(const sharpen::RaftVoteForResponse &
 void sharpen::RaftConsensus::OnHeartbeatResponse(const sharpen::RaftHeartbeatResponse &response,
                                                  const sharpen::ActorId &actorId) {
     assert(this->heartbeatProvider_ != nullptr);
+    assert(!this->heartbeatProvider_->Empty());
     // if term > current term
     // leader abdicate
     if (response.GetTerm() > this->GetTerm()) {
@@ -818,9 +819,7 @@ void sharpen::RaftConsensus::DoAdvance() {
     this->EnsureBroadcaster();
     switch (this->role_.load()) {
     case sharpen::RaftRole::Leader: {
-        if (this->heartbeatProvider_->GetSize() != this->peers_->GetSize()) {
-            this->DoConfigHeartbeatProvider();
-        }
+        this->DoSyncHeartbeatProvider();
         if (!this->heartbeatProvider_->Empty()) {
             this->heartbeatProvider_->PrepareTerm(this->GetTerm());
             sharpen::Optional<std::uint64_t> syncIndex{
@@ -871,17 +870,19 @@ void sharpen::RaftConsensus::DoAdvance() {
 void sharpen::RaftConsensus::Advance() {
     this->EnsureConfig();
     // set mail provider
-    sharpen::RaftHeartbeatMailProvider *provider{
-        new (std::nothrow) sharpen::RaftHeartbeatMailProvider{this->id_,
-                                                              *this->mailBuilder_,
-                                                              *this->logs_,
-                                                              *this->logAccesser_,
-                                                              this->snapshotController_.get(),
-                                                              this->option_.GetBatchSize()}};
-    if (!provider) {
-        throw std::bad_alloc{};
+    if (!this->heartbeatProvider_) {
+        sharpen::RaftHeartbeatMailProvider *provider{
+            new (std::nothrow) sharpen::RaftHeartbeatMailProvider{this->id_,
+                                                                  *this->mailBuilder_,
+                                                                  *this->logs_,
+                                                                  *this->logAccesser_,
+                                                                  this->snapshotController_.get(),
+                                                                  this->option_.GetBatchSize()}};
+        if (!provider) {
+            throw std::bad_alloc{};
+        }
+        this->heartbeatProvider_.reset(provider);
     }
-    this->heartbeatProvider_.reset(provider);
     this->worker_->Submit(&Self::DoAdvance, this);
 }
 
@@ -889,8 +890,9 @@ const sharpen::ILogStorage &sharpen::RaftConsensus::ImmutableLogs() const noexce
     return *this->logs_;
 }
 
-void sharpen::RaftConsensus::DoConfigHeartbeatProvider() {
-    if (this->heartbeatProvider_) {
+void sharpen::RaftConsensus::DoSyncHeartbeatProvider() {
+    if (this->heartbeatProvider_ &&
+        this->heartbeatProvider_->GetSize() != this->peers_->GetSize()) {
         this->heartbeatProvider_->Clear();
         std::set<sharpen::ActorId> set{this->peers_->GenerateActorsSet()};
         for (auto begin = set.begin(), end = set.end(); begin != end; ++begin) {
@@ -908,6 +910,7 @@ void sharpen::RaftConsensus::DoConfiguratePeers(
     if (this->peersBroadcaster_) {
         this->peersBroadcaster_.reset(nullptr);
     }
+    this->DoSyncHeartbeatProvider();
 }
 
 void sharpen::RaftConsensus::NviConfiguratePeers(
