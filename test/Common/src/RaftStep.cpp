@@ -23,7 +23,7 @@ sharpen::HostPipelineResult RaftStep::Consume(sharpen::INetStreamChannel &channe
     sharpen::ByteBuffer buf{4096};
     std::size_t size{channel.ReadAsync(buf)};
     auto id{remote.GetActorId()};
-    while (size != 0) {
+    while (size != 0 && active) {
         parser->Parse(buf.GetSlice(0, size));
         while (parser->Completed()) {
             sharpen::SyncPrintf("Receive Mail from %s:%u\n", remoteIp, remote.GetPort());

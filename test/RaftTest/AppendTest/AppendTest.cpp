@@ -432,7 +432,7 @@ public:
             primary->Advance();
             faultRaft->WaitNextConsensus();
             writable = primary->Writable();
-            sharpen::SyncPrintf("Recovery to %zu\n", faultRaft->ImmutableLogs().GetLastIndex());
+            sharpen::SyncPrintf("Recovery to %zu/%zu\n", faultRaft->ImmutableLogs().GetLastIndex(),primary->ImmutableLogs().GetLastIndex());
         }
         // close all hosts
         for (auto begin = rafts.begin(), end = rafts.end(); begin != end; ++begin) {
@@ -447,6 +447,7 @@ public:
             auto future{begin->get()};
             future->WaitAsync();
         }
+        sharpen::SyncPuts("Stop4");
         // remove files
         for (std::uint16_t i = beginPort; i != endPort + 1; ++i) {
             RemoveLogStorage(i);
@@ -610,16 +611,16 @@ public:
     }
 };
 
-class RecovertPipelineAppendTest:public simpletest::ITypenamedTest<RecovertPipelineAppendTest>
+class RecoveryPipelineAppendTest:public simpletest::ITypenamedTest<RecoveryPipelineAppendTest>
 {
 private:
-    using Self = RecovertPipelineAppendTest;
+    using Self = RecoveryPipelineAppendTest;
 
 public:
 
-    RecovertPipelineAppendTest() noexcept = default;
+    RecoveryPipelineAppendTest() noexcept = default;
 
-    ~RecovertPipelineAppendTest() noexcept = default;
+    ~RecoveryPipelineAppendTest() noexcept = default;
 
     inline const Self &Const() const noexcept
     {
@@ -680,7 +681,7 @@ public:
             primary->Advance();
             faultRaft->WaitNextConsensus();
             writable = primary->Writable();
-            sharpen::SyncPrintf("Recovery to %zu\n", faultRaft->ImmutableLogs().GetLastIndex());
+            sharpen::SyncPrintf("Recovery to %zu/%zu\n", faultRaft->ImmutableLogs().GetLastIndex(),primary->ImmutableLogs().GetLastIndex());
         }
         // close all hosts
         for (auto begin = rafts.begin(), end = rafts.end(); begin != end; ++begin) {
@@ -713,8 +714,8 @@ int Entry() {
     runner.Register<FaultAppendTest>();
     runner.Register<RecoveryAppendTest>();
     runner.Register<PipelineAppendTest>();
-    runner.Register<FaultAppendTest>();
-    runner.Register<RecoveryAppendTest>();
+    runner.Register<FaultPipelineAppendTest>();
+    runner.Register<RecoveryPipelineAppendTest>();
     int code{runner.Run()};
     sharpen::CleanupNetSupport();
     return code;
