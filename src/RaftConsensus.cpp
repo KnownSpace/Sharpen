@@ -301,7 +301,7 @@ void sharpen::RaftConsensus::NviWaitNextConsensus(sharpen::Future<void> &future)
 void sharpen::RaftConsensus::EnsureBroadcaster() {
     if (!this->peersBroadcaster_) {
         assert(this->peers_ != nullptr);
-        this->peersBroadcaster_ = this->peers_->CreateBroadcaster();
+        this->peersBroadcaster_ = this->peers_->CreateBroadcaster(this->option_.GetPipelineLength());
     }
 }
 
@@ -860,7 +860,7 @@ void sharpen::RaftConsensus::DoAdvance() {
             } else {
                 this->RaisePrevote();
             }
-        } else {
+        } else if(this->option_.EnableSingle()) {
             // get current term
             std::uint64_t term{this->GetTerm()};
             term += 1;

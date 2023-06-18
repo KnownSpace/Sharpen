@@ -15,9 +15,15 @@ namespace sharpen {
 
         static constexpr std::uint32_t minBatchSize_{1};
 
+        static constexpr std::uint32_t maxPipelineLength_{32};
+
+        static constexpr std::uint32_t minPipelineLength_{1};
+
         bool isLearner_;
         bool enablePrevote_;
         std::uint32_t batchSize_;
+        std::uint32_t pipelineLength_;
+        bool enableSingle_; 
 
     public:
         RaftOption() noexcept;
@@ -63,6 +69,20 @@ namespace sharpen {
         }
 
         void SetBatchSize(std::uint32_t batchSize) noexcept;
+
+        inline std::uint32_t GetPipelineLength() noexcept {
+            return this->pipelineLength_;
+        }
+        
+        void SetPipelineLength(std::uint32_t pipeline) noexcept;
+
+        inline bool EnableSingle() const noexcept {
+            return this->enableSingle_;
+        }
+
+        inline void SetSingle(bool single) noexcept {
+            this->enableSingle_ = single;
+        }
     };
 }   // namespace sharpen
 

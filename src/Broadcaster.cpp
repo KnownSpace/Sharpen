@@ -25,7 +25,7 @@ sharpen::Broadcaster::Broadcaster(std::unique_ptr<sharpen::IRemoteActor> *actor,
 
 void sharpen::Broadcaster::Cancel() noexcept {
     for (auto begin = this->actors_.begin(), end = this->actors_.end(); begin != end; ++begin) {
-        std::unique_ptr<sharpen::IRemoteActor> &actor{begin->second};
+        sharpen::IRemoteActor *actor{begin->second.get()};
         if (actor->GetPipelineCount() == this->pipelineLength_) {
             actor->Cancel();
         }
@@ -60,11 +60,11 @@ sharpen::Mail *sharpen::Broadcaster::GetNextSharedMail() noexcept {
 void sharpen::Broadcaster::Broadcast(sharpen::Mail mail) {
     {
         assert(this->pipelineLength_ != 0);
-        assert(this->lock_);
+        assert(this->lock_ != nullptr);
         std::unique_lock<Lock> lock{*this->lock_};
         this->Cancel();
         sharpen::Mail *sharedMail{this->GetNextSharedMail()};
-        assert(sharedMail);
+        assert(sharedMail != nullptr);
         *sharedMail = std::move(mail);
         for (auto begin = this->actors_.begin(), end = this->actors_.end(); begin != end; ++begin) {
             std::unique_ptr<sharpen::IRemoteActor> &actor{begin->second};
