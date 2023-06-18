@@ -38,6 +38,8 @@ static constexpr std::size_t appendTestCount{60};
 
 static constexpr std::size_t batchSize{20};
 
+static constexpr std::size_t pipelineLength{2};
+
 static std::shared_ptr<sharpen::IConsensus> CreateRaft(std::uint16_t port) {
     sharpen::RaftOption raftOpt;
     raftOpt.SetBatchSize(batchSize);
@@ -54,6 +56,7 @@ static std::shared_ptr<sharpen::IConsensus> CreatePipelineRaft(std::uint16_t por
     raftOpt.SetBatchSize(batchSize);
     raftOpt.SetLearner(false);
     raftOpt.SetPrevote(false);
+    raftOpt.SetPipelineLength(pipelineLength);
     auto raft{CreateRaft(port, magicNumber, nullptr, raftOpt,true)};
     raft->ConfiguratePeers(
         &ConfigPeers, port, beginPort, endPort, &raft->GetReceiver(), magicNumber);
