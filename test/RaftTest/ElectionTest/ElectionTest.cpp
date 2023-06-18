@@ -43,7 +43,18 @@ static std::shared_ptr<sharpen::IConsensus> CreateRaft(std::uint16_t port) {
     raftOpt.SetBatchSize(16);
     raftOpt.SetLearner(false);
     raftOpt.SetPrevote(false);
-    auto raft{CreateRaft(port, magicNumber, nullptr, raftOpt)};
+    auto raft{CreateRaft(port, magicNumber, nullptr, raftOpt, false)};
+    raft->ConfiguratePeers(
+        &ConfigPeers, port, beginPort, endPort, &raft->GetReceiver(), magicNumber);
+    return raft;
+}
+
+static std::shared_ptr<sharpen::IConsensus> CreatePrevoteRaft(std::uint16_t port) {
+    sharpen::RaftOption raftOpt;
+    raftOpt.SetBatchSize(16);
+    raftOpt.SetLearner(false);
+    raftOpt.SetPrevote(true);
+    auto raft{CreateRaft(port, magicNumber, nullptr, raftOpt, false)};
     raft->ConfiguratePeers(
         &ConfigPeers, port, beginPort, endPort, &raft->GetReceiver(), magicNumber);
     return raft;
@@ -257,12 +268,202 @@ public:
     }
 };
 
+class PrevoteElectionTest:public simpletest::ITypenamedTest<PrevoteElectionTest>
+{
+private:
+    using Self = PrevoteElectionTest;
+
+public:
+
+    PrevoteElectionTest() noexcept = default;
+
+    ~PrevoteElectionTest() noexcept = default;
+
+    inline const Self &Const() const noexcept
+    {
+        return *this;
+    }
+
+    inline virtual simpletest::TestResult Run() noexcept
+    {
+        std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
+        rafts.reserve(3);
+        std::vector<std::unique_ptr<sharpen::IHost>> hosts;
+        hosts.reserve(3);
+        std::vector<sharpen::AwaitableFuturePtr<void>> process;
+        process.reserve(3);
+        for (std::uint16_t i = beginPort; i != endPort + 1; ++i) {
+            auto raft{CreatePrevoteRaft(i)};
+            rafts.emplace_back(raft);
+            auto host{CreateHost(i, raft)};
+            hosts.emplace_back(std::move(host));
+        }
+        for (auto begin = hosts.begin(), end = hosts.end(); begin != end; ++begin) {
+            sharpen::IHost *host{begin->get()};
+            auto future{sharpen::Async([host]() { host->Run(); })};
+            process.emplace_back(std::move(future));
+        }
+        auto primary{rafts[0].get()};
+        primary->Advance();
+        primary->WaitNextConsensus();
+        bool writable{primary->Writable()};
+        // close all hosts
+        for (auto begin = rafts.begin(), end = rafts.end(); begin != end; ++begin) {
+            auto raft{begin->get()};
+            raft->ClosePeers();
+        }
+        for (auto begin = hosts.begin(), end = hosts.end(); begin != end; ++begin) {
+            auto host{begin->get()};
+            host->Stop();
+        }
+        for (auto begin = process.begin(), end = process.end(); begin != end; ++begin) {
+            auto future{begin->get()};
+            future->WaitAsync();
+        }
+        // remove files
+        for (std::uint16_t i = beginPort; i != endPort + 1; ++i) {
+            RemoveLogStorage(i);
+            RemoveStatusMap(i);
+        }
+        return this->Assert(writable, "should be writable");
+    }
+};
+
+class FaultPrevoteTest:public simpletest::ITypenamedTest<FaultPrevoteTest>
+{
+private:
+    using Self = FaultPrevoteTest;
+
+public:
+
+    FaultPrevoteTest() noexcept = default;
+
+    ~FaultPrevoteTest() noexcept = default;
+
+    inline const Self &Const() const noexcept
+    {
+        return *this;
+    }
+
+    inline virtual simpletest::TestResult Run() noexcept
+    {
+        std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
+        rafts.reserve(2);
+        std::vector<std::unique_ptr<sharpen::IHost>> hosts;
+        hosts.reserve(2);
+        std::vector<sharpen::AwaitableFuturePtr<void>> process;
+        process.reserve(2);
+        for (std::uint16_t i = beginPort; i != endPort; ++i) {
+            auto raft{CreatePrevoteRaft(i)};
+            rafts.emplace_back(raft);
+            auto host{CreateHost(i, raft)};
+            hosts.emplace_back(std::move(host));
+        }
+        for (auto begin = hosts.begin(), end = hosts.end(); begin != end; ++begin) {
+            sharpen::IHost *host{begin->get()};
+            auto future{sharpen::Async([host]() { host->Run(); })};
+            process.emplace_back(std::move(future));
+        }
+        auto primary{rafts[0].get()};
+        primary->Advance();
+        primary->WaitNextConsensus();
+        bool writable{primary->Writable()};
+        // close all hosts
+        for (auto begin = rafts.begin(), end = rafts.end(); begin != end; ++begin) {
+            auto raft{begin->get()};
+            raft->ClosePeers();
+        }
+        for (auto begin = hosts.begin(), end = hosts.end(); begin != end; ++begin) {
+            auto host{begin->get()};
+            host->Stop();
+        }
+        for (auto begin = process.begin(), end = process.end(); begin != end; ++begin) {
+            auto future{begin->get()};
+            future->WaitAsync();
+        }
+        // remove files
+        for (std::uint16_t i = beginPort; i != endPort; ++i) {
+            RemoveLogStorage(i);
+            RemoveStatusMap(i);
+        }
+        return this->Assert(writable, "should be writable");
+    }
+};
+
+class FailedPrevoteTest:public simpletest::ITypenamedTest<FailedPrevoteTest>
+{
+private:
+    using Self = FailedPrevoteTest;
+
+public:
+
+    FailedPrevoteTest() noexcept = default;
+
+    ~FailedPrevoteTest() noexcept = default;
+
+    inline const Self &Const() const noexcept
+    {
+        return *this;
+    }
+
+    inline virtual simpletest::TestResult Run() noexcept
+    {
+        std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
+        rafts.reserve(3);
+        std::vector<std::unique_ptr<sharpen::IHost>> hosts;
+        hosts.reserve(3);
+        std::vector<sharpen::AwaitableFuturePtr<void>> process;
+        process.reserve(3);
+        for (std::uint16_t i = beginPort; i != endPort + 1; ++i) {
+            auto raft{CreatePrevoteRaft(i)};
+            rafts.emplace_back(raft);
+            sharpen::LogBatch logs;
+            logs.Append(sharpen::ByteBuffer{"log",3});
+            if (i != beginPort) {
+                raft->Write(logs);
+            }
+            auto host{CreateHost(i, raft)};
+            hosts.emplace_back(std::move(host));
+        }
+        for (auto begin = hosts.begin(), end = hosts.end(); begin != end; ++begin) {
+            sharpen::IHost *host{begin->get()};
+            auto future{sharpen::Async([host]() { host->Run(); })};
+            process.emplace_back(std::move(future));
+        }
+        auto primary{rafts[0].get()};
+        primary->Advance();
+        sharpen::Future<void> future;
+        primary->WaitNextConsensus(future);
+        // close all hosts
+        for (auto begin = rafts.begin(), end = rafts.end(); begin != end; ++begin) {
+            auto raft{begin->get()};
+            raft->ClosePeers();
+        }
+        for (auto begin = hosts.begin(), end = hosts.end(); begin != end; ++begin) {
+            auto host{begin->get()};
+            host->Stop();
+        }
+        for (auto begin = process.begin(), end = process.end(); begin != end; ++begin) {
+            auto future{begin->get()};
+            future->WaitAsync();
+        }
+        // remove files
+        for (std::uint16_t i = beginPort; i != endPort + 1; ++i) {
+            RemoveLogStorage(i);
+            RemoveStatusMap(i);
+        }
+        return this->Assert(future.IsPending(), "should be pending");
+    }
+};
+
 int Entry() {
     sharpen::StartupNetSupport();
     simpletest::TestRunner runner{simpletest::DisplayMode::Blocked};
     runner.Register<BasicElectionTest>();
     runner.Register<FaultElectionTest>();
     runner.Register<SplitBrainTest>();
+    runner.Register<PrevoteElectionTest>();
+    runner.Register<FaultPrevoteTest>();
     int code{runner.Run()};
     sharpen::CleanupNetSupport();
     return code;
