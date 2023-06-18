@@ -441,7 +441,8 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(
             if (request.GetPreLogIndex() != sharpen::ILogStorage::noneIndex) {
                 termOpt = this->LookupTerm(request.GetPreLogIndex());
             } else {
-                termOpt.Construct(sharpen::ConsensusWriter::noneEpoch);
+                std::uint64_t tmp{sharpen::ConsensusWriter::noneEpoch};
+                termOpt.Construct(tmp);
             }
             // if we find the log
             // check term of log
