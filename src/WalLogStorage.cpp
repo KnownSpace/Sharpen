@@ -250,7 +250,7 @@ void sharpen::WalLogStorage::NviWriteBatch(std::uint64_t beginIndex, sharpen::Lo
             }
             size = writer.GetLength();
             if (size) {
-                std::size_t sz{this->channel_->WriteAsync(buf, this->offset_)};
+                std::size_t sz{this->channel_->WriteAsync(buf.Data(),size, this->offset_)};
                 assert(sz == size);
                 if (sz != size) {
                     this->channel_->Truncate(this->offset_);
