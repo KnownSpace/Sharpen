@@ -8,6 +8,10 @@
 #include <cassert>
 #include <utility>
 
+#ifndef _NDEBUG
+#include <sharpen/DebugTools.hpp>
+#endif
+
 sharpen::RaftConsensus::RaftConsensus(
     const sharpen::ActorId &id,
     std::unique_ptr<sharpen::IStatusMap> statusMap,
@@ -25,7 +29,6 @@ sharpen::RaftConsensus::RaftConsensus(
     , option_(option)
     , term_(sharpen::ConsensusWriter::noneEpoch)
     , vote_(sharpen::ConsensusWriter::noneEpoch, sharpen::ActorId{})
-    , commitIndex_(sharpen::ILogStorage::noneIndex)
     , role_(sharpen::RaftRole::Follower)
     , electionRecord_(sharpen::ConsensusWriter::noneEpoch, 0)
     , prevoteRecord_()
@@ -51,7 +54,6 @@ sharpen::RaftConsensus::RaftConsensus(
     this->worker_.reset(worker);
     // load status cache
     this->LoadTerm();
-    this->LoadCommitIndex();
     this->LoadVoteFor();
     // set learner if need
     if (this->option_.IsLearner()) {
@@ -141,18 +143,19 @@ const sharpen::IRaftSnapshotProvider &sharpen::RaftConsensus::GetSnapshotProvide
 }
 
 void sharpen::RaftConsensus::LoadCommitIndex() {
+    std::uint64_t commitIndex{sharpen::ILogStorage::noneIndex};
     sharpen::Optional<std::uint64_t> lastAppiled{this->LoadUint64(lastAppiledKey)};
     if (lastAppiled.Exist()) {
-        this->commitIndex_ = lastAppiled.Get();
+        commitIndex = lastAppiled.Get();
     }
     if (this->snapshotController_) {
         sharpen::Optional<sharpen::RaftSnapshotMetadata> metadataOpt{
             this->GetSnapshotInstaller().GetLastMetadata()};
         if (metadataOpt.Exist()) {
-            this->commitIndex_ =
-                (std::max)(metadataOpt.Get().GetLastIndex(), this->commitIndex_.load());
+            commitIndex = (std::max)(metadataOpt.Get().GetLastIndex(), commitIndex);
         }
     }
+    this->SetCommitIndex(commitIndex);
 }
 
 void sharpen::RaftConsensus::SetUint64(sharpen::ByteSlice key, std::uint64_t value) {
@@ -175,11 +178,13 @@ void sharpen::RaftConsensus::SetTerm(std::uint64_t term) {
 }
 
 std::uint64_t sharpen::RaftConsensus::GetCommitIndex() const noexcept {
-    if (this->role_ != sharpen::RaftRole::Leader) {
-        return this->commitIndex_;
-    }
     assert(this->heartbeatProvider_ != nullptr);
     return this->heartbeatProvider_->GetCommitIndex();
+}
+
+void sharpen::RaftConsensus::SetCommitIndex(std::uint64_t index) noexcept {
+    assert(this->heartbeatProvider_ != nullptr);
+    return this->heartbeatProvider_->SetCommitIndex(index);
 }
 
 sharpen::RaftVoteRecord sharpen::RaftConsensus::GetVote() const noexcept {
@@ -241,6 +246,24 @@ void sharpen::RaftConsensus::EnsureConfig() const {
     }
     if (!this->peers_) {
         throw std::logic_error{"should configurate quorum first"};
+    }
+}
+
+void sharpen::RaftConsensus::EnsureHearbeatProvider() {
+    if (!this->heartbeatProvider_) {
+        sharpen::RaftHeartbeatMailProvider *provider{
+            new (std::nothrow) sharpen::RaftHeartbeatMailProvider{this->id_,
+                                                                  *this->mailBuilder_,
+                                                                  *this->logs_,
+                                                                  *this->logAccesser_,
+                                                                  this->snapshotController_.get(),
+                                                                  this->option_.GetBatchSize()}};
+        if (!provider) {
+            throw std::bad_alloc{};
+        }
+        this->heartbeatProvider_.reset(provider);
+        // set commit index
+        this->LoadCommitIndex();
     }
 }
 
@@ -399,7 +422,6 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(
             response.SetTerm(newTerm);
             this->Abdicate();
         }
-
         bool validatedEntries{true};
         // check request entires
         for (std::size_t i = 0; i != request.Entries().GetSize(); ++i) {
@@ -412,15 +434,14 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(
         std::uint64_t commitIndex{this->GetCommitIndex()};
         // last index must >= pre index, so we could check logs
         // commit index must <= pre index, so we make sure this request is validated
-        if (validatedEntries && request.GetTerm() == this->GetTerm() &&
-            lastIndex >= request.GetPreLogIndex() && request.GetPreLogIndex() >= commitIndex &&
-            this->role_ != sharpen::RaftRole::Leader) {
+        if (validatedEntries && lastIndex >= request.GetPreLogIndex() &&
+            request.GetPreLogIndex() >= commitIndex && this->role_ != sharpen::RaftRole::Leader) {
             // check pre index & pre term
             sharpen::Optional<std::uint64_t> termOpt{sharpen::EmptyOpt};
             if (request.GetPreLogIndex() != sharpen::ILogStorage::noneIndex) {
                 termOpt = this->LookupTerm(request.GetPreLogIndex());
             } else {
-                termOpt.Construct(static_cast<std::uint64_t>(sharpen::ConsensusWriter::noneEpoch));
+                termOpt.Construct(sharpen::ConsensusWriter::noneEpoch);
             }
             // if we find the log
             // check term of log
@@ -457,11 +478,11 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(
                     this->leaderRecord_.Flush(request.GetTerm(), request.LeaderActorId());
                 }
                 // set commit index
-                this->commitIndex_ = request.GetCommitIndex();
+                this->SetCommitIndex(request.GetCommitIndex());
             }
-            // always advance state machine
-            this->OnStatusChanged();
         }
+        // always advance state machine
+        this->OnStatusChanged();
         if (!response.GetStatus()) {
             // if we failure in some way
             // set match index to current commit index
@@ -506,7 +527,7 @@ sharpen::Mail sharpen::RaftConsensus::OnSnapshotRequest(
                 // install snapshot(could be asynchronous)
                 this->GetSnapshotInstaller().Install(request.Metadata());
                 // set commit index to last index of snapshot
-                this->commitIndex_ = request.Metadata().GetLastIndex();
+                this->SetCommitIndex(request.Metadata().GetLastIndex());
             }
             response.SetStatus(true);
             // flush leader id if we need
@@ -538,8 +559,6 @@ void sharpen::RaftConsensus::NotifyWaiter(sharpen::Future<void> *waiter) noexcep
 void sharpen::RaftConsensus::ComeToPower() {
     this->role_ = sharpen::RaftRole::Leader;
     assert(this->heartbeatProvider_ != nullptr);
-    // set commit index
-    this->heartbeatProvider_->SetCommitIndex(this->commitIndex_);
     this->OnStatusChanged();
     // draining pipeline
     if (this->peersBroadcaster_) {
@@ -552,7 +571,6 @@ void sharpen::RaftConsensus::Abdicate() {
         sharpen::RaftRole role{sharpen::RaftRole::Follower};
         role = this->role_.exchange(role);
         if (role == sharpen::RaftRole::Leader) {
-            this->commitIndex_ = this->heartbeatProvider_->GetCommitIndex();
             this->OnStatusChanged();
         }
     }
@@ -627,7 +645,7 @@ void sharpen::RaftConsensus::OnHeartbeatResponse(const sharpen::RaftHeartbeatRes
         this->SetTerm(response.GetTerm());
         this->Abdicate();
     }
-    if (response.GetStatus()) {
+    if (response.GetStatus() && response.GetTerm() == this->GetTerm()) {
         // load current commit index
         std::uint64_t commitIndex{this->GetCommitIndex()};
         // foward replicated state and recompute commit index
@@ -661,6 +679,7 @@ void sharpen::RaftConsensus::OnSnapshotResponse(const sharpen::RaftSnapshotRespo
 
 sharpen::Mail sharpen::RaftConsensus::DoGenerateResponse(sharpen::Mail request) {
     assert(this->mailExtractor_ != nullptr);
+    this->EnsureHearbeatProvider();
     sharpen::Mail response;
     sharpen::RaftMailType type{this->mailExtractor_->GetMailType(request)};
     switch (type) {
@@ -817,6 +836,7 @@ void sharpen::RaftConsensus::DoAdvance() {
     assert(this->mailBuilder_ != nullptr);
     // ensure broadcaster
     this->EnsureBroadcaster();
+    this->EnsureHearbeatProvider();
     switch (this->role_.load()) {
     case sharpen::RaftRole::Leader: {
         this->DoSyncHeartbeatProvider();
@@ -869,20 +889,6 @@ void sharpen::RaftConsensus::DoAdvance() {
 
 void sharpen::RaftConsensus::Advance() {
     this->EnsureConfig();
-    // set mail provider
-    if (!this->heartbeatProvider_) {
-        sharpen::RaftHeartbeatMailProvider *provider{
-            new (std::nothrow) sharpen::RaftHeartbeatMailProvider{this->id_,
-                                                                  *this->mailBuilder_,
-                                                                  *this->logs_,
-                                                                  *this->logAccesser_,
-                                                                  this->snapshotController_.get(),
-                                                                  this->option_.GetBatchSize()}};
-        if (!provider) {
-            throw std::bad_alloc{};
-        }
-        this->heartbeatProvider_.reset(provider);
-    }
     this->worker_->Submit(&Self::DoAdvance, this);
 }
 

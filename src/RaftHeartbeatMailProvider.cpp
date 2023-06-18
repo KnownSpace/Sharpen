@@ -241,10 +241,8 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(const sharpen::ActorId
     if (state->LookupSnapshot()) {
         return this->ProvideSnapshotRequest(state);
     }
-    // get next index & match index
+    // get next index
     std::uint64_t nextIndex{state->GetNextIndex()};
-    std::uint64_t matchIndex{state->GetMatchIndex()};
-    assert(matchIndex <= nextIndex);
     // get last index of current logs
     std::uint64_t lastIndex{this->logs_->GetLastIndex()};
     // compute pre index
@@ -299,7 +297,7 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(const sharpen::ActorId
             nextIndex += 1;
         }
         // forward state
-        state->Forward(size - 1);
+        state->Forward(size);
     }
     return this->builder_->BuildHeartbeatRequest(request);
 }

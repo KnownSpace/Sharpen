@@ -50,7 +50,7 @@ namespace sharpen {
         // cache
         std::atomic_uint64_t term_;
         sharpen::RaftVoteRecord vote_;
-        std::atomic_uint64_t commitIndex_;
+        // std::atomic_uint64_t commitIndex_;
         // role
         std::atomic<sharpen::RaftRole> role_;
         // election record
@@ -124,6 +124,8 @@ namespace sharpen {
 
         void EnsureConfig() const;
 
+        void EnsureHearbeatProvider();
+
         void OnStatusChanged();
 
         void RaiseElection();
@@ -133,6 +135,8 @@ namespace sharpen {
         void ComeToPower();
 
         void Abdicate();
+
+        void SetCommitIndex(std::uint64_t commitIndex) noexcept;
 
         // vote
         sharpen::Mail OnVoteRequest(const sharpen::RaftVoteForRequest &request);
@@ -258,7 +262,7 @@ namespace sharpen {
         //     this->ConfigurateLearners(config);
         // }
 
-        std::uint64_t GetCommitIndex() const noexcept override;
+        virtual std::uint64_t GetCommitIndex() const noexcept override;
 
         void ClosePeers() override;
 
