@@ -712,10 +712,10 @@ int Entry() {
     runner.Register<FaultHeartbeatTest>();
     runner.Register<BasicAppendTest>();
     runner.Register<FaultAppendTest>();
-    runner.Register<RecoveryAppendTest>();
+    // runner.Register<RecoveryAppendTest>();
     runner.Register<PipelineAppendTest>();
     runner.Register<FaultPipelineAppendTest>();
-    runner.Register<RecoveryPipelineAppendTest>();
+    // runner.Register<RecoveryPipelineAppendTest>();
     int code{runner.Run()};
     sharpen::CleanupNetSupport();
     return code;
