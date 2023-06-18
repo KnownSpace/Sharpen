@@ -633,7 +633,7 @@ void sharpen::RaftConsensus::OnHeartbeatResponse(const sharpen::RaftHeartbeatRes
         this->heartbeatProvider_->ForwardState(actorId, response.GetMatchIndex());
         // if the commit index forward
         // notify waiter
-        if (commitIndex != this->GetCommitIndex() || commitIndex == sharpen::ILogStorage::noneIndex) {
+        if (commitIndex != this->GetCommitIndex()) {
             this->OnStatusChanged();
         }
     } else {
@@ -818,6 +818,9 @@ void sharpen::RaftConsensus::DoAdvance() {
     this->EnsureBroadcaster();
     switch (this->role_.load()) {
     case sharpen::RaftRole::Leader: {
+        if (this->heartbeatProvider_->GetSize() != this->peers_->GetSize()) {
+            this->DoConfigHeartbeatProvider();
+        }
         if (!this->heartbeatProvider_->Empty()) {
             this->heartbeatProvider_->PrepareTerm(this->GetTerm());
             sharpen::Optional<std::uint64_t> syncIndex{
@@ -886,6 +889,16 @@ const sharpen::ILogStorage &sharpen::RaftConsensus::ImmutableLogs() const noexce
     return *this->logs_;
 }
 
+void sharpen::RaftConsensus::DoConfigHeartbeatProvider() {
+    if (this->heartbeatProvider_) {
+        this->heartbeatProvider_->Clear();
+        std::set<sharpen::ActorId> set{this->peers_->GenerateActorsSet()};
+        for (auto begin = set.begin(), end = set.end(); begin != end; ++begin) {
+            this->heartbeatProvider_->Register(*begin);
+        }
+    }
+}
+
 void sharpen::RaftConsensus::DoConfiguratePeers(
     std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater) {
     std::unique_ptr<sharpen::IQuorum> quorum{std::move(this->peers_)};
@@ -894,14 +907,6 @@ void sharpen::RaftConsensus::DoConfiguratePeers(
     // close broadcaster
     if (this->peersBroadcaster_) {
         this->peersBroadcaster_.reset(nullptr);
-    }
-    // reset heartbeat provider
-    if (this->heartbeatProvider_) {
-        this->heartbeatProvider_->Clear();
-        std::set<sharpen::ActorId> set{this->peers_->GenerateActorsSet()};
-        for (auto begin = set.begin(), end = set.end(); begin != end; ++begin) {
-            this->heartbeatProvider_->Register(*begin);
-        }
     }
 }
 

@@ -248,7 +248,7 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(const sharpen::ActorId
     std::uint64_t lastIndex{this->logs_->GetLastIndex()};
     // compute pre index
     std::uint64_t preIndex{nextIndex};
-    if (preIndex) {
+    if (preIndex != sharpen::ILogStorage::noneIndex) {
         preIndex -= 1;
     }
     assert(nextIndex <= lastIndex);
@@ -265,7 +265,7 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(const sharpen::ActorId
     request.SetTerm(this->term_);
     request.SetPreLogIndex(preIndex);
     sharpen::Optional<std::uint64_t> term{this->LookupTerm(preIndex)};
-    if (!term.Exist()) {
+    if (!term.Exist() && preIndex != sharpen::ILogStorage::noneIndex) {
         assert(this->snapshotProvider_ != nullptr);
         if (!this->snapshotProvider_) {
             return sharpen::Mail{};

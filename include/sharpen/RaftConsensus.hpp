@@ -176,6 +176,8 @@ namespace sharpen {
             std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater)
             override;
 
+        void DoConfigHeartbeatProvider();
+
         void DoConfiguratePeers(
             std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater);
 
