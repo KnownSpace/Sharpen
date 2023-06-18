@@ -379,7 +379,7 @@ void sharpen::PosixNetStreamChannel::CompleteSendFileCallback(sharpen::EventLoop
     if (size == -1) {
         sharpen::ErrorCode code{sharpen::GetLastError()};
         if (code == sharpen::ErrorCancel || code == sharpen::ErrorConnectionAborted ||
-            code == sharpen::ErrorConnectionReset || || code == sharpen::ErrorNotSocket) {
+            code == sharpen::ErrorConnectionReset || code == sharpen::ErrorNotSocket) {
             loop->RunInLoopSoon(std::bind(&sharpen::Future<std::size_t>::CompleteForBind,
                                           future,
                                           static_cast<std::size_t>(0)));
