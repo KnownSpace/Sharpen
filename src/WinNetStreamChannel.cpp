@@ -75,7 +75,7 @@ void sharpen::WinNetStreamChannel::RequestWrite(const char *buf,
         if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS) {
             delete olStruct;
             if (err == sharpen::ErrorCancel || err == sharpen::ErrorConnectionAborted ||
-                err == sharpen::ErrorConnectionReset) {
+                err == sharpen::ErrorConnectionReset || err == sharpen::ErrorNotSocket) {
                 future->Complete(static_cast<std::size_t>(0));
                 return;
             }
@@ -128,7 +128,7 @@ void sharpen::WinNetStreamChannel::RequestRead(char *buf,
         if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS) {
             delete olStruct;
             if (err == sharpen::ErrorCancel || err == sharpen::ErrorConnectionAborted ||
-                err == sharpen::ErrorConnectionReset) {
+                err == sharpen::ErrorConnectionReset || err == sharpen::ErrorNotSocket) {
                 future->Complete(static_cast<std::size_t>(0));
                 return;
             }
@@ -198,7 +198,7 @@ void sharpen::WinNetStreamChannel::RequestSendFile(sharpen::FileChannelPtr file,
         if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS) {
             delete olStruct;
             if (err == sharpen::ErrorCancel || err == sharpen::ErrorConnectionAborted ||
-                err == sharpen::ErrorConnectionReset) {
+                err == sharpen::ErrorConnectionReset || err == sharpen::ErrorNotSocket) {
                 future->Complete(static_cast<std::size_t>(0));
                 return;
             }

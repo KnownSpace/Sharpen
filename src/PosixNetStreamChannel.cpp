@@ -49,8 +49,7 @@ void sharpen::PosixNetStreamChannel::SafeClose(sharpen::FileHandle handle) noexc
 }
 
 bool sharpen::PosixNetStreamChannel::IsAcceptBlock(sharpen::ErrorCode err) noexcept {
-    return err == sharpen::ErrorBlocking || err == EINTR || err == EPROTO ||
-           err == sharpen::ErrorConnectionAborted;
+    return err == sharpen::ErrorBlocking;
 }
 
 sharpen::FileHandle sharpen::PosixNetStreamChannel::DoAccept() {
@@ -346,7 +345,7 @@ void sharpen::PosixNetStreamChannel::CompleteIoCallback(sharpen::EventLoop *loop
     if (size == -1) {
         sharpen::ErrorCode code{sharpen::GetLastError()};
         if (code == sharpen::ErrorCancel || code == sharpen::ErrorConnectionAborted ||
-            code == sharpen::ErrorConnectionReset) {
+            code == sharpen::ErrorConnectionReset || code == sharpen::ErrorNotSocket) {
             loop->RunInLoopSoon(std::bind(&sharpen::Future<std::size_t>::CompleteForBind,
                                           future,
                                           static_cast<std::size_t>(0)));
@@ -380,7 +379,7 @@ void sharpen::PosixNetStreamChannel::CompleteSendFileCallback(sharpen::EventLoop
     if (size == -1) {
         sharpen::ErrorCode code{sharpen::GetLastError()};
         if (code == sharpen::ErrorCancel || code == sharpen::ErrorConnectionAborted ||
-            code == sharpen::ErrorConnectionReset) {
+            code == sharpen::ErrorConnectionReset || || code == sharpen::ErrorNotSocket) {
             loop->RunInLoopSoon(std::bind(&sharpen::Future<std::size_t>::CompleteForBind,
                                           future,
                                           static_cast<std::size_t>(0)));
