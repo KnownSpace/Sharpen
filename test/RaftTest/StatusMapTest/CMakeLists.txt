@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.15.0)
 
 file(GLOB_RECURSE raft_status_map_src "${RAFT_TEST_DIR}/StatusMapTest" "*.h" "*.hpp" "*.cpp" "*.cc")
 
