@@ -7,3 +7,5 @@ add_subdirectory("${RAFT_TEST_DIR}/StatusMapTest")
 add_subdirectory("${RAFT_TEST_DIR}/LogTest")
 
 add_subdirectory("${RAFT_TEST_DIR}/ElectionTest")
+
+add_subdirectory("${RAFT_TEST_DIR}/AppendTest")

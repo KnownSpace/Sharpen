@@ -33,6 +33,11 @@ sharpen::HostPipelineResult RaftStep::Consume(sharpen::INetStreamChannel &channe
             if (!mail.Content().Empty()) {
                 channel.WriteAsync(mail.Content());
             }
+            sharpen::SyncPrintf("Reply to %s:%u Header %zu Content %zu\n",
+                                remoteIp,
+                                remote.GetPort(),
+                                mail.Header().GetSize(),
+                                mail.Content().GetSize());
         }
         size = channel.ReadAsync(buf);
     }

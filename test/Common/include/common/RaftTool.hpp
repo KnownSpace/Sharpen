@@ -43,6 +43,7 @@ extern std::shared_ptr<sharpen::IConsensus> CreateRaft(
     std::uint16_t port,
     std::uint32_t magic,
     std::unique_ptr<sharpen::IRaftSnapshotController> snapshotCtrl,
-    sharpen::RaftOption option);
+    sharpen::RaftOption option,
+    bool pipeline);
 
 #endif
