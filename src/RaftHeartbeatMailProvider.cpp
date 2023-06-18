@@ -1,7 +1,8 @@
 #include <sharpen/RaftHeartbeatMailProvider.hpp>
 
-#include <sharpen/IntOps.hpp>
 #include <sharpen/ConsensusWriter.hpp>
+#include <sharpen/IntOps.hpp>
+
 
 sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(
     const sharpen::ActorId &id,
@@ -251,12 +252,11 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(const sharpen::ActorId
     if (preIndex != sharpen::ILogStorage::noneIndex) {
         preIndex -= 1;
     }
-    assert(nextIndex <= lastIndex);
     // compute logs size
-    std::uint64_t size{lastIndex - nextIndex};
+    std::uint64_t size{lastIndex - preIndex};
     // limit logs <= batchSize
     size = (std::min)(static_cast<std::uint64_t>(this->batchSize_), size);
-    lastIndex = nextIndex + size;
+    lastIndex = preIndex + size;
     sharpen::RaftHeartbeatRequest request;
     // get commit index
     std::uint64_t commitIndex{(std::min)(this->GetCommitIndex(), lastIndex)};
@@ -264,6 +264,7 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(const sharpen::ActorId
     request.LeaderActorId() = this->id_;
     request.SetTerm(this->term_);
     request.SetPreLogIndex(preIndex);
+    request.SetPreLogTerm(sharpen::ConsensusWriter::noneEpoch);
     sharpen::Optional<std::uint64_t> term{this->LookupTerm(preIndex)};
     if (!term.Exist() && preIndex != sharpen::ILogStorage::noneIndex) {
         assert(this->snapshotProvider_ != nullptr);
@@ -274,9 +275,15 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(const sharpen::ActorId
         state->SetSnapshot(std::move(snapshot));
         return this->ProvideSnapshotRequest(state);
     }
+    if (term.Exist()) {
+        request.SetPreLogTerm(term.Get());
+    }
     if (size) {
         // append log entires to request
         request.Entries().Reserve(sharpen::IntCast<std::size_t>(size));
+        if (nextIndex == sharpen::ILogStorage::noneIndex) {
+            nextIndex += 1;
+        }
         while (nextIndex <= lastIndex) {
             sharpen::Optional<sharpen::ByteBuffer> log{this->logs_->Lookup(nextIndex)};
             if (!log.Exist()) {
@@ -292,7 +299,7 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(const sharpen::ActorId
             nextIndex += 1;
         }
         // forward state
-        state->Forward(size);
+        state->Forward(size - 1);
     }
     return this->builder_->BuildHeartbeatRequest(request);
 }

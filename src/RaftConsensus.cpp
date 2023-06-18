@@ -417,8 +417,8 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(
             this->role_ != sharpen::RaftRole::Leader) {
             // check pre index & pre term
             sharpen::Optional<std::uint64_t> termOpt{sharpen::EmptyOpt};
-            if (request.GetPreLogIndex()) {
-                this->LookupTerm(request.GetPreLogIndex());
+            if (request.GetPreLogIndex() != sharpen::ILogStorage::noneIndex) {
+                termOpt = this->LookupTerm(request.GetPreLogIndex());
             } else {
                 termOpt.Construct(static_cast<std::uint64_t>(sharpen::ConsensusWriter::noneEpoch));
             }
@@ -436,7 +436,7 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(
                 std::size_t offset{0};
                 if (check) {
                     for (std::size_t i = 0; i != request.Entries().GetSize(); ++i) {
-                        std::uint64_t index{request.Entries().GetSize() + 1 + i};
+                        std::uint64_t index{request.GetPreLogIndex() + 1 + i};
                         std::uint64_t entryTerm{
                             this->logAccesser_->GetTerm(request.Entries().Get(i))};
                         if (!this->CheckEntry(index, entryTerm)) {
@@ -957,7 +957,7 @@ sharpen::WriteLogsResult sharpen::RaftConsensus::DoWrite(const sharpen::LogBatch
     assert(term != sharpen::ConsensusWriter::noneEpoch);
     for (std::size_t i = 0; i != logs->GetSize(); ++i) {
         sharpen::ByteBuffer entry{this->logAccesser_->CreateEntry(logs->Get(i), term)};
-        this->logs_->Write(lastIndex + i, entry);
+        this->logs_->Write(beginIndex + i, entry);
     }
     lastIndex += logs->GetSize();
     return sharpen::WriteLogsResult{beginIndex, lastIndex};

@@ -25,7 +25,7 @@ sharpen::RaftLogAccesser &sharpen::RaftLogAccesser::operator=(Self &&other) noex
 std::uint64_t sharpen::RaftLogAccesser::NviGetTerm(sharpen::ByteSlice logEntry) const noexcept {
     const sharpen::RaftLogHeader *header{
         reinterpret_cast<const sharpen::RaftLogHeader *>(logEntry.Data())};
-    return header->GetMagic();
+    return header->GetTerm();
 }
 
 
