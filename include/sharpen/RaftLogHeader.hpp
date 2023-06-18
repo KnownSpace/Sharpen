@@ -2,7 +2,9 @@
 #ifndef _SHARPEN_RAFTLOGHEADER_HPP
 #define _SHARPEN_RAFTLOGHEADER_HPP
 
+#include <cstdint>
 #include <utility>
+
 
 namespace sharpen {
 #pragma pack(push, 1)

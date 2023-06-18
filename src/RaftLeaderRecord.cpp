@@ -15,10 +15,13 @@ sharpen::RaftLeaderRecord::RaftLeaderRecord(std::uint64_t term,
     , leaderId_(leaderId) {
 }
 
-std::pair<std::uint64_t, sharpen::ActorId> sharpen::RaftLeaderRecord::GetRecord() const noexcept {
+sharpen::ConsensusWriterId sharpen::RaftLeaderRecord::GetRecord() const noexcept {
     {
         std::unique_lock<sharpen::SpinLock> lock{this->lock_};
-        return {this->term_, this->leaderId_};
+        sharpen::ConsensusWriterId record;
+        record.SetEpoch(this->term_);
+        record.WriterId() = this->leaderId_;
+        return record;
     }
 }
 

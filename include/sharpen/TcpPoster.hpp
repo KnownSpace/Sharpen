@@ -35,6 +35,8 @@ namespace sharpen {
 
         virtual void NviOpen(std::unique_ptr<sharpen::IMailParser> parser) override;
 
+        void AbortConn(sharpen::INetStreamChannel *conn) noexcept;
+
         sharpen::Mail DoReceive(sharpen::NetStreamChannelPtr channel) noexcept;
 
         void Receive(sharpen::NetStreamChannelPtr channel,

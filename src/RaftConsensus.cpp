@@ -115,9 +115,7 @@ void sharpen::RaftConsensus::LoadVoteFor() {
                 std::terminate();
             }
             (void)error;
-        } catch (const std::exception &ignore) {
-            (void)ignore;
-        }
+        } catch (const std::exception &ignore) { (void)ignore; }
     }
 }
 
@@ -199,7 +197,7 @@ void sharpen::RaftConsensus::SetVote(sharpen::RaftVoteRecord vote) {
 }
 
 std::uint64_t sharpen::RaftConsensus::GetLastIndex() const {
-    std::uint64_t snapshotIndex{0};
+    std::uint64_t snapshotIndex{sharpen::ILogStorage::noneIndex};
     if (this->snapshotController_) {
         sharpen::Optional<sharpen::RaftSnapshotMetadata> metadataOpt{
             this->GetSnapshotInstaller().GetLastMetadata()};
@@ -212,6 +210,9 @@ std::uint64_t sharpen::RaftConsensus::GetLastIndex() const {
 }
 
 sharpen::Optional<std::uint64_t> sharpen::RaftConsensus::LookupTerm(std::uint64_t index) const {
+    if (index == sharpen::ILogStorage::noneIndex) {
+        return sharpen::EmptyOpt;
+    }
     if (this->snapshotController_) {
         sharpen::Optional<sharpen::RaftSnapshotMetadata> metadataOpt{
             this->GetSnapshotInstaller().GetLastMetadata()};
@@ -283,7 +284,7 @@ void sharpen::RaftConsensus::EnsureBroadcaster() {
 
 sharpen::Optional<std::uint64_t> sharpen::RaftConsensus::LookupTermOfEntry(
     std::uint64_t index) const noexcept {
-    assert(index != 0);
+    assert(index != sharpen::ILogStorage::noneIndex);
     assert(this->logs_ != nullptr);
     assert(this->logAccesser_ != nullptr);
     sharpen::Optional<sharpen::ByteBuffer> entryOpt{this->logs_->Lookup(index)};
@@ -296,7 +297,7 @@ sharpen::Optional<std::uint64_t> sharpen::RaftConsensus::LookupTermOfEntry(
 bool sharpen::RaftConsensus::CheckEntry(std::uint64_t index,
                                         std::uint64_t expectedTerm) const noexcept {
     assert(this->logs_ != nullptr);
-    assert(index != 0);
+    assert(index != sharpen::ILogStorage::noneIndex);
     sharpen::Optional<std::uint64_t> termOpt{this->LookupTermOfEntry(index)};
     if (termOpt.Exist()) {
         std::uint64_t term{termOpt.Get()};
@@ -314,7 +315,8 @@ sharpen::Mail sharpen::RaftConsensus::OnPrevoteRequest(const sharpen::RaftPrevot
     std::uint64_t lastIndex{this->GetLastIndex()};
     std::uint64_t lastTerm{0};
     sharpen::Optional<std::uint64_t> lastTermOpt{this->LookupTerm(lastIndex)};
-    assert((lastTermOpt.Exist() && lastIndex != 0) || (!lastTermOpt.Exist() && lastIndex == 0));
+    assert((lastTermOpt.Exist() && lastIndex != sharpen::ILogStorage::noneIndex) ||
+           (!lastTermOpt.Exist() && lastIndex == sharpen::ILogStorage::noneIndex));
     if (lastTermOpt.Exist()) {
         lastTerm = lastTermOpt.Get();
     }
@@ -355,8 +357,8 @@ sharpen::Mail sharpen::RaftConsensus::OnVoteRequest(const sharpen::RaftVoteForRe
             std::uint64_t lastIndex{this->GetLastIndex()};
             std::uint64_t lastTerm{0};
             sharpen::Optional<std::uint64_t> lastTermOpt{this->LookupTerm(lastIndex)};
-            assert((lastTermOpt.Exist() && lastIndex != 0) ||
-                   (!lastTermOpt.Exist() && lastIndex == 0));
+            assert((lastTermOpt.Exist() && lastIndex != sharpen::ILogStorage::noneIndex) ||
+                   (!lastTermOpt.Exist() && lastIndex == sharpen::ILogStorage::noneIndex));
             if (lastTermOpt.Exist()) {
                 lastTerm = lastTermOpt.Get();
             }
@@ -386,10 +388,10 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(
     response.SetStatus(false);
     response.SetTerm(this->GetTerm());
     // check leader id
-    std::pair<std::uint64_t, sharpen::ActorId> leaderRecord{this->leaderRecord_.GetRecord()};
+    sharpen::ConsensusWriterId leaderRecord{this->leaderRecord_.GetRecord()};
     if (this->peers_->Exist(request.LeaderActorId()) && request.GetTerm() >= this->GetTerm() &&
-        (leaderRecord.first != request.GetTerm() ||
-         leaderRecord.second == request.LeaderActorId())) {
+        (leaderRecord.GetEpoch() != request.GetTerm() ||
+         leaderRecord.WriterId() == request.LeaderActorId())) {
         // if term > current term
         if (request.GetTerm() > this->GetTerm()) {
             std::uint64_t newTerm{request.GetTerm()};
@@ -451,7 +453,7 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(
                 // set match index to last index
                 response.SetMatchIndex(matchIndex);
                 // flush leader id if we need
-                if (leaderRecord.first < request.GetTerm()) {
+                if (leaderRecord.GetEpoch() < request.GetTerm()) {
                     this->leaderRecord_.Flush(request.GetTerm(), request.LeaderActorId());
                 }
                 // set commit index
@@ -479,10 +481,10 @@ sharpen::Mail sharpen::RaftConsensus::OnSnapshotRequest(
     response.SetTerm(this->GetTerm());
     response.SetStatus(false);
     // check leader id
-    std::pair<std::uint64_t, sharpen::ActorId> leaderRecord{this->leaderRecord_.GetRecord()};
+    sharpen::ConsensusWriterId leaderRecord{this->leaderRecord_.GetRecord()};
     if (this->peers_->Exist(request.LeaderActorId()) && request.GetTerm() >= this->GetTerm() &&
-        (leaderRecord.first != request.GetTerm() ||
-         leaderRecord.second == request.LeaderActorId())) {
+        (leaderRecord.GetEpoch() != request.GetTerm() ||
+         leaderRecord.WriterId() == request.LeaderActorId())) {
         // if term > current term
         if (request.GetTerm() > this->GetTerm()) {
             // set new term
@@ -508,7 +510,7 @@ sharpen::Mail sharpen::RaftConsensus::OnSnapshotRequest(
             }
             response.SetStatus(true);
             // flush leader id if we need
-            if (this->leaderRecord_.GetRecord().first < request.GetTerm()) {
+            if (leaderRecord.GetEpoch() < request.GetTerm()) {
                 this->leaderRecord_.Flush(request.GetTerm(), request.LeaderActorId());
             }
             this->OnStatusChanged();
@@ -530,9 +532,7 @@ void sharpen::RaftConsensus::NotifyWaiter(sharpen::Future<void> *waiter) noexcep
     } catch (const std::bad_alloc &fault) {
         std::terminate();
         (void)fault;
-    } catch (const std::exception &ignore) {
-        (void)ignore;
-    }
+    } catch (const std::exception &ignore) { (void)ignore; }
 }
 
 void sharpen::RaftConsensus::ComeToPower() {
@@ -595,6 +595,9 @@ void sharpen::RaftConsensus::OnVoteResponse(const sharpen::RaftVoteForResponse &
                                             const sharpen::ActorId &actorId) {
     assert(this->peers_);
     assert(this->peers_->Exist(actorId));
+    if (!response.GetStatus()) {
+        return;
+    }
     if (response.GetTerm() > this->GetTerm()) {
         assert(!response.GetStatus());
         this->SetTerm(response.GetTerm());
@@ -602,7 +605,7 @@ void sharpen::RaftConsensus::OnVoteResponse(const sharpen::RaftVoteForResponse &
     }
     std::uint64_t electionTerm{this->electionRecord_.GetTerm()};
     // check term
-    if (electionTerm == response.GetTerm()) {
+    if (electionTerm == response.GetTerm() && electionTerm == this->GetTerm()) {
         std::uint64_t votes{this->electionRecord_.GetVotes()};
         votes += 1;
         this->electionRecord_.SetVotes(votes);
@@ -757,7 +760,8 @@ void sharpen::RaftConsensus::RaisePrevote() {
     std::uint64_t lastIndex{this->GetLastIndex()};
     // load last term
     sharpen::Optional<std::uint64_t> lastTermOpt{this->LookupTerm(lastIndex)};
-    assert((lastTermOpt.Exist() && lastIndex != 0) || (!lastTermOpt.Exist() && lastIndex == 0));
+    assert((lastTermOpt.Exist() && lastIndex != sharpen::ILogStorage::noneIndex) ||
+           (!lastTermOpt.Exist() && lastIndex == sharpen::ILogStorage::noneIndex));
     std::uint64_t lastTerm{0};
     if (lastTermOpt.Exist()) {
         lastTerm = lastTermOpt.Get();
@@ -783,9 +787,9 @@ void sharpen::RaftConsensus::RaiseElection() {
     this->electionRecord_.Flush(term);
     // vote to self
     sharpen::RaftVoteRecord vote{this->GetVote()};
+    assert(vote.GetTerm() < term);
     vote.SetTerm(term);
     vote.ActorId() = this->id_;
-
     this->SetVote(vote);
     // build vote request
     sharpen::RaftVoteForRequest request;
@@ -794,7 +798,8 @@ void sharpen::RaftConsensus::RaiseElection() {
     std::uint64_t lastIndex{this->GetLastIndex()};
     // load last term
     sharpen::Optional<std::uint64_t> lastTermOpt{this->LookupTerm(lastIndex)};
-    assert((lastTermOpt.Exist() && lastIndex != 0) || (!lastTermOpt.Exist() && lastIndex == 0));
+    assert((lastTermOpt.Exist() && lastIndex != sharpen::ILogStorage::noneIndex) ||
+           (!lastTermOpt.Exist() && lastIndex == sharpen::ILogStorage::noneIndex));
     std::uint64_t lastTerm{0};
     if (lastTermOpt.Exist()) {
         lastTerm = lastTermOpt.Get();
@@ -862,21 +867,18 @@ void sharpen::RaftConsensus::DoAdvance() {
 
 void sharpen::RaftConsensus::Advance() {
     this->EnsureConfig();
-    if (!this->heartbeatProvider_) {
-        assert(this->logs_ != nullptr);
-        assert(this->logAccesser_ != nullptr);
-        sharpen::RaftHeartbeatMailProvider *provider{
-            new (std::nothrow) sharpen::RaftHeartbeatMailProvider{this->id_,
-                                                                  *this->mailBuilder_,
-                                                                  *this->logs_,
-                                                                  *this->logAccesser_,
-                                                                  this->snapshotController_.get(),
-                                                                  this->option_.GetBatchSize()}};
-        if (!provider) {
-            throw std::bad_alloc{};
-        }
-        this->heartbeatProvider_.reset(provider);
+    // set mail provider
+    sharpen::RaftHeartbeatMailProvider *provider{
+        new (std::nothrow) sharpen::RaftHeartbeatMailProvider{this->id_,
+                                                              *this->mailBuilder_,
+                                                              *this->logs_,
+                                                              *this->logAccesser_,
+                                                              this->snapshotController_.get(),
+                                                              this->option_.GetBatchSize()}};
+    if (!provider) {
+        throw std::bad_alloc{};
     }
+    this->heartbeatProvider_.reset(provider);
     this->worker_->Submit(&Self::DoAdvance, this);
 }
 
@@ -894,10 +896,12 @@ void sharpen::RaftConsensus::DoConfiguratePeers(
         this->peersBroadcaster_.reset(nullptr);
     }
     // reset heartbeat provider
-    this->heartbeatProvider_->Clear();
-    std::set<sharpen::ActorId> set{this->peers_->GenerateActorsSet()};
-    for (auto begin = set.begin(), end = set.end(); begin != end; ++begin) {
-        this->heartbeatProvider_->Register(*begin);
+    if (this->heartbeatProvider_) {
+        this->heartbeatProvider_->Clear();
+        std::set<sharpen::ActorId> set{this->peers_->GenerateActorsSet()};
+        for (auto begin = set.begin(), end = set.end(); begin != end; ++begin) {
+            this->heartbeatProvider_->Register(*begin);
+        }
     }
 }
 
@@ -909,12 +913,14 @@ void sharpen::RaftConsensus::NviConfiguratePeers(
 }
 
 void sharpen::RaftConsensus::DoClosePeers() {
-    this->peersBroadcaster_->Close();
+    if (this->peersBroadcaster_) {
+        this->peersBroadcaster_->Close();
+    }
 }
 
 void sharpen::RaftConsensus::ClosePeers() {
     assert(this->worker_ != nullptr);
-    this->worker_->Submit(&Self::DoClosePeers,this);
+    this->worker_->Submit(&Self::DoClosePeers, this);
 }
 
 void sharpen::RaftConsensus::NviDropLogsUntil(std::uint64_t index) {
@@ -949,10 +955,11 @@ sharpen::WriteLogsResult sharpen::RaftConsensus::DoWrite(const sharpen::LogBatch
     return sharpen::WriteLogsResult{beginIndex, lastIndex};
 }
 
-sharpen::Optional<sharpen::ActorId> sharpen::RaftConsensus::GetWriterId() const noexcept {
-    std::pair<std::uint64_t, sharpen::ActorId> record{this->leaderRecord_.GetRecord()};
-    if (record.first == this->GetTerm()) {
-        return record.second;
-    }
-    return sharpen::EmptyOpt;
+sharpen::ConsensusWriterId sharpen::RaftConsensus::GetWriterId() const noexcept {
+    sharpen::ConsensusWriterId record{this->leaderRecord_.GetRecord()};
+    return record;
+}
+
+std::uint64_t sharpen::RaftConsensus::GetEpoch() const noexcept {
+    return this->GetTerm();
 }

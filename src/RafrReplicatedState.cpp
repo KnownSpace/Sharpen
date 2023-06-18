@@ -12,6 +12,27 @@ sharpen::RaftReplicatedState::RaftReplicatedState(std::uint64_t matchIndex) noex
     , snapshot_(nullptr) {
 }
 
+sharpen::RaftReplicatedState::RaftReplicatedState(Self &&other) noexcept
+    : matchIndex_(other.matchIndex_)
+    , nextIndex_(other.nextIndex_)
+    , snapshot_(std::move(other.snapshot_))
+    , snapshotMetadata_(std::move(other.snapshotMetadata_)) {
+    other.matchIndex_ = 0;
+    other.nextIndex_ = 0;
+}
+
+sharpen::RaftReplicatedState &sharpen::RaftReplicatedState::operator=(Self &&other) noexcept {
+    if (this != std::addressof(other)) {
+        this->matchIndex_ = other.matchIndex_;
+        this->nextIndex_ = other.nextIndex_;
+        this->snapshot_ = std::move(other.snapshot_);
+        this->snapshotMetadata_ = std::move(other.snapshotMetadata_);
+        other.matchIndex_ = 0;
+        other.nextIndex_ = 0;
+    }
+    return *this;
+}
+
 void sharpen::RaftReplicatedState::Forward(std::uint64_t step) noexcept {
     if (this->snapshot_) {
         assert(step == 1);

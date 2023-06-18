@@ -73,6 +73,17 @@ bool sharpen::TcpPoster::SupportPipeline() const noexcept {
     return this->pipelineWorker_ != nullptr;
 }
 
+void sharpen::TcpPoster::AbortConn(sharpen::INetStreamChannel *conn) noexcept {
+    {
+        assert(this->lock_);
+        std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
+        if (this->channel_.get() == conn) {
+            this->channel_.reset();
+        }
+        conn->Close();
+    }
+}
+
 sharpen::Mail sharpen::TcpPoster::DoReceive(sharpen::NetStreamChannelPtr channel) noexcept {
     std::size_t size{0};
     sharpen::ByteBuffer buffer{4096};
@@ -80,6 +91,8 @@ sharpen::Mail sharpen::TcpPoster::DoReceive(sharpen::NetStreamChannelPtr channel
     while (!this->parser_->Completed()) {
         size = channel->ReadAsync(buffer);
         if (!size) {
+            // connection was aborted
+            this->AbortConn(channel.get());
             return sharpen::Mail{};
         }
         sharpen::ByteSlice slice{buffer.Data(), size};
@@ -145,11 +158,13 @@ sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail) noexcept {
     std::size_t size{0};
     size = channel->WriteAsync(mail.Header());
     if (!size) {
+        AbortConn(channel.get());
         return sharpen::Mail{};
     }
     if (!mail.Content().Empty()) {
         size = channel->WriteAsync(mail.Content());
         if (!size) {
+            AbortConn(channel.get());
             return sharpen::Mail{};
         }
     }

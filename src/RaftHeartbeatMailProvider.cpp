@@ -227,8 +227,8 @@ sharpen::Optional<std::uint64_t> sharpen::RaftHeartbeatMailProvider::LookupTerm(
 }
 
 sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(const sharpen::ActorId &actorId) const {
-    assert(this->builder_);
-    assert(this->logs_);
+    assert(this->builder_ != nullptr);
+    assert(this->logs_ != nullptr);
     assert(this->batchSize_ >= 1);
     // lookup next index
     sharpen::RaftReplicatedState *state{this->LookupMutableState(actorId)};

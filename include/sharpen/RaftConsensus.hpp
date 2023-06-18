@@ -243,7 +243,7 @@ namespace sharpen {
         //     return *this->quorum_;
         // }
 
-        virtual sharpen::Optional<sharpen::ActorId> GetWriterId() const noexcept override;
+        virtual sharpen::ConsensusWriterId GetWriterId() const noexcept override;
 
         // void ConfigurateLearners(std::function<void(sharpen::IQuorum&)> configurater);
 
@@ -259,6 +259,8 @@ namespace sharpen {
         std::uint64_t GetCommitIndex() const noexcept override;
 
         void ClosePeers() override;
+
+        virtual std::uint64_t GetEpoch() const noexcept override;
     };
 }   // namespace sharpen
 
