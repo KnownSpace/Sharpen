@@ -52,12 +52,11 @@ void sharpen::TcpHost::Run() {
             if (sharpen::IsFatalError(code)) {
                 std::terminate();
             }
-            if (code != sharpen::ErrorConnectionAborted && code != sharpen::ErrorCancel) {
+            if (code != sharpen::ErrorConnectionAborted && code != sharpen::ErrorCancel && code != sharpen::ErrorConnectionReset) {
                 throw;
             }
         }
-        if (this->token_) {
-            assert(channel);
+        if (this->token_ && channel) {
             channel->Register(*this->loopGroup_);
             counter.fetch_add(1, std::memory_order_relaxed);
             // launch
