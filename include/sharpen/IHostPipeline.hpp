@@ -40,7 +40,7 @@ namespace sharpen {
 
         virtual void Stop() noexcept = 0;
 
-        inline void Consume(sharpen::NetStreamChannelPtr channel) {
+        inline void Consume(sharpen::NetStreamChannelPtr channel) noexcept {
             if (channel && this->Active()) {
                 this->NviConsume(std::move(channel));
             }
