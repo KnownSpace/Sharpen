@@ -83,7 +83,7 @@ void sharpen::TcpActor::Drain() noexcept {
                 this->postCount_.load(std::memory_order::memory_order_acquire)};
             postCount = newPostCount;
             while (ackCount != newPostCount) {
-                sharpen::YieldCycle();
+                sharpen::YieldCycleForBusyLoop();
                 ackCount = this->ackCount_.load(std::memory_order::memory_order_acquire);
                 newPostCount = this->postCount_.load(std::memory_order::memory_order_acquire);
                 if (postCount != newPostCount) {
@@ -111,7 +111,7 @@ void sharpen::TcpActor::Cancel() noexcept {
             ackCount = this->ackCount_.load(std::memory_order::memory_order_acquire);
             postCount = this->postCount_.load(std::memory_order::memory_order_acquire);
             while (ackCount < postCount) {
-                sharpen::YieldCycle();
+                sharpen::YieldCycleForBusyLoop();
                 ackCount = this->ackCount_.load(std::memory_order::memory_order_acquire);
             }
         }
@@ -130,7 +130,7 @@ void sharpen::TcpActor::Close() noexcept {
             ackCount = this->ackCount_.load(std::memory_order::memory_order_acquire);
             postCount = this->postCount_.load(std::memory_order::memory_order_acquire);
             while (ackCount < postCount) {
-                sharpen::YieldCycle();
+                sharpen::YieldCycleForBusyLoop();
                 ackCount = this->ackCount_.load(std::memory_order::memory_order_acquire);
             }
         }

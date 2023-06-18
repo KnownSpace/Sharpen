@@ -12,3 +12,12 @@ void sharpen::YieldCycle() {
         scheduler->SwitchToProcesserFiber();
     }
 }
+
+constexpr static std::size_t BusyLoopCount{10*1024};
+
+void sharpen::YieldCycleForBusyLoop() {
+    for(std::size_t i = 0;i != BusyLoopCount;++i)
+    {
+        sharpen::YieldCycle();
+    }
+}

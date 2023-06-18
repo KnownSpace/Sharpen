@@ -2,6 +2,11 @@
 
 #include <sharpen/YieldOps.hpp>
 
+
+#ifndef _NDEBUG
+#include <sharpen/DebugTools.hpp>
+#endif
+
 sharpen::TcpHost::TcpHost(sharpen::ITcpSteamFactory &factory)
     : Self{sharpen::GetLocalScheduler(), factory} {
 }
@@ -30,7 +35,7 @@ void sharpen::TcpHost::NviSetPipeline(std::unique_ptr<sharpen::IHostPipeline> pi
 void sharpen::TcpHost::ConsumeChannel(sharpen::NetStreamChannelPtr channel,
                                       std::atomic_size_t *counter) noexcept {
     this->pipeline_->Consume(std::move(channel));
-    counter->fetch_sub(1, std::memory_order_relaxed);
+    counter->fetch_sub(1);
 }
 
 void sharpen::TcpHost::Stop() noexcept {
@@ -52,19 +57,20 @@ void sharpen::TcpHost::Run() {
             if (sharpen::IsFatalError(code)) {
                 std::terminate();
             }
-            if (code != sharpen::ErrorConnectionAborted && code != sharpen::ErrorCancel && code != sharpen::ErrorConnectionReset) {
+            if (code != sharpen::ErrorConnectionAborted && code != sharpen::ErrorCancel &&
+                code != sharpen::ErrorConnectionReset) {
                 throw;
             }
         }
         if (this->token_ && channel) {
             channel->Register(*this->loopGroup_);
-            counter.fetch_add(1, std::memory_order_relaxed);
+            counter.fetch_add(1);
             // launch
             this->scheduler_->Launch(&Self::ConsumeChannel, this, std::move(channel), &counter);
         }
     }
     // FIXME:busy loop
-    while (counter.load(std::memory_order_relaxed) != 0) {
-        sharpen::YieldCycle();
+    while (counter.load() != 0) {
+        sharpen::YieldCycleForBusyLoop();
     }
 }

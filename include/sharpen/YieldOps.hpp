@@ -54,7 +54,9 @@ namespace sharpen {
         }
     };
 
-    void YieldCycle();
+    extern void YieldCycle();
+
+    extern void YieldCycleForBusyLoop();
 }   // namespace sharpen
 
 #endif
