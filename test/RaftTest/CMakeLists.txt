@@ -5,3 +5,5 @@ set(RAFT_TEST_DIR "${TEST_DIR}/RaftTest")
 add_subdirectory("${RAFT_TEST_DIR}/StatusMapTest")
 
 add_subdirectory("${RAFT_TEST_DIR}/LogTest")
+
+add_subdirectory("${RAFT_TEST_DIR}/ElectionTest")
