@@ -2,6 +2,7 @@
 #ifndef _SHARPEN_IMAILBOX_HPP
 #define _SHARPEN_IMAILBOX_HPP
 
+#include "ActorId.hpp"
 #include "Mail.hpp"
 #include "TypeTraits.hpp"
 #include <cassert>
@@ -13,7 +14,7 @@ namespace sharpen {
         using Self = sharpen::IMailReceiver;
 
     protected:
-        virtual void NviReceive(sharpen::Mail mail, std::uint64_t actorId) = 0;
+        virtual void NviReceive(sharpen::Mail mail, const sharpen::ActorId &actorId) = 0;
 
     public:
         IMailReceiver() noexcept = default;
@@ -32,7 +33,7 @@ namespace sharpen {
             return *this;
         }
 
-        inline void Receive(sharpen::Mail mail, std::uint64_t actorId) {
+        inline void Receive(sharpen::Mail mail, const sharpen::ActorId &actorId) {
             assert(!mail.Empty());
             return this->NviReceive(std::move(mail), actorId);
         }

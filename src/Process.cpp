@@ -352,7 +352,7 @@ std::int32_t sharpen::Process::NixJoin() {
             pid = ::waitpid(this->handle_, &status, WNOHANG);
         }
         if (!pid) {
-            sharpen::YieldCycle();
+            sharpen::YieldCycleForBusyLoop();
         }
     }
     if (pid == -1) {

@@ -346,7 +346,8 @@ void sharpen::PosixNetStreamChannel::CompleteIoCallback(sharpen::EventLoop *loop
     if (size == -1) {
         sharpen::ErrorCode code{sharpen::GetLastError()};
         if (code == sharpen::ErrorCancel || code == sharpen::ErrorConnectionAborted ||
-            code == sharpen::ErrorConnectionReset) {
+            code == sharpen::ErrorConnectionReset || code == sharpen::ErrorNotSocket ||
+            code == sharpen::ErrorBadFileHandle || code == sharpen::ErrorBrokenPipe) {
             loop->RunInLoopSoon(std::bind(&sharpen::Future<std::size_t>::CompleteForBind,
                                           future,
                                           static_cast<std::size_t>(0)));
@@ -364,8 +365,14 @@ void sharpen::PosixNetStreamChannel::CompletePollCallback(sharpen::EventLoop *lo
                                                           sharpen::Future<void> *future,
                                                           ssize_t size) noexcept {
     if (size == -1) {
-        loop->RunInLoopSoon(
-            std::bind(&sharpen::Future<void>::Fail, future, sharpen::MakeLastErrorPtr()));
+        sharpen::ErrorCode code{sharpen::GetLastError()};
+        if (code == sharpen::ErrorCancel || code == sharpen::ErrorConnectionAborted ||
+            code == sharpen::ErrorConnectionReset || code == sharpen::ErrorNotSocket ||
+            code == sharpen::ErrorBrokenPipe || code == sharpen::ErrorBadFileHandle ) {
+            loop->RunInLoopSoon(std::bind(&sharpen::Future<void>::CompleteForBind, future));
+            return;
+        }
+        std::bind(&sharpen::Future<void>::Fail, future, sharpen::MakeLastErrorPtr());
         return;
     }
     loop->RunInLoopSoon(std::bind(&sharpen::Future<void>::CompleteForBind, future));
@@ -380,7 +387,8 @@ void sharpen::PosixNetStreamChannel::CompleteSendFileCallback(sharpen::EventLoop
     if (size == -1) {
         sharpen::ErrorCode code{sharpen::GetLastError()};
         if (code == sharpen::ErrorCancel || code == sharpen::ErrorConnectionAborted ||
-            code == sharpen::ErrorConnectionReset) {
+            code == sharpen::ErrorConnectionReset || code == sharpen::ErrorNotSocket ||
+            code == sharpen::ErrorBrokenPipe || code == sharpen::ErrorBadFileHandle) {
             loop->RunInLoopSoon(std::bind(&sharpen::Future<std::size_t>::CompleteForBind,
                                           future,
                                           static_cast<std::size_t>(0)));
@@ -416,7 +424,7 @@ void sharpen::PosixNetStreamChannel::WriteAsync(const char *buf,
     if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
     }
-    if(this->handle_ == -1) {
+    if (this->handle_ == -1) {
         future.Complete(static_cast<std::size_t>(0));
         return;
     }
@@ -439,7 +447,7 @@ void sharpen::PosixNetStreamChannel::ReadAsync(char *buf,
     if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
     }
-    if(this->handle_ == -1) {
+    if (this->handle_ == -1) {
         future.Complete(static_cast<std::size_t>(0));
         return;
     }
@@ -471,7 +479,7 @@ void sharpen::PosixNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,
     if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
     }
-    if(this->handle_ == -1) {
+    if (this->handle_ == -1) {
         future.Complete(static_cast<std::size_t>(0));
         return;
     }
@@ -488,7 +496,7 @@ void sharpen::PosixNetStreamChannel::AcceptAsync(
     if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
     }
-    if(this->handle_ == -1) {
+    if (this->handle_ == -1) {
         future.Fail(sharpen::MakeSystemErrorPtr(sharpen::ErrorCancel));
         return;
     }
@@ -500,7 +508,7 @@ void sharpen::PosixNetStreamChannel::ConnectAsync(const sharpen::IEndPoint &endp
     if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
     }
-    if(this->handle_ == -1) {
+    if (this->handle_ == -1) {
         future.Fail(sharpen::MakeSystemErrorPtr(sharpen::ErrorConnectionAborted));
         return;
     }

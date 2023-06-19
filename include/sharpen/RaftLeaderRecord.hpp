@@ -2,37 +2,32 @@
 #ifndef _SHARPEN_RAFTLEADERRECORD_HPP
 #define _SHARPEN_RAFTLEADERRECORD_HPP
 
+#include "ActorId.hpp"
+#include "ConsensusWriter.hpp"
+#include "Noncopyable.hpp"
+#include "Nonmovable.hpp"
+#include "SpinLock.hpp"
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <utility>
 
+
 namespace sharpen {
-    class RaftLeaderRecord {
+    class RaftLeaderRecord
+        : public sharpen::Noncopyable
+        , public sharpen::Nonmovable {
     private:
         using Self = sharpen::RaftLeaderRecord;
 
+        mutable sharpen::SpinLock lock_;
         std::atomic_uint64_t term_;
-        std::atomic_uint64_t leaderId_;
+        sharpen::ActorId leaderId_;
 
     public:
         RaftLeaderRecord() noexcept;
 
-        RaftLeaderRecord(std::uint64_t term, std::uint64_t leaderId) noexcept;
-
-        RaftLeaderRecord(const Self &other) noexcept;
-
-        RaftLeaderRecord(Self &&other) noexcept;
-
-        inline Self &operator=(const Self &other) noexcept {
-            if (this != std::addressof(other)) {
-                Self tmp{other};
-                std::swap(tmp, *this);
-            }
-            return *this;
-        }
-
-        Self &operator=(Self &&other) noexcept;
+        RaftLeaderRecord(std::uint64_t term, const sharpen::ActorId &leaderId) noexcept;
 
         ~RaftLeaderRecord() noexcept = default;
 
@@ -40,9 +35,9 @@ namespace sharpen {
             return *this;
         }
 
-        std::pair<std::uint64_t, std::uint64_t> GetRecord() const noexcept;
+        sharpen::ConsensusWriter GetRecord() const noexcept;
 
-        void Flush(std::uint64_t term, std::uint64_t leaderId) noexcept;
+        void Flush(std::uint64_t term, const sharpen::ActorId &leaderId) noexcept;
     };
 }   // namespace sharpen
 

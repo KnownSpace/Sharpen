@@ -24,7 +24,7 @@ namespace sharpen {
         std::size_t index_;
         std::size_t pipelineLength_;
         std::vector<sharpen::Mail> sharedMails_;
-        std::unordered_map<std::uint64_t, std::unique_ptr<sharpen::IRemoteActor>> actors_;
+        std::unordered_map<sharpen::ActorId, std::unique_ptr<sharpen::IRemoteActor>> actors_;
 
         sharpen::Mail *GetNextSharedMail() noexcept;
 
@@ -56,7 +56,7 @@ namespace sharpen {
             std::size_t sz{sharpen::GetRangeSize(begin, end)};
             this->actors_.rehash(sz);
             while (begin != end) {
-                std::uint64_t id{(*begin)->GetId()};
+                const sharpen::ActorId &id{(*begin)->GetId()};
                 this->actors_.emplace(id, std::move(*begin));
                 ++begin;
             }
@@ -101,13 +101,15 @@ namespace sharpen {
 
         void Cancel() noexcept;
 
+        void Close() noexcept;
+
         void Drain() noexcept;
 
-        const sharpen::IRemoteActor &GetActor(std::uint64_t id) const;
+        const sharpen::IRemoteActor &GetActor(const sharpen::ActorId &id) const;
 
-        bool ExistActor(std::uint64_t id) const noexcept;
+        bool ExistActor(const sharpen::ActorId &id) const noexcept;
 
-        const sharpen::IRemoteActor *FindActor(std::uint64_t id) const noexcept;
+        const sharpen::IRemoteActor *FindActor(const sharpen::ActorId &id) const noexcept;
 
         std::size_t GetPipelineLength() const noexcept;
 

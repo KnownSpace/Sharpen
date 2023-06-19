@@ -2,6 +2,7 @@
 #ifndef _SHARPEN_RAFTPREVOTERECORD_HPP
 #define _SHARPEN_RAFTPREVOTERECORD_HPP
 
+#include "ActorId.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <set>
@@ -12,7 +13,7 @@ namespace sharpen {
         using Self = sharpen::RaftPrevoteRecord;
 
         std::uint64_t term_;
-        std::set<std::uint64_t> votes_;
+        std::set<sharpen::ActorId> votes_;
 
     public:
         RaftPrevoteRecord() = default;
@@ -47,7 +48,7 @@ namespace sharpen {
 
         std::uint64_t GetVotes() const noexcept;
 
-        void Receive(std::uint64_t actorId);
+        void Receive(const sharpen::ActorId &actorId);
     };
 }   // namespace sharpen
 

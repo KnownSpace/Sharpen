@@ -2,6 +2,7 @@
 #ifndef _SHARPEN_IMAILPROVIDER_HPP
 #define _SHARPEN_IMAILPROVIDER_HPP
 
+#include "ActorId.hpp"
 #include "Mail.hpp"
 
 namespace sharpen {
@@ -27,7 +28,7 @@ namespace sharpen {
             return *this;
         }
 
-        virtual sharpen::Mail Provide(std::uint64_t actorId) const = 0;
+        virtual sharpen::Mail Provide(const sharpen::ActorId &actorId) const = 0;
     };
 }   // namespace sharpen
 

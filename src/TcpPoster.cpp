@@ -4,6 +4,10 @@
 #include <cassert>
 #include <new>
 
+#ifndef _NDEBUG
+#include <sharpen/DebugTools.hpp>
+#endif
+
 void sharpen::TcpPoster::NviClose() noexcept {
     sharpen::NetStreamChannelPtr channel{nullptr};
     {
@@ -24,7 +28,7 @@ void sharpen::TcpPoster::NviOpen(std::unique_ptr<sharpen::IMailParser> parser) {
         std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
         if (!this->channel_) {
             assert(this->factory_);
-            this->channel_ = this->factory_->Produce();
+            this->channel_ = this->factory_->Produce(sharpen::TcpStreamOption{});
         }
         channel = this->channel_;
     }
@@ -54,6 +58,20 @@ void sharpen::TcpPoster::NviOpen(std::unique_ptr<sharpen::IMailParser> parser) {
         case sharpen::ErrorConnectionReset:
             throw sharpen::RemotePosterOpenError{"connection reset"};
             break;
+        case sharpen::ErrorNotSocket:
+            throw sharpen::RemotePosterOpenError{"poster is closed by operator"};
+            break;
+        case sharpen::ErrorBrokenPipe:
+            throw sharpen::RemotePosterOpenError{"poster is closed by operator"};
+            break;
+        case sharpen::ErrorBadFileHandle:
+            throw sharpen::RemotePosterOpenError{"poster is closed by operator"};
+            break;
+#ifdef SHARPEN_IS_WIN
+        case sharpen::ErrorBadSocketHandle:
+            throw sharpen::RemotePosterOpenError{"poster is closed by operator"};
+            break;
+#endif
         }
         throw;
     } catch (const std::exception &rethrow) {
@@ -73,6 +91,17 @@ bool sharpen::TcpPoster::SupportPipeline() const noexcept {
     return this->pipelineWorker_ != nullptr;
 }
 
+void sharpen::TcpPoster::AbortConn(sharpen::INetStreamChannel *conn) noexcept {
+    {
+        assert(this->lock_);
+        std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
+        if (this->channel_.get() == conn) {
+            this->channel_.reset();
+        }
+        conn->Close();
+    }
+}
+
 sharpen::Mail sharpen::TcpPoster::DoReceive(sharpen::NetStreamChannelPtr channel) noexcept {
     std::size_t size{0};
     sharpen::ByteBuffer buffer{4096};
@@ -80,6 +109,8 @@ sharpen::Mail sharpen::TcpPoster::DoReceive(sharpen::NetStreamChannelPtr channel
     while (!this->parser_->Completed()) {
         size = channel->ReadAsync(buffer);
         if (!size) {
+            // connection was aborted
+            this->AbortConn(channel.get());
             return sharpen::Mail{};
         }
         sharpen::ByteSlice slice{buffer.Data(), size};
@@ -145,11 +176,13 @@ sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail) noexcept {
     std::size_t size{0};
     size = channel->WriteAsync(mail.Header());
     if (!size) {
+        AbortConn(channel.get());
         return sharpen::Mail{};
     }
     if (!mail.Content().Empty()) {
         size = channel->WriteAsync(mail.Content());
         if (!size) {
+            AbortConn(channel.get());
             return sharpen::Mail{};
         }
     }
@@ -158,7 +191,7 @@ sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail) noexcept {
     return response;
 }
 
-std::uint64_t sharpen::TcpPoster::NviGetId() const noexcept {
+sharpen::ActorId sharpen::TcpPoster::NviGetId() const noexcept {
     return this->remoteEndpoint_->GetActorId();
 }
 

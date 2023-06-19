@@ -17,7 +17,8 @@ namespace sharpen {
         sharpen::Future<sharpen::ConsensusStatus> *future_;
 
     public:
-        ConsensusTask(std::uint64_t index, sharpen::Future<sharpen::ConsensusStatus> &future) noexcept;
+        ConsensusTask(std::uint64_t index,
+                      sharpen::Future<sharpen::ConsensusStatus> &future) noexcept;
 
         ConsensusTask(Self &&other) noexcept;
 

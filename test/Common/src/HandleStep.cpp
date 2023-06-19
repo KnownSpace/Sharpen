@@ -1,9 +1,10 @@
 #include <common/HandleStep.hpp>
 
-#include <sharpen/IpEndPoint.hpp>
 #include <sharpen/DebugTools.hpp>
+#include <sharpen/IpEndPoint.hpp>
 
-HandleStep::HandleStep(std::uint32_t magic, std::function<void(sharpen::INetStreamChannel*,sharpen::Mail)> handler)
+HandleStep::HandleStep(std::uint32_t magic,
+                       std::function<void(sharpen::INetStreamChannel *, sharpen::Mail)> handler)
     : factory_()
     , handler_(std::move(handler)) {
     sharpen::IMailParserFactory *factory{new (std::nothrow)
@@ -35,10 +36,10 @@ sharpen::HostPipelineResult HandleStep::Consume(sharpen::INetStreamChannel &chan
     while (size != 0) {
         parser->Parse(buf.GetSlice(0, size));
         while (parser->Completed()) {
-            sharpen::SyncPrintf("Receive Mail from %s:%u\n",remoteIp,remote.GetPort());
+            sharpen::SyncPrintf("Receive Mail from %s:%u\n", remoteIp, remote.GetPort());
             sharpen::Mail mail{parser->PopCompletedMail()};
             if (this->handler_) {
-                this->handler_(&channel,std::move(mail));
+                this->handler_(&channel, std::move(mail));
             }
         }
         size = channel.ReadAsync(buf);

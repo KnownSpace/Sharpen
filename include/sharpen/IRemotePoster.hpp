@@ -2,6 +2,7 @@
 #ifndef _SHARPEN_IREMOTEACTOR_HPP
 #define _SHARPEN_IREMOTEACTOR_HPP
 
+#include "ActorId.hpp"
 #include "Future.hpp"   // IWYU pragma: keep
 #include "IMailParser.hpp"
 #include "Mail.hpp"
@@ -13,7 +14,7 @@ namespace sharpen {
         using Self = sharpen::IRemotePoster;
 
     protected:
-        virtual std::uint64_t NviGetId() const noexcept = 0;
+        virtual sharpen::ActorId NviGetId() const noexcept = 0;
 
         // if there are errors occurred
         // return a empty mail
@@ -65,7 +66,7 @@ namespace sharpen {
             return this->NviPost(mail, std::move(cb));
         }
 
-        inline std::uint64_t GetId() const noexcept {
+        inline sharpen::ActorId GetId() const noexcept {
             return this->NviGetId();
         }
 

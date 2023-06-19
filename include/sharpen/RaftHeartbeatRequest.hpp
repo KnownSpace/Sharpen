@@ -2,6 +2,7 @@
 #ifndef _SHARPEN_RAFTHEARTBEATREQUEST_HPP
 #define _SHARPEN_RAFTHEARTBEATREQUEST_HPP
 
+#include "ActorId.hpp"
 #include "BinarySerializable.hpp"
 #include "LogEntries.hpp"
 #include <cstddef>
@@ -9,13 +10,14 @@
 #include <utility>
 #include <vector>
 
+
 namespace sharpen {
     class RaftHeartbeatRequest : public sharpen::BinarySerializable<sharpen::RaftHeartbeatRequest> {
     private:
         using Self = sharpen::RaftHeartbeatRequest;
 
         std::uint64_t term_;
-        std::uint64_t leaderId_;
+        sharpen::ActorId leaderActorId_;
         std::uint64_t preLogIndex_;
         std::uint64_t preLogTerm_;
         sharpen::LogEntries entries_;
@@ -52,12 +54,12 @@ namespace sharpen {
             this->term_ = term;
         }
 
-        inline std::uint64_t GetLeaderId() const noexcept {
-            return this->leaderId_;
+        inline sharpen::ActorId &LeaderActorId() noexcept {
+            return this->leaderActorId_;
         }
 
-        inline void SetLeaderId(std::uint64_t leaderId) noexcept {
-            this->leaderId_ = leaderId;
+        inline const sharpen::ActorId &LeaderActorId() const noexcept {
+            return this->leaderActorId_;
         }
 
         inline std::uint64_t GetPreLogIndex() const noexcept {

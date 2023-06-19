@@ -64,7 +64,14 @@ namespace sharpen {
         // local storage
         sharpen::FiberLocalStorage localStorage_;
 
+        // id
+        std::uint64_t id_;
+
         thread_local static FiberPtr currentFiber_;
+
+        static std::atomic_uint64_t idAllocator_;
+
+        static std::uint64_t AllocId() noexcept;
 
         static void FiberEntry(transfer_t from) noexcept;
 
@@ -86,6 +93,10 @@ namespace sharpen {
         static sharpen::IFiberScheduler *GetCurrentFiberSceduler() noexcept;
 
         void Release() noexcept;
+
+        std::uint64_t GetId() const noexcept;
+
+        static std::uint64_t GetCurrentFiberId() noexcept;
 
         sharpen::IFiberScheduler *GetScheduler() const noexcept;
 
@@ -120,6 +131,10 @@ namespace sharpen {
         sharpen::IFiberScheduler *scheduler{sharpen::GetLocalSchedulerPtr()};
         assert(scheduler != nullptr);
         return *scheduler;
+    }
+
+    inline std::uint64_t GetCurrentFiberId() noexcept {
+        return sharpen::Fiber::GetCurrentFiberId();
     }
 }   // namespace sharpen
 

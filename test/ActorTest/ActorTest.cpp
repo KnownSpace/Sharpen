@@ -50,8 +50,7 @@ std::unique_ptr<sharpen::TcpHost> CreateHost(
     return host;
 }
 
-std::unique_ptr<sharpen::TcpHost> CreateDropHost(
-    std::uint16_t port) {
+std::unique_ptr<sharpen::TcpHost> CreateDropHost(std::uint16_t port) {
     sharpen::IpEndPoint endPoint;
     endPoint.SetAddrByString("127.0.0.1");
     endPoint.SetPort(port);
@@ -159,24 +158,20 @@ public:
     }
 };
 
-class CancelTest:public simpletest::ITypenamedTest<CancelTest>
-{
+class CancelTest : public simpletest::ITypenamedTest<CancelTest> {
 private:
     using Self = CancelTest;
 
 public:
-
     CancelTest() noexcept = default;
 
     ~CancelTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         std::unique_ptr<sharpen::IHost> host{CreateDropHost(23335)};
         sharpen::SingleWorkerGroup work{};
         work.Submit(&sharpen::IHost::Run, host.get());
@@ -204,24 +199,20 @@ public:
     }
 };
 
-class PipelineCancelTest:public simpletest::ITypenamedTest<PipelineCancelTest>
-{
+class PipelineCancelTest : public simpletest::ITypenamedTest<PipelineCancelTest> {
 private:
     using Self = PipelineCancelTest;
 
 public:
-
     PipelineCancelTest() noexcept = default;
 
     ~PipelineCancelTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         std::unique_ptr<sharpen::IHost> host{CreateDropHost(23336)};
         sharpen::SingleWorkerGroup work{};
         work.Submit(&sharpen::IHost::Run, host.get());

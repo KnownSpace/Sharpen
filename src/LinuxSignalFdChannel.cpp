@@ -99,7 +99,7 @@ void sharpen::LinuxSignalFdChannel::DoRead() {
             begin->cb(sz);
         }
     } else {
-        for (auto begin = this->tasks_.begin(), end = this->tasks_.end(); begin != end; ++begin) {
+        for (auto begin = this->tasks_.begin(), end = this->tasks_.end(); begin != end;) {
             std::size_t offset{0};
             while (offset != begin->bufSize) {
                 std::uint8_t signal{this->PopSignal()};

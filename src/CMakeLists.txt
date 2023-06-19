@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.15.0)
 
-include_directories("${SHARPEN_INCLUDE_DIRS}")
-
 #build fcontext
 
 if (MSVC AND NOT CMAKE_C_COMPILER_ID MATCHES "Clang")
@@ -71,6 +69,7 @@ set(fcontext_src "${PROJECT_SOURCE_DIR}/lib/boost/context/asm/make_${CPU_ARCH}_$
 aux_source_directory("${PROJECT_SOURCE_DIR}/src" src)
 add_library(sharpen ${src} ${fcontext_src})
 add_library(sharpen::sharpen ALIAS sharpen)
+target_include_directories(sharpen PUBLIC "${SHARPEN_INCLUDE_DIRS}")
 
 if(MSVC)
     string(REGEX REPLACE "/W[0-4]" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")

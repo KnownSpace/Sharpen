@@ -37,7 +37,7 @@ namespace sharpen {
         sharpen::IFiberScheduler *scheduler_;
 
         // the id of current actor
-        std::uint64_t id_;
+        sharpen::ActorId id_;
         // persistent status map
         std::unique_ptr<sharpen::IStatusMap> statusMap_;
         // storage logs
@@ -50,7 +50,7 @@ namespace sharpen {
         // cache
         std::atomic_uint64_t term_;
         sharpen::RaftVoteRecord vote_;
-        std::atomic_uint64_t commitIndex_;
+        // std::atomic_uint64_t commitIndex_;
         // role
         std::atomic<sharpen::RaftRole> role_;
         // election record
@@ -70,13 +70,11 @@ namespace sharpen {
         std::unique_ptr<sharpen::IRaftMailBuilder> mailBuilder_;
         // mail extractor
         std::unique_ptr<sharpen::IRaftMailExtractor> mailExtractor_;
-        // quorum
-        std::unique_ptr<sharpen::IQuorum> quorum_;
-        // learner quorum
+        // quorums
+        std::unique_ptr<sharpen::IQuorum> peers_;
         // std::unique_ptr<sharpen::IQuorum> learners_;
-        // quorum broadcaster
-        std::unique_ptr<sharpen::Broadcaster> quorumBroadcaster_;
-        // learner quorum broadcaster
+        // quorum broadcasters
+        std::unique_ptr<sharpen::Broadcaster> peersBroadcaster_;
         // std::unique_ptr<sharpen::Broadcaster> learnerBroadcaster_;
 
         // quorum heartbeat provider
@@ -106,8 +104,6 @@ namespace sharpen {
 
         void SetVote(sharpen::RaftVoteRecord vote);
 
-        std::uint64_t GetId() const noexcept;
-
         std::uint64_t GetLastIndex() const;
 
         sharpen::IRaftSnapshotProvider &GetSnapshotProvider() noexcept;
@@ -128,6 +124,8 @@ namespace sharpen {
 
         void EnsureConfig() const;
 
+        void EnsureHearbeatProvider();
+
         void OnStatusChanged();
 
         void RaiseElection();
@@ -138,27 +136,31 @@ namespace sharpen {
 
         void Abdicate();
 
+        void SetCommitIndex(std::uint64_t commitIndex) noexcept;
+
         // vote
         sharpen::Mail OnVoteRequest(const sharpen::RaftVoteForRequest &request);
 
-        void OnVoteResponse(const sharpen::RaftVoteForResponse &response, std::uint64_t actorId);
+        void OnVoteResponse(const sharpen::RaftVoteForResponse &response,
+                            const sharpen::ActorId &actorId);
 
         // prevote
         sharpen::Mail OnPrevoteRequest(const sharpen::RaftPrevoteRequest &request);
 
-        void OnPrevoteResponse(const sharpen::RaftPrevoteResponse &response, std::uint64_t actorId);
+        void OnPrevoteResponse(const sharpen::RaftPrevoteResponse &response,
+                               const sharpen::ActorId &actorId);
 
         // heartbeat
         sharpen::Mail OnHeartbeatRequest(const sharpen::RaftHeartbeatRequest &request);
 
         void OnHeartbeatResponse(const sharpen::RaftHeartbeatResponse &response,
-                                 std::uint64_t actorId);
+                                 const sharpen::ActorId &actorId);
 
         // snapshot
         sharpen::Mail OnSnapshotRequest(const sharpen::RaftSnapshotRequest &request);
 
         void OnSnapshotResponse(const sharpen::RaftSnapshotResponse &response,
-                                std::uint64_t actorId);
+                                const sharpen::ActorId &actorId);
 
         void NotifyWaiter(sharpen::Future<void> *future) noexcept;
 
@@ -170,16 +172,20 @@ namespace sharpen {
 
         sharpen::Mail DoGenerateResponse(sharpen::Mail request);
 
-        virtual void NviReceive(sharpen::Mail mail, std::uint64_t actorId) override;
+        virtual void NviReceive(sharpen::Mail mail, const sharpen::ActorId &actorId) override;
 
-        void DoReceive(sharpen::Mail mail, std::uint64_t actorId);
+        void DoReceive(sharpen::Mail mail, sharpen::ActorId actorId);
 
-        virtual void NviConfigurateQuorum(
+        virtual void NviConfiguratePeers(
             std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater)
             override;
 
-        void DoConfigurateQuorum(
+        void DoSyncHeartbeatProvider();
+
+        void DoConfiguratePeers(
             std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater);
+
+        void DoClosePeers();
 
         sharpen::WriteLogsResult DoWrite(const sharpen::LogBatch *logs);
 
@@ -189,6 +195,8 @@ namespace sharpen {
 
         void DoAdvance();
 
+        void DoStoreLastAppiledIndex(std::uint64_t index);
+
     public:
         constexpr static sharpen::ByteSlice voteKey{"vote", 4};
 
@@ -196,14 +204,14 @@ namespace sharpen {
 
         constexpr static sharpen::ByteSlice lastAppiledKey{"lastAppiled", 11};
 
-        RaftConsensus(std::uint64_t id,
+        RaftConsensus(const sharpen::ActorId &id,
                       std::unique_ptr<sharpen::IStatusMap> statusMap,
                       std::unique_ptr<sharpen::ILogStorage> logs,
                       std::unique_ptr<sharpen::IRaftLogAccesser> logAccesser,
                       std::unique_ptr<sharpen::IRaftSnapshotController> snapshotController,
                       const sharpen::RaftOption &option);
 
-        RaftConsensus(std::uint64_t id,
+        RaftConsensus(const sharpen::ActorId &id,
                       std::unique_ptr<sharpen::IStatusMap> statusMap,
                       std::unique_ptr<sharpen::ILogStorage> logs,
                       std::unique_ptr<sharpen::IRaftLogAccesser> logAccesser,
@@ -243,7 +251,7 @@ namespace sharpen {
         //     return *this->quorum_;
         // }
 
-        virtual sharpen::Optional<std::uint64_t> GetWriterId() const noexcept override;
+        virtual sharpen::ConsensusWriter GetWriterId() const noexcept override;
 
         // void ConfigurateLearners(std::function<void(sharpen::IQuorum&)> configurater);
 
@@ -256,7 +264,13 @@ namespace sharpen {
         //     this->ConfigurateLearners(config);
         // }
 
-        std::uint64_t GetCommitIndex() const noexcept override;
+        virtual std::uint64_t GetCommitIndex() const noexcept override;
+
+        void ClosePeers() override;
+
+        virtual std::uint64_t GetEpoch() const noexcept override;
+
+        virtual void StoreLastAppiledIndex(std::uint64_t index) override;
     };
 }   // namespace sharpen
 

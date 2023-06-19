@@ -10,14 +10,15 @@ namespace sharpen {
     private:
         using Self = Quorum;
 
-        std::map<std::uint64_t, std::unique_ptr<sharpen::IRemoteActorBuilder>> builders_;
+        std::map<sharpen::ActorId, std::unique_ptr<sharpen::IRemoteActorBuilder>> builders_;
 
-        virtual sharpen::IRemoteActorBuilder *NviLookup(std::uint64_t actorId) noexcept override;
+        virtual sharpen::IRemoteActorBuilder *NviLookup(
+            const sharpen::ActorId &actorId) noexcept override;
 
         virtual const sharpen::IRemoteActorBuilder *NviLookup(
-            std::uint64_t actorId) const noexcept override;
+            const sharpen::ActorId &actorId) const noexcept override;
 
-        virtual void NviRegister(std::uint64_t actorId,
+        virtual void NviRegister(const sharpen::ActorId &actorId,
                                  std::unique_ptr<sharpen::IRemoteActorBuilder> builder) override;
 
         virtual std::unique_ptr<sharpen::Broadcaster> NviCreateBroadcaster(
@@ -36,13 +37,13 @@ namespace sharpen {
             return *this;
         }
 
-        virtual void Remove(std::uint64_t actorId) noexcept override;
+        virtual void Remove(const sharpen::ActorId &actorId) noexcept override;
 
         inline virtual std::size_t GetSize() const noexcept override {
             return this->builders_.size();
         }
 
-        virtual std::set<std::uint64_t> GenerateActorsSet() const override;
+        virtual std::set<sharpen::ActorId> GenerateActorsSet() const override;
     };
 }   // namespace sharpen
 

@@ -129,6 +129,10 @@ namespace sharpen {
             return sharpen::Crc16(this->Data(), this->GetSize());
         }
 
+        inline std::uint32_t Crc32() const noexcept {
+            return sharpen::Crc32(this->Data(),this->GetSize());
+        }
+
         inline ConstIterator Begin() const noexcept {
             return ConstIterator{this->Data()};
         }
@@ -181,7 +185,7 @@ namespace sharpen {
 
         std::size_t StoreTo(char *data, std::size_t size) const;
 
-        Self Sub(std::size_t begin,std::size_t end) noexcept;
+        Self Sub(std::size_t begin, std::size_t end) noexcept;
 
         Self Sub(std::size_t begin) noexcept;
     };

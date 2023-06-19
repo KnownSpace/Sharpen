@@ -29,3 +29,5 @@ add_subdirectory("${TEST_DIR}/NetTest")
 add_subdirectory("${TEST_DIR}/ProcTest")
 
 add_subdirectory("${TEST_DIR}/ActorTest")
+
+add_subdirectory("${TEST_DIR}/RaftTest")

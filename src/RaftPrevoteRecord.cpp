@@ -28,6 +28,6 @@ std::uint64_t sharpen::RaftPrevoteRecord::GetVotes() const noexcept {
     return this->votes_.size();
 }
 
-void sharpen::RaftPrevoteRecord::Receive(std::uint64_t actorId) {
+void sharpen::RaftPrevoteRecord::Receive(const sharpen::ActorId &actorId) {
     this->votes_.emplace(actorId);
 }

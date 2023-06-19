@@ -18,6 +18,12 @@ transfer_t ontop_fcontext(fcontext_t const to, void *vp, transfer_t (*fn)(transf
 
 thread_local sharpen::FiberPtr sharpen::Fiber::currentFiber_;
 
+std::atomic_uint64_t sharpen::Fiber::idAllocator_{0};
+
+std::uint64_t sharpen::Fiber::AllocId() noexcept {
+    return sharpen::Fiber::idAllocator_.fetch_add(1, std::memory_order_relaxed) + 1;
+}
+
 sharpen::Fiber::Fiber() noexcept
     : handle_(nullptr)
     , stack_()
@@ -25,11 +31,16 @@ sharpen::Fiber::Fiber() noexcept
     , callback_(nullptr)
     , inited_(false)
     , scheduler_(nullptr)
-    , localStorage_() {
+    , localStorage_()
+    , id_(sharpen::Fiber::AllocId()) {
 }
 
 sharpen::Fiber::~Fiber() noexcept {
     this->Release();
+}
+
+std::uint64_t sharpen::Fiber::GetId() const noexcept {
+    return this->id_;
 }
 
 void sharpen::Fiber::Release() noexcept {
@@ -109,6 +120,13 @@ sharpen::IFiberScheduler *sharpen::Fiber::GetScheduler() const noexcept {
 
 void sharpen::Fiber::SetScheduler(sharpen::IFiberScheduler *scheduler) noexcept {
     this->scheduler_ = scheduler;
+}
+
+std::uint64_t sharpen::Fiber::GetCurrentFiberId() noexcept {
+    if (!currentFiber_) {
+        return sharpen::Fiber::GetCurrentFiber()->GetId();
+    }
+    return currentFiber_->GetId();
 }
 
 sharpen::IFiberScheduler *sharpen::Fiber::GetCurrentFiberSceduler() noexcept {

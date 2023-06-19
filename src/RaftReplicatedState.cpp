@@ -1,15 +1,38 @@
 #include <sharpen/RaftReplicatedState.hpp>
 
+#include <sharpen/ILogStorage.hpp>
 #include <cassert>
 
+
 sharpen::RaftReplicatedState::RaftReplicatedState() noexcept
-    : Self{0} {
+    : Self{sharpen::ILogStorage::noneIndex} {
 }
 
 sharpen::RaftReplicatedState::RaftReplicatedState(std::uint64_t matchIndex) noexcept
     : matchIndex_(matchIndex)
-    , nextIndex_(matchIndex)
+    , nextIndex_(matchIndex + 1)
     , snapshot_(nullptr) {
+}
+
+sharpen::RaftReplicatedState::RaftReplicatedState(Self &&other) noexcept
+    : matchIndex_(other.matchIndex_)
+    , nextIndex_(other.nextIndex_)
+    , snapshot_(std::move(other.snapshot_))
+    , snapshotMetadata_(std::move(other.snapshotMetadata_)) {
+    other.matchIndex_ = sharpen::ILogStorage::noneIndex;
+    other.nextIndex_ = sharpen::ILogStorage::noneIndex;
+}
+
+sharpen::RaftReplicatedState &sharpen::RaftReplicatedState::operator=(Self &&other) noexcept {
+    if (this != std::addressof(other)) {
+        this->matchIndex_ = other.matchIndex_;
+        this->nextIndex_ = other.nextIndex_;
+        this->snapshot_ = std::move(other.snapshot_);
+        this->snapshotMetadata_ = std::move(other.snapshotMetadata_);
+        other.matchIndex_ = sharpen::ILogStorage::noneIndex;
+        other.nextIndex_ = sharpen::ILogStorage::noneIndex;
+    }
+    return *this;
 }
 
 void sharpen::RaftReplicatedState::Forward(std::uint64_t step) noexcept {
@@ -65,8 +88,8 @@ sharpen::IRaftSnapshotChunk *sharpen::RaftReplicatedState::LookupSnapshot() noex
 sharpen::Optional<sharpen::RaftSnapshotMetadata>
 sharpen::RaftReplicatedState::LookupSnapshotMetadata() const noexcept {
     if (this->snapshot_) {
-        assert(this->snapshotMetadata_.GetLastIndex() != 0);
-        assert(this->snapshotMetadata_.GetLastTerm() != 0);
+        assert(this->snapshotMetadata_.GetLastIndex() != sharpen::ILogStorage::noneIndex);
+        assert(this->snapshotMetadata_.GetLastTerm() != sharpen::ILogStorage::noneIndex);
         return this->snapshotMetadata_;
     }
     return sharpen::EmptyOpt;

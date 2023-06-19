@@ -5,8 +5,7 @@
 #include <cstdint>
 
 namespace sharpen {
-    enum class ConsensusStatus:std::uint32_t
-    {
+    enum class ConsensusStatus : std::uint32_t {
         Commited,
         Lost
     };

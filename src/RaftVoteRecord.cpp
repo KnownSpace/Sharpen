@@ -1,29 +1,28 @@
 #include <sharpen/RaftVoteRecord.hpp>
 
-sharpen::RaftVoteRecord::RaftVoteRecord(std::uint64_t term, std::uint64_t actorId) noexcept
+sharpen::RaftVoteRecord::RaftVoteRecord(std::uint64_t term,
+                                        const sharpen::ActorId &actorId) noexcept
     : term_(term)
     , actorId_(actorId) {
 }
 
 sharpen::RaftVoteRecord::RaftVoteRecord(Self &&other) noexcept
     : term_(other.term_)
-    , actorId_(other.actorId_) {
+    , actorId_(std::move(other.actorId_)) {
     other.term_ = 0;
-    other.actorId_ = 0;
 }
 
 sharpen::RaftVoteRecord &sharpen::RaftVoteRecord::operator=(Self &&other) noexcept {
     if (this != std::addressof(other)) {
         this->term_ = other.term_;
-        this->actorId_ = other.actorId_;
+        this->actorId_ = std::move(other.actorId_);
         other.term_ = 0;
-        other.actorId_ = 0;
     }
     return *this;
 }
 
 std::size_t sharpen::RaftVoteRecord::ComputeSize() const noexcept {
-    return sizeof(this->term_) + sizeof(this->actorId_);
+    return sizeof(this->term_) + sharpen::BinarySerializator::ComputeSize(this->actorId_);
 }
 
 std::size_t sharpen::RaftVoteRecord::LoadFrom(const char *data, std::size_t size) {

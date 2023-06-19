@@ -16,7 +16,7 @@ sharpen::Broadcaster::Broadcaster(std::unique_ptr<sharpen::IRemoteActor> *actor,
     }
     this->actors_.rehash(size);
     for (std::size_t i = 0; i != size; ++i) {
-        std::uint64_t id{actor[i]->GetId()};
+        const sharpen::ActorId &id{actor[i]->GetId()};
         this->actors_.emplace(id, std::move(actor[i]));
     }
     assert(this->pipelineLength_ > 0);
@@ -25,10 +25,17 @@ sharpen::Broadcaster::Broadcaster(std::unique_ptr<sharpen::IRemoteActor> *actor,
 
 void sharpen::Broadcaster::Cancel() noexcept {
     for (auto begin = this->actors_.begin(), end = this->actors_.end(); begin != end; ++begin) {
-        std::unique_ptr<sharpen::IRemoteActor> &actor{begin->second};
+        sharpen::IRemoteActor *actor{begin->second.get()};
         if (actor->GetPipelineCount() == this->pipelineLength_) {
             actor->Cancel();
         }
+    }
+}
+
+void sharpen::Broadcaster::Close() noexcept {
+    for (auto begin = this->actors_.begin(), end = this->actors_.end(); begin != end; ++begin) {
+        std::unique_ptr<sharpen::IRemoteActor> &actor{begin->second};
+        actor->Close();
     }
 }
 
@@ -53,11 +60,11 @@ sharpen::Mail *sharpen::Broadcaster::GetNextSharedMail() noexcept {
 void sharpen::Broadcaster::Broadcast(sharpen::Mail mail) {
     {
         assert(this->pipelineLength_ != 0);
-        assert(this->lock_);
+        assert(this->lock_ != nullptr);
         std::unique_lock<Lock> lock{*this->lock_};
         this->Cancel();
         sharpen::Mail *sharedMail{this->GetNextSharedMail()};
-        assert(sharedMail);
+        assert(sharedMail != nullptr);
         *sharedMail = std::move(mail);
         for (auto begin = this->actors_.begin(), end = this->actors_.end(); begin != end; ++begin) {
             std::unique_ptr<sharpen::IRemoteActor> &actor{begin->second};
@@ -90,7 +97,7 @@ bool sharpen::Broadcaster::Completed() const noexcept {
     return true;
 }
 
-const sharpen::IRemoteActor &sharpen::Broadcaster::GetActor(std::uint64_t actorId) const {
+const sharpen::IRemoteActor &sharpen::Broadcaster::GetActor(const sharpen::ActorId &actorId) const {
     auto actor{this->FindActor(actorId)};
     if (!actor) {
         throw std::invalid_argument{"unknown actor id"};
@@ -98,11 +105,12 @@ const sharpen::IRemoteActor &sharpen::Broadcaster::GetActor(std::uint64_t actorI
     return *actor;
 }
 
-bool sharpen::Broadcaster::ExistActor(std::uint64_t actorId) const noexcept {
+bool sharpen::Broadcaster::ExistActor(const sharpen::ActorId &actorId) const noexcept {
     return this->FindActor(actorId);
 }
 
-const sharpen::IRemoteActor *sharpen::Broadcaster::FindActor(std::uint64_t actorId) const noexcept {
+const sharpen::IRemoteActor *sharpen::Broadcaster::FindActor(
+    const sharpen::ActorId &actorId) const noexcept {
     auto ite = this->actors_.find(actorId);
     if (ite != this->actors_.end()) {
         return ite->second.get();

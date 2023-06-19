@@ -2,10 +2,12 @@
 #ifndef _SHARPEN_IENDPOINT_HPP
 #define _SHARPEN_IENDPOINT_HPP
 
+#include "ActorId.hpp"
 #include "NetTypeDef.hpp"   // IWYU pragma: keep
 #include "SystemMacro.hpp"
 #include <cstddef>
 #include <cstdint>
+
 
 #ifdef SHARPEN_IS_WIN
 #include <WinSock2.h>
@@ -41,9 +43,7 @@ namespace sharpen {
 
         virtual std::size_t GetHashCode() const noexcept = 0;
 
-        inline std::uint64_t GetActorId() const noexcept {
-            return this->GetHashCode64();
-        }
+        virtual sharpen::ActorId GetActorId() const noexcept = 0;
     };
 }   // namespace sharpen
 

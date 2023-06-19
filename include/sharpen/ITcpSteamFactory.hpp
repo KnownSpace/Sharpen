@@ -3,6 +3,7 @@
 #define _SHARPEN_INETSTEAMFACTORY_HPP
 
 #include "INetStreamChannel.hpp"
+#include "TcpStreamOption.hpp"
 
 namespace sharpen {
     class ITcpSteamFactory {
@@ -10,7 +11,7 @@ namespace sharpen {
         using Self = sharpen::ITcpSteamFactory;
 
     protected:
-        virtual sharpen::NetStreamChannelPtr NviProduce() = 0;
+        virtual sharpen::NetStreamChannelPtr NviProduce(sharpen::TcpStreamOption option) = 0;
 
     public:
         ITcpSteamFactory() noexcept = default;
@@ -29,8 +30,8 @@ namespace sharpen {
             return *this;
         }
 
-        inline sharpen::NetStreamChannelPtr Produce() {
-            return this->NviProduce();
+        inline sharpen::NetStreamChannelPtr Produce(sharpen::TcpStreamOption option) {
+            return this->NviProduce(option);
         }
 
         virtual sharpen::IEventLoopGroup &GetLoopGroup() const noexcept = 0;

@@ -2,11 +2,13 @@
 #ifndef _SHARPEN_RAFTVOTERECORD_HPP
 #define _SHARPEN_RAFTVOTERECORD_HPP
 
+#include "ActorId.hpp"
 #include "BinarySerializable.hpp"
 #include "CorruptedDataError.hpp"   // IWYU pragma: keep
 #include <cstddef>
 #include <cstdint>
 #include <utility>
+
 
 namespace sharpen {
     class RaftVoteRecord : public sharpen::BinarySerializable<sharpen::RaftVoteRecord> {
@@ -14,12 +16,12 @@ namespace sharpen {
         using Self = sharpen::RaftVoteRecord;
 
         std::uint64_t term_;
-        std::uint64_t actorId_;
+        sharpen::ActorId actorId_;
 
     public:
         explicit RaftVoteRecord() noexcept = default;
 
-        RaftVoteRecord(std::uint64_t term, std::uint64_t actorId) noexcept;
+        RaftVoteRecord(std::uint64_t term, const sharpen::ActorId &actorId) noexcept;
 
         RaftVoteRecord(const Self &other) noexcept = default;
 
@@ -49,12 +51,12 @@ namespace sharpen {
             this->term_ = term;
         }
 
-        inline std::uint64_t GetActorId() const noexcept {
+        inline sharpen::ActorId &ActorId() noexcept {
             return this->actorId_;
         }
 
-        inline void SetActorId(std::uint64_t actorId) noexcept {
-            this->actorId_ = actorId;
+        inline const sharpen::ActorId &ActorId() const noexcept {
+            return this->actorId_;
         }
 
         std::size_t ComputeSize() const noexcept;

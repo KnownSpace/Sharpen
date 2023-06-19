@@ -1,8 +1,8 @@
-#include <sharpen/AsyncNagleBarrier.hpp>
+#include <sharpen/AsyncLeaseBarrier.hpp>
 
 #include <cassert>
 
-void sharpen::AsyncNagleBarrier::ResetWithoutLock() noexcept {
+void sharpen::AsyncLeaseBarrier::ResetWithoutLock() noexcept {
     if (this->model_ == sharpen::BarrierModel::Boundaried && this->currentCount_ >= this->count_) {
         this->currentCount_ -= this->count_;
     } else {
@@ -10,7 +10,7 @@ void sharpen::AsyncNagleBarrier::ResetWithoutLock() noexcept {
     }
 }
 
-void sharpen::AsyncNagleBarrier::TimeoutNotice(sharpen::Future<bool> &future) noexcept {
+void sharpen::AsyncLeaseBarrier::TimeoutNotice(sharpen::Future<bool> &future) noexcept {
     bool timeout{future.Get()};
     if (timeout) {
         MyFuturePtr futurePtr{nullptr};
@@ -33,7 +33,7 @@ void sharpen::AsyncNagleBarrier::TimeoutNotice(sharpen::Future<bool> &future) no
     }
 }
 
-void sharpen::AsyncNagleBarrier::StartTimer() {
+void sharpen::AsyncLeaseBarrier::StartTimer() {
     if (!this->timerStarted_) {
         this->timerStarted_ = true;
         this->timeoutFuture_.Reset();
@@ -43,14 +43,14 @@ void sharpen::AsyncNagleBarrier::StartTimer() {
     }
 }
 
-void sharpen::AsyncNagleBarrier::StopTimer() {
+void sharpen::AsyncLeaseBarrier::StopTimer() {
     if (this->timerStarted_) {
         this->timer_->Cancel();
         this->timerStarted_ = false;
     }
 }
 
-std::size_t sharpen::AsyncNagleBarrier::WaitAsync() {
+std::size_t sharpen::AsyncLeaseBarrier::WaitAsync() {
     MyFuture future;
     {
         std::unique_lock<sharpen::SpinLock> lock{this->lock_};
@@ -68,7 +68,7 @@ std::size_t sharpen::AsyncNagleBarrier::WaitAsync() {
     return future.Await();
 }
 
-void sharpen::AsyncNagleBarrier::Notify(std::size_t count) noexcept {
+void sharpen::AsyncLeaseBarrier::Notify(std::size_t count) noexcept {
     assert(count != 0);
     MyFuturePtr future{nullptr};
     std::size_t currentCount{0};
@@ -95,7 +95,7 @@ void sharpen::AsyncNagleBarrier::Notify(std::size_t count) noexcept {
     }
 }
 
-void sharpen::AsyncNagleBarrier::Reset() noexcept {
+void sharpen::AsyncLeaseBarrier::Reset() noexcept {
     std::unique_lock<sharpen::SpinLock> lock{this->lock_};
     this->ResetWithoutLock();
 }

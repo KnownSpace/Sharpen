@@ -17,7 +17,7 @@ private:
 
     std::atomic_size_t counter_;
 
-    virtual void NviReceive(sharpen::Mail mail, std::uint64_t actorId) override;
+    virtual void NviReceive(sharpen::Mail mail, const sharpen::ActorId &actorId) override;
 
 public:
     EchoReceiver() noexcept;

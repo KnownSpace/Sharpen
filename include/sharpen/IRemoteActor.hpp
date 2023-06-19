@@ -2,6 +2,7 @@
 #ifndef _SHARPEN_IREMOTEACTORPROPOSER_HPP
 #define _SHARPEN_IREMOTEACTORPROPOSER_HPP
 
+#include "ActorId.hpp"
 #include "Mail.hpp"
 #include "RemoteActorStatus.hpp"
 
@@ -11,7 +12,7 @@ namespace sharpen {
         using Self = sharpen::IRemoteActor;
 
     protected:
-        virtual std::uint64_t NviGetId() const noexcept = 0;
+        virtual sharpen::ActorId NviGetId() const noexcept = 0;
 
         virtual void NviPost(sharpen::Mail mail) = 0;
 
@@ -62,7 +63,9 @@ namespace sharpen {
 
         virtual void Cancel() noexcept = 0;
 
-        inline std::uint64_t GetId() const noexcept {
+        virtual void Close() noexcept = 0;
+
+        inline sharpen::ActorId GetId() const noexcept {
             return this->NviGetId();
         }
 

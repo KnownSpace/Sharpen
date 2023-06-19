@@ -1,7 +1,5 @@
-#include <cassert>
-#include <cstdio>
-
 #include <sharpen/AsyncOps.hpp>
+#include <sharpen/DebugTools.hpp>
 #include <sharpen/EventEngine.hpp>
 #include <sharpen/INetStreamChannel.hpp>
 #include <sharpen/IpEndPoint.hpp>
@@ -10,10 +8,14 @@
 #include <sharpen/TcpHost.hpp>
 #include <sharpen/TimerOps.hpp>
 #include <sharpen/YieldOps.hpp>
-
 #include <simpletest/TestRunner.hpp>
+#include <cassert>
+#include <cstdio>
+
 
 static const char data[] = "hello world\n";
+
+static const std::uint16_t testPort{10808};
 
 class PingpoingTest : public simpletest::ITypenamedTest<PingpoingTest> {
 private:
@@ -32,7 +34,8 @@ public:
         sharpen::NetStreamChannelPtr server = sharpen::OpenTcpChannel(sharpen::AddressFamily::Ip);
         sharpen::IpEndPoint serverEndpoint;
         serverEndpoint.SetAddrByString("127.0.0.1");
-        serverEndpoint.SetPort(8080);
+        serverEndpoint.SetPort(testPort);
+        server->ReuseAddressInNix();
         server->Bind(serverEndpoint);
         server->Register(sharpen::GetLocalLoopGroup());
         server->Listen(65535);
@@ -74,7 +77,9 @@ public:
         sharpen::NetStreamChannelPtr client = sharpen::OpenTcpChannel(sharpen::AddressFamily::Ip);
         sharpen::IpEndPoint addr;
         addr.SetAddrByString("127.0.0.1");
-        addr.SetPort(8081);
+        std::uint16_t port{testPort};
+        addr.SetPort(port);
+        server->ReuseAddressInNix();
         server->Bind(addr);
         server->Register(sharpen::GetLocalLoopGroup());
         addr.SetPort(0);
@@ -82,7 +87,7 @@ public:
         client->Register(sharpen::GetLocalLoopGroup());
         server->Listen(65535);
         sharpen::AwaitableFuture<std::size_t> future[10];
-        addr.SetPort(8081);
+        addr.SetPort(port);
         client->ConnectAsync(addr);
         char buf[512] = {0};
         for (std::size_t i = 0; i != sizeof(future) / sizeof(*future); ++i) {
@@ -119,7 +124,8 @@ public:
         sharpen::IpEndPoint ep{0, 0};
         ep.SetAddrByString("127.0.0.1");
         client->Bind(ep);
-        ep.SetPort(8082);
+        ep.SetPort(testPort);
+        server->ReuseAddressInNix();
         server->Bind(ep);
         server->Register(sharpen::GetLocalLoopGroup());
         client->Register(sharpen::GetLocalLoopGroup());
@@ -155,7 +161,8 @@ public:
         sharpen::IpEndPoint ep{0, 0};
         ep.SetAddrByString("127.0.0.1");
         client->Bind(ep);
-        ep.SetPort(8083);
+        ep.SetPort(testPort);
+        server->ReuseAddressInNix();
         server->Bind(ep);
         server->Register(sharpen::GetLocalLoopGroup());
         client->Register(sharpen::GetLocalLoopGroup());
@@ -176,6 +183,50 @@ public:
     }
 };
 
+class HalfAcceptTest : public simpletest::ITypenamedTest<HalfAcceptTest> {
+private:
+    using Self = HalfAcceptTest;
+
+public:
+    HalfAcceptTest() noexcept = default;
+
+    ~HalfAcceptTest() noexcept = default;
+
+    inline const Self &Const() const noexcept {
+        return *this;
+    }
+
+    inline virtual simpletest::TestResult Run() noexcept {
+        sharpen::NetStreamChannelPtr server = sharpen::OpenTcpChannel(sharpen::AddressFamily::Ip);
+        sharpen::NetStreamChannelPtr client = sharpen::OpenTcpChannel(sharpen::AddressFamily::Ip);
+        sharpen::IpEndPoint ep{0, 0};
+        ep.SetAddrByString("127.0.0.1");
+        client->Bind(ep);
+        ep.SetPort(testPort);
+        server->ReuseAddressInNix();
+        server->Bind(ep);
+        server->Register(sharpen::GetLocalLoopGroup());
+        client->Register(sharpen::GetLocalLoopGroup());
+        server->Listen(65535);
+        client->ConnectAsync(ep);
+        sharpen::ByteBuffer buf{"Hello", 5};
+        client->WriteAsync(buf);
+        client->Close();
+        sharpen::NetStreamChannelPtr conn{nullptr};
+        try {
+            conn = server->AcceptAsync();
+        } catch (const std::system_error &e) {
+            sharpen::ErrorCode err{sharpen::GetErrorCode(e)};
+            return this->Assert(err == sharpen::ErrorConnectionReset,"error should be connection reset");
+        }
+        conn->Register(sharpen::GetLocalLoopGroup());
+        std::size_t sz{conn->ReadAsync(buf)};
+        while (sz != 0) {
+            sz = conn->ReadAsync(buf);
+        }
+        return this->Success();
+    }
+};
 
 static int Test() {
     sharpen::StartupNetSupport();
@@ -184,6 +235,7 @@ static int Test() {
     runner.Register<CancelTest>();
     runner.Register<TimeoutTest>();
     runner.Register<CloseTest>();
+    runner.Register<HalfAcceptTest>();
     int code{runner.Run()};
     sharpen::CleanupNetSupport();
     return code;

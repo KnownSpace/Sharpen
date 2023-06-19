@@ -161,7 +161,9 @@ void sharpen::ResolvePath(const char *currentPath,
             *resolved++ = *begin;
         } else {
             separatorNumber = 0;
-            for (std::size_t i = 0; i < pointNumber; ++i) { *resolved++ = '.'; }
+            for (std::size_t i = 0; i < pointNumber; ++i) {
+                *resolved++ = '.';
+            }
             pointNumber = 0;
             *resolved++ = *begin;
         }
@@ -216,24 +218,24 @@ void sharpen::MakeLink(const char *oldName, const char *newName) {
         sharpen::ThrowLastError();
     }
 #else
-    if(::link(oldName,newName) == -1) {
+    if (::link(oldName, newName) == -1) {
         sharpen::ThrowLastError();
     }
 #endif
 }
 
-void sharpen::MakeSymLink(const char *oldName,const char *newName,bool isDir) {
+void sharpen::MakeSymLink(const char *oldName, const char *newName, bool isDir) {
 #ifdef SHARPEN_IS_WIN
     DWORD flag{0};
-    if(isDir) {
+    if (isDir) {
         flag = SYMBOLIC_LINK_FLAG_DIRECTORY;
     }
-    if (::CreateSymbolicLinkA(newName,oldName,flag) == FALSE) {
+    if (::CreateSymbolicLinkA(newName, oldName, flag) == FALSE) {
         sharpen::ThrowLastError();
     }
 #else
     (void)isDir;
-    if(::symlink(oldName,newName) == -1) {
+    if (::symlink(oldName, newName) == -1) {
         sharpen::ThrowLastError();
     }
 #endif

@@ -1,8 +1,10 @@
 #include <sharpen/RaftSnapshotResponse.hpp>
 
+#include <sharpen/ConsensusWriter.hpp>
+
 sharpen::RaftSnapshotResponse::RaftSnapshotResponse() noexcept
     : status_(false)
-    , term_(0) {
+    , term_(sharpen::ConsensusWriter::noneEpoch) {
 }
 
 sharpen::RaftSnapshotResponse::RaftSnapshotResponse(bool status, std::uint64_t term) noexcept
@@ -14,7 +16,7 @@ sharpen::RaftSnapshotResponse::RaftSnapshotResponse(Self &&other) noexcept
     : status_(other.status_)
     , term_(other.term_) {
     other.status_ = false;
-    other.term_ = 0;
+    other.term_ = sharpen::ConsensusWriter::noneEpoch;
 }
 
 sharpen::RaftSnapshotResponse &sharpen::RaftSnapshotResponse::operator=(
@@ -31,7 +33,7 @@ sharpen::RaftSnapshotResponse &sharpen::RaftSnapshotResponse::operator=(Self &&o
         this->status_ = other.status_;
         this->term_ = other.term_;
         other.status_ = false;
-        other.term_ = 0;
+        other.term_ = sharpen::ConsensusWriter::noneEpoch;
     }
     return *this;
 }

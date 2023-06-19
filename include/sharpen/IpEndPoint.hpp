@@ -141,6 +141,10 @@ namespace sharpen {
         inline virtual std::size_t GetHashCode() const noexcept override {
             return sharpen::IpEndPointHash::GetHashCode(*this, 0);
         }
+
+        virtual sharpen::ActorId GetActorId() const noexcept override;
+
+        static Self FromActorId(const sharpen::ActorId &id) noexcept;
     };
 }   // namespace sharpen
 

@@ -1,5 +1,7 @@
 #include <sharpen/RaftPrevoteResponse.hpp>
 
+#include <sharpen/ConsensusWriter.hpp>
+
 std::size_t sharpen::RaftPrevoteResponse::ComputeSize() const noexcept {
     return sizeof(std::uint8_t) + sizeof(this->term_);
 }
@@ -31,14 +33,14 @@ std::size_t sharpen::RaftPrevoteResponse::UnsafeStoreTo(char *data) const noexce
 
 sharpen::RaftPrevoteResponse::RaftPrevoteResponse() noexcept
     : status_(false)
-    , term_(0) {
+    , term_(sharpen::ConsensusWriter::noneEpoch) {
 }
 
 sharpen::RaftPrevoteResponse::RaftPrevoteResponse(Self &&other) noexcept
     : status_(other.status_)
     , term_(other.term_) {
     other.status_ = false;
-    other.term_ = 0;
+    other.term_ = sharpen::ConsensusWriter::noneEpoch;
 }
 
 sharpen::RaftPrevoteResponse &sharpen::RaftPrevoteResponse::operator=(Self &&other) noexcept {
@@ -46,7 +48,7 @@ sharpen::RaftPrevoteResponse &sharpen::RaftPrevoteResponse::operator=(Self &&oth
         this->status_ = other.status_;
         this->term_ = other.term_;
         other.status_ = false;
-        other.term_ = 0;
+        other.term_ = sharpen::ConsensusWriter::noneEpoch;
     }
     return *this;
 }
