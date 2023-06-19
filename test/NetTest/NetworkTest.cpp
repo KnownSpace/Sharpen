@@ -15,11 +15,7 @@
 
 static const char data[] = "hello world\n";
 
-static std::atomic_uint16_t portCounter{8080};
-
-static std::uint16_t AllocPort() noexcept {
-    return portCounter.fetch_add(1);
-}
+static const std::uint16_t testPort{10808};
 
 class PingpoingTest : public simpletest::ITypenamedTest<PingpoingTest> {
 private:
@@ -38,7 +34,8 @@ public:
         sharpen::NetStreamChannelPtr server = sharpen::OpenTcpChannel(sharpen::AddressFamily::Ip);
         sharpen::IpEndPoint serverEndpoint;
         serverEndpoint.SetAddrByString("127.0.0.1");
-        serverEndpoint.SetPort(AllocPort());
+        serverEndpoint.SetPort(testPort);
+        server->ReuseAddressInNix();
         server->Bind(serverEndpoint);
         server->Register(sharpen::GetLocalLoopGroup());
         server->Listen(65535);
@@ -80,8 +77,9 @@ public:
         sharpen::NetStreamChannelPtr client = sharpen::OpenTcpChannel(sharpen::AddressFamily::Ip);
         sharpen::IpEndPoint addr;
         addr.SetAddrByString("127.0.0.1");
-        std::uint16_t port{AllocPort()};
+        std::uint16_t port{testPort};
         addr.SetPort(port);
+        server->ReuseAddressInNix();
         server->Bind(addr);
         server->Register(sharpen::GetLocalLoopGroup());
         addr.SetPort(0);
@@ -126,7 +124,8 @@ public:
         sharpen::IpEndPoint ep{0, 0};
         ep.SetAddrByString("127.0.0.1");
         client->Bind(ep);
-        ep.SetPort(AllocPort());
+        ep.SetPort(testPort);
+        server->ReuseAddressInNix();
         server->Bind(ep);
         server->Register(sharpen::GetLocalLoopGroup());
         client->Register(sharpen::GetLocalLoopGroup());
@@ -162,7 +161,8 @@ public:
         sharpen::IpEndPoint ep{0, 0};
         ep.SetAddrByString("127.0.0.1");
         client->Bind(ep);
-        ep.SetPort(AllocPort());
+        ep.SetPort(testPort);
+        server->ReuseAddressInNix();
         server->Bind(ep);
         server->Register(sharpen::GetLocalLoopGroup());
         client->Register(sharpen::GetLocalLoopGroup());
@@ -202,7 +202,8 @@ public:
         sharpen::IpEndPoint ep{0, 0};
         ep.SetAddrByString("127.0.0.1");
         client->Bind(ep);
-        ep.SetPort(AllocPort());
+        ep.SetPort(testPort);
+        server->ReuseAddressInNix();
         server->Bind(ep);
         server->Register(sharpen::GetLocalLoopGroup());
         client->Register(sharpen::GetLocalLoopGroup());

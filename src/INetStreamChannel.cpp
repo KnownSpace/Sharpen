@@ -198,6 +198,12 @@ void sharpen::INetStreamChannel::SetReuseAddress(bool val) {
 #endif
 }
 
+void sharpen::INetStreamChannel::ReuseAddressInNix() {
+#ifdef SHARPEN_IS_NIX
+    this->SetReuseAddress(true);
+#endif
+}
+
 int sharpen::INetStreamChannel::GetErrorCode() const noexcept {
     int err{0};
 #ifdef SHARPEN_IS_WIN

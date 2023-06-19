@@ -18,9 +18,7 @@ sharpen::TcpHost::TcpHost(sharpen::IFiberScheduler &scheduler, sharpen::ITcpStea
     , pipeline_(nullptr)
     , acceptor_(nullptr) {
     sharpen::TcpStreamOption opt;
-#ifdef SHARPEN_IS_NIX
-    opt.SetReuseAddress(true);
-#endif
+    opt.EnableReuseAddressInNix();
     sharpen::NetStreamChannelPtr channel{factory.Produce(opt)};
     channel->Listen(65535);
     this->acceptor_ = std::move(channel);

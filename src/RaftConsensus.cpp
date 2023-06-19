@@ -856,12 +856,12 @@ void sharpen::RaftConsensus::DoAdvance() {
     }
     case sharpen::RaftRole::Follower: {
         if (!this->peers_->Empty()) {
-            if (!this->option_.EnablePrevote()) {
+            if (!this->option_.IsEnablePrevote()) {
                 this->RaiseElection();
             } else {
                 this->RaisePrevote();
             }
-        } else if(this->option_.EnableSingle()) {
+        } else if(this->option_.IsEnableSingle()) {
             // get current term
             std::uint64_t term{this->GetTerm()};
             term += 1;

@@ -29,15 +29,15 @@ sharpen::HostPipelineResult RaftStep::Consume(sharpen::INetStreamChannel &channe
             sharpen::SyncPrintf("Receive Mail from %s:%u\n", remoteIp, remote.GetPort());
             sharpen::Mail mail{parser->PopCompletedMail()};
             mail = this->raft_->GenerateResponse(mail);
-            channel.WriteAsync(mail.Header());
-            // if (!size) {
-            //     break;
-            // }
+            size = channel.WriteAsync(mail.Header());
+            if (!size) {
+                break;
+            }
             if (!mail.Content().Empty()) {
-                channel.WriteAsync(mail.Content());
-                // if (!size) {
-                //     break;
-                // }
+                size = channel.WriteAsync(mail.Content());
+                if (!size) {
+                    break;
+                }
             }
             sharpen::SyncPrintf("Reply to %s:%u Header %zu Content %zu\n",
                                 remoteIp,

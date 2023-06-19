@@ -56,12 +56,20 @@ namespace sharpen {
             this->isLearner_ = learner;
         }
 
-        inline bool EnablePrevote() const noexcept {
+        inline bool IsEnablePrevote() const noexcept {
             return this->enablePrevote_;
         }
 
         inline void SetPrevote(bool prevote) noexcept {
             this->enablePrevote_ = prevote;
+        }
+
+        inline void EnablePrevote() noexcept {
+            this->SetPrevote(true);
+        }
+
+        inline void DisablePrevote() noexcept {
+            this->SetPrevote(false);
         }
 
         inline std::uint32_t GetBatchSize() const noexcept {
@@ -76,12 +84,20 @@ namespace sharpen {
         
         void SetPipelineLength(std::uint32_t pipeline) noexcept;
 
-        inline bool EnableSingle() const noexcept {
+        inline bool IsEnableSingle() const noexcept {
             return this->enableSingle_;
         }
 
         inline void SetSingle(bool single) noexcept {
             this->enableSingle_ = single;
+        }
+
+        inline void EnableSingle() noexcept {
+            this->SetSingle(true);
+        }
+
+        inline void DisableSingle() noexcept {
+            this->SetSingle(false);
         }
     };
 }   // namespace sharpen

@@ -8,7 +8,6 @@
 #include "IEndPoint.hpp"
 #include "IFileChannel.hpp"
 #include "ITimer.hpp"
-#include "Noncopyable.hpp"
 #include "Optional.hpp"
 
 namespace sharpen {
@@ -82,6 +81,8 @@ namespace sharpen {
         }
 
         void SetReuseAddress(bool val);
+
+        void ReuseAddressInNix();
 
         int GetErrorCode() const noexcept;
 

@@ -38,9 +38,19 @@ namespace sharpen {
             return *this;
         }
 
-        bool EnableReuseAddress() const noexcept;
+        bool IsEnableReuseAddress() const noexcept;
 
         void SetReuseAddress(bool reuse) noexcept;
+
+        void EnableReuseAddress() noexcept {
+            this->SetReuseAddress(true);
+        }
+
+        void DisableReuseAddress() noexcept {
+            this->SetReuseAddress(false);
+        }
+
+        void EnableReuseAddressInNix() noexcept;
     };
 }
 
