@@ -9,6 +9,7 @@
 #include "LogBatch.hpp"
 #include "WriteLogsResult.hpp"
 #include "ConsensusWriter.hpp"
+#include "ConsensusResult.hpp"
 #include <memory>
 
 namespace sharpen {
@@ -18,7 +19,7 @@ namespace sharpen {
 
     protected:
         // returns current advanced count
-        virtual void NviWaitNextConsensus(sharpen::Future<void> &future) = 0;
+        virtual void NviWaitNextConsensus(sharpen::Future<sharpen::ConsensusResult> &future) = 0;
 
         virtual bool NviIsConsensusMail(const sharpen::Mail &mail) const noexcept = 0;
 
@@ -60,13 +61,13 @@ namespace sharpen {
 
         // returns current advanced count
         // FIXME:refactor interface
-        inline void WaitNextConsensus(sharpen::Future<void> &future) {
+        inline void WaitNextConsensus(sharpen::Future<sharpen::ConsensusResult> &future) {
             this->NviWaitNextConsensus(future);
         }
 
         // returns current advanced count
-        inline void WaitNextConsensus() {
-            sharpen::AwaitableFuture<void> future;
+        inline sharpen::ConsensusResult WaitNextConsensus() {
+            sharpen::AwaitableFuture<sharpen::ConsensusResult> future;
             this->NviWaitNextConsensus(future);
             return future.Await();
         }
