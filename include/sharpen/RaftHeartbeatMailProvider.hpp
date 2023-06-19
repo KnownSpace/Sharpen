@@ -12,6 +12,7 @@
 #include "RaftReplicatedState.hpp"
 #include <atomic>
 #include <cassert>
+#include <limits>
 #include <map>
 
 
@@ -24,7 +25,11 @@ namespace sharpen {
 
         static constexpr std::size_t defaultBatchSize_{8};
 
-        // static constexpr std::size_t defaultPipelineLength_{64};
+        static constexpr std::size_t maxEntiresSize_{(std::numeric_limits<std::int32_t>::max)()};
+
+        static constexpr std::size_t defaultEntiresSize_{maxEntiresSize_};
+
+        static constexpr std::size_t minEntiresSize_{4*1024};
 
         sharpen::ActorId id_;
         const sharpen::IRaftMailBuilder *builder_;
@@ -33,6 +38,8 @@ namespace sharpen {
         sharpen::IRaftSnapshotProvider *snapshotProvider_;
         // max size of each batch
         std::size_t batchSize_;
+        // max length of each entires
+        std::size_t entiresSize_;
         mutable std::map<sharpen::ActorId, sharpen::RaftReplicatedState> states_;
         std::uint64_t term_;
         std::atomic_uint64_t commitIndex_;
@@ -59,6 +66,14 @@ namespace sharpen {
                                   sharpen::IRaftLogAccesser &logAccesser,
                                   sharpen::IRaftSnapshotProvider *snapshotProvider,
                                   std::uint32_t batchSize);
+
+        RaftHeartbeatMailProvider(const sharpen::ActorId &id,
+                                  const sharpen::IRaftMailBuilder &builder,
+                                  const sharpen::ILogStorage &log,
+                                  sharpen::IRaftLogAccesser &logAccesser,
+                                  sharpen::IRaftSnapshotProvider *snapshotProvider,
+                                  std::uint32_t batchSize,
+                                  std::uint32_t entiresSize);
 
         RaftHeartbeatMailProvider(Self &&other) noexcept;
 
