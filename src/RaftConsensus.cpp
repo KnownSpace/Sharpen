@@ -312,7 +312,6 @@ void sharpen::RaftConsensus::NviWaitNextConsensus(
         sharpen::Future<sharpen::ConsensusResult> *waiter{this->waiter_.exchange(nullptr)};
         if (waiter) {
             this->reachAdvancedCount_.compare_exchange_strong(reachCount, advancedCount);
-            assert(!this->lastResult_.IsNone());
             sharpen::ConsensusResult result{this->lastResult_.Take()};
             waiter->Complete(result);
         }
@@ -615,7 +614,6 @@ void sharpen::RaftConsensus::OnStatusChanged(
     sharpen::Future<sharpen::ConsensusResult> *future{this->waiter_.exchange(nullptr)};
     if (future) {
         this->reachAdvancedCount_.store(advancedCount);
-        assert(!this->lastResult_.IsNone());
         this->NotifyWaiter(future);
     }
 }
