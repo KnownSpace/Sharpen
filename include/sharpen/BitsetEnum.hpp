@@ -66,7 +66,7 @@ namespace sharpen {
         }
 
         inline Self Take() noexcept {
-            Self tmp{this->enum_};
+            Self tmp{static_cast<IntType>(this->enum_)};
             this->Clear();
             return tmp;
         }
