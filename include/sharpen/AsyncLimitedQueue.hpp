@@ -21,14 +21,24 @@ namespace sharpen {
         sharpen::AsyncSemaphore outbond_;
         std::atomic_uint32_t popIndex_;
         std::atomic_uint32_t pushIndex_;
+        sharpen::SpinLock enqueLock_;
 
+        void DoEnque(_T item) {
+            std::size_t index{this->pushIndex_.fetch_add(1) % this->items_.size()};
+            {
+                std::unique_lock<sharpen::SpinLock> lock{this->enqueLock_};
+                this->items_[index] = std::move(item);
+                this->outbond_.Unlock();
+            }
+        }
     public:
         explicit AsyncLimitedQueue(std::uint32_t cap)
             : items_(cap)
             , inbond_(cap)
             , outbond_(0)
             , popIndex_(0)
-            , pushIndex_(0) {
+            , pushIndex_(0)
+            , enqueLock_() {
             assert(cap != 0);
         }
 
@@ -46,18 +56,14 @@ namespace sharpen {
 
         void Push(_T item) noexcept {
             this->inbond_.LockAsync();
-            std::size_t index{this->pushIndex_.fetch_add(1) % this->items_.size()};
-            this->items_[index] = std::move(item);
-            this->outbond_.Unlock();
+            this->DoEnque(std::move(item));
         }
 
         bool TryPush(_T &&item) noexcept {
             if (!this->inbond_.TryLock()) {
                 return false;
             }
-            std::size_t index{this->pushIndex_.fetch_add(1) % this->items_.size()};
-            this->items_[index] = std::move(item);
-            this->outbond_.Unlock();
+            this->DoEnque(std::move(item));
             return true;
         }
 

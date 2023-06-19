@@ -5,7 +5,7 @@
 sharpen::EventLoopThread::EventLoopThread(sharpen::SelectorPtr selector)
     : loop_(selector)
     , thread_() {
-    this->thread_ = std::move(std::thread(std::bind(&sharpen::EventLoopThread::Entry, this)));
+    this->thread_ = std::thread{&sharpen::EventLoopThread::Entry, this};
 }
 
 sharpen::EventLoopThread::~EventLoopThread() noexcept {

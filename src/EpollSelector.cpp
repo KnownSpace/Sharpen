@@ -66,8 +66,8 @@ void sharpen::EpollSelector::Select(EventVector &events) {
             if (eventMask & EPOLLERR) {
                 eventType |= sharpen::IoEvent::EventTypeEnum::Error;
             }
-            if (eventMask & EPOLLHUP) {
-                eventType |= sharpen::IoEvent::EventTypeEnum::Read;
+            if (eventMask & EPOLLRDHUP) {
+                eventType |= sharpen::IoEvent::EventTypeEnum::Close;
             }
             event->ioEvent_.SetEvent(eventType);
             events.push_back(&(event->ioEvent_));
@@ -120,7 +120,7 @@ void sharpen::EpollSelector::Resister(WeakChannelPtr channel) {
         Self::Event &event = ite->second;
         event.ioEvent_.SetChannel(ch);
         event.epollEvent_.data.ptr = &event;
-        event.epollEvent_.events = EPOLLIN | EPOLLOUT | EPOLLET | EPOLLHUP | EPOLLERR;
+        event.epollEvent_.events = EPOLLIN | EPOLLOUT | EPOLLET | EPOLLHUP | EPOLLERR | EPOLLRDHUP;
         event.internalEventfd_ = false;
         eventStruct = &(event.epollEvent_);
     }

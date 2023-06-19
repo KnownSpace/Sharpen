@@ -25,6 +25,7 @@ namespace sharpen {
 
         sharpen::PosixIoReader reader_;
         bool readable_;
+        bool peerClosed_;
 
         void HandleRead();
 
@@ -45,7 +46,7 @@ namespace sharpen {
     public:
         explicit PosixInputPipeChannel(sharpen::FileHandle handle);
 
-        virtual ~PosixInputPipeChannel();
+        virtual ~PosixInputPipeChannel() noexcept;
 
         virtual void ReadAsync(char *buf,
                                std::size_t bufSize,

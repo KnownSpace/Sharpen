@@ -11,11 +11,18 @@ namespace sharpen {
     private:
         using Self = GenericMailPaser;
 
+        enum class ParseStatus{
+            Header,
+            Content
+        };
+
         std::uint32_t magic_;
         std::size_t parsedSize_;
         sharpen::ByteBuffer header_;
         sharpen::ByteBuffer content_;
         std::deque<sharpen::Mail> completedMails_;
+
+        ParseStatus GetStatus() const noexcept;
 
         virtual sharpen::Mail NviPopCompletedMail() noexcept override;
 

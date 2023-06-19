@@ -28,7 +28,10 @@ namespace sharpen {
 
         std::uint64_t bufMap_;
         bool readable_;
+        bool peerClosed_;
         Tasks tasks_;
+
+        void DoCancel(sharpen::ErrorCode err);
 
         void DoSafeClose(sharpen::ErrorCode err, sharpen::ChannelPtr keepalive) noexcept;
 

@@ -23,6 +23,7 @@
 #include <map>
 #include <queue>
 #include <set>
+#include <initializer_list>
 
 namespace sharpen {
     class RaftConsensus
@@ -62,7 +63,8 @@ namespace sharpen {
         sharpen::RaftLeaderRecord leaderRecord_;
 
         // waiters
-        std::atomic<sharpen::Future<void> *> waiter_;
+        sharpen::ConsensusResult lastResult_;
+        std::atomic<sharpen::Future<sharpen::ConsensusResult> *> waiter_;
         std::atomic_uint64_t advancedCount_;
         std::atomic_uint64_t reachAdvancedCount_;
 
@@ -126,7 +128,7 @@ namespace sharpen {
 
         void EnsureHearbeatProvider();
 
-        void OnStatusChanged();
+        void OnStatusChanged(std::initializer_list<sharpen::ConsensusResultEnum> results);
 
         void RaiseElection();
 
@@ -162,9 +164,9 @@ namespace sharpen {
         void OnSnapshotResponse(const sharpen::RaftSnapshotResponse &response,
                                 const sharpen::ActorId &actorId);
 
-        void NotifyWaiter(sharpen::Future<void> *future) noexcept;
+        void NotifyWaiter(sharpen::Future<sharpen::ConsensusResult> *future) noexcept;
 
-        virtual void NviWaitNextConsensus(sharpen::Future<void> &future) override;
+        virtual void NviWaitNextConsensus(sharpen::Future<sharpen::ConsensusResult> &future) override;
 
         virtual bool NviIsConsensusMail(const sharpen::Mail &mail) const noexcept override;
 
@@ -185,7 +187,7 @@ namespace sharpen {
         void DoConfiguratePeers(
             std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater);
 
-        void DoClosePeers();
+        void DoReleasePeers();
 
         sharpen::WriteLogsResult DoWrite(const sharpen::LogBatch *logs);
 
@@ -266,7 +268,7 @@ namespace sharpen {
 
         virtual std::uint64_t GetCommitIndex() const noexcept override;
 
-        void ClosePeers() override;
+        virtual void ReleasePeers() override;
 
         virtual std::uint64_t GetEpoch() const noexcept override;
 

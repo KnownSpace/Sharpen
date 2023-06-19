@@ -220,11 +220,12 @@ public:
             return this->Assert(err == sharpen::ErrorConnectionReset,"error should be connection reset");
         }
         conn->Register(sharpen::GetLocalLoopGroup());
-        std::size_t sz{conn->ReadAsync(buf)};
-        while (sz != 0) {
-            sz = conn->ReadAsync(buf);
+        sharpen::ByteBuffer recv{5};
+        std::size_t sz{conn->ReadAsync(recv)};
+        if (conn->ReadAsync(recv) != 0) {
+            return this->Fail("read on closed peer should return zero");
         }
-        return this->Success();
+        return this->Assert(recv == buf,"recv should equal with buf");
     }
 };
 

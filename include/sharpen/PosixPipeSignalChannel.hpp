@@ -25,6 +25,7 @@ namespace sharpen {
         sharpen::SignalMap *map_;
         sharpen::PosixIoReader reader_;
         bool readable_;
+        bool peerClosed_;
 
         sharpen::FileHandle GetReader() const noexcept;
 

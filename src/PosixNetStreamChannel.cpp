@@ -14,6 +14,7 @@ sharpen::PosixNetStreamChannel::PosixNetStreamChannel(sharpen::FileHandle handle
     , readable_(false)
     , writeable_(false)
     , status_(sharpen::PosixNetStreamChannel::IoStatus::Io)
+    , peerClosed_(false)
     , reader_()
     , writer_()
     , acceptCb_()
@@ -66,6 +67,9 @@ void sharpen::PosixNetStreamChannel::DoRead() {
     bool executed;
     this->reader_.Execute(this->handle_, executed, blocking);
     this->readable_ = !executed || !blocking;
+    if (!this->readable_ && this->peerClosed_) {
+        this->DoCancel(sharpen::ErrorConnectionReset);
+    }
 }
 
 void sharpen::PosixNetStreamChannel::DoWrite() {
@@ -73,16 +77,22 @@ void sharpen::PosixNetStreamChannel::DoWrite() {
     bool executed;
     this->writer_.Execute(this->handle_, executed, blocking);
     this->writeable_ = !executed || !blocking;
+    if (!this->writeable_ && this->peerClosed_) {
+        this->DoCancel(sharpen::ErrorConnectionReset);
+    }
 }
 
 void sharpen::PosixNetStreamChannel::DoPollRead() {
     if (this->pollReadCbs_.empty()) {
         return;
     }
-    iovec io;
-    io.iov_base = nullptr;
-    io.iov_len = 0;
-    ssize_t size = ::readv(this->handle_, &io, 1);
+    ssize_t size{0};
+    if (!this->peerClosed_) {
+        iovec io;
+        io.iov_base = nullptr;
+        io.iov_len = 0;
+        size = ::readv(this->handle_, &io, 1);
+    }
     for (auto begin = this->pollReadCbs_.begin(); begin != this->pollReadCbs_.end(); ++begin) {
         (*begin)(size);
     }
@@ -93,10 +103,13 @@ void sharpen::PosixNetStreamChannel::DoPollWrite() {
     if (this->pollWriteCbs_.empty()) {
         return;
     }
-    iovec io;
-    io.iov_base = nullptr;
-    io.iov_len = 0;
-    ssize_t size = ::writev(this->handle_, &io, 1);
+    ssize_t size{0};
+    if (!this->peerClosed_) {
+        iovec io;
+        io.iov_base = nullptr;
+        io.iov_len = 0;
+        size = ::writev(this->handle_, &io, 1);
+    }
     for (auto begin = this->pollWriteCbs_.begin(); begin != this->pollWriteCbs_.end(); ++begin) {
         (*begin)(size);
     }
@@ -160,28 +173,28 @@ void sharpen::PosixNetStreamChannel::HandleWrite() {
 
 void sharpen::PosixNetStreamChannel::TryRead(char *buf, std::size_t bufSize, Callback cb) {
     this->reader_.AddPendingTask(buf, bufSize, std::move(cb));
-    if (this->readable_) {
+    if (this->readable_ || this->peerClosed_) {
         this->DoRead();
     }
 }
 
 void sharpen::PosixNetStreamChannel::TryWrite(const char *buf, std::size_t bufSize, Callback cb) {
     this->writer_.AddPendingTask(const_cast<char *>(buf), bufSize, std::move(cb));
-    if (this->writeable_) {
+    if (this->writeable_ || this->peerClosed_) {
         this->DoWrite();
     }
 }
 
 void sharpen::PosixNetStreamChannel::TryPollRead(Callback cb) {
     this->pollReadCbs_.push_back(std::move(cb));
-    if (this->readable_) {
+    if (this->readable_ || this->peerClosed_) {
         this->DoPollRead();
     }
 }
 
 void sharpen::PosixNetStreamChannel::TryPollWrite(Callback cb) {
     this->pollWriteCbs_.push_back(std::move(cb));
-    if (this->writeable_) {
+    if (this->writeable_ || this->peerClosed_) {
         this->DoPollWrite();
     }
 }
@@ -368,7 +381,7 @@ void sharpen::PosixNetStreamChannel::CompletePollCallback(sharpen::EventLoop *lo
         sharpen::ErrorCode code{sharpen::GetLastError()};
         if (code == sharpen::ErrorCancel || code == sharpen::ErrorConnectionAborted ||
             code == sharpen::ErrorConnectionReset || code == sharpen::ErrorNotSocket ||
-            code == sharpen::ErrorBrokenPipe || code == sharpen::ErrorBadFileHandle ) {
+            code == sharpen::ErrorBrokenPipe || code == sharpen::ErrorBadFileHandle) {
             loop->RunInLoopSoon(std::bind(&sharpen::Future<void>::CompleteForBind, future));
             return;
         }
@@ -464,11 +477,15 @@ void sharpen::PosixNetStreamChannel::ReadAsync(sharpen::ByteBuffer &buf,
 }
 
 void sharpen::PosixNetStreamChannel::OnEvent(sharpen::IoEvent *event) {
-    if (event->IsReadEvent() || event->IsErrorEvent()) {
+    if (event->IsReadEvent()) {
         this->HandleRead();
     }
-    if (event->IsWriteEvent() || event->IsErrorEvent()) {
+    if (event->IsWriteEvent()) {
         this->HandleWrite();
+    }
+    if (event->IsCloseEvent()) {
+        this->peerClosed_ = true;
+        this->DoCancel(sharpen::ErrorConnectionReset);
     }
 }
 
