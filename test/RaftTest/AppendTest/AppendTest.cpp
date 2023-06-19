@@ -439,10 +439,7 @@ public:
         while (faultRaft->ImmutableLogs().GetLastIndex() !=
                primary->ImmutableLogs().GetLastIndex()) {
             primary->Advance();
-            for (auto begin = rafts.begin() + 1, end = rafts.end(); begin != end; ++begin) {
-                auto backup{begin->get()};
-                backup->WaitNextConsensus();
-            }
+            faultRaft->WaitNextConsensus();
             writable = primary->Writable();
             sharpen::SyncPrintf("Recovery to %zu/%zu\n", faultRaft->ImmutableLogs().GetLastIndex(),primary->ImmutableLogs().GetLastIndex());
         }
@@ -693,10 +690,7 @@ public:
         while (faultRaft->ImmutableLogs().GetLastIndex() !=
                primary->ImmutableLogs().GetLastIndex()) {
             primary->Advance();
-            for (auto begin = rafts.begin() + 1, end = rafts.end(); begin != end; ++begin) {
-                auto backup{begin->get()};
-                backup->WaitNextConsensus();
-            }
+            faultRaft->WaitNextConsensus();
             writable = primary->Writable();
             sharpen::SyncPrintf("Recovery to %zu/%zu\n", faultRaft->ImmutableLogs().GetLastIndex(),primary->ImmutableLogs().GetLastIndex());
         }
