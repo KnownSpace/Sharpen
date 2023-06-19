@@ -138,7 +138,7 @@ public:
         // close all hosts
         for (auto begin = rafts.begin(), end = rafts.end(); begin != end; ++begin) {
             auto raft{begin->get()};
-            raft->ClosePeers();
+            raft->ReleasePeers();
         }
         for (auto begin = hosts.begin(), end = hosts.end(); begin != end; ++begin) {
             auto host{begin->get()};
@@ -207,7 +207,7 @@ public:
         // close all hosts
         for (auto begin = rafts.begin(), end = rafts.end(); begin != end; ++begin) {
             auto raft{begin->get()};
-            raft->ClosePeers();
+            raft->ReleasePeers();
         }
         for (auto begin = hosts.begin(), end = hosts.end(); begin != end; ++begin) {
             auto host{begin->get()};
@@ -281,7 +281,7 @@ public:
         // close all hosts
         for (auto begin = rafts.begin(), end = rafts.end(); begin != end; ++begin) {
             auto raft{begin->get()};
-            raft->ClosePeers();
+            raft->ReleasePeers();
         }
         for (auto begin = hosts.begin(), end = hosts.end(); begin != end; ++begin) {
             auto host{begin->get()};
@@ -355,7 +355,7 @@ public:
         // close all hosts
         for (auto begin = rafts.begin(), end = rafts.end(); begin != end; ++begin) {
             auto raft{begin->get()};
-            raft->ClosePeers();
+            raft->ReleasePeers();
         }
         for (auto begin = hosts.begin(), end = hosts.end(); begin != end; ++begin) {
             auto host{begin->get()};
@@ -446,7 +446,7 @@ public:
         // close all hosts
         for (auto begin = rafts.begin(), end = rafts.end(); begin != end; ++begin) {
             auto raft{begin->get()};
-            raft->ClosePeers();
+            raft->ReleasePeers();
         }
         for (auto begin = hosts.begin(), end = hosts.end(); begin != end; ++begin) {
             auto host{begin->get()};
@@ -524,7 +524,7 @@ public:
         // close all hosts
         for (auto begin = rafts.begin(), end = rafts.end(); begin != end; ++begin) {
             auto raft{begin->get()};
-            raft->ClosePeers();
+            raft->ReleasePeers();
         }
         for (auto begin = hosts.begin(), end = hosts.end(); begin != end; ++begin) {
             auto host{begin->get()};
@@ -602,7 +602,7 @@ public:
         // close all hosts
         for (auto begin = rafts.begin(), end = rafts.end(); begin != end; ++begin) {
             auto raft{begin->get()};
-            raft->ClosePeers();
+            raft->ReleasePeers();
         }
         for (auto begin = hosts.begin(), end = hosts.end(); begin != end; ++begin) {
             auto host{begin->get()};
@@ -697,7 +697,7 @@ public:
         // close all hosts
         for (auto begin = rafts.begin(), end = rafts.end(); begin != end; ++begin) {
             auto raft{begin->get()};
-            raft->ClosePeers();
+            raft->ReleasePeers();
         }
         for (auto begin = hosts.begin(), end = hosts.end(); begin != end; ++begin) {
             auto host{begin->get()};

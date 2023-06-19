@@ -187,7 +187,7 @@ namespace sharpen {
         void DoConfiguratePeers(
             std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater);
 
-        void DoClosePeers();
+        void DoReleasePeers();
 
         sharpen::WriteLogsResult DoWrite(const sharpen::LogBatch *logs);
 
@@ -268,7 +268,7 @@ namespace sharpen {
 
         virtual std::uint64_t GetCommitIndex() const noexcept override;
 
-        void ClosePeers() override;
+        virtual void ReleasePeers() override;
 
         virtual std::uint64_t GetEpoch() const noexcept override;
 

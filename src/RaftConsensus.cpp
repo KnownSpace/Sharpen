@@ -938,15 +938,15 @@ void sharpen::RaftConsensus::NviConfiguratePeers(
     future.Await();
 }
 
-void sharpen::RaftConsensus::DoClosePeers() {
+void sharpen::RaftConsensus::DoReleasePeers() {
     if (this->peersBroadcaster_) {
         this->peersBroadcaster_->Close();
     }
 }
 
-void sharpen::RaftConsensus::ClosePeers() {
+void sharpen::RaftConsensus::ReleasePeers() {
     assert(this->worker_ != nullptr);
-    this->worker_->Submit(&Self::DoClosePeers, this);
+    this->worker_->Submit(&Self::DoReleasePeers, this);
 }
 
 void sharpen::RaftConsensus::NviDropLogsUntil(std::uint64_t index) {

@@ -116,7 +116,7 @@ namespace sharpen {
             this->ConfiguratePeers(std::move(config));
         }
 
-        virtual void ClosePeers() = 0;
+        virtual void ReleasePeers() = 0;
 
         virtual sharpen::ConsensusWriter GetWriterId() const noexcept = 0;
 
