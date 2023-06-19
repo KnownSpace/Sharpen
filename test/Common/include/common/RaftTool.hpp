@@ -37,7 +37,8 @@ extern std::unique_ptr<sharpen::IQuorum> ConfigPeers(sharpen::IQuorum *quorum,
                                                      std::uint16_t begin,
                                                      std::uint16_t end,
                                                      sharpen::IMailReceiver *receiver,
-                                                     std::uint32_t magic);
+                                                     std::uint32_t magic,
+                                                     bool pipeline);
 
 extern std::shared_ptr<sharpen::IConsensus> CreateRaft(
     std::uint16_t port,

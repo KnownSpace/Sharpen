@@ -47,7 +47,7 @@ static std::shared_ptr<sharpen::IConsensus> CreateRaft(std::uint16_t port) {
     raftOpt.SetPrevote(false);
     auto raft{CreateRaft(port, magicNumber, nullptr, raftOpt,false)};
     raft->ConfiguratePeers(
-        &ConfigPeers, port, beginPort, endPort, &raft->GetReceiver(), magicNumber);
+        &ConfigPeers, port, beginPort, endPort, &raft->GetReceiver(), magicNumber,false);
     return raft;
 }
 
@@ -59,18 +59,18 @@ static std::shared_ptr<sharpen::IConsensus> CreatePipelineRaft(std::uint16_t por
     raftOpt.SetPipelineLength(pipelineLength);
     auto raft{CreateRaft(port, magicNumber, nullptr, raftOpt,true)};
     raft->ConfiguratePeers(
-        &ConfigPeers, port, beginPort, endPort, &raft->GetReceiver(), magicNumber);
+        &ConfigPeers, port, beginPort, endPort, &raft->GetReceiver(), magicNumber,true);
     return raft;
 }
 
-std::unique_ptr<sharpen::IHostPipeline> ConfigPipeline(std::shared_ptr<sharpen::IConsensus> raft) {
+static std::unique_ptr<sharpen::IHostPipeline> ConfigPipeline(std::shared_ptr<sharpen::IConsensus> raft) {
     std::unique_ptr<sharpen::IHostPipeline> pipe{new (std::nothrow) sharpen::SimpleHostPipeline{}};
     pipe->Register<LogStep>();
     pipe->Register<RaftStep>(magicNumber, std::move(raft));
     return pipe;
 }
 
-std::unique_ptr<sharpen::TcpHost> CreateHost(std::uint16_t port,
+static std::unique_ptr<sharpen::TcpHost> CreateHost(std::uint16_t port,
                                              std::shared_ptr<sharpen::IConsensus> raft) {
     sharpen::IpEndPoint endPoint;
     endPoint.SetAddrByString("127.0.0.1");
@@ -82,6 +82,10 @@ std::unique_ptr<sharpen::TcpHost> CreateHost(std::uint16_t port,
     }
     host->ConfiguratePipeline(&ConfigPipeline, std::move(raft));
     return host;
+}
+
+static void WaitForPorts() {
+    sharpen::Delay(std::chrono::seconds{3});
 }
 
 class BasicHeartbeatTest : public simpletest::ITypenamedTest<BasicHeartbeatTest> {
@@ -98,6 +102,7 @@ public:
     }
 
     inline virtual simpletest::TestResult Run() noexcept {
+        WaitForPorts();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(3);
         std::vector<std::unique_ptr<sharpen::IHost>> hosts;
@@ -166,6 +171,7 @@ public:
     }
 
     inline virtual simpletest::TestResult Run() noexcept {
+        WaitForPorts();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(2);
         std::vector<std::unique_ptr<sharpen::IHost>> hosts;
@@ -234,6 +240,7 @@ public:
     }
 
     inline virtual simpletest::TestResult Run() noexcept {
+        WaitForPorts();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(3);
         std::vector<std::unique_ptr<sharpen::IHost>> hosts;
@@ -307,6 +314,7 @@ public:
     }
 
     inline virtual simpletest::TestResult Run() noexcept {
+        WaitForPorts();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(2);
         std::vector<std::unique_ptr<sharpen::IHost>> hosts;
@@ -380,6 +388,7 @@ public:
     }
 
     inline virtual simpletest::TestResult Run() noexcept {
+        WaitForPorts();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(3);
         std::vector<std::unique_ptr<sharpen::IHost>> hosts;
@@ -430,7 +439,10 @@ public:
         while (faultRaft->ImmutableLogs().GetLastIndex() !=
                primary->ImmutableLogs().GetLastIndex()) {
             primary->Advance();
-            faultRaft->WaitNextConsensus();
+            for (auto begin = rafts.begin() + 1, end = rafts.end(); begin != end; ++begin) {
+                auto backup{begin->get()};
+                backup->WaitNextConsensus();
+            }
             writable = primary->Writable();
             sharpen::SyncPrintf("Recovery to %zu/%zu\n", faultRaft->ImmutableLogs().GetLastIndex(),primary->ImmutableLogs().GetLastIndex());
         }
@@ -447,7 +459,6 @@ public:
             auto future{begin->get()};
             future->WaitAsync();
         }
-        sharpen::SyncPuts("Stop4");
         // remove files
         for (std::uint16_t i = beginPort; i != endPort + 1; ++i) {
             RemoveLogStorage(i);
@@ -475,6 +486,7 @@ public:
 
     inline virtual simpletest::TestResult Run() noexcept
     {
+        WaitForPorts();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(3);
         std::vector<std::unique_ptr<sharpen::IHost>> hosts;
@@ -552,6 +564,7 @@ public:
 
     inline virtual simpletest::TestResult Run() noexcept
     {
+        WaitForPorts();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(2);
         std::vector<std::unique_ptr<sharpen::IHost>> hosts;
@@ -629,6 +642,7 @@ public:
 
     inline virtual simpletest::TestResult Run() noexcept
     {
+        WaitForPorts();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(3);
         std::vector<std::unique_ptr<sharpen::IHost>> hosts;
@@ -679,7 +693,10 @@ public:
         while (faultRaft->ImmutableLogs().GetLastIndex() !=
                primary->ImmutableLogs().GetLastIndex()) {
             primary->Advance();
-            faultRaft->WaitNextConsensus();
+            for (auto begin = rafts.begin() + 1, end = rafts.end(); begin != end; ++begin) {
+                auto backup{begin->get()};
+                backup->WaitNextConsensus();
+            }
             writable = primary->Writable();
             sharpen::SyncPrintf("Recovery to %zu/%zu\n", faultRaft->ImmutableLogs().GetLastIndex(),primary->ImmutableLogs().GetLastIndex());
         }
@@ -712,10 +729,10 @@ int Entry() {
     runner.Register<FaultHeartbeatTest>();
     runner.Register<BasicAppendTest>();
     runner.Register<FaultAppendTest>();
-    // runner.Register<RecoveryAppendTest>();
+    runner.Register<RecoveryAppendTest>();
     runner.Register<PipelineAppendTest>();
     runner.Register<FaultPipelineAppendTest>();
-    // runner.Register<RecoveryPipelineAppendTest>();
+    runner.Register<RecoveryPipelineAppendTest>();
     int code{runner.Run()};
     sharpen::CleanupNetSupport();
     return code;

@@ -77,7 +77,8 @@ std::unique_ptr<sharpen::IQuorum> ConfigPeers(sharpen::IQuorum *quorum,
                                               std::uint16_t begin,
                                               std::uint16_t end,
                                               sharpen::IMailReceiver *receiver,
-                                              std::uint32_t magic) {
+                                              std::uint32_t magic,
+                                              bool pipeline) {
     assert(receiver != nullptr);
     std::unique_ptr<sharpen::IQuorum> peers{quorum};
     peers.reset(new (std::nothrow) sharpen::Quorum{});
@@ -90,7 +91,7 @@ std::unique_ptr<sharpen::IQuorum> ConfigPeers(sharpen::IQuorum *quorum,
     for (auto begin = ports.begin(), end = ports.end(); begin != end; ++begin) {
         if (begin->GetPort() != port) {
             std::unique_ptr<sharpen::IpTcpActorBuilder> builder{new (std::nothrow)
-                                                                    sharpen::IpTcpActorBuilder{}};
+                                                                    sharpen::IpTcpActorBuilder{pipeline}};
             if (!builder) {
                 std::terminate();
             }

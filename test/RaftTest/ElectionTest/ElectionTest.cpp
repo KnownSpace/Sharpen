@@ -45,7 +45,7 @@ static std::shared_ptr<sharpen::IConsensus> CreateRaft(std::uint16_t port) {
     raftOpt.SetPrevote(false);
     auto raft{CreateRaft(port, magicNumber, nullptr, raftOpt, false)};
     raft->ConfiguratePeers(
-        &ConfigPeers, port, beginPort, endPort, &raft->GetReceiver(), magicNumber);
+        &ConfigPeers, port, beginPort, endPort, &raft->GetReceiver(), magicNumber,false);
     return raft;
 }
 
@@ -56,7 +56,7 @@ static std::shared_ptr<sharpen::IConsensus> CreatePrevoteRaft(std::uint16_t port
     raftOpt.SetPrevote(true);
     auto raft{CreateRaft(port, magicNumber, nullptr, raftOpt, false)};
     raft->ConfiguratePeers(
-        &ConfigPeers, port, beginPort, endPort, &raft->GetReceiver(), magicNumber);
+        &ConfigPeers, port, beginPort, endPort, &raft->GetReceiver(), magicNumber,false);
     return raft;
 }
 
