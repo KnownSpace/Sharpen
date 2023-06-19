@@ -347,8 +347,7 @@ void sharpen::PosixNetStreamChannel::CompleteIoCallback(sharpen::EventLoop *loop
         sharpen::ErrorCode code{sharpen::GetLastError()};
         if (code == sharpen::ErrorCancel || code == sharpen::ErrorConnectionAborted ||
             code == sharpen::ErrorConnectionReset || code == sharpen::ErrorNotSocket ||
-            code == sharpen::ErrorBadFileHandle || code == sharpen::ErrorBadSocketHandle ||
-            code == sharpen::ErrorBrokenPipe) {
+            code == sharpen::ErrorBadFileHandle || code == sharpen::ErrorBrokenPipe) {
             loop->RunInLoopSoon(std::bind(&sharpen::Future<std::size_t>::CompleteForBind,
                                           future,
                                           static_cast<std::size_t>(0)));
@@ -369,8 +368,7 @@ void sharpen::PosixNetStreamChannel::CompletePollCallback(sharpen::EventLoop *lo
         sharpen::ErrorCode code{sharpen::GetLastError()};
         if (code == sharpen::ErrorCancel || code == sharpen::ErrorConnectionAborted ||
             code == sharpen::ErrorConnectionReset || code == sharpen::ErrorNotSocket ||
-            code == sharpen::ErrorBrokenPipe || code == sharpen::ErrorBadFileHandle ||
-            code == sharpen::ErrorBadSocketHandle) {
+            code == sharpen::ErrorBrokenPipe || code == sharpen::ErrorBadFileHandle ) {
             loop->RunInLoopSoon(std::bind(&sharpen::Future<void>::CompleteForBind, future));
             return;
         }
@@ -390,8 +388,7 @@ void sharpen::PosixNetStreamChannel::CompleteSendFileCallback(sharpen::EventLoop
         sharpen::ErrorCode code{sharpen::GetLastError()};
         if (code == sharpen::ErrorCancel || code == sharpen::ErrorConnectionAborted ||
             code == sharpen::ErrorConnectionReset || code == sharpen::ErrorNotSocket ||
-            code == sharpen::ErrorBrokenPipe || code == sharpen::ErrorBadFileHandle ||
-            code == sharpen::ErrorBadSocketHandle) {
+            code == sharpen::ErrorBrokenPipe || code == sharpen::ErrorBadFileHandle) {
             loop->RunInLoopSoon(std::bind(&sharpen::Future<std::size_t>::CompleteForBind,
                                           future,
                                           static_cast<std::size_t>(0)));

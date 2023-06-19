@@ -67,9 +67,11 @@ void sharpen::TcpPoster::NviOpen(std::unique_ptr<sharpen::IMailParser> parser) {
         case sharpen::ErrorBadFileHandle:
             throw sharpen::RemotePosterOpenError{"poster is closed by operator"};
             break;
+#ifdef SHARPEN_IS_WIN
         case sharpen::ErrorBadSocketHandle:
             throw sharpen::RemotePosterOpenError{"poster is closed by operator"};
             break;
+#endif
         }
         throw;
     } catch (const std::exception &rethrow) {
