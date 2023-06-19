@@ -45,46 +45,49 @@ bool sharpen::GenericMailPaser::Completed() const noexcept {
     return !this->completedMails_.empty();
 }
 
+sharpen::GenericMailPaser::ParseStatus sharpen::GenericMailPaser::GetStatus() const noexcept {
+    if (this->parsedSize_ >= sizeof(sharpen::GenericMailHeader)) {
+        return ParseStatus::Content;
+    }
+    return ParseStatus::Header;
+}
+
 void sharpen::GenericMailPaser::NviParse(sharpen::ByteSlice slice) {
-    while (!slice.Empty()) {
-        const char *data{slice.Data()};
-        std::size_t offset{0};
-        std::size_t copyParsed{this->parsedSize_};
-        if (this->parsedSize_ < sizeof(sharpen::GenericMailHeader)) {
-            std::size_t size{(std::min)(slice.GetSize(),
-                                        sizeof(sharpen::GenericMailHeader) - this->parsedSize_)};
-            std::memcpy(this->header_.Data() + this->parsedSize_, data, size);
-            offset = size;
-            this->parsedSize_ += size;
-            if (this->parsedSize_ < sizeof(sharpen::GenericMailHeader)) {
-                return;
+    for (auto begin = slice.Begin(), end = slice.End(); begin != end;) {
+        switch (this->GetStatus()) {
+        case ParseStatus::Header: {
+            assert(this->header_.GetSize() == sizeof(sharpen::GenericMailHeader));
+            std::size_t offset{this->parsedSize_};
+            std::size_t remainSize{static_cast<std::size_t>(end - begin)};
+            remainSize = (std::min)(remainSize, sizeof(sharpen::GenericMailHeader) - offset);
+            std::memcpy(this->header_.Data() + offset, begin.GetPointer(), remainSize);
+            this->parsedSize_ += remainSize;
+            begin += remainSize;
+        } break;
+        case ParseStatus::Content: {
+            assert(this->header_.GetSize() == sizeof(sharpen::GenericMailHeader));
+            assert(this->parsedSize_ >= this->header_.GetSize());
+            const sharpen::GenericMailHeader *header{
+                &this->header_.As<sharpen::GenericMailHeader>()};
+            std::uint32_t contentSize{header->GetContentSize()};
+            if (this->content_.Empty()) {
+                this->content_.ExtendTo(contentSize);
             }
-            std::uint32_t magic{this->header_.As<sharpen::GenericMailHeader>().GetMagic()};
-            if (magic != this->magic_) {
-                throw sharpen::MailParseError{"Unexcepted magic number"};
+            std::size_t offset{this->parsedSize_ - sizeof(sharpen::GenericMailHeader)};
+            std::size_t remainSize{contentSize - offset};
+            remainSize = (std::min)(remainSize, static_cast<std::size_t>(end - begin));
+            std::memcpy(this->content_.Data() + offset, begin.GetPointer(), remainSize);
+            this->parsedSize_ += remainSize;
+            if (this->parsedSize_ == sizeof(sharpen::GenericMailHeader) + contentSize) {
+                sharpen::ByteBuffer header{sizeof(sharpen::GenericMailHeader)};
+                sharpen::ByteBuffer content;
+                std::swap(header, this->header_);
+                std::swap(content, this->content_);
+                this->completedMails_.emplace_back(std::move(header), std::move(content));
+                this->parsedSize_ = 0;
             }
-        }
-        std::size_t contentSize{this->header_.As<sharpen::GenericMailHeader>().GetContentSize()};
-        if (!contentSize || slice.GetSize() == offset) {
-            return;
-        }
-        if (this->content_.Empty()) {
-            this->content_.ExtendTo(contentSize);
-        }
-        std::size_t contentOffset{this->parsedSize_ - sizeof(sharpen::GenericMailHeader)};
-        std::size_t size{(std::min)(contentSize - contentOffset, slice.GetSize() - offset)};
-        assert(this->content_.GetSize() == contentSize);
-        assert(this->content_.GetSize() == size + contentOffset);
-        std::memcpy(this->content_.Data() + contentOffset, data + offset, size);
-        this->parsedSize_ += size;
-        if (this->parsedSize_ == sizeof(sharpen::GenericMailHeader) + contentSize) {
-            sharpen::ByteBuffer header{sizeof(sharpen::GenericMailHeader)};
-            sharpen::ByteBuffer content;
-            std::swap(header, this->header_);
-            std::swap(content, this->content_);
-            this->completedMails_.emplace_back(std::move(header), std::move(content));
-            slice = slice.Sub(this->parsedSize_ - copyParsed);
-            this->parsedSize_ = 0;
+            begin += remainSize;
+        } break;
         }
     }
 }
