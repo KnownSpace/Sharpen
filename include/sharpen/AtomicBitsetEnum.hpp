@@ -70,7 +70,7 @@ namespace sharpen {
         }
 
         inline Self Take() noexcept {
-            return Self{this->enum_.exchange(static_cast<IntType>(_Default))};
+            return Self{static_cast<_Enum>(this->enum_.exchange(static_cast<IntType>(_Default)))};
         }
 
         inline bool IsDefault() const noexcept {
