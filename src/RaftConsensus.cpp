@@ -88,7 +88,7 @@ void sharpen::RaftConsensus::DoNotifyWaiterWhenClose() noexcept {
 sharpen::RaftConsensus::~RaftConsensus() noexcept {
     // wait is unneeded
     // we will block when ~worker()
-    this->worker_->Submit(&Self::DoNotifyWaiterWhenClose,this);
+    this->worker_->Submit(&Self::DoNotifyWaiterWhenClose, this);
 }
 
 sharpen::Optional<std::uint64_t> sharpen::RaftConsensus::LoadUint64(sharpen::ByteSlice key) {
@@ -302,7 +302,8 @@ bool sharpen::RaftConsensus::NviIsConsensusMail(const sharpen::Mail &mail) const
     return this->mailExtractor_->IsRaftMail(mail);
 }
 
-void sharpen::RaftConsensus::NviWaitNextConsensus(sharpen::Future<sharpen::ConsensusResult> &future) {
+void sharpen::RaftConsensus::NviWaitNextConsensus(
+    sharpen::Future<sharpen::ConsensusResult> &future) {
     assert(this->worker_ != nullptr);
     this->waiter_.store(&future);
     std::uint64_t advancedCount{this->advancedCount_.load()};
@@ -311,6 +312,7 @@ void sharpen::RaftConsensus::NviWaitNextConsensus(sharpen::Future<sharpen::Conse
         sharpen::Future<sharpen::ConsensusResult> *waiter{this->waiter_.exchange(nullptr)};
         if (waiter) {
             this->reachAdvancedCount_.compare_exchange_strong(reachCount, advancedCount);
+            assert(!this->lastResult_.IsNone());
             sharpen::ConsensusResult result{this->lastResult_.Take()};
             waiter->Complete(result);
         }
@@ -320,7 +322,8 @@ void sharpen::RaftConsensus::NviWaitNextConsensus(sharpen::Future<sharpen::Conse
 void sharpen::RaftConsensus::EnsureBroadcaster() {
     if (!this->peersBroadcaster_) {
         assert(this->peers_ != nullptr);
-        this->peersBroadcaster_ = this->peers_->CreateBroadcaster(this->option_.GetPipelineLength());
+        this->peersBroadcaster_ =
+            this->peers_->CreateBroadcaster(this->option_.GetPipelineLength());
     }
 }
 
@@ -502,12 +505,16 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(
             }
         }
         // always advance state machine
-        this->OnStatusChanged({sharpen::ConsensusResultEnum::LogsCommit});
+        if (commitIndex != this->GetCommitIndex()) {
+            this->OnStatusChanged({sharpen::ConsensusResultEnum::LogsCommit,sharpen::ConsensusResultEnum::LeaseRequested});
+        } else {
+            this->OnStatusChanged({sharpen::ConsensusResultEnum::LeaseRequested});
+        }
         if (!response.GetStatus()) {
             // if we failure in some way
             // set match index to current commit index
             // then leader could relocate conflict point
-            response.SetMatchIndex(commitIndex);
+            response.SetMatchIndex(this->GetCommitIndex());
         }
     }
     sharpen::Mail mail{this->mailBuilder_->BuildHeartbeatResponse(response)};
@@ -554,14 +561,15 @@ sharpen::Mail sharpen::RaftConsensus::OnSnapshotRequest(
             if (leaderRecord.GetEpoch() < request.GetTerm()) {
                 this->leaderRecord_.Flush(request.GetTerm(), request.LeaderActorId());
             }
-            this->OnStatusChanged({sharpen::ConsensusResultEnum::SnapshotReceived});
+            this->OnStatusChanged({sharpen::ConsensusResultEnum::SnapshotReceived,sharpen::ConsensusResultEnum::LeaseRequested});
         }
     }
     sharpen::Mail mail{this->mailBuilder_->BuildSnapshotResponse(response)};
     return mail;
 }
 
-void sharpen::RaftConsensus::NotifyWaiter(sharpen::Future<sharpen::ConsensusResult> *waiter) noexcept {
+void sharpen::RaftConsensus::NotifyWaiter(
+    sharpen::Future<sharpen::ConsensusResult> *waiter) noexcept {
     assert(waiter != nullptr);
     try {
         sharpen::ConsensusResult result{this->lastResult_.Take()};
@@ -598,15 +606,16 @@ void sharpen::RaftConsensus::Abdicate() {
     }
 }
 
-void sharpen::RaftConsensus::OnStatusChanged(std::initializer_list<sharpen::ConsensusResultEnum> results) {
-    for(auto begin = results.begin(),end = results.end(); begin != end; ++begin)
-    {
-        this->lastResult_.Set(*begin);   
+void sharpen::RaftConsensus::OnStatusChanged(
+    std::initializer_list<sharpen::ConsensusResultEnum> results) {
+    for (auto begin = results.begin(), end = results.end(); begin != end; ++begin) {
+        this->lastResult_.Set(*begin);
     }
     std::uint64_t advancedCount{this->advancedCount_.fetch_add(1) + 1};
     sharpen::Future<sharpen::ConsensusResult> *future{this->waiter_.exchange(nullptr)};
     if (future) {
         this->reachAdvancedCount_.store(advancedCount);
+        assert(!this->lastResult_.IsNone());
         this->NotifyWaiter(future);
     }
 }
@@ -672,6 +681,7 @@ void sharpen::RaftConsensus::OnHeartbeatResponse(const sharpen::RaftHeartbeatRes
         this->Abdicate();
     }
     if (response.GetStatus() && response.GetTerm() == this->GetTerm()) {
+        // TODO: check lease
         // load current commit index
         std::uint64_t commitIndex{this->GetCommitIndex()};
         // foward replicated state and recompute commit index
@@ -866,8 +876,8 @@ void sharpen::RaftConsensus::DoAdvance() {
     switch (this->role_.load()) {
     case sharpen::RaftRole::Leader: {
         this->DoSyncHeartbeatProvider();
+        this->heartbeatProvider_->PrepareTerm(this->GetTerm());
         if (!this->heartbeatProvider_->Empty()) {
-            this->heartbeatProvider_->PrepareTerm(this->GetTerm());
             sharpen::Optional<std::uint64_t> syncIndex{
                 this->heartbeatProvider_->GetSynchronizedIndex()};
             if (syncIndex.Exist()) {
@@ -875,6 +885,14 @@ void sharpen::RaftConsensus::DoAdvance() {
                 this->peersBroadcaster_->Broadcast(std::move(mail));
             } else {
                 this->peersBroadcaster_->Broadcast(*this->heartbeatProvider_);
+            }
+        } else if(this->option_.IsEnableSingle()) {
+            std::uint64_t commitIndex{this->GetCommitIndex()};
+            std::uint64_t lastIndex{this->GetLastIndex()};
+            if (commitIndex != lastIndex) {
+                this->OnStatusChanged({sharpen::ConsensusResultEnum::LogsCommit,sharpen::ConsensusResultEnum::LeaseConfirmed});
+            } else {
+                this->OnStatusChanged({sharpen::ConsensusResultEnum::LeaseConfirmed});
             }
         }
         break;
@@ -886,7 +904,7 @@ void sharpen::RaftConsensus::DoAdvance() {
             } else {
                 this->RaisePrevote();
             }
-        } else if(this->option_.IsEnableSingle()) {
+        } else if (this->option_.IsEnableSingle()) {
             // get current term
             std::uint64_t term{this->GetTerm()};
             term += 1;
@@ -1009,18 +1027,18 @@ void sharpen::RaftConsensus::DoStoreLastAppiledIndex(std::uint64_t index) {
     this->EnsureHearbeatProvider();
     if (this->GetCommitIndex() > index) {
 #ifdef SHARPEN_IS_BIG_ENDIAN
-            sharpen::ConvertEndian(index);
+        sharpen::ConvertEndian(index);
 #endif
         sharpen::ByteBuffer val{sizeof(index)};
         val.As<std::uint64_t>() = index;
         sharpen::ByteBuffer key{lastAppiledKey};
-        this->statusMap_->Write(std::move(key),std::move(val));
+        this->statusMap_->Write(std::move(key), std::move(val));
     }
 }
 
 void sharpen::RaftConsensus::StoreLastAppiledIndex(std::uint64_t index) {
     assert(this->worker_ != nullptr);
     sharpen::AwaitableFuture<void> future;
-    this->worker_->Invoke(future,&Self::DoStoreLastAppiledIndex,this,index);
+    this->worker_->Invoke(future, &Self::DoStoreLastAppiledIndex, this, index);
     future.Await();
 }
