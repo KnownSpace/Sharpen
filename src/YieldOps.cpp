@@ -13,7 +13,7 @@ void sharpen::YieldCycle() {
     }
 }
 
-constexpr static std::size_t BusyLoopCount{10*1024};
+constexpr static std::size_t BusyLoopCount{16};
 
 void sharpen::YieldCycleForBusyLoop() {
     for(std::size_t i = 0;i != BusyLoopCount;++i)

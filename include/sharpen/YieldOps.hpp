@@ -48,7 +48,7 @@ namespace sharpen {
         inline void operator()() noexcept {
             if (this->fiber_) {
                 sharpen::IFiberScheduler *scheduler{this->fiber_->GetScheduler()};
-                assert(scheduler);
+                assert(scheduler != nullptr);
                 scheduler->ScheduleSoon(std::move(this->fiber_));
             }
         }
