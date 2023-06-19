@@ -2,9 +2,6 @@
 #ifndef _SHARPEN_RAFTHEARTBEATMAILPROVIDER_HPP
 #define _SHARPEN_RAFTHEARTBEATMAILPROVIDER_HPP
 
-#include <cassert>
-#include <map>
-
 #include "ILogStorage.hpp"
 #include "IMailProvider.hpp"
 #include "IRaftLogAccesser.hpp"
@@ -13,6 +10,10 @@
 #include "Noncopyable.hpp"
 #include "Optional.hpp"
 #include "RaftReplicatedState.hpp"
+#include <atomic>
+#include <cassert>
+#include <map>
+
 
 namespace sharpen {
     class RaftHeartbeatMailProvider
@@ -34,7 +35,7 @@ namespace sharpen {
         std::size_t batchSize_;
         mutable std::map<sharpen::ActorId, sharpen::RaftReplicatedState> states_;
         std::uint64_t term_;
-        std::uint64_t commitIndex_;
+        std::atomic_uint64_t commitIndex_;
 
         sharpen::RaftReplicatedState *LookupMutableState(
             const sharpen::ActorId &actorId) const noexcept;
@@ -68,8 +69,6 @@ namespace sharpen {
         inline const Self &Const() const noexcept {
             return *this;
         }
-
-        void PrepareTerm(std::uint64_t term) noexcept;
 
         void SetCommitIndex(std::uint64_t index) noexcept;
 

@@ -195,6 +195,8 @@ namespace sharpen {
 
         void DoAdvance();
 
+        void DoStoreLastAppiledIndex(std::uint64_t index);
+
     public:
         constexpr static sharpen::ByteSlice voteKey{"vote", 4};
 
@@ -267,6 +269,8 @@ namespace sharpen {
         void ClosePeers() override;
 
         virtual std::uint64_t GetEpoch() const noexcept override;
+
+        virtual void StoreLastAppiledIndex(std::uint64_t index) override;
     };
 }   // namespace sharpen
 

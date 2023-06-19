@@ -84,7 +84,11 @@ sharpen::Optional<std::uint64_t> sharpen::RaftConsensus::LoadUint64(sharpen::Byt
     if (valOpt.Exist()) {
         sharpen::ByteBuffer &val{valOpt.Get()};
         if (val.GetSize() == sizeof(std::uint64_t)) {
-            return val.As<std::uint64_t>();
+            std::uint64_t v{val.As<std::uint64_t>()};
+#ifdef SHARPEN_IS_BIG_ENDIAN
+            sharpen::ConvertEndian(v);
+#endif
+            return v;
         }
     }
     return sharpen::EmptyOpt;
@@ -842,7 +846,6 @@ void sharpen::RaftConsensus::DoAdvance() {
     case sharpen::RaftRole::Leader: {
         this->DoSyncHeartbeatProvider();
         if (!this->heartbeatProvider_->Empty()) {
-            this->heartbeatProvider_->PrepareTerm(this->GetTerm());
             sharpen::Optional<std::uint64_t> syncIndex{
                 this->heartbeatProvider_->GetSynchronizedIndex()};
             if (syncIndex.Exist()) {
@@ -977,4 +980,25 @@ sharpen::ConsensusWriter sharpen::RaftConsensus::GetWriterId() const noexcept {
 
 std::uint64_t sharpen::RaftConsensus::GetEpoch() const noexcept {
     return this->GetTerm();
+}
+
+void sharpen::RaftConsensus::DoStoreLastAppiledIndex(std::uint64_t index) {
+    assert(this->statusMap_ != nullptr);
+    this->EnsureHearbeatProvider();
+    if (this->GetCommitIndex() > index) {
+#ifdef SHARPEN_IS_BIG_ENDIAN
+            sharpen::ConvertEndian(index);
+#endif
+        sharpen::ByteBuffer val{sizeof(index)};
+        val.As<std::uint64_t>() = index;
+        sharpen::ByteBuffer key{lastAppiledKey};
+        this->statusMap_->Write(std::move(key),std::move(val));
+    }
+}
+
+void sharpen::RaftConsensus::StoreLastAppiledIndex(std::uint64_t index) {
+    assert(this->worker_ != nullptr);
+    sharpen::AwaitableFuture<void> future;
+    this->worker_->Invoke(future,&Self::DoStoreLastAppiledIndex,this,index);
+    future.Await();
 }

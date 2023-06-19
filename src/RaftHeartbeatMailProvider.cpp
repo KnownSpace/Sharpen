@@ -40,7 +40,7 @@ sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(Self &&other) noex
     , batchSize_(other.batchSize_)
     , states_(std::move(other.states_))
     , term_(other.term_)
-    , commitIndex_(other.commitIndex_) {
+    , commitIndex_(other.commitIndex_.load()) {
     other.builder_ = nullptr;
     other.logs_ = nullptr;
     other.snapshotProvider_ = nullptr;
@@ -59,7 +59,7 @@ sharpen::RaftHeartbeatMailProvider &sharpen::RaftHeartbeatMailProvider::operator
         this->batchSize_ = other.batchSize_;
         this->states_ = std::move(other.states_);
         this->term_ = other.term_;
-        this->commitIndex_ = other.commitIndex_;
+        this->commitIndex_ = other.commitIndex_.load();
         other.builder_ = nullptr;
         other.logs_ = nullptr;
         other.snapshotProvider_ = nullptr;
@@ -177,10 +177,6 @@ void sharpen::RaftHeartbeatMailProvider::SetCommitIndex(std::uint64_t index) noe
         }
         this->ReComputeCommitIndex();
     }
-}
-
-void sharpen::RaftHeartbeatMailProvider::PrepareTerm(std::uint64_t term) noexcept {
-    this->term_ = term;
 }
 
 sharpen::Mail sharpen::RaftHeartbeatMailProvider::ProvideSnapshotRequest(
