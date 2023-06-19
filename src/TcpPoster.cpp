@@ -24,7 +24,7 @@ void sharpen::TcpPoster::NviOpen(std::unique_ptr<sharpen::IMailParser> parser) {
         std::unique_lock<sharpen::SpinLock> lock{*this->lock_};
         if (!this->channel_) {
             assert(this->factory_);
-            this->channel_ = this->factory_->Produce();
+            this->channel_ = this->factory_->Produce(sharpen::TcpStreamOption{});
         }
         channel = this->channel_;
     }

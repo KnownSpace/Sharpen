@@ -10,9 +10,12 @@ sharpen::IpTcpStreamFactory::IpTcpStreamFactory(sharpen::IEventLoopGroup &loopGr
     , localEndpoint_(endpoint) {
 }
 
-sharpen::NetStreamChannelPtr sharpen::IpTcpStreamFactory::NviProduce() {
+sharpen::NetStreamChannelPtr sharpen::IpTcpStreamFactory::NviProduce(sharpen::TcpStreamOption opt) {
     assert(this->loopGroup_);
     sharpen::NetStreamChannelPtr channel{sharpen::OpenTcpChannel(sharpen::AddressFamily::Ip)};
+    if (opt.EnableReuseAddress()) {
+        channel->SetReuseAddress(true);
+    }
     channel->Bind(this->localEndpoint_);
     channel->Register(*this->loopGroup_);
     return channel;

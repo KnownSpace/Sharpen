@@ -191,7 +191,10 @@ void sharpen::INetStreamChannel::SetReuseAddress(bool val) {
                  sizeof(opt));
 #else
     int opt = val ? 1 : 0;
-    ::setsockopt(this->handle_, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    int r = ::setsockopt(this->handle_, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    if (r == -1) {
+        sharpen::ThrowLastError();
+    }
 #endif
 }
 
@@ -206,7 +209,10 @@ int sharpen::INetStreamChannel::GetErrorCode() const noexcept {
                  &errSize);
 #else
     socklen_t errSize = sizeof(err);
-    ::getsockopt(this->handle_, SOL_SOCKET, SO_ERROR, &err, &errSize);
+    int r = ::getsockopt(this->handle_, SOL_SOCKET, SO_ERROR, &err, &errSize);
+    if (r == -1) {
+        sharpen::ThrowLastError();
+    }
 #endif
     return err;
 }
