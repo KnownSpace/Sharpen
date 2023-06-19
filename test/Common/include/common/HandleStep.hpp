@@ -4,7 +4,7 @@
 
 #include <sharpen/IHostPipelineStep.hpp>
 #include <sharpen/GenericMail.hpp>
-#include <sharpen/GenericMailPaser.hpp>
+#include <sharpen/GenericMailParser.hpp>
 #include <sharpen/GenericMailParserFactory.hpp>
 
 class HandleStep : public sharpen::IHostPipelineStep,public sharpen::Noncopyable {
