@@ -846,6 +846,7 @@ void sharpen::RaftConsensus::DoAdvance() {
     case sharpen::RaftRole::Leader: {
         this->DoSyncHeartbeatProvider();
         if (!this->heartbeatProvider_->Empty()) {
+            this->heartbeatProvider_->PrepareTerm(this->GetTerm());
             sharpen::Optional<std::uint64_t> syncIndex{
                 this->heartbeatProvider_->GetSynchronizedIndex()};
             if (syncIndex.Exist()) {

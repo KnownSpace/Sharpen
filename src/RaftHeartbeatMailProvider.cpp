@@ -298,6 +298,10 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(const sharpen::ActorId
     return this->builder_->BuildHeartbeatRequest(request);
 }
 
+void sharpen::RaftHeartbeatMailProvider::PrepareTerm(std::uint64_t term) noexcept {
+    this->term_ = term;
+}
+
 sharpen::Mail sharpen::RaftHeartbeatMailProvider::ProvideSynchronizedMail() const {
     assert(!this->states_.empty());
     sharpen::ActorId actorId{this->states_.begin()->first};

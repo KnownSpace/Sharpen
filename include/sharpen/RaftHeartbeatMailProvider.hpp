@@ -88,6 +88,8 @@ namespace sharpen {
 
         sharpen::Optional<std::uint64_t> GetSynchronizedIndex() const noexcept;
 
+        void PrepareTerm(std::uint64_t term) noexcept;
+
         sharpen::Mail ProvideSynchronizedMail() const;
 
         void RemoveState(const sharpen::ActorId &actorId) noexcept;
