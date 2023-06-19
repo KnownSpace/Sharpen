@@ -78,6 +78,19 @@ sharpen::RaftConsensus::RaftConsensus(
            sharpen::GetLocalScheduler()} {
 }
 
+void sharpen::RaftConsensus::DoNotifyWaiterWhenClose() noexcept {
+    sharpen::Future<sharpen::ConsensusResult> *waiter{this->waiter_.exchange(nullptr)};
+    if (waiter != nullptr) {
+        this->NotifyWaiter(waiter);
+    }
+}
+
+sharpen::RaftConsensus::~RaftConsensus() noexcept {
+    // wait is unneeded
+    // we will block when ~worker()
+    this->worker_->Submit(&Self::DoNotifyWaiterWhenClose,this);
+}
+
 sharpen::Optional<std::uint64_t> sharpen::RaftConsensus::LoadUint64(sharpen::ByteSlice key) {
     assert(this->statusMap_ != nullptr);
     sharpen::ByteBuffer keyBuf{key};
@@ -549,6 +562,7 @@ sharpen::Mail sharpen::RaftConsensus::OnSnapshotRequest(
 }
 
 void sharpen::RaftConsensus::NotifyWaiter(sharpen::Future<sharpen::ConsensusResult> *waiter) noexcept {
+    assert(waiter != nullptr);
     try {
         sharpen::ConsensusResult result{this->lastResult_.Take()};
         waiter->Complete(result);
