@@ -4,6 +4,10 @@
 #include <cassert>
 #include <new>
 
+#ifndef _NDEBUG
+#include <sharpen/DebugTools.hpp>
+#endif
+
 void sharpen::TcpPoster::NviClose() noexcept {
     sharpen::NetStreamChannelPtr channel{nullptr};
     {
@@ -61,6 +65,9 @@ void sharpen::TcpPoster::NviOpen(std::unique_ptr<sharpen::IMailParser> parser) {
             throw sharpen::RemotePosterOpenError{"poster is closed by operator"};
             break;
         case sharpen::ErrorBadFileHandle:
+            throw sharpen::RemotePosterOpenError{"poster is closed by operator"};
+            break;
+        case sharpen::ErrorBadSocketHandle:
             throw sharpen::RemotePosterOpenError{"poster is closed by operator"};
             break;
         }
