@@ -106,8 +106,11 @@ void sharpen::PosixPipeSignalChannel::CompleteReadCallback(sharpen::EventLoop *l
 }
 
 void sharpen::PosixPipeSignalChannel::OnEvent(sharpen::IoEvent *event) {
-    if (event->IsReadEvent() || event->IsCloseEvent() || event->IsErrorEvent()) {
+    if (event->IsReadEvent()) {
         this->HandleRead();
+    }
+    if (event->IsCloseEvent() || event->IsErrorEvent()) {
+        this->reader_.CancelAllIo(sharpen::ErrorBrokenPipe);
     }
 }
 

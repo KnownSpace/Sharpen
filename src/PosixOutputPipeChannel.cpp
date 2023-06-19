@@ -87,8 +87,11 @@ void sharpen::PosixOutputPipeChannel::WriteAsync(const sharpen::ByteBuffer &buf,
 }
 
 void sharpen::PosixOutputPipeChannel::OnEvent(sharpen::IoEvent *event) {
-    if (event->IsWriteEvent() || event->IsCloseEvent() || event->IsErrorEvent()) {
+    if (event->IsWriteEvent()) {
         this->HandleWrite();
+    }
+    if (event->IsCloseEvent() || event->IsErrorEvent()) {
+        this->writer_.CancelAllIo(sharpen::ErrorBrokenPipe);
     }
 }
 

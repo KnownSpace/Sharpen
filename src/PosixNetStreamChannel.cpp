@@ -464,11 +464,14 @@ void sharpen::PosixNetStreamChannel::ReadAsync(sharpen::ByteBuffer &buf,
 }
 
 void sharpen::PosixNetStreamChannel::OnEvent(sharpen::IoEvent *event) {
-    if (event->IsReadEvent() || event->IsErrorEvent()) {
+    if (event->IsReadEvent()) {
         this->HandleRead();
     }
-    if (event->IsWriteEvent() || event->IsErrorEvent()) {
+    if (event->IsWriteEvent()) {
         this->HandleWrite();
+    }
+    if (event->IsCloseEvent() || event->IsErrorEvent()) {
+        this->DoCancel(sharpen::ErrorConnectionReset);    
     }
 }
 

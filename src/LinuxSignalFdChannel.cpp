@@ -126,8 +126,16 @@ void sharpen::LinuxSignalFdChannel::HandleRead() {
 
 void sharpen::LinuxSignalFdChannel::OnEvent(sharpen::IoEvent *event) {
     assert(event != nullptr);
-    if (event->IsReadEvent() || event->IsCloseEvent() || event->IsErrorEvent()) {
+    if (event->IsReadEvent()) {
         this->HandleRead();
+    }
+    if (event->IsCloseEvent() || event->IsErrorEvent()) {
+        Tasks tasks;
+        std::swap(tasks, this->tasks_);
+        errno = sharpen::ErrorBrokenPipe;
+        for (auto begin = tasks.begin(), end = tasks.end(); begin != end; ++begin) {
+            begin->cb(-1);
+        }
     }
 }
 

@@ -87,8 +87,11 @@ void sharpen::PosixInputPipeChannel::ReadAsync(sharpen::ByteBuffer &buf,
 }
 
 void sharpen::PosixInputPipeChannel::OnEvent(sharpen::IoEvent *event) {
-    if (event->IsReadEvent() || event->IsErrorEvent() || event->IsCloseEvent()) {
+    if (event->IsReadEvent()) {
         this->HandleRead();
+    }
+    if (event->IsCloseEvent() || event->IsErrorEvent()) {
+        this->reader_.CancelAllIo(sharpen::ErrorBrokenPipe);
     }
 }
 
