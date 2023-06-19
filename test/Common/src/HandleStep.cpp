@@ -2,13 +2,14 @@
 
 #include <sharpen/DebugTools.hpp>
 #include <sharpen/IpEndPoint.hpp>
+#include <limits>
 
 HandleStep::HandleStep(std::uint32_t magic,
                        std::function<void(sharpen::INetStreamChannel *, sharpen::Mail)> handler)
     : factory_()
     , handler_(std::move(handler)) {
-    sharpen::IMailParserFactory *factory{new (std::nothrow)
-                                             sharpen::GenericMailParserFactory{magic}};
+    sharpen::IMailParserFactory *factory{new (std::nothrow) sharpen::GenericMailParserFactory{
+        magic, (std::numeric_limits<std::uint32_t>::max)()}};
     if (!factory) {
         throw std::bad_alloc{};
     }
