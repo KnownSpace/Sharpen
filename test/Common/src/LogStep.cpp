@@ -6,8 +6,8 @@
 sharpen::HostPipelineResult LogStep::Consume(sharpen::INetStreamChannel &channel,
                                              const std::atomic_bool &active) noexcept {
     sharpen::IpEndPoint remote;
-    channel.GetRemoteEndPoint(remote);
     sharpen::IpEndPoint local;
+    channel.GetRemoteEndPoint(remote);
     channel.GetLocalEndPoint(local);
     char remoteIp[25] = {0};
     char localIp[25] = {0};
