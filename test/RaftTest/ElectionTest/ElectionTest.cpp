@@ -432,7 +432,7 @@ public:
         }
         auto primary{rafts[0].get()};
         primary->Advance();
-        sharpen::Future<void> future;
+        sharpen::Future<sharpen::ConsensusResult> future;
         primary->WaitNextConsensus(future);
         // close all hosts
         for (auto begin = rafts.begin(), end = rafts.end(); begin != end; ++begin) {
