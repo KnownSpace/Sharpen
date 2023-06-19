@@ -40,6 +40,7 @@ namespace sharpen {
         bool readable_;
         bool writeable_;
         IoStatus status_;
+        bool peerClosed_;
         // operator
         sharpen::PosixIoReader reader_;
         sharpen::PosixIoWriter writer_;

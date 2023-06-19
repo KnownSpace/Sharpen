@@ -8,7 +8,8 @@
 sharpen::PosixOutputPipeChannel::PosixOutputPipeChannel(sharpen::FileHandle handle)
     : Mybase()
     , writer_()
-    , writeable_(false) {
+    , writeable_(false)
+    , peerClosed_(false) {
     assert(handle != -1);
     this->handle_ = handle;
     this->closer_ = std::bind(&Self::SafeClose, this, std::placeholders::_1);
@@ -41,6 +42,9 @@ void sharpen::PosixOutputPipeChannel::DoWrite() {
     bool blocking;
     this->writer_.Execute(this->handle_, executed, blocking);
     this->writeable_ = !executed || !blocking;
+    if (!this->writeable_ && this->peerClosed_) {
+        this->writer_.CancelAllIo(sharpen::ErrorBrokenPipe);
+    }
 }
 
 void sharpen::PosixOutputPipeChannel::HandleWrite() {
@@ -49,7 +53,7 @@ void sharpen::PosixOutputPipeChannel::HandleWrite() {
 
 void sharpen::PosixOutputPipeChannel::TryWrite(const char *buf, std::size_t bufSize, Callback cb) {
     this->writer_.AddPendingTask(const_cast<char *>(buf), bufSize, std::move(cb));
-    if (this->writeable_) {
+    if (this->writeable_ || this->peerClosed_) {
         this->DoWrite();
     }
 }
@@ -90,7 +94,8 @@ void sharpen::PosixOutputPipeChannel::OnEvent(sharpen::IoEvent *event) {
     if (event->IsWriteEvent()) {
         this->HandleWrite();
     }
-    if (event->IsCloseEvent() || event->IsErrorEvent()) {
+    if (event->IsCloseEvent()) {
+        this->peerClosed_ = true;
         this->writer_.CancelAllIo(sharpen::ErrorBrokenPipe);
     }
 }

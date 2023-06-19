@@ -10,7 +10,8 @@
 sharpen::LinuxSignalFdChannel::LinuxSignalFdChannel(sharpen::FileHandle handle)
     : Base()
     , bufMap_(0)
-    , readable_(false) {
+    , readable_(false)
+    , peerClosed_(false) {
     this->handle_ = handle;
     assert(this->handle_ != -1);
     this->closer_ = std::bind(&Self::SafeClose, this, std::placeholders::_1);
@@ -117,6 +118,9 @@ void sharpen::LinuxSignalFdChannel::DoRead() {
             begin = this->tasks_.erase(begin);
         }
     }
+    if (!this->readable_ && this->peerClosed_) {
+        this->DoCancel(sharpen::ErrorBrokenPipe);
+    }
 }
 
 void sharpen::LinuxSignalFdChannel::HandleRead() {
@@ -124,18 +128,23 @@ void sharpen::LinuxSignalFdChannel::HandleRead() {
     this->DoRead();
 }
 
+void sharpen::LinuxSignalFdChannel::DoCancel(sharpen::ErrorCode err) {
+    Tasks tasks;
+    std::swap(tasks, this->tasks_);
+    errno = err;
+    for (auto begin = tasks.begin(), end = tasks.end(); begin != end; ++begin) {
+        begin->cb(-1);
+    }
+}
+
 void sharpen::LinuxSignalFdChannel::OnEvent(sharpen::IoEvent *event) {
     assert(event != nullptr);
     if (event->IsReadEvent()) {
         this->HandleRead();
     }
-    if (event->IsCloseEvent() || event->IsErrorEvent()) {
-        Tasks tasks;
-        std::swap(tasks, this->tasks_);
-        errno = sharpen::ErrorBrokenPipe;
-        for (auto begin = tasks.begin(), end = tasks.end(); begin != end; ++begin) {
-            begin->cb(-1);
-        }
+    if (event->IsCloseEvent()) {
+        this->peerClosed_ = true;
+        this->DoCancel(sharpen::ErrorBrokenPipe);
     }
 }
 
@@ -145,7 +154,7 @@ void sharpen::LinuxSignalFdChannel::TryRead(char *buf, std::size_t bufSize, Call
     task.bufSize = bufSize;
     task.cb = std::move(cb);
     this->tasks_.emplace_back(std::move(task));
-    if (this->readable_) {
+    if (this->readable_ || this->peerClosed_) {
         this->DoRead();
     }
 }

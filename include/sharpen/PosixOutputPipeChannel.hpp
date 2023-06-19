@@ -27,6 +27,7 @@ namespace sharpen {
 
         sharpen::PosixIoWriter writer_;
         bool writeable_;
+        bool peerClosed_;
 
         void DoWrite();
 

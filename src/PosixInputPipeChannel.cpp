@@ -8,7 +8,8 @@
 sharpen::PosixInputPipeChannel::PosixInputPipeChannel(sharpen::FileHandle handle)
     : Mybase()
     , reader_()
-    , readable_(false) {
+    , readable_(false)
+    , peerClosed_(false) {
     assert(handle != -1);
     this->handle_ = handle;
     this->closer_ = std::bind(&Self::SafeClose, this, std::placeholders::_1);
@@ -45,11 +46,14 @@ void sharpen::PosixInputPipeChannel::DoRead() {
     bool blocking;
     this->reader_.Execute(this->handle_, executed, blocking);
     this->readable_ = !executed || !blocking;
+    if (!this->readable_ && this->peerClosed_) {
+        this->reader_.CancelAllIo(sharpen::ErrorBrokenPipe);
+    }
 }
 
 void sharpen::PosixInputPipeChannel::TryRead(char *buf, std::size_t bufSize, Callback cb) {
     this->reader_.AddPendingTask(buf, bufSize, std::move(cb));
-    if (this->readable_) {
+    if (this->readable_ || this->peerClosed_) {
         this->DoRead();
     }
 }
@@ -90,7 +94,8 @@ void sharpen::PosixInputPipeChannel::OnEvent(sharpen::IoEvent *event) {
     if (event->IsReadEvent()) {
         this->HandleRead();
     }
-    if (event->IsCloseEvent() || event->IsErrorEvent()) {
+    if (event->IsCloseEvent()) {
+        this->peerClosed_ = true;
         this->reader_.CancelAllIo(sharpen::ErrorBrokenPipe);
     }
 }

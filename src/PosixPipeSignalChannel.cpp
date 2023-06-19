@@ -62,6 +62,9 @@ void sharpen::PosixPipeSignalChannel::DoRead() {
     bool blocking;
     this->reader_.Execute(this->handle_, executed, blocking);
     this->readable_ = !executed || !blocking;
+    if (!this->readable_ && this->peerClosed_) {
+        this->reader_.CancelAllIo(sharpen::ErrorBrokenPipe);
+    }
 }
 
 void sharpen::PosixPipeSignalChannel::HandleRead() {
@@ -70,7 +73,7 @@ void sharpen::PosixPipeSignalChannel::HandleRead() {
 
 void sharpen::PosixPipeSignalChannel::TryRead(char *buf, std::size_t bufSize, Callback cb) {
     this->reader_.AddPendingTask(buf, bufSize, std::move(cb));
-    if (this->readable_) {
+    if (this->readable_ || this->peerClosed_) {
         this->DoRead();
     }
 }
@@ -109,7 +112,8 @@ void sharpen::PosixPipeSignalChannel::OnEvent(sharpen::IoEvent *event) {
     if (event->IsReadEvent()) {
         this->HandleRead();
     }
-    if (event->IsCloseEvent() || event->IsErrorEvent()) {
+    if (event->IsCloseEvent()) {
+        this->peerClosed_ = true;
         this->reader_.CancelAllIo(sharpen::ErrorBrokenPipe);
     }
 }

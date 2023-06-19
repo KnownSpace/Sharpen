@@ -25,6 +25,7 @@ namespace sharpen {
 
         sharpen::PosixIoReader reader_;
         bool readable_;
+        bool peerClosed_;
 
         void HandleRead();
 

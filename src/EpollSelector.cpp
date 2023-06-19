@@ -66,14 +66,7 @@ void sharpen::EpollSelector::Select(EventVector &events) {
             if (eventMask & EPOLLERR) {
                 eventType |= sharpen::IoEvent::EventTypeEnum::Error;
             }
-            if (eventMask & EPOLLHUP) {
-                eventType |= sharpen::IoEvent::EventTypeEnum::Read;
-                eventType |= sharpen::IoEvent::EventTypeEnum::Write;
-                eventType |= sharpen::IoEvent::EventTypeEnum::Close;
-            }
             if (eventMask & EPOLLRDHUP) {
-                eventType |= sharpen::IoEvent::EventTypeEnum::Read;
-                eventType |= sharpen::IoEvent::EventTypeEnum::Write;
                 eventType |= sharpen::IoEvent::EventTypeEnum::Close;
             }
             event->ioEvent_.SetEvent(eventType);
