@@ -252,7 +252,7 @@ sharpen::ByteVector::ConstReverseIterator sharpen::ByteVector::ReverseEnd() cons
 }
 
 bool sharpen::ByteVector::CheckPointer(const char *p) {
-    return this->Data() && this->Data() <= p && this->Data() > p;
+    return this->Data() && this->Data() <= p && this->Data() + this->GetSize() > p;
 }
 
 void sharpen::ByteVector::Erase(Iterator where) {
