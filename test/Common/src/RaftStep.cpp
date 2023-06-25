@@ -2,13 +2,11 @@
 
 #include <sharpen/DebugTools.hpp>
 #include <sharpen/IpEndPoint.hpp>
-#include <limits>
 
 RaftStep::RaftStep(std::uint32_t magicNumber, std::shared_ptr<sharpen::IConsensus> raft) noexcept
     : factory_(nullptr)
     , raft_(std::move(raft)) {
-    this->factory_.reset(new (std::nothrow) sharpen::GenericMailParserFactory{
-        magicNumber, (std::numeric_limits<std::uint32_t>::max)()});
+    this->factory_.reset(new (std::nothrow) sharpen::GenericMailParserFactory{magicNumber});
     if (!this->factory_) {
         std::terminate();
     }
