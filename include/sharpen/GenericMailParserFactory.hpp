@@ -14,9 +14,12 @@ namespace sharpen {
         using Self = sharpen::GenericMailParserFactory;
 
         std::uint32_t magic_;
+        std::uint32_t maxContentSize_;
 
     public:
         explicit GenericMailParserFactory(std::uint32_t magic) noexcept;
+
+        GenericMailParserFactory(std::uint32_t magic,std::uint32_t maxContentSize) noexcept;
 
         GenericMailParserFactory(const Self &other) noexcept = default;
 

@@ -9,14 +9,18 @@ namespace sharpen {
     enum class ConsensusResultEnum : std::uint32_t
     {
         None = 0,
-        // log may commited, please check your log storage
+        // log commited, please check your log storage
         LogsCommit = 1,
         // a new sanpshot was received
         SnapshotReceived = 2,
         // consensus status changed, the writable actor has changed
         StatusChanged = 2 << 1,
         // lease confirmed by majority
-        LeaseConfirmed = 2 << 2
+        LeaseConfirmed = 2 << 2,
+        // lease request by writer 
+        LeaseRequested = 2 << 3,
+        // a learner is ready for membership change
+        LearnerReady = 2 << 4
     };
 
     class ConsensusResult
@@ -61,6 +65,10 @@ namespace sharpen {
 
         inline bool IsLeaseConfirmed() const noexcept {
             return this->IsSet(sharpen::ConsensusResultEnum::LeaseConfirmed);
+        }
+
+        inline bool IsLeaseRequested() const noexcept {
+            return this->IsSet(sharpen::ConsensusResultEnum::LeaseRequested);
         }
 
         bool IsNone() const noexcept;
