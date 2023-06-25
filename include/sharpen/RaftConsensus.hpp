@@ -98,6 +98,8 @@ namespace sharpen {
 
         void LoadVoteFor();
 
+        std::uint64_t GetTerm() const noexcept;
+
         void SetTerm(std::uint64_t term);
 
         sharpen::RaftVoteRecord GetVote() const noexcept;
@@ -197,8 +199,6 @@ namespace sharpen {
 
         void DoStoreLastAppiledIndex(std::uint64_t index);
 
-        void DoNotifyWaiterWhenClose() noexcept;
-
     public:
         constexpr static sharpen::ByteSlice voteKey{"vote", 4};
 
@@ -221,7 +221,7 @@ namespace sharpen {
                       const sharpen::RaftOption &option,
                       sharpen::IFiberScheduler &scheduler);
 
-        virtual ~RaftConsensus() noexcept;
+        virtual ~RaftConsensus() noexcept = default;
 
         inline const Self &Const() const noexcept {
             return *this;
@@ -271,8 +271,6 @@ namespace sharpen {
         virtual void ReleasePeers() override;
 
         virtual std::uint64_t GetEpoch() const noexcept override;
-
-        std::uint64_t GetTerm() const noexcept;
 
         virtual void StoreLastAppiledIndex(std::uint64_t index) override;
     };

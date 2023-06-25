@@ -114,14 +114,7 @@ sharpen::Mail sharpen::TcpPoster::DoReceive(sharpen::NetStreamChannelPtr channel
             return sharpen::Mail{};
         }
         sharpen::ByteSlice slice{buffer.Data(), size};
-        try {
-            this->parser_->Parse(slice);
-        } catch (const sharpen::MailParseError &error) {
-            // connection was aborted
-            this->AbortConn(channel.get());
-            (void)error;
-            return sharpen::Mail{};
-        }
+        this->parser_->Parse(slice);
     }
     response = this->parser_->PopCompletedMail();
     return response;

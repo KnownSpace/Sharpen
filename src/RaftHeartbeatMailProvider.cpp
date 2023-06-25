@@ -20,37 +20,16 @@ sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(
     sharpen::IRaftLogAccesser &logAccesser,
     sharpen::IRaftSnapshotProvider *snapshotProvider,
     std::uint32_t batchSize)
-    : Self{id, builder, log, logAccesser, snapshotProvider,batchSize,Self::defaultEntiresSize_} {
-}
-
-sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(
-    const sharpen::ActorId &id,
-    const sharpen::IRaftMailBuilder &builder,
-    const sharpen::ILogStorage &log,
-    sharpen::IRaftLogAccesser &logAccesser,
-    sharpen::IRaftSnapshotProvider *snapshotProvider,
-    std::uint32_t batchSize,
-    std::uint32_t entiresSize)
     : id_(id)
     , builder_(&builder)
     , logs_(&log)
     , logAccesser_(&logAccesser)
     , snapshotProvider_(snapshotProvider)
     , batchSize_(batchSize)
-    , entiresSize_(entiresSize)
     , states_()
     , term_(sharpen::ConsensusWriter::noneEpoch)
     , commitIndex_(0) {
     assert(this->batchSize_ >= 1);
-    if (this->batchSize_ < 1) {
-        this->batchSize_ = 1;
-    }
-    if (this->entiresSize_ < Self::minEntiresSize_) {
-        this->entiresSize_ = Self::minEntiresSize_;
-    }
-    if (this->entiresSize_ > Self::maxEntiresSize_) {
-        this->entiresSize_ = Self::maxEntiresSize_;
-    }
 }
 
 sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(Self &&other) noexcept
@@ -59,15 +38,13 @@ sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(Self &&other) noex
     , logs_(other.logs_)
     , snapshotProvider_(other.snapshotProvider_)
     , batchSize_(other.batchSize_)
-    , entiresSize_(other.entiresSize_)
     , states_(std::move(other.states_))
     , term_(other.term_)
     , commitIndex_(other.commitIndex_.load()) {
     other.builder_ = nullptr;
     other.logs_ = nullptr;
     other.snapshotProvider_ = nullptr;
-    other.batchSize_ = Self::defaultBatchSize_;
-    other.entiresSize_ = Self::defaultEntiresSize_;
+    other.batchSize_ = 0;
     other.term_ = sharpen::ConsensusWriter::noneEpoch;
     other.commitIndex_ = 0;
 }
@@ -80,15 +57,13 @@ sharpen::RaftHeartbeatMailProvider &sharpen::RaftHeartbeatMailProvider::operator
         this->logs_ = other.logs_;
         this->snapshotProvider_ = other.snapshotProvider_;
         this->batchSize_ = other.batchSize_;
-        this->entiresSize_ = other.entiresSize_;
         this->states_ = std::move(other.states_);
         this->term_ = other.term_;
         this->commitIndex_ = other.commitIndex_.load();
         other.builder_ = nullptr;
         other.logs_ = nullptr;
         other.snapshotProvider_ = nullptr;
-        other.batchSize_ = Self::defaultBatchSize_;
-        other.entiresSize_ = Self::defaultEntiresSize_;
+        other.batchSize_ = 0;
         other.term_ = sharpen::ConsensusWriter::noneEpoch;
         other.commitIndex_ = 0;
     }
@@ -303,8 +278,6 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(const sharpen::ActorId
         if (nextIndex == sharpen::ILogStorage::noneIndex) {
             nextIndex += 1;
         }
-        std::size_t entiresSize{0};
-        size = 0;
         while (nextIndex <= lastIndex) {
             sharpen::Optional<sharpen::ByteBuffer> log{this->logs_->Lookup(nextIndex)};
             if (!log.Exist()) {
@@ -316,12 +289,8 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(const sharpen::ActorId
                 state->SetSnapshot(std::move(snapshot));
                 return this->ProvideSnapshotRequest(state);
             }
-            if (log.Get().GetSize() + entiresSize > this->entiresSize_) {
-                break;
-            }
             request.Entries().Push(std::move(log.Get()));
             nextIndex += 1;
-            size += 1;
         }
         // forward state
         state->Forward(size);

@@ -1,9 +1,8 @@
-#include <sharpen/GenericMailParser.hpp>
+#include <sharpen/GenericMailPaser.hpp>
 
 
-sharpen::GenericMailParser::GenericMailParser(std::uint32_t magic) noexcept
+sharpen::GenericMailPaser::GenericMailPaser(std::uint32_t magic) noexcept
     : magic_(magic)
-    , maxContentSize_(Self::defaultMaxContentSize)
     , parsedSize_(0)
     , header_()
     , content_()
@@ -11,54 +10,49 @@ sharpen::GenericMailParser::GenericMailParser(std::uint32_t magic) noexcept
     this->header_.ExtendTo(sizeof(sharpen::GenericMailHeader));
 }
 
-sharpen::GenericMailParser::GenericMailParser(const Self &other)
+sharpen::GenericMailPaser::GenericMailPaser(const Self &other)
     : magic_(other.magic_)
-    , maxContentSize_(other.maxContentSize_)
     , parsedSize_(other.parsedSize_)
     , header_(other.header_)
     , content_(other.content_)
     , completedMails_(other.completedMails_) {
 }
 
-sharpen::GenericMailParser::GenericMailParser(Self &&other) noexcept
+sharpen::GenericMailPaser::GenericMailPaser(Self &&other) noexcept
     : magic_(other.magic_)
-    , maxContentSize_(other.maxContentSize_)
     , parsedSize_(other.parsedSize_)
     , header_(std::move(other.header_))
     , content_(std::move(other.content_))
     , completedMails_(std::move(other.completedMails_)) {
     other.magic_ = 0;
     other.parsedSize_ = 0;
-    other.maxContentSize_ = Self::defaultMaxContentSize;
 }
 
-sharpen::GenericMailParser &sharpen::GenericMailParser::operator=(Self &&other) noexcept {
+sharpen::GenericMailPaser &sharpen::GenericMailPaser::operator=(Self &&other) noexcept {
     if (this != std::addressof(other)) {
         this->magic_ = other.magic_;
-        this->maxContentSize_ = other.maxContentSize_;
         this->parsedSize_ = other.parsedSize_;
         this->header_ = std::move(other.header_);
         this->content_ = std::move(other.content_);
         this->completedMails_ = std::move(other.completedMails_);
         other.magic_ = 0;
         other.parsedSize_ = 0;
-        other.maxContentSize_ = Self::defaultMaxContentSize;
     }
     return *this;
 }
 
-bool sharpen::GenericMailParser::Completed() const noexcept {
+bool sharpen::GenericMailPaser::Completed() const noexcept {
     return !this->completedMails_.empty();
 }
 
-sharpen::GenericMailParser::ParseStatus sharpen::GenericMailParser::GetStatus() const noexcept {
+sharpen::GenericMailPaser::ParseStatus sharpen::GenericMailPaser::GetStatus() const noexcept {
     if (this->parsedSize_ >= sizeof(sharpen::GenericMailHeader)) {
         return ParseStatus::Content;
     }
     return ParseStatus::Header;
 }
 
-void sharpen::GenericMailParser::NviParse(sharpen::ByteSlice slice) {
+void sharpen::GenericMailPaser::NviParse(sharpen::ByteSlice slice) {
     for (auto begin = slice.Begin(), end = slice.End(); begin != end;) {
         switch (this->GetStatus()) {
         case ParseStatus::Header: {
@@ -76,9 +70,6 @@ void sharpen::GenericMailParser::NviParse(sharpen::ByteSlice slice) {
             const sharpen::GenericMailHeader *header{
                 &this->header_.As<sharpen::GenericMailHeader>()};
             std::uint32_t contentSize{header->GetContentSize()};
-            if (contentSize > this->maxContentSize_) {
-                throw sharpen::MailParseError{"content too long"};
-            }
             if (this->content_.Empty()) {
                 this->content_.ExtendTo(contentSize);
             }
@@ -88,11 +79,11 @@ void sharpen::GenericMailParser::NviParse(sharpen::ByteSlice slice) {
             std::memcpy(this->content_.Data() + offset, begin.GetPointer(), remainSize);
             this->parsedSize_ += remainSize;
             if (this->parsedSize_ == sizeof(sharpen::GenericMailHeader) + contentSize) {
-                sharpen::ByteBuffer headerBuf{sizeof(sharpen::GenericMailHeader)};
-                sharpen::ByteBuffer contentBuf;
-                std::swap(headerBuf, this->header_);
-                std::swap(contentBuf, this->content_);
-                this->completedMails_.emplace_back(std::move(headerBuf), std::move(contentBuf));
+                sharpen::ByteBuffer header{sizeof(sharpen::GenericMailHeader)};
+                sharpen::ByteBuffer content;
+                std::swap(header, this->header_);
+                std::swap(content, this->content_);
+                this->completedMails_.emplace_back(std::move(header), std::move(content));
                 this->parsedSize_ = 0;
             }
             begin += remainSize;
@@ -101,15 +92,8 @@ void sharpen::GenericMailParser::NviParse(sharpen::ByteSlice slice) {
     }
 }
 
-sharpen::Mail sharpen::GenericMailParser::NviPopCompletedMail() noexcept {
+sharpen::Mail sharpen::GenericMailPaser::NviPopCompletedMail() noexcept {
     sharpen::Mail mail{this->completedMails_.front()};
     this->completedMails_.pop_front();
     return mail;
-}
-
-void sharpen::GenericMailParser::PrepareMaxContentSize(std::uint32_t maxContentSize) noexcept {
-    if (maxContentSize < Self::minMaxContentSize) {
-        maxContentSize = Self::minMaxContentSize;
-    }
-    this->maxContentSize_ = maxContentSize;
 }
