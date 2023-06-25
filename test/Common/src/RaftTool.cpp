@@ -12,8 +12,8 @@
 #include <sharpen/RaftMailExtractor.hpp>
 #include <sharpen/WalLogStorage.hpp>
 #include <sharpen/WalStatusMap.hpp>
-#include <limits>
 #include <sstream>
+
 
 std::vector<sharpen::IpEndPoint> GetPeers(std::uint16_t begin, std::uint16_t end) {
     std::vector<sharpen::IpEndPoint> peers;
@@ -87,12 +87,11 @@ std::unique_ptr<sharpen::IQuorum> ConfigPeers(sharpen::IQuorum *quorum,
     }
     auto ports{GetPeers(begin, end)};
     std::shared_ptr<sharpen::IMailParserFactory> factory{
-        std::make_shared<sharpen::GenericMailParserFactory>(
-            magic, (std::numeric_limits<std::uint32_t>::max)())};
+        std::make_shared<sharpen::GenericMailParserFactory>(magic)};
     for (auto begin = ports.begin(), end = ports.end(); begin != end; ++begin) {
         if (begin->GetPort() != port) {
-            std::unique_ptr<sharpen::IpTcpActorBuilder> builder{
-                new (std::nothrow) sharpen::IpTcpActorBuilder{pipeline}};
+            std::unique_ptr<sharpen::IpTcpActorBuilder> builder{new (std::nothrow)
+                                                                    sharpen::IpTcpActorBuilder{pipeline}};
             if (!builder) {
                 std::terminate();
             }
