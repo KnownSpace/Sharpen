@@ -83,7 +83,7 @@ void HandleTask(MailTask *task) {
     sharpen::GenericMail mailWrap{std::move(task->Mail())};
     static std::atomic_uint32_t counter{0};
     std::uint32_t count{counter.fetch_add(1, std::memory_order_relaxed)};
-    sharpen::ByteBuffer content{64};
+    sharpen::ByteBuffer content;
     content.Printf("Hello %u", count);
     task->Channel().WriteAsync(mailWrap.AsMail().Header());
     task->Channel().WriteAsync(mailWrap.AsMail().Content());

@@ -133,9 +133,36 @@ public:
     }
 };
 
+class PrintfTest:public simpletest::ITypenamedTest<PrintfTest>
+{
+private:
+    using Self = PrintfTest;
+
+public:
+
+    PrintfTest() noexcept = default;
+
+    ~PrintfTest() noexcept = default;
+
+    inline const Self &Const() const noexcept
+    {
+        return *this;
+    }
+
+    inline virtual simpletest::TestResult Run() noexcept
+    {
+        sharpen::ByteBuffer buf;
+        buf.Printf("HelloWorld%zu",1);
+        std::size_t i{0};
+        buf.Scanf("HelloWorld%zu",&i);
+        return this->Assert(i == 1,"i should be 1");
+    }
+};
+
 int main(int argc, char const *argv[]) {
     simpletest::TestRunner runner;
     runner.Register<SimpleObjectTest>();
     runner.Register<StdContainerTest>();
+    runner.Register<PrintfTest>();
     return runner.Run();
 }

@@ -266,7 +266,7 @@ public:
         for (std::size_t i = 0; i != appendTestCount && writable; ++i) {
             sharpen::SyncPrintf("AppendEntires %zu\n", i);
             sharpen::LogBatch batch;
-            sharpen::ByteBuffer log{9};
+            sharpen::ByteBuffer log;
             log.Printf("Index:%zu", i);
             batch.Append(std::move(log));
             primary->Write(batch);
@@ -340,7 +340,7 @@ public:
         for (std::size_t i = 0; i != appendTestCount && writable; ++i) {
             sharpen::SyncPrintf("AppendEntires %zu\n", i);
             sharpen::LogBatch batch;
-            sharpen::ByteBuffer log{9};
+            sharpen::ByteBuffer log;
             log.Printf("Index:%zu", i);
             batch.Append(std::move(log));
             primary->Write(batch);
@@ -419,7 +419,7 @@ public:
         for (std::size_t i = 0; i != appendTestCount && writable; ++i) {
             sharpen::SyncPrintf("AppendEntires %zu\n", i);
             sharpen::LogBatch batch;
-            sharpen::ByteBuffer log{9};
+            sharpen::ByteBuffer log{};
             log.Printf("Index:%zu", i);
             batch.Append(std::move(log));
             primary->Write(batch);
@@ -509,7 +509,7 @@ public:
         for (std::size_t i = 0; i != appendTestCount && writable; ++i) {
             sharpen::SyncPrintf("AppendEntires %zu\n", i);
             sharpen::LogBatch batch;
-            sharpen::ByteBuffer log{9};
+            sharpen::ByteBuffer log;
             log.Printf("Index:%zu", i);
             batch.Append(std::move(log));
             primary->Write(batch);
@@ -587,7 +587,7 @@ public:
         for (std::size_t i = 0; i != appendTestCount && writable; ++i) {
             sharpen::SyncPrintf("AppendEntires %zu\n", i);
             sharpen::LogBatch batch;
-            sharpen::ByteBuffer log{9};
+            sharpen::ByteBuffer log;
             log.Printf("Index:%zu", i);
             batch.Append(std::move(log));
             primary->Write(batch);
@@ -670,7 +670,7 @@ public:
         for (std::size_t i = 0; i != appendTestCount && writable; ++i) {
             sharpen::SyncPrintf("AppendEntires %zu\n", i);
             sharpen::LogBatch batch;
-            sharpen::ByteBuffer log{9};
+            sharpen::ByteBuffer log;
             log.Printf("Index:%zu", i);
             batch.Append(std::move(log));
             primary->Write(batch);

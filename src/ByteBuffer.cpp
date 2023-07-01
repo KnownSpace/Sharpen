@@ -249,20 +249,45 @@ sharpen::ByteSlice sharpen::ByteBuffer::GetSlice(ConstIterator begin, ConstItera
     return this->GetSlice(index, size);
 }
 
-int sharpen::ByteBuffer::Printf(const char *format, ...) noexcept {
+int sharpen::ByteBuffer::PrintfNoexcept(const char *format, ...) noexcept {
     std::va_list args;
     va_start(args, format);
-    int result{std::vsnprintf(this->Data(), this->GetSize(), format, args)};
+    // copy va pointer
+    std::va_list copyArgs{args};
+    std::size_t sz{sharpen::IntCast<std::size_t>(std::vsnprintf(nullptr,0,format,args))};
+    int result{0};
+    if (this->GetSize() > sz) {
+        result = std::vsnprintf(this->Data(), this->GetSize(), format, copyArgs);
+    }
     va_end(args);
     return result;
 }
 
+void sharpen::ByteBuffer::Printf(const char *format, ...) {
+    std::va_list args;
+    va_start(args, format);
+    // copy va pointer
+    std::va_list copyArgs{args};
+    std::size_t sz{sharpen::IntCast<std::size_t>(std::vsnprintf(nullptr,0,format,args))};
+    try {
+        this->ExtendTo(sz + 1);
+    } catch (const std::bad_alloc &rethrow) {
+        (void)rethrow;
+        va_end(copyArgs);
+        throw;
+    }
+    int result{std::vsnprintf(this->Data(), this->GetSize(), format, copyArgs)};
+    assert(sharpen::IntCast<std::size_t>(result) == sz);
+    (void)result;
+    va_end(args);
+}
+
 int sharpen::ByteBuffer::Scanf(const char *format, ...) noexcept {
     if (this->Empty()) {
-        return -1;
+        return EOF;
     }
     if (this->Back() != '\0') {
-        return -1;
+        return EOF;
     }
     std::va_list args;
     va_start(args, format);
