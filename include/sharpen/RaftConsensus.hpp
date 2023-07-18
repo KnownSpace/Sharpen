@@ -21,6 +21,7 @@
 #include "RaftPrevoteRecord.hpp"
 #include "RaftRole.hpp"
 #include "RaftVoteRecord.hpp"
+#include "RaftLeaderCounter.hpp"
 #include <initializer_list>
 #include <map>
 #include <queue>
@@ -58,6 +59,8 @@ namespace sharpen {
         sharpen::RaftElectionRecord electionRecord_;
         sharpen::RaftPrevoteRecord prevoteRecord_;
         sharpen::RaftLeaseStatus leaseStatus_;
+        std::uint64_t prevLeaderCount_;
+        std::shared_ptr<sharpen::RaftLeaderCounter> leaderCount_;
 
         // leader record
         // thread safty
@@ -220,6 +223,15 @@ namespace sharpen {
                       std::unique_ptr<sharpen::ILogStorage> logs,
                       std::unique_ptr<sharpen::IRaftLogAccesser> logAccesser,
                       std::unique_ptr<sharpen::IRaftSnapshotController> snapshotController,
+                      std::shared_ptr<sharpen::RaftLeaderCounter> leaderCount,
+                      const sharpen::RaftOption &option);
+
+        RaftConsensus(const sharpen::ActorId &id,
+                      std::unique_ptr<sharpen::IStatusMap> statusMap,
+                      std::unique_ptr<sharpen::ILogStorage> logs,
+                      std::unique_ptr<sharpen::IRaftLogAccesser> logAccesser,
+                      std::unique_ptr<sharpen::IRaftSnapshotController> snapshotController,
+                      std::shared_ptr<sharpen::RaftLeaderCounter> leaderCount,
                       const sharpen::RaftOption &option,
                       sharpen::IFiberScheduler &scheduler);
 

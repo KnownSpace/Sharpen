@@ -7,7 +7,8 @@ sharpen::RaftOption::RaftOption() noexcept
     , enablePrevote_(false)
     , batchSize_(Self::minBatchSize_)
     , pipelineLength_(Self::minPipelineLength_)
-    , enableSingle_(false) {
+    , enableSingle_(false)
+    , enableLeaseAwareness_(false) {
 }
 
 sharpen::RaftOption::RaftOption(Self &&other) noexcept
@@ -15,12 +16,14 @@ sharpen::RaftOption::RaftOption(Self &&other) noexcept
     , enablePrevote_(other.enablePrevote_)
     , batchSize_(other.batchSize_)
     , pipelineLength_(other.pipelineLength_)
-    , enableSingle_(other.enableSingle_) {
+    , enableSingle_(other.enableSingle_)
+    , enableLeaseAwareness_(other.enableLeaseAwareness_) {
     other.isLearner_ = false;
     other.enablePrevote_ = false;
     other.batchSize_ = Self::minBatchSize_;
     other.pipelineLength_ = Self::minPipelineLength_;
     other.enableSingle_ = false;
+    other.enableLeaseAwareness_ = false;
 }
 
 sharpen::RaftOption &sharpen::RaftOption::operator=(Self &&other) noexcept {
@@ -30,11 +33,13 @@ sharpen::RaftOption &sharpen::RaftOption::operator=(Self &&other) noexcept {
         this->batchSize_ = other.batchSize_;
         this->pipelineLength_ = other.pipelineLength_;
         this->enableSingle_ = other.enableSingle_;
+        this->enableLeaseAwareness_ = other.enableLeaseAwareness_;
         other.isLearner_ = false;
         other.enablePrevote_ = false;
         other.batchSize_ = Self::minBatchSize_;
         other.pipelineLength_ = Self::minPipelineLength_;
         other.enableSingle_ = false;
+        other.enableLeaseAwareness_ = false;
     }
     return *this;
 }
