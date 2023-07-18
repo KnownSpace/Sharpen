@@ -14,6 +14,7 @@ namespace sharpen {
 
         bool status_;
         std::uint64_t term_;
+        std::uint64_t leaseRound_;
 
     public:
         RaftSnapshotResponse() noexcept;
@@ -48,6 +49,14 @@ namespace sharpen {
 
         inline void SetTerm(std::uint64_t term) noexcept {
             this->term_ = term;
+        }
+
+        inline std::uint64_t GetLeaseRound() const noexcept {
+            return this->leaseRound_;
+        }
+
+        inline void SetLeaseRound(std::uint64_t leaseRound) noexcept {
+            this->leaseRound_ = leaseRound;
         }
 
         std::size_t ComputeSize() const noexcept;

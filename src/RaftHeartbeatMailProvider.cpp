@@ -40,6 +40,7 @@ sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(
     , entiresSize_(entiresSize)
     , states_()
     , term_(sharpen::ConsensusWriter::noneEpoch)
+    , round_(0)
     , commitIndex_(0) {
     assert(this->batchSize_ >= 1);
     if (this->batchSize_ < 1) {
@@ -62,6 +63,7 @@ sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(Self &&other) noex
     , entiresSize_(other.entiresSize_)
     , states_(std::move(other.states_))
     , term_(other.term_)
+    , round_(other.round_)
     , commitIndex_(other.commitIndex_.load()) {
     other.builder_ = nullptr;
     other.logs_ = nullptr;
@@ -69,6 +71,7 @@ sharpen::RaftHeartbeatMailProvider::RaftHeartbeatMailProvider(Self &&other) noex
     other.batchSize_ = Self::defaultBatchSize_;
     other.entiresSize_ = Self::defaultEntiresSize_;
     other.term_ = sharpen::ConsensusWriter::noneEpoch;
+    other.round_ = 0;
     other.commitIndex_ = 0;
 }
 
@@ -83,6 +86,7 @@ sharpen::RaftHeartbeatMailProvider &sharpen::RaftHeartbeatMailProvider::operator
         this->entiresSize_ = other.entiresSize_;
         this->states_ = std::move(other.states_);
         this->term_ = other.term_;
+        this->round_ = other.round_;
         this->commitIndex_ = other.commitIndex_.load();
         other.builder_ = nullptr;
         other.logs_ = nullptr;
@@ -90,6 +94,7 @@ sharpen::RaftHeartbeatMailProvider &sharpen::RaftHeartbeatMailProvider::operator
         other.batchSize_ = Self::defaultBatchSize_;
         other.entiresSize_ = Self::defaultEntiresSize_;
         other.term_ = sharpen::ConsensusWriter::noneEpoch;
+        other.round_ = 0;
         other.commitIndex_ = 0;
     }
     return *this;
@@ -227,6 +232,7 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::ProvideSnapshotRequest(
     request.SetLast(!snapshot->Forwardable());
     request.Metadata() = metadata;
     request.Data() = snapshot->GenerateChunkData();
+    request.SetLeaseRound(this->round_);
     return this->builder_->BuildSnapshotRequest(request);
 }
 
@@ -282,6 +288,7 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(const sharpen::ActorId
     request.SetCommitIndex(commitIndex);
     request.LeaderActorId() = this->id_;
     request.SetTerm(this->term_);
+    request.SetLeaseRound(this->round_);
     request.SetPreLogIndex(preIndex);
     request.SetPreLogTerm(sharpen::ConsensusWriter::noneEpoch);
     sharpen::Optional<std::uint64_t> term{this->LookupTerm(preIndex)};
@@ -331,6 +338,10 @@ sharpen::Mail sharpen::RaftHeartbeatMailProvider::Provide(const sharpen::ActorId
 
 void sharpen::RaftHeartbeatMailProvider::PrepareTerm(std::uint64_t term) noexcept {
     this->term_ = term;
+}
+
+void sharpen::RaftHeartbeatMailProvider::PrepareRound(std::uint64_t round) noexcept {
+    this->round_ = round;
 }
 
 sharpen::Mail sharpen::RaftHeartbeatMailProvider::ProvideSynchronizedMail() const {

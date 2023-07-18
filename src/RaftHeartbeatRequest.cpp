@@ -11,7 +11,8 @@ sharpen::RaftHeartbeatRequest::RaftHeartbeatRequest() noexcept
     , preLogIndex_(0)
     , preLogTerm_(0)
     , entries_()
-    , leaderCommitIndex_(0) {
+    , leaderCommitIndex_(0)
+    , leaseRound_(0) {
 }
 
 sharpen::RaftHeartbeatRequest::RaftHeartbeatRequest(Self &&other) noexcept
@@ -20,11 +21,13 @@ sharpen::RaftHeartbeatRequest::RaftHeartbeatRequest(Self &&other) noexcept
     , preLogIndex_(other.preLogIndex_)
     , preLogTerm_(other.preLogTerm_)
     , entries_(std::move(other.entries_))
-    , leaderCommitIndex_(other.leaderCommitIndex_) {
+    , leaderCommitIndex_(other.leaderCommitIndex_)
+    , leaseRound_(other.leaseRound_) {
     other.term_ = sharpen::ConsensusWriter::noneEpoch;
     other.preLogIndex_ = 0;
     other.preLogTerm_ = 0;
     other.leaderCommitIndex_ = 0;
+    other.leaseRound_ = 0;
 }
 
 sharpen::RaftHeartbeatRequest &sharpen::RaftHeartbeatRequest::operator=(Self &&other) noexcept {
@@ -35,10 +38,12 @@ sharpen::RaftHeartbeatRequest &sharpen::RaftHeartbeatRequest::operator=(Self &&o
         this->preLogTerm_ = other.preLogTerm_;
         this->entries_ = std::move(other.entries_);
         this->leaderCommitIndex_ = other.leaderCommitIndex_;
+        this->leaseRound_ = other.leaseRound_;
         other.term_ = sharpen::ConsensusWriter::noneEpoch;
         other.preLogIndex_ = 0;
         other.preLogTerm_ = 0;
         other.leaderCommitIndex_ = 0;
+        other.leaseRound_ = 0;
     }
     return *this;
 }
@@ -55,43 +60,50 @@ std::size_t sharpen::RaftHeartbeatRequest::ComputeSize() const noexcept {
     size += sharpen::BinarySerializator::ComputeSize(this->entries_);
     builder.Set(this->leaderCommitIndex_);
     size += builder.ComputeSize();
+    builder.Set(this->leaseRound_);
+    size += builder.ComputeSize();
     return size;
 }
 
 std::size_t sharpen::RaftHeartbeatRequest::LoadFrom(const char *data, std::size_t size) {
-    if (size < 5 + sizeof(sharpen::ActorId)) {
+    if (size < 6 + sizeof(sharpen::ActorId)) {
         throw sharpen::CorruptedDataError{"corrupted heartbeat request"};
     }
     sharpen::Varuint64 builder{0};
     std::size_t offset{0};
     offset += sharpen::BinarySerializator::LoadFrom(builder, data + offset, size - offset);
     this->term_ = builder.Get();
-    if (size < offset + 4 + sizeof(sharpen::ActorId)) {
+    if (size < offset + 5 + sizeof(sharpen::ActorId)) {
         throw sharpen::CorruptedDataError{"corrupted heartbeat request"};
     }
     offset +=
         sharpen::BinarySerializator::LoadFrom(this->leaderActorId_, data + offset, size - offset);
-    if (size < offset + 4) {
+    if (size < offset + 5) {
         throw sharpen::CorruptedDataError{"corrupted heartbeat request"};
     }
     offset += sharpen::BinarySerializator::LoadFrom(builder, data + offset, size - offset);
     this->preLogIndex_ = builder.Get();
-    if (size < offset + 3) {
+    if (size < offset + 4) {
         throw sharpen::CorruptedDataError{"corrupted heartbeat request"};
     }
     offset += sharpen::BinarySerializator::LoadFrom(builder, data + offset, size - offset);
     this->preLogTerm_ = builder.Get();
     sharpen::LogEntries entries;
-    if (size < offset + 2) {
+    if (size < offset + 3) {
         throw sharpen::CorruptedDataError{"corrupted heartbeat request"};
     }
     offset += sharpen::BinarySerializator::LoadFrom(entries, data + offset, size - offset);
     this->entries_ = std::move(entries);
-    if (size < offset + 1) {
+    if (size < offset + 2) {
         throw sharpen::CorruptedDataError{"corrupted heartbeat request"};
     }
     offset += sharpen::BinarySerializator::LoadFrom(builder, data + offset, size - offset);
     this->leaderCommitIndex_ = builder.Get();
+    if (size < offset + 1) {
+        throw sharpen::CorruptedDataError{"corrupted heartbeat request"};
+    }
+    offset += sharpen::BinarySerializator::LoadFrom(builder, data + offset, size - offset);
+    this->leaseRound_ = builder.Get();
     return offset;
 }
 
@@ -107,5 +119,7 @@ std::size_t sharpen::RaftHeartbeatRequest::UnsafeStoreTo(char *data) const noexc
     offset += sharpen::BinarySerializator::UnsafeStoreTo(this->entries_, data + offset);
     builder.Set(this->leaderCommitIndex_);
     offset += sharpen::BinarySerializator::UnsafeStoreTo(builder, data + offset);
+    builder.Set(this->leaseRound_);
+    offset += sharpen::BinarySerializator::UnsafeStoreTo(builder,data + offset);
     return offset;
 }

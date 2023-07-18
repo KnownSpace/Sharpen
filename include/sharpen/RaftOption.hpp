@@ -23,7 +23,8 @@ namespace sharpen {
         bool enablePrevote_;
         std::uint32_t batchSize_;
         std::uint32_t pipelineLength_;
-        bool enableSingle_; 
+        bool enableSingle_;
+        bool enableLeaseAwareness_; 
 
     public:
         RaftOption() noexcept;
@@ -98,6 +99,22 @@ namespace sharpen {
 
         inline void DisableSingle() noexcept {
             this->SetSingle(false);
+        }
+
+        inline bool IsEnableLeaseAwareness() const noexcept {
+            return this->enableLeaseAwareness_;
+        }
+
+        inline void SetLeaseAwareness(bool leaseAwareness) noexcept {
+            this->enableLeaseAwareness_ = leaseAwareness;
+        }
+
+        inline void EnableLeaseAwareness() noexcept {
+            this->SetLeaseAwareness(true);
+        }
+
+        inline void DisableLeaseAwareness() noexcept {
+            this->SetLeaseAwareness(false);
         }
     };
 }   // namespace sharpen
