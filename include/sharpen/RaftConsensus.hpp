@@ -53,6 +53,7 @@ namespace sharpen {
         // cache
         std::atomic_uint64_t term_;
         sharpen::RaftVoteRecord vote_;
+        std::atomic_uint64_t appiledIndex_;
         // role
         std::atomic<sharpen::RaftRole> role_;
         // election record
@@ -97,6 +98,8 @@ namespace sharpen {
         void SetUint64(sharpen::ByteSlice key, std::uint64_t value);
 
         void LoadTerm();
+
+        void LoadAppiledIndex();
 
         void LoadCommitIndex();
 
@@ -204,6 +207,9 @@ namespace sharpen {
 
         void DoNotifyWaiterWhenClose() noexcept;
 
+        virtual void NviStoreLastAppiledIndex(std::uint64_t index) override;
+
+        virtual std::uint64_t NviGetLastAppiledIndex() const noexcept override;
     public:
         constexpr static sharpen::ByteSlice voteKey{"vote", 4};
 
@@ -287,8 +293,6 @@ namespace sharpen {
         virtual std::uint64_t GetEpoch() const noexcept override;
 
         std::uint64_t GetTerm() const noexcept;
-
-        virtual void StoreLastAppiledIndex(std::uint64_t index) override;
     };
 }   // namespace sharpen
 

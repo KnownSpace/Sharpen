@@ -30,6 +30,7 @@ sharpen::RaftConsensus::RaftConsensus(
     , option_(option)
     , term_(sharpen::ConsensusWriter::noneEpoch)
     , vote_(sharpen::ConsensusWriter::noneEpoch, sharpen::ActorId{})
+    , appiledIndex_(0)
     , role_(sharpen::RaftRole::Follower)
     , electionRecord_(sharpen::ConsensusWriter::noneEpoch, 0)
     , prevoteRecord_()
@@ -60,6 +61,7 @@ sharpen::RaftConsensus::RaftConsensus(
     // load status cache
     this->LoadTerm();
     this->LoadVoteFor();
+    this->LoadAppiledIndex();
     // set learner if need
     if (this->option_.IsLearner()) {
         this->role_ = sharpen::RaftRole::Learner;
@@ -180,6 +182,15 @@ sharpen::IRaftSnapshotProvider &sharpen::RaftConsensus::GetSnapshotProvider() no
 const sharpen::IRaftSnapshotProvider &sharpen::RaftConsensus::GetSnapshotProvider() const noexcept {
     assert(this->snapshotController_ != nullptr);
     return this->snapshotController_->Provider();
+}
+
+void sharpen::RaftConsensus::LoadAppiledIndex() {
+    std::uint64_t appiledIndex{sharpen::ILogStorage::noneIndex};
+    sharpen::Optional<std::uint64_t> lastAppiled{this->LoadUint64(lastAppiledKey)};
+    if (lastAppiled.Exist()) {
+        appiledIndex = lastAppiled.Get();
+    }
+    this->appiledIndex_ = appiledIndex;
 }
 
 void sharpen::RaftConsensus::LoadCommitIndex() {
@@ -1101,12 +1112,17 @@ void sharpen::RaftConsensus::DoStoreLastAppiledIndex(std::uint64_t index) {
         val.As<std::uint64_t>() = index;
         sharpen::ByteBuffer key{lastAppiledKey};
         this->statusMap_->Write(std::move(key), std::move(val));
+        this->appiledIndex_ = index;
     }
 }
 
-void sharpen::RaftConsensus::StoreLastAppiledIndex(std::uint64_t index) {
+void sharpen::RaftConsensus::NviStoreLastAppiledIndex(std::uint64_t index) {
     assert(this->worker_ != nullptr);
     sharpen::AwaitableFuture<void> future;
     this->worker_->Invoke(future, &Self::DoStoreLastAppiledIndex, this, index);
     future.Await();
+}
+
+std::uint64_t sharpen::RaftConsensus::NviGetLastAppiledIndex() const noexcept {
+    return this->appiledIndex_;
 }
