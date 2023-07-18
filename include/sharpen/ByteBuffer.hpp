@@ -283,7 +283,9 @@ namespace sharpen {
             return sharpen::ByteSlice{this->Data(), this->GetSize()};
         }
 
-        int Printf(const char *format, ...) noexcept;
+        int PrintfNoexcept(const char *format, ...) noexcept;
+
+        void Printf(const char *format, ...);
 
         int Scanf(const char *format, ...) noexcept;
     };

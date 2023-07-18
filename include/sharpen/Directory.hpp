@@ -27,6 +27,8 @@ namespace sharpen {
 
         void Close() noexcept;
 
+        sharpen::Dentry InternalGetNextEntry() const;
+
     public:
         explicit Directory(std::string name);
 
@@ -40,10 +42,6 @@ namespace sharpen {
             return *this;
         }
 
-        sharpen::Dentry GetNextEntry() const;
-
-        sharpen::Dentry GetNextEntry(bool excludeUpper) const;
-
         bool Exist() const;
 
         inline Iterator Begin() noexcept {
@@ -53,6 +51,18 @@ namespace sharpen {
         inline Iterator End() noexcept {
             return sharpen::DirectoryIterator{nullptr};
         }
+
+        sharpen::Dentry GetNextEntry() const;
+
+        void Remove();
+
+        void RemoveAll();
+
+        inline const std::string &Path() const noexcept {
+            return this->name_;
+        }
+
+        void Create();
     };
 }   // namespace sharpen
 

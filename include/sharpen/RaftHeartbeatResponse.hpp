@@ -15,6 +15,7 @@ namespace sharpen {
         std::uint8_t status_;
         std::uint64_t term_;
         std::uint64_t matchIndex_;
+        std::uint64_t leaseRound_;
 
     public:
         RaftHeartbeatResponse() noexcept = default;
@@ -63,6 +64,14 @@ namespace sharpen {
 
         inline void SetMatchIndex(std::uint64_t matchIndex) noexcept {
             this->matchIndex_ = matchIndex;
+        }
+
+        inline std::uint64_t GetLeaseRound() const noexcept {
+            return this->leaseRound_;
+        }
+
+        inline void SetLeaseRound(std::uint64_t leaseRound) noexcept {
+            this->leaseRound_ = leaseRound;
         }
 
         std::size_t ComputeSize() const noexcept;

@@ -42,6 +42,7 @@ namespace sharpen {
         std::size_t entiresSize_;
         mutable std::map<sharpen::ActorId, sharpen::RaftReplicatedState> states_;
         std::uint64_t term_;
+        std::uint64_t round_;
         std::atomic_uint64_t commitIndex_;
 
         sharpen::RaftReplicatedState *LookupMutableState(
@@ -104,6 +105,8 @@ namespace sharpen {
         sharpen::Optional<std::uint64_t> GetSynchronizedIndex() const noexcept;
 
         void PrepareTerm(std::uint64_t term) noexcept;
+
+        void PrepareRound(std::uint64_t round) noexcept;
 
         sharpen::Mail ProvideSynchronizedMail() const;
 

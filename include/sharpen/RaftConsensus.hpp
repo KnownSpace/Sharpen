@@ -16,14 +16,15 @@
 #include "RaftElectionRecord.hpp"
 #include "RaftHeartbeatMailProvider.hpp"
 #include "RaftLeaderRecord.hpp"
+#include "RaftLeaseStatus.hpp"
 #include "RaftOption.hpp"
 #include "RaftPrevoteRecord.hpp"
 #include "RaftRole.hpp"
 #include "RaftVoteRecord.hpp"
+#include <initializer_list>
 #include <map>
 #include <queue>
 #include <set>
-#include <initializer_list>
 
 namespace sharpen {
     class RaftConsensus
@@ -51,12 +52,12 @@ namespace sharpen {
         // cache
         std::atomic_uint64_t term_;
         sharpen::RaftVoteRecord vote_;
-        // std::atomic_uint64_t commitIndex_;
         // role
         std::atomic<sharpen::RaftRole> role_;
         // election record
         sharpen::RaftElectionRecord electionRecord_;
         sharpen::RaftPrevoteRecord prevoteRecord_;
+        sharpen::RaftLeaseStatus leaseStatus_;
 
         // leader record
         // thread safty
@@ -164,7 +165,8 @@ namespace sharpen {
 
         void NotifyWaiter(sharpen::Future<sharpen::ConsensusResult> *future) noexcept;
 
-        virtual void NviWaitNextConsensus(sharpen::Future<sharpen::ConsensusResult> &future) override;
+        virtual void NviWaitNextConsensus(
+            sharpen::Future<sharpen::ConsensusResult> &future) override;
 
         virtual bool NviIsConsensusMail(const sharpen::Mail &mail) const noexcept override;
 

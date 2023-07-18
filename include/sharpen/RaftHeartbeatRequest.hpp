@@ -22,6 +22,7 @@ namespace sharpen {
         std::uint64_t preLogTerm_;
         sharpen::LogEntries entries_;
         std::uint64_t leaderCommitIndex_;
+        std::uint64_t leaseRound_;
 
     public:
         RaftHeartbeatRequest() noexcept;
@@ -92,6 +93,14 @@ namespace sharpen {
 
         inline void SetCommitIndex(std::uint64_t commitIndex) noexcept {
             this->leaderCommitIndex_ = commitIndex;
+        }
+
+        inline std::uint64_t GetLeaseRound() const noexcept {
+            return this->leaseRound_;
+        }
+
+        inline void SetLeaseRound(std::uint64_t leaseRound) noexcept {
+            this->leaseRound_ = leaseRound;
         }
 
         std::size_t ComputeSize() const noexcept;

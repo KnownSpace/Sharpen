@@ -22,6 +22,7 @@ namespace sharpen {
         bool last_;
         sharpen::RaftSnapshotMetadata metadata_;
         sharpen::ByteBuffer data_;
+        std::uint64_t leaseRound_;
 
     public:
         RaftSnapshotRequest() noexcept;
@@ -92,6 +93,14 @@ namespace sharpen {
 
         inline void SetOffset(std::uint64_t offset) noexcept {
             this->offset_ = offset;
+        }
+
+        inline std::uint64_t GetLeaseRound() const noexcept {
+            return this->leaseRound_;
+        }
+
+        inline void SetLeaseRound(std::uint64_t leaseRound) noexcept {
+            this->leaseRound_ = leaseRound;
         }
 
         std::size_t ComputeSize() const noexcept;

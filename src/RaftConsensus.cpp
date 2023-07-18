@@ -32,6 +32,7 @@ sharpen::RaftConsensus::RaftConsensus(
     , role_(sharpen::RaftRole::Follower)
     , electionRecord_(sharpen::ConsensusWriter::noneEpoch, 0)
     , prevoteRecord_()
+    , leaseStatus_()
     , leaderRecord_(sharpen::ConsensusWriter::noneEpoch, sharpen::ActorId{})
     , lastResult_()
     , waiter_(nullptr)
@@ -431,6 +432,7 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(
     sharpen::RaftHeartbeatResponse response;
     response.SetStatus(false);
     response.SetTerm(this->GetTerm());
+    response.SetLeaseRound(request.GetLeaseRound());
     // check leader id
     sharpen::ConsensusWriter leaderRecord{this->leaderRecord_.GetRecord()};
     if (this->peers_->Exist(request.LeaderActorId()) && request.GetTerm() >= this->GetTerm() &&
@@ -527,6 +529,7 @@ sharpen::Mail sharpen::RaftConsensus::OnSnapshotRequest(
     sharpen::RaftSnapshotResponse response;
     response.SetTerm(this->GetTerm());
     response.SetStatus(false);
+    response.SetLeaseRound(request.GetLeaseRound());
     // check leader id
     sharpen::ConsensusWriter leaderRecord{this->leaderRecord_.GetRecord()};
     if (this->peers_->Exist(request.LeaderActorId()) && request.GetTerm() >= this->GetTerm() &&
@@ -679,7 +682,13 @@ void sharpen::RaftConsensus::OnHeartbeatResponse(const sharpen::RaftHeartbeatRes
         this->Abdicate();
     }
     if (response.GetStatus() && response.GetTerm() == this->GetTerm()) {
-        // TODO: check lease
+        bool leaseConfirmed{false};
+        if (this->option_.IsEnableLeaseAwareness() && response.GetLeaseRound() == this->leaseStatus_.GetRound()) {
+            this->leaseStatus_.OnAck();
+            if (this->leaseStatus_.GetAckCount() == this->peers_->GetMajority()) {
+                leaseConfirmed = true;
+            }
+        }
         // load current commit index
         std::uint64_t commitIndex{this->GetCommitIndex()};
         // foward replicated state and recompute commit index
@@ -687,7 +696,13 @@ void sharpen::RaftConsensus::OnHeartbeatResponse(const sharpen::RaftHeartbeatRes
         // if the commit index forward
         // notify waiter
         if (commitIndex != this->GetCommitIndex()) {
-            this->OnStatusChanged({sharpen::ConsensusResultEnum::LogsCommit});
+            if (leaseConfirmed) {
+                this->OnStatusChanged({sharpen::ConsensusResultEnum::LogsCommit,sharpen::ConsensusResultEnum::LeaseConfirmed});
+            } else {
+                this->OnStatusChanged({sharpen::ConsensusResultEnum::LogsCommit});
+            }
+        } else if (leaseConfirmed) {
+            this->OnStatusChanged({sharpen::ConsensusResultEnum::LeaseConfirmed});
         }
     } else {
         // if we failure
@@ -705,6 +720,11 @@ void sharpen::RaftConsensus::OnSnapshotResponse(const sharpen::RaftSnapshotRespo
         assert(!response.GetStatus());
         this->SetTerm(response.GetTerm());
         this->Abdicate();
+    } else if(this->option_.IsEnableLeaseAwareness() && response.GetLeaseRound() == this->leaseStatus_.GetRound()) {
+        this->leaseStatus_.OnAck();
+        if (this->leaseStatus_.GetAckCount() == this->peers_->GetMajority()) {
+            this->OnStatusChanged({sharpen::ConsensusResultEnum::LeaseConfirmed});
+        }
     }
     // nothing we can do
     (void)response;
@@ -875,6 +895,10 @@ void sharpen::RaftConsensus::DoAdvance() {
     case sharpen::RaftRole::Leader: {
         this->DoSyncHeartbeatProvider();
         this->heartbeatProvider_->PrepareTerm(this->GetTerm());
+        if (this->option_.IsEnableLeaseAwareness()) {
+            this->leaseStatus_.NextRound();
+            this->heartbeatProvider_->PrepareRound(this->leaseStatus_.GetRound());
+        }
         if (!this->heartbeatProvider_->Empty()) {
             sharpen::Optional<std::uint64_t> syncIndex{
                 this->heartbeatProvider_->GetSynchronizedIndex()};
