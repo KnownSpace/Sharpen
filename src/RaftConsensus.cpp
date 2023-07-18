@@ -109,8 +109,7 @@ void sharpen::RaftConsensus::DoNotifyWaiterWhenClose() noexcept {
 }
 
 sharpen::RaftConsensus::~RaftConsensus() noexcept {
-    // wait is unneeded
-    // we will block when ~worker()
+    // we will block in ~worker()
     this->worker_->Submit(&Self::DoNotifyWaiterWhenClose, this);
 }
 
@@ -622,7 +621,6 @@ void sharpen::RaftConsensus::NotifyWaiter(
 }
 
 void sharpen::RaftConsensus::ComeToPower() {
-    // adbicate by leader balance
     if (this->leaderCount_ != nullptr &&
         !this->leaderCount_->TryComeToPower(this->prevLeaderCount_)) {
         return;
