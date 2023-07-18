@@ -28,7 +28,7 @@ sharpen::DirectoryIterator &sharpen::DirectoryIterator::operator=(Self &&other) 
 
 void sharpen::DirectoryIterator::Next() {
     assert(this->dir_ != nullptr);
-    this->dentry_ = this->dir_->GetNextEntry(true);
+    this->dentry_ = this->dir_->GetNextEntry();
     if (!this->dentry_.Valid()) {
         this->dir_ = nullptr;
     }

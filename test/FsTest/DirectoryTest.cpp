@@ -134,11 +134,47 @@ public:
     }
 };
 
+class RemoveAllTest:public simpletest::ITypenamedTest<RemoveAllTest>
+{
+private:
+    using Self = RemoveAllTest;
+
+public:
+
+    RemoveAllTest() noexcept = default;
+
+    ~RemoveAllTest() noexcept = default;
+
+    inline const Self &Const() const noexcept
+    {
+        return *this;
+    }
+
+    inline virtual simpletest::TestResult Run() noexcept
+    {
+        const char *name = "./TestDir";
+        const char *txtFile = "./TestDir/a.txt";
+        const char *logFile = "./TestDir/a.log";
+        const char *dirPath = "./TestDir/Dir";
+        sharpen::MakeDirectory(name);
+        sharpen::MakeDirectory(dirPath);
+        sharpen::FileChannelPtr channel{sharpen::OpenFileChannel(
+            txtFile, sharpen::FileAccessMethod::All, sharpen::FileOpenMethod::CreateNew)};
+        channel = sharpen::OpenFileChannel(
+            logFile, sharpen::FileAccessMethod::All, sharpen::FileOpenMethod::CreateNew);
+        channel->Close();
+        sharpen::Directory dir{name};
+        dir.RemoveAll();
+        return this->Assert(!dir.Exist(),"failed to remove files");
+    }
+};
+
 static int Test() {
     simpletest::TestRunner runner;
     runner.Register<ExistTest>();
     runner.Register<EnumTest>();
     runner.Register<IteratorTest>();
+    runner.Register<RemoveAllTest>();
     return runner.Run();
 }
 
