@@ -8,7 +8,7 @@ sharpen::RaftOption::RaftOption() noexcept
     , batchSize_(Self::minBatchSize_)
     , pipelineLength_(Self::minPipelineLength_)
     , enableSingle_(false)
-    ,enableLeaseAwareness_(false) {
+    , enableLeaseAwareness_(false) {
 }
 
 sharpen::RaftOption::RaftOption(Self &&other) noexcept

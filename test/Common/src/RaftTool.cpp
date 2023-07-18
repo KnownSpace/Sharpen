@@ -109,6 +109,7 @@ std::shared_ptr<sharpen::IConsensus> CreateRaft(
     std::uint16_t port,
     std::uint32_t magic,
     std::unique_ptr<sharpen::IRaftSnapshotController> snapshotCtrl,
+    std::shared_ptr<sharpen::RaftLeaderCounter> leaderCounter,
     sharpen::RaftOption option,
     bool pipeline) {
     sharpen::IpEndPoint endPoint;
@@ -120,6 +121,7 @@ std::shared_ptr<sharpen::IConsensus> CreateRaft(
                                                  CreateLogStorage(port),
                                                  CreateLogAccesser(magic),
                                                  std::move(snapshotCtrl),
+                                                 std::move(leaderCounter),
                                                  option)};
     std::unique_ptr<sharpen::IRaftMailBuilder> builder{new (std::nothrow)
                                                            sharpen::RaftMailBuilder{magic}};

@@ -10,13 +10,11 @@
 #include <sharpen/IStatusMap.hpp>
 #include <sharpen/IpEndPoint.hpp>
 #include <sharpen/Quorum.hpp>
+#include <sharpen/RaftLeaderCounter.hpp>
 #include <sharpen/RaftOption.hpp>
 #include <memory>
 #include <string>
 #include <vector>
-
-
-
 
 extern std::vector<sharpen::IpEndPoint> GetPeers(std::uint16_t begin, std::uint16_t end);
 
@@ -44,6 +42,7 @@ extern std::shared_ptr<sharpen::IConsensus> CreateRaft(
     std::uint16_t port,
     std::uint32_t magic,
     std::unique_ptr<sharpen::IRaftSnapshotController> snapshotCtrl,
+    std::shared_ptr<sharpen::RaftLeaderCounter> leaderCounter,
     sharpen::RaftOption option,
     bool pipeline);
 

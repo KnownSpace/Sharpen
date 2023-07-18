@@ -45,7 +45,7 @@ static std::shared_ptr<sharpen::IConsensus> CreateRaft(std::uint16_t port) {
     raftOpt.SetBatchSize(batchSize);
     raftOpt.SetLearner(false);
     raftOpt.SetPrevote(false);
-    auto raft{CreateRaft(port, magicNumber, nullptr, raftOpt,false)};
+    auto raft{CreateRaft(port, magicNumber, nullptr,nullptr, raftOpt,false)};
     raft->ConfiguratePeers(
         &ConfigPeers, port, beginPort, endPort, &raft->GetReceiver(), magicNumber,false);
     return raft;
@@ -57,7 +57,7 @@ static std::shared_ptr<sharpen::IConsensus> CreatePipelineRaft(std::uint16_t por
     raftOpt.SetLearner(false);
     raftOpt.SetPrevote(false);
     raftOpt.SetPipelineLength(pipelineLength);
-    auto raft{CreateRaft(port, magicNumber, nullptr, raftOpt,true)};
+    auto raft{CreateRaft(port, magicNumber, nullptr,nullptr, raftOpt,true)};
     raft->ConfiguratePeers(
         &ConfigPeers, port, beginPort, endPort, &raft->GetReceiver(), magicNumber,true);
     return raft;
@@ -69,7 +69,7 @@ static std::shared_ptr<sharpen::IConsensus> CreateLeaseRaft(std::uint16_t port) 
     raftOpt.SetLearner(false);
     raftOpt.SetPrevote(false);
     raftOpt.EnableLeaseAwareness();
-    auto raft{CreateRaft(port, magicNumber, nullptr, raftOpt,false)};
+    auto raft{CreateRaft(port, magicNumber,nullptr, nullptr, raftOpt,false)};
     raft->ConfiguratePeers(
         &ConfigPeers, port, beginPort, endPort, &raft->GetReceiver(), magicNumber,false);
     return raft;

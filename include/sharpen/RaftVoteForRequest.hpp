@@ -18,6 +18,7 @@ namespace sharpen {
         std::uint64_t term_;
         std::uint64_t lastIndex_;
         std::uint64_t lastTerm_;
+        std::uint64_t leaderCount_;
 
     public:
         RaftVoteForRequest() noexcept;
@@ -83,6 +84,14 @@ namespace sharpen {
 
         inline void SetLastTerm(std::uint64_t lastTerm) noexcept {
             this->lastTerm_ = lastTerm;
+        }
+
+        inline std::uint64_t GetLeaderCount() const noexcept {
+            return this->leaderCount_;
+        }
+
+        inline void SetLeaderCount(std::uint64_t count) noexcept {
+            this->leaderCount_ = count;
         }
     };
 }   // namespace sharpen
