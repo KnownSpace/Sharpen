@@ -32,9 +32,9 @@ namespace sharpen {
         virtual void NviConfiguratePeers(
             std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater) = 0;
 
-        virtual void NviStoreLastAppiledIndex(std::uint64_t index) = 0;
+        virtual void NviStoreLastAppliedIndex(std::uint64_t index) = 0;
 
-        virtual std::uint64_t NviGetLastAppiledIndex() const noexcept = 0;
+        virtual std::uint64_t NviGetLastAppliedIndex() const noexcept = 0;
     public:
         IConsensus() noexcept = default;
 
@@ -127,12 +127,12 @@ namespace sharpen {
 
         virtual std::uint64_t GetCommitIndex() const noexcept = 0;
 
-        inline void StoreLastAppiledIndex(std::uint64_t index) {
-            this->NviStoreLastAppiledIndex(index);
+        inline void StoreLastAppliedIndex(std::uint64_t index) {
+            this->NviStoreLastAppliedIndex(index);
         }
 
-        inline std::uint64_t GetLastAppiledIndex() const noexcept {
-            return this->NviGetLastAppiledIndex();
+        inline std::uint64_t GetLastAppliedIndex() const noexcept {
+            return this->NviGetLastAppliedIndex();
         }
     };
 }   // namespace sharpen

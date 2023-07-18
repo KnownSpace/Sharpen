@@ -53,7 +53,7 @@ namespace sharpen {
         // cache
         std::atomic_uint64_t term_;
         sharpen::RaftVoteRecord vote_;
-        std::atomic_uint64_t appiledIndex_;
+        std::atomic_uint64_t appliedIndex_;
         // role
         std::atomic<sharpen::RaftRole> role_;
         // election record
@@ -99,7 +99,7 @@ namespace sharpen {
 
         void LoadTerm();
 
-        void LoadAppiledIndex();
+        void LoadAppliedIndex();
 
         void LoadCommitIndex();
 
@@ -203,19 +203,19 @@ namespace sharpen {
 
         void DoAdvance();
 
-        void DoStoreLastAppiledIndex(std::uint64_t index);
+        void DoStoreLastAppliedIndex(std::uint64_t index);
 
         void DoNotifyWaiterWhenClose() noexcept;
 
-        virtual void NviStoreLastAppiledIndex(std::uint64_t index) override;
+        virtual void NviStoreLastAppliedIndex(std::uint64_t index) override;
 
-        virtual std::uint64_t NviGetLastAppiledIndex() const noexcept override;
+        virtual std::uint64_t NviGetLastAppliedIndex() const noexcept override;
     public:
         constexpr static sharpen::ByteSlice voteKey{"vote", 4};
 
         constexpr static sharpen::ByteSlice termKey{"term", 4};
 
-        constexpr static sharpen::ByteSlice lastAppiledKey{"lastAppiled", 11};
+        constexpr static sharpen::ByteSlice lastAppliedKey{"lastAppiled", 11};
 
         RaftConsensus(const sharpen::ActorId &id,
                       std::unique_ptr<sharpen::IStatusMap> statusMap,

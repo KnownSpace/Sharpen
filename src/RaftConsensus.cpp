@@ -30,7 +30,7 @@ sharpen::RaftConsensus::RaftConsensus(
     , option_(option)
     , term_(sharpen::ConsensusWriter::noneEpoch)
     , vote_(sharpen::ConsensusWriter::noneEpoch, sharpen::ActorId{})
-    , appiledIndex_(0)
+    , appliedIndex_(0)
     , role_(sharpen::RaftRole::Follower)
     , electionRecord_(sharpen::ConsensusWriter::noneEpoch, 0)
     , prevoteRecord_()
@@ -61,7 +61,7 @@ sharpen::RaftConsensus::RaftConsensus(
     // load status cache
     this->LoadTerm();
     this->LoadVoteFor();
-    this->LoadAppiledIndex();
+    this->LoadAppliedIndex();
     // set learner if need
     if (this->option_.IsLearner()) {
         this->role_ = sharpen::RaftRole::Learner;
@@ -184,18 +184,18 @@ const sharpen::IRaftSnapshotProvider &sharpen::RaftConsensus::GetSnapshotProvide
     return this->snapshotController_->Provider();
 }
 
-void sharpen::RaftConsensus::LoadAppiledIndex() {
+void sharpen::RaftConsensus::LoadAppliedIndex() {
     std::uint64_t appiledIndex{sharpen::ILogStorage::noneIndex};
-    sharpen::Optional<std::uint64_t> lastAppiled{this->LoadUint64(lastAppiledKey)};
+    sharpen::Optional<std::uint64_t> lastAppiled{this->LoadUint64(lastAppliedKey)};
     if (lastAppiled.Exist()) {
         appiledIndex = lastAppiled.Get();
     }
-    this->appiledIndex_ = appiledIndex;
+    this->appliedIndex_ = appiledIndex;
 }
 
 void sharpen::RaftConsensus::LoadCommitIndex() {
     std::uint64_t commitIndex{sharpen::ILogStorage::noneIndex};
-    sharpen::Optional<std::uint64_t> lastAppiled{this->LoadUint64(lastAppiledKey)};
+    sharpen::Optional<std::uint64_t> lastAppiled{this->LoadUint64(lastAppliedKey)};
     if (lastAppiled.Exist()) {
         commitIndex = lastAppiled.Get();
     }
@@ -1101,7 +1101,7 @@ std::uint64_t sharpen::RaftConsensus::GetEpoch() const noexcept {
     return this->GetTerm();
 }
 
-void sharpen::RaftConsensus::DoStoreLastAppiledIndex(std::uint64_t index) {
+void sharpen::RaftConsensus::DoStoreLastAppliedIndex(std::uint64_t index) {
     assert(this->statusMap_ != nullptr);
     this->EnsureHearbeatProvider();
     if (this->GetCommitIndex() > index) {
@@ -1110,19 +1110,19 @@ void sharpen::RaftConsensus::DoStoreLastAppiledIndex(std::uint64_t index) {
 #endif
         sharpen::ByteBuffer val{sizeof(index)};
         val.As<std::uint64_t>() = index;
-        sharpen::ByteBuffer key{lastAppiledKey};
+        sharpen::ByteBuffer key{lastAppliedKey};
         this->statusMap_->Write(std::move(key), std::move(val));
-        this->appiledIndex_ = index;
+        this->appliedIndex_ = index;
     }
 }
 
-void sharpen::RaftConsensus::NviStoreLastAppiledIndex(std::uint64_t index) {
+void sharpen::RaftConsensus::NviStoreLastAppliedIndex(std::uint64_t index) {
     assert(this->worker_ != nullptr);
     sharpen::AwaitableFuture<void> future;
-    this->worker_->Invoke(future, &Self::DoStoreLastAppiledIndex, this, index);
+    this->worker_->Invoke(future, &Self::DoStoreLastAppliedIndex, this, index);
     future.Await();
 }
 
-std::uint64_t sharpen::RaftConsensus::NviGetLastAppiledIndex() const noexcept {
-    return this->appiledIndex_;
+std::uint64_t sharpen::RaftConsensus::NviGetLastAppliedIndex() const noexcept {
+    return this->appliedIndex_;
 }
