@@ -24,7 +24,7 @@ namespace sharpen {
         std::uint32_t batchSize_;
         std::uint32_t pipelineLength_;
         bool enableSingle_;
-        bool enableLeaseAwareness_; 
+        bool enableLeaseAwareness_;
 
     public:
         RaftOption() noexcept;
@@ -82,7 +82,7 @@ namespace sharpen {
         inline std::uint32_t GetPipelineLength() noexcept {
             return this->pipelineLength_;
         }
-        
+
         void SetPipelineLength(std::uint32_t pipeline) noexcept;
 
         inline bool IsEnableSingle() const noexcept {
