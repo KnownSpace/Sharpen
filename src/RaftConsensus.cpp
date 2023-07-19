@@ -724,20 +724,21 @@ void sharpen::RaftConsensus::OnHeartbeatResponse(const sharpen::RaftHeartbeatRes
     assert(!this->heartbeatProvider_->Empty());
     // if term > current term
     // leader abdicate
+    bool leaseConfirmed{false};
     if (response.GetTerm() > this->GetTerm()) {
         assert(!response.GetStatus());
         this->SetTerm(response.GetTerm());
         this->Abdicate();
+    // if term <= current term
+    // lease should be confirmed
+    } else if (this->option_.IsEnableLeaseAwareness() &&
+               response.GetLeaseRound() == this->leaseStatus_.GetRound()) {
+        this->leaseStatus_.OnAck();
+        if (this->leaseStatus_.GetAckCount() == this->peers_->GetMajority()) {
+            leaseConfirmed = true;
+        }
     }
     if (response.GetStatus() && response.GetTerm() == this->GetTerm()) {
-        bool leaseConfirmed{false};
-        if (this->option_.IsEnableLeaseAwareness() &&
-            response.GetLeaseRound() == this->leaseStatus_.GetRound()) {
-            this->leaseStatus_.OnAck();
-            if (this->leaseStatus_.GetAckCount() == this->peers_->GetMajority()) {
-                leaseConfirmed = true;
-            }
-        }
         // load current commit index
         std::uint64_t commitIndex{this->GetCommitIndex()};
         // foward replicated state and recompute commit index
@@ -760,6 +761,9 @@ void sharpen::RaftConsensus::OnHeartbeatResponse(const sharpen::RaftHeartbeatRes
         // if match index of response > our match index
         // do nothing, pipeline will reach it at the end
         this->heartbeatProvider_->BackwardState(actorId, response.GetMatchIndex());
+        if (leaseConfirmed) {
+            this->OnStatusChanged({sharpen::ConsensusResultEnum::LeaseConfirmed});
+        }
     }
 }
 
