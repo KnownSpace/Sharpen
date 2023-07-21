@@ -23,7 +23,7 @@ std::uint64_t sharpen::RaftLeaderCounter::GetCurrentCount() const noexcept {
     return this->count_;
 }
 
-bool sharpen::RaftLeaderCounter::TryComeToPower(std::uint64_t prevCount) noexcept {
+bool sharpen::RaftLeaderCounter::TryStepUp(std::uint64_t prevCount) noexcept {
     std::uint64_t tmp{prevCount};
     while (!this->count_.compare_exchange_strong(tmp,tmp + 1)) {
         tmp = this->count_.load();
@@ -34,6 +34,6 @@ bool sharpen::RaftLeaderCounter::TryComeToPower(std::uint64_t prevCount) noexcep
     return true;
 }
 
-void sharpen::RaftLeaderCounter::Abdicate() noexcept {
+void sharpen::RaftLeaderCounter::StepDown() noexcept {
     this->count_ -= 1;
 }

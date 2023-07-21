@@ -39,9 +39,9 @@ namespace sharpen {
 
         std::uint64_t GetCurrentCount() const noexcept;
 
-        bool TryComeToPower(std::uint64_t prevCount) noexcept;
+        bool TryStepUp(std::uint64_t prevCount) noexcept;
 
-        void Abdicate() noexcept;
+        void StepDown() noexcept;
     };
 }   // namespace sharpen
 

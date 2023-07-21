@@ -495,7 +495,7 @@ public:
         auto primary{rafts[0].get()};
         auto primaryCount{counters[0].get()};
         // increase counter
-        primaryCount->TryComeToPower(0);
+        primaryCount->TryStepUp(0);
         sharpen::AwaitableFuture<sharpen::ConsensusResult> future;
         primary->Advance();
         primary->WaitNextConsensus(future);
@@ -522,7 +522,7 @@ public:
             }
             return this->Fail("should not be writable");
         }
-        primaryCount->Abdicate();
+        primaryCount->StepDown();
         primary->Advance();
         future.Await();
         writable = primary->Writable();
@@ -587,7 +587,7 @@ public:
         auto primary{rafts[0].get()};
         auto primaryCount{counters[0].get()};
         // increase counter
-        primaryCount->TryComeToPower(0);
+        primaryCount->TryStepUp(0);
         sharpen::AwaitableFuture<sharpen::ConsensusResult> future;
         primary->Advance();
         primary->WaitNextConsensus(future);
@@ -614,7 +614,7 @@ public:
             }
             return this->Fail("should not be writable");
         }
-        primaryCount->Abdicate();
+        primaryCount->StepDown();
         primary->Advance();
         future.Await();
         writable = primary->Writable();

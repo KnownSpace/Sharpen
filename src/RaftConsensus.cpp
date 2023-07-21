@@ -418,7 +418,7 @@ sharpen::Mail sharpen::RaftConsensus::OnVoteRequest(const sharpen::RaftVoteForRe
             std::uint64_t newTerm{request.GetTerm()};
             this->SetTerm(newTerm);
             response.SetTerm(newTerm);
-            this->Abdicate();
+            this->StepDown();
         }
         // check vote record
         sharpen::RaftVoteRecord vote{this->GetVote()};
@@ -456,6 +456,7 @@ sharpen::Mail sharpen::RaftConsensus::OnVoteRequest(const sharpen::RaftVoteForRe
                     this->SetVote(vote);
                     // set status to true
                     response.SetStatus(true);
+                    this->OnStatusChanged({sharpen::ConsensusResultEnum::LeaseRequested});
                 }
             }
         }
@@ -484,7 +485,7 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(
             std::uint64_t newTerm{request.GetTerm()};
             this->SetTerm(newTerm);
             response.SetTerm(newTerm);
-            this->Abdicate();
+            this->StepDown();
         }
         bool validatedEntries{true};
         // check request entires
@@ -583,7 +584,7 @@ sharpen::Mail sharpen::RaftConsensus::OnSnapshotRequest(
             std::uint64_t newTerm{request.GetTerm()};
             this->SetTerm(newTerm);
             response.SetTerm(newTerm);
-            this->Abdicate();
+            this->StepDown();
         }
         // if enable snapshot
         // request.term is up-to-date
@@ -631,26 +632,30 @@ void sharpen::RaftConsensus::NotifyWaiter(
     } catch (const std::exception &ignore) { (void)ignore; }
 }
 
-void sharpen::RaftConsensus::ComeToPower() {
+void sharpen::RaftConsensus::StepUp() {
     if (this->leaderCount_ != nullptr &&
-        !this->leaderCount_->TryComeToPower(this->prevLeaderCount_)) {
+        !this->leaderCount_->TryStepUp(this->prevLeaderCount_)) {
         return;
     }
     this->role_ = sharpen::RaftRole::Leader;
     assert(this->heartbeatProvider_ != nullptr);
-    this->OnStatusChanged({sharpen::ConsensusResultEnum::StatusChanged});
+    if (this->option_.IsEnableLeaseAwareness()) {
+        this->OnStatusChanged({sharpen::ConsensusResultEnum::StatusChanged,sharpen::ConsensusResultEnum::LeaseConfirmed});
+    } else {
+        this->OnStatusChanged({sharpen::ConsensusResultEnum::StatusChanged});
+    }
     // draining pipeline
     if (this->peersBroadcaster_) {
         this->peersBroadcaster_->Drain();
     }
 }
 
-void sharpen::RaftConsensus::Abdicate() {
+void sharpen::RaftConsensus::StepDown() {
     if (this->role_ != sharpen::RaftRole::Learner) {
         sharpen::RaftRole role{sharpen::RaftRole::Follower};
         role = this->role_.exchange(role);
         if (role == sharpen::RaftRole::Leader) {
-            this->leaderCount_->Abdicate();
+            this->leaderCount_->StepDown();
             this->OnStatusChanged({sharpen::ConsensusResultEnum::StatusChanged});
         }
     }
@@ -676,7 +681,7 @@ void sharpen::RaftConsensus::OnPrevoteResponse(const sharpen::RaftPrevoteRespons
     if (response.GetTerm() > term) {
         assert(!response.GetStatus());
         this->SetTerm(response.GetTerm());
-        return this->Abdicate();
+        return this->StepDown();
     }
     if (response.GetStatus()) {
         // make sure the term that we raise prevote
@@ -700,7 +705,7 @@ void sharpen::RaftConsensus::OnVoteResponse(const sharpen::RaftVoteForResponse &
     if (response.GetTerm() > this->GetTerm()) {
         assert(!response.GetStatus());
         this->SetTerm(response.GetTerm());
-        return this->Abdicate();
+        return this->StepDown();
     }
     if (!response.GetStatus()) {
         return;
@@ -713,7 +718,7 @@ void sharpen::RaftConsensus::OnVoteResponse(const sharpen::RaftVoteForResponse &
         this->electionRecord_.SetVotes(votes);
         // check if we could be leader
         if (votes == this->peers_->GetMajority()) {
-            this->ComeToPower();
+            this->StepUp();
         }
     }
 }
@@ -728,9 +733,9 @@ void sharpen::RaftConsensus::OnHeartbeatResponse(const sharpen::RaftHeartbeatRes
     if (response.GetTerm() > this->GetTerm()) {
         assert(!response.GetStatus());
         this->SetTerm(response.GetTerm());
-        this->Abdicate();
-    // if term <= current term
-    // lease should be confirmed
+        this->StepDown();
+        // if term <= current term
+        // lease should be confirmed
     } else if (this->option_.IsEnableLeaseAwareness() &&
                response.GetLeaseRound() == this->leaseStatus_.GetRound()) {
         this->leaseStatus_.OnAck();
@@ -773,7 +778,7 @@ void sharpen::RaftConsensus::OnSnapshotResponse(const sharpen::RaftSnapshotRespo
     if (response.GetTerm() > this->GetTerm()) {
         assert(!response.GetStatus());
         this->SetTerm(response.GetTerm());
-        this->Abdicate();
+        this->StepDown();
     } else if (this->option_.IsEnableLeaseAwareness() &&
                response.GetLeaseRound() == this->leaseStatus_.GetRound()) {
         this->leaseStatus_.OnAck();
@@ -1000,7 +1005,7 @@ void sharpen::RaftConsensus::DoAdvance() {
             vote.ActorId() = this->id_;
             this->SetVote(vote);
             // become leader
-            this->ComeToPower();
+            this->StepUp();
         }
         break;
     }
@@ -1065,7 +1070,7 @@ void sharpen::RaftConsensus::ReleasePeers() {
 }
 
 void sharpen::RaftConsensus::NviDropLogsUntil(std::uint64_t index) {
-    index = (std::min)(index, this->GetCommitIndex());
+    index = (std::min)(index, this->GetLastAppliedIndex());
     this->worker_->Submit(&sharpen::ILogStorage::DropUntil, this->logs_.get(), index);
 }
 

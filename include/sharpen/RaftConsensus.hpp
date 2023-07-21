@@ -139,9 +139,9 @@ namespace sharpen {
 
         void RaisePrevote();
 
-        void ComeToPower();
+        void StepUp();
 
-        void Abdicate();
+        void StepDown();
 
         void SetCommitIndex(std::uint64_t commitIndex) noexcept;
 
