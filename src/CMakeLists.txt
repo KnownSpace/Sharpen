@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.15.0)
 
 #build fcontext
-
 if (MSVC AND NOT CMAKE_C_COMPILER_ID MATCHES "Clang")
     enable_language(CXX ASM_MASM)
 else()

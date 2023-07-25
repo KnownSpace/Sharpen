@@ -12,6 +12,13 @@
 #include <sharpen/EventLoop.hpp>
 #include <sharpen/SystemError.hpp>
 
+
+#if (defined SHARPEN_ON_WSL) && (defined SHARPEN_HAS_IOURING)
+// if we on WSL, disable io_uring
+// some operations are not supported on WSL
+#define SHARPEN_FORCE_NORMAL_FILE_IO
+#endif
+
 #ifdef SHARPEN_HAS_IOURING
 #include <cstring>
 #include <new>
@@ -113,11 +120,8 @@ void sharpen::PosixFileChannel::DoWrite(const char *buf,
                                         std::size_t bufSize,
                                         std::uint64_t offset,
                                         sharpen::Future<std::size_t> *future) {
-#ifdef SHARPEN_HAS_IOURING
-    if (!this->queue_) {
-        this->NormalWrite(buf, bufSize, offset, future);
-        return;
-    }
+#if (defined SHARPEN_HAS_IOURING) && !(defined SHARPEN_FORCE_NORMAL_FILE_IO)
+    assert(this->queue_);
     auto *st = this->InitStruct(const_cast<char *>(buf), bufSize, future);
     if (!st) {
         future->Fail(std::make_exception_ptr(std::bad_alloc()));
@@ -157,11 +161,8 @@ void sharpen::PosixFileChannel::DoRead(char *buf,
                                        std::size_t bufSize,
                                        std::uint64_t offset,
                                        sharpen::Future<std::size_t> *future) {
-#ifdef SHARPEN_HAS_IOURING
-    if (!this->queue_) {
-        this->NormalRead(buf, bufSize, offset, future);
-        return;
-    }
+#if (defined SHARPEN_HAS_IOURING) && !(defined SHARPEN_FORCE_NORMAL_FILE_IO)
+    assert(this->queue_);
     auto *st = this->InitStruct(buf, bufSize, future);
     if (!st) {
         future->Fail(std::make_exception_ptr(std::bad_alloc()));
@@ -186,11 +187,8 @@ void sharpen::PosixFileChannel::DoRead(char *buf,
 void sharpen::PosixFileChannel::DoAllocate(std::uint64_t offset,
                                            std::size_t size,
                                            sharpen::Future<std::size_t> *future) {
-#ifdef SHARPEN_HAS_IOURING
-    if (!this->queue_) {
-        this->NormalAllocate(offset, size, future);
-        return;
-    }
+#if (defined SHARPEN_HAS_IOURING) && !(defined SHARPEN_FORCE_NORMAL_FILE_IO)
+    assert(this->queue_);
     auto *st = this->InitStruct(nullptr, 0, future);
     if (!st) {
         future->Fail(std::make_exception_ptr(std::bad_alloc()));
@@ -199,13 +197,16 @@ void sharpen::PosixFileChannel::DoAllocate(std::uint64_t offset,
     struct io_uring_sqe sqe;
     std::memset(&sqe, 0, sizeof(sqe));
     sqe.opcode = IORING_OP_FALLOCATE;
-    sqe.flags = FALLOC_FL_KEEP_SIZE;
     st->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Allocate);
     st->vec_.iov_len = size;
     sqe.user_data = reinterpret_cast<std::uint64_t>(st);
-    sqe.len = size;
+    // addr should be size of fallocate
+    sqe.addr = static_cast<std::uint64_t>(size);
+    // len should be flags of fallocate
+    sqe.len = FALLOC_FL_KEEP_SIZE;
     sqe.off = offset;
     sqe.fd = this->handle_;
+    
     this->queue_->SubmitIoRequest(sqe);
 #else
     this->NormalAllocate(offset, size, future);
@@ -215,11 +216,8 @@ void sharpen::PosixFileChannel::DoAllocate(std::uint64_t offset,
 void sharpen::PosixFileChannel::DoDeallocate(std::uint64_t offset,
                                              std::size_t size,
                                              sharpen::Future<std::size_t> *future) {
-#ifdef SHARPEN_HAS_IOURING
-    if (!this->queue_) {
-        this->NormalDeallocate(offset, size, future);
-        return;
-    }
+#if (defined SHARPEN_HAS_IOURING) && !(defined SHARPEN_FORCE_NORMAL_FILE_IO)
+    assert(this->queue_);
     auto *st = this->InitStruct(nullptr, 0, future);
     if (!st) {
         future->Fail(std::make_exception_ptr(std::bad_alloc()));
@@ -228,11 +226,13 @@ void sharpen::PosixFileChannel::DoDeallocate(std::uint64_t offset,
     struct io_uring_sqe sqe;
     std::memset(&sqe, 0, sizeof(sqe));
     sqe.opcode = IORING_OP_FALLOCATE;
-    sqe.flags = FALLOC_FL_PUNCH_HOLE | FALLOC_FL_KEEP_SIZE;
     st->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Deallocate);
     st->vec_.iov_len = size;
     sqe.user_data = reinterpret_cast<std::uint64_t>(st);
-    sqe.len = size;
+    // addr should be size of fallocate
+    sqe.addr = static_cast<std::uint64_t>(size);
+    // len should be flags of fallocate
+    sqe.len = FALLOC_FL_PUNCH_HOLE | FALLOC_FL_KEEP_SIZE;
     sqe.off = offset;
     sqe.fd = this->handle_;
     this->queue_->SubmitIoRequest(sqe);
@@ -378,11 +378,8 @@ void sharpen::PosixFileChannel::NormalFlush(sharpen::Future<void> *future) {
 
 void sharpen::PosixFileChannel::DoFlush(sharpen::Future<void> *future) {
     assert(future != nullptr);
-#ifdef SHARPEN_HAS_IOURING
-    if (!this->queue_) {
-        this->NormalFlush(future);
-        return;
-    }
+#if (defined SHARPEN_HAS_IOURING) && !(defined SHARPEN_FORCE_NORMAL_FILE_IO)
+    assert(this->queue_);
     auto *st = this->InitStruct(future);
     if (!st) {
         future->Fail(std::make_exception_ptr(std::bad_alloc()));
