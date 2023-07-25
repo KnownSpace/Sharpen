@@ -10,6 +10,11 @@ enable_testing()
 
 set(SHARPEN_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include/")
 
+## Check WSL
+if("${CMAKE_SYSTEM}" MATCHES "WSL")
+    add_definitions(-DSHARPEN_ON_WSL)
+endif()
+
 add_subdirectory("${PROJECT_SOURCE_DIR}/src")
 add_subdirectory("${PROJECT_SOURCE_DIR}/test")
 
