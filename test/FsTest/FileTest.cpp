@@ -273,6 +273,33 @@ public:
     }
 };
 
+class AllocateTest : public simpletest::ITypenamedTest<AllocateTest> {
+private:
+    using Self = AllocateTest;
+
+public:
+    AllocateTest() noexcept = default;
+
+    ~AllocateTest() noexcept = default;
+
+    inline const Self &Const() const noexcept {
+        return *this;
+    }
+
+    inline virtual simpletest::TestResult Run() noexcept {
+        sharpen::FileChannelPtr channel =
+            sharpen::OpenFileChannel("./buf.log",
+                                     sharpen::FileAccessMethod::Write,
+                                     sharpen::FileOpenMethod::CreateNew,
+                                     sharpen::FileIoMethod::Normal);
+            channel->Register(sharpen::GetLocalLoopGroup());
+            std::size_t size{channel->AllocateAsync(0,4096)};
+            channel->Close();
+            sharpen::RemoveFile("./buf.log");
+            return this->Assert(size == 4096,"size should be 4096");
+    }
+};
+
 static int Test() {
     simpletest::TestRunner runner;
     runner.Register<WriteTest>();
@@ -285,6 +312,7 @@ static int Test() {
     runner.Register<MappingTest>();
     runner.Register<ResolvePathTest>();
     runner.Register<DirectOpeartionTest>();
+    runner.Register<AllocateTest>();
     return runner.Run();
 }
 

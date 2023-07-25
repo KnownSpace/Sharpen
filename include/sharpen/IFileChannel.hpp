@@ -56,9 +56,13 @@ namespace sharpen {
 
         void FlushAsync();
 
-        virtual void Allocate(std::uint64_t offset, std::size_t size) = 0;
+        virtual void AllocateAsync(sharpen::Future<std::size_t> &future,std::uint64_t offset, std::size_t size) = 0;
 
-        virtual void Deallocate(std::uint64_t offset, std::size_t size) = 0;
+        std::size_t AllocateAsync(std::uint64_t offset, std::size_t size);
+
+        virtual void DeallocateAsync(sharpen::Future<std::size_t> &future,std::uint64_t offset, std::size_t size) = 0;
+
+        std::size_t DeallocateAsync(std::uint64_t offset, std::size_t size);
     };
 
     using FileChannelPtr = std::shared_ptr<sharpen::IFileChannel>;

@@ -190,3 +190,15 @@ void sharpen::IFileChannel::FlushAsync() {
     this->FlushAsync(future);
     return future.Await();
 }
+
+std::size_t sharpen::IFileChannel::AllocateAsync(std::uint64_t offset, std::size_t size) {
+    sharpen::AwaitableFuture<std::size_t> future;
+    this->AllocateAsync(future,offset,size);
+    return future.Await();
+}
+
+std::size_t sharpen::IFileChannel::DeallocateAsync(std::uint64_t offset, std::size_t size) {
+    sharpen::AwaitableFuture<std::size_t> future;
+    this->DeallocateAsync(future,offset,size);
+    return future.Await();
+}

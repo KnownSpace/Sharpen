@@ -44,6 +44,34 @@ void sharpen::PosixFileChannel::NormalWrite(const char *buf,
     future->Complete(static_cast<std::size_t>(r));
 }
 
+void sharpen::PosixFileChannel::NormalAllocate(std::uint64_t offset,
+                                               std::size_t size,
+                                               sharpen::Future<std::size_t> *future) {
+    int r = ::fallocate64(this->handle_, FALLOC_FL_KEEP_SIZE, offset, size);
+    while (r == -1 && sharpen::GetLastError() == EINTR) {
+        r = ::fallocate64(this->handle_, FALLOC_FL_KEEP_SIZE, offset, size);
+    }
+    if (r == -1) {
+        future->Fail(sharpen::MakeLastErrorPtr());
+    } else {
+        future->Complete(size);
+    }
+}
+
+void sharpen::PosixFileChannel::NormalDeallocate(std::uint64_t offset,
+                                                 std::size_t size,
+                                                 sharpen::Future<std::size_t> *future) {
+    int r = ::fallocate64(this->handle_, FALLOC_FL_PUNCH_HOLE | FALLOC_FL_KEEP_SIZE, offset, size);
+    while (r == -1 && sharpen::GetLastError() == EINTR) {
+        r = ::fallocate64(this->handle_, FALLOC_FL_PUNCH_HOLE | FALLOC_FL_KEEP_SIZE, offset, size);
+    }
+    if (r == -1) {
+        future->Fail(sharpen::MakeLastErrorPtr());
+    } else {
+        future->Complete(size);
+    }
+}
+
 #ifdef SHARPEN_HAS_IOURING
 
 sharpen::IoUringStruct *sharpen::PosixFileChannel::InitStruct(
@@ -154,6 +182,65 @@ void sharpen::PosixFileChannel::DoRead(char *buf,
 #endif
 }
 
+
+void sharpen::PosixFileChannel::DoAllocate(std::uint64_t offset,
+                                           std::size_t size,
+                                           sharpen::Future<std::size_t> *future) {
+#ifdef SHARPEN_HAS_IOURING
+    if (!this->queue_) {
+        this->NormalAllocate(offset, size, future);
+        return;
+    }
+    auto *st = this->InitStruct(nullptr, 0, future);
+    if (!st) {
+        future->Fail(std::make_exception_ptr(std::bad_alloc()));
+        return;
+    }
+    struct io_uring_sqe sqe;
+    std::memset(&sqe, 0, sizeof(sqe));
+    sqe.opcode = IORING_OP_FALLOCATE;
+    sqe.flags = FALLOC_FL_KEEP_SIZE;
+    st->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Allocate);
+    st->vec_.iov_len = size;
+    sqe.user_data = reinterpret_cast<std::uint64_t>(st);
+    sqe.len = size;
+    sqe.off = offset;
+    sqe.fd = this->handle_;
+    this->queue_->SubmitIoRequest(sqe);
+#else
+    this->NormalAllocate(offset, size, future);
+#endif
+}
+
+void sharpen::PosixFileChannel::DoDeallocate(std::uint64_t offset,
+                                             std::size_t size,
+                                             sharpen::Future<std::size_t> *future) {
+#ifdef SHARPEN_HAS_IOURING
+    if (!this->queue_) {
+        this->NormalDeallocate(offset, size, future);
+        return;
+    }
+    auto *st = this->InitStruct(nullptr, 0, future);
+    if (!st) {
+        future->Fail(std::make_exception_ptr(std::bad_alloc()));
+        return;
+    }
+    struct io_uring_sqe sqe;
+    std::memset(&sqe, 0, sizeof(sqe));
+    sqe.opcode = IORING_OP_FALLOCATE;
+    sqe.flags = FALLOC_FL_PUNCH_HOLE | FALLOC_FL_KEEP_SIZE;
+    st->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Deallocate);
+    st->vec_.iov_len = size;
+    sqe.user_data = reinterpret_cast<std::uint64_t>(st);
+    sqe.len = size;
+    sqe.off = offset;
+    sqe.fd = this->handle_;
+    this->queue_->SubmitIoRequest(sqe);
+#else
+    this->NormalDeallocate(offset, size, future);
+#endif
+}
+
 void sharpen::PosixFileChannel::WriteAsync(const char *buf,
                                            std::size_t bufSize,
                                            std::uint64_t offset,
@@ -209,6 +296,15 @@ void sharpen::PosixFileChannel::OnEvent(sharpen::IoEvent *event) {
             return;
         }
         future->Complete(st->length_);
+        return;
+    } else if (event->IsAllocateEvent() || event->IsDeallocateEvent()) {
+        sharpen::Future<std::size_t> *future =
+            reinterpret_cast<sharpen::Future<std::size_t> *>(st->data_);
+        if (event->IsErrorEvent()) {
+            future->Fail(sharpen::MakeSystemErrorPtr(event->GetErrorCode()));
+            return;
+        }
+        future->Complete(st->vec_.iov_len);
         return;
     }
     sharpen::Future<void> *future = reinterpret_cast<sharpen::Future<void> *>(st->data_);
@@ -280,7 +376,7 @@ void sharpen::PosixFileChannel::NormalFlush(sharpen::Future<void> *future) {
     future->Complete();
 }
 
-void sharpen::PosixFileChannel::DoFlushAsync(sharpen::Future<void> *future) {
+void sharpen::PosixFileChannel::DoFlush(sharpen::Future<void> *future) {
     assert(future != nullptr);
 #ifdef SHARPEN_HAS_IOURING
     if (!this->queue_) {
@@ -314,20 +410,25 @@ void sharpen::PosixFileChannel::FlushAsync(sharpen::Future<void> &future) {
     if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
     }
-    this->loop_->RunInLoopSoon(std::bind(&Self::DoFlushAsync, this, &future));
+    this->loop_->RunInLoopSoon(std::bind(&Self::DoFlush, this, &future));
 }
 
-void sharpen::PosixFileChannel::Allocate(std::uint64_t offset, std::size_t size) {
-    if (::fallocate64(this->handle_, FALLOC_FL_KEEP_SIZE, offset, size) == -1) {
-        sharpen::ThrowLastError();
+void sharpen::PosixFileChannel::AllocateAsync(sharpen::Future<std::size_t> &future,
+                                              std::uint64_t offset,
+                                              std::size_t size) {
+    if (!this->IsRegistered()) {
+        throw std::logic_error("should register to a loop first");
     }
+    this->loop_->RunInLoopSoon(std::bind(&Self::DoAllocate,this,offset,size,&future));
 }
 
-void sharpen::PosixFileChannel::Deallocate(std::uint64_t offset, std::size_t size) {
-    if (::fallocate64(this->handle_, FALLOC_FL_PUNCH_HOLE | FALLOC_FL_KEEP_SIZE, offset, size) ==
-        -1) {
-        sharpen::ThrowLastError();
+void sharpen::PosixFileChannel::DeallocateAsync(sharpen::Future<std::size_t> &future,
+                                                std::uint64_t offset,
+                                                std::size_t size) {
+    if (!this->IsRegistered()) {
+        throw std::logic_error("should register to a loop first");
     }
+    this->loop_->RunInLoopSoon(std::bind(&Self::DoDeallocate,this,offset,size,&future));
 }
 
 #endif

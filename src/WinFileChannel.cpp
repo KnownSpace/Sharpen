@@ -10,6 +10,18 @@
 #include <functional>
 #include <io.h>
 
+namespace sharpen {
+    struct DeallocateStruct {
+        sharpen::Future<std::size_t> *future_;
+        FILE_ZERO_DATA_INFORMATION zeroInfo_;
+    };
+
+    struct AllocateStruct {
+        sharpen::Future<std::size_t> *future_;
+        std::size_t size_;
+    };
+}   // namespace sharpen
+
 sharpen::Optional<bool> sharpen::WinFileChannel::supportSparseFile_{sharpen::EmptyOpt};
 
 sharpen::WinFileChannel::WinFileChannel(sharpen::FileHandle handle, bool syncWrite)
@@ -146,7 +158,23 @@ void sharpen::WinFileChannel::ReadAsync(sharpen::ByteBuffer &buf,
 void sharpen::WinFileChannel::OnEvent(sharpen::IoEvent *event) {
     std::unique_ptr<sharpen::IocpOverlappedStruct> ev(
         reinterpret_cast<sharpen::IocpOverlappedStruct *>(event->GetData()));
-    MyFuturePtr future = reinterpret_cast<MyFuturePtr>(ev->data_);
+    MyFuturePtr future{nullptr};
+    std::size_t size{0};
+    if (event->IsDeallocateEvent()) {
+        std::unique_ptr<sharpen::DeallocateStruct> dealloc{
+            reinterpret_cast<sharpen::DeallocateStruct *>(ev->data_)};
+        future = dealloc->future_;
+        size = static_cast<std::size_t>(dealloc->zeroInfo_.BeyondFinalZero.QuadPart -
+                                        dealloc->zeroInfo_.FileOffset.QuadPart);
+    } else if (event->IsAllocateEvent()) {
+        std::unique_ptr<sharpen::AllocateStruct> alloc{
+            reinterpret_cast<sharpen::AllocateStruct *>(ev->data_)};
+        future = alloc->future_;
+        size = alloc->size_;
+    } else {
+        future = reinterpret_cast<MyFuturePtr>(ev->data_);
+        size = ev->length_;
+    }
     if (event->IsErrorEvent()) {
         sharpen::ErrorCode code{event->GetErrorCode()};
         if (code == ERROR_HANDLE_EOF) {
@@ -156,7 +184,7 @@ void sharpen::WinFileChannel::OnEvent(sharpen::IoEvent *event) {
         future->Fail(sharpen::MakeSystemErrorPtr(code));
         return;
     }
-    future->Complete(ev->length_);
+    future->Complete(size);
 }
 
 std::uint64_t sharpen::WinFileChannel::GetFileSize() const {
@@ -217,7 +245,7 @@ void sharpen::WinFileChannel::Flush() {
     }
 }
 
-void sharpen::WinFileChannel::DoFlushAsync(sharpen::Future<void> *future) {
+void sharpen::WinFileChannel::RequestFlushAsync(sharpen::Future<void> *future) {
     assert(future != nullptr);
     if (::FlushFileBuffers(this->handle_) == FALSE) {
         future->Fail(sharpen::MakeLastErrorPtr());
@@ -236,7 +264,7 @@ void sharpen::WinFileChannel::FlushAsync(sharpen::Future<void> &future) {
     if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
     }
-    this->loop_->RunInLoop(std::bind(&Self::DoFlushAsync, this, &future));
+    this->loop_->RunInLoop(std::bind(&Self::RequestFlushAsync, this, &future));
 }
 
 bool sharpen::WinFileChannel::SupportSparseFile(const char *rootName) noexcept {
@@ -279,51 +307,100 @@ void sharpen::WinFileChannel::EnableSparesFile() {
     future.Await();
 }
 
-void sharpen::WinFileChannel::Allocate(std::uint64_t offset, std::size_t size) {
-    (void)offset;
-    FILE_ALLOCATION_INFO alloc;
-    alloc.AllocationSize.QuadPart = this->GetFileSize() + size;
-    if (::SetFileInformationByHandle(
-            this->handle_, FILE_INFO_BY_HANDLE_CLASS::FileAllocationInfo, &alloc, sizeof(alloc)) ==
-        FALSE) {
-        sharpen::ThrowLastError();
+void sharpen::WinFileChannel::RequestAllocate(sharpen::Future<std::size_t> *future,
+                                              std::uint64_t offset,
+                                              std::size_t size) {
+    assert(future != nullptr);
+    AllocateStruct *alloc{new (std::nothrow) AllocateStruct{}};
+    if (!alloc) {
+        throw std::bad_alloc{};
+    }
+    alloc->size_ = size;
+    alloc->future_ = future;
+    IocpOverlappedStruct *olStruct = new (std::nothrow) IocpOverlappedStruct{};
+    if (!olStruct) {
+        future->Fail(std::make_exception_ptr(std::bad_alloc()));
+        return;
+    }
+    // init iocp olStruct
+    this->InitOverlappedStruct(*olStruct, offset + size - 1);
+    olStruct->event_.SetData(olStruct);
+    olStruct->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Allocate);
+    // record struct
+    olStruct->data_ = alloc;
+    // request
+    BOOL r = ::WriteFile(this->handle_, "", 1, nullptr, &olStruct->ol_);
+    if (r != TRUE) {
+        sharpen::ErrorCode err = sharpen::GetLastError();
+        if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS) {
+            delete olStruct;
+            if (err == ERROR_HANDLE_EOF) {
+                future->Complete(static_cast<std::size_t>(0));
+                return;
+            }
+            future->Fail(sharpen::MakeLastErrorPtr());
+        }
     }
 }
 
-void sharpen::WinFileChannel::Deallocate(std::uint64_t offset, std::size_t size) {
+void sharpen::WinFileChannel::AllocateAsync(sharpen::Future<std::size_t> &future,
+                                            std::uint64_t offset,
+                                            std::size_t size) {
+    if (!this->IsRegistered()) {
+        throw std::logic_error("should register to a loop first");
+    }
+    this->loop_->RunInLoop(std::bind(&Self::RequestAllocate, this, &future, offset, size));
+}
+
+void sharpen::WinFileChannel::RequestDeallocate(sharpen::Future<std::size_t> *future,
+                                                std::uint64_t offset,
+                                                std::size_t size) {
+    assert(future != nullptr);
     if (!this->sparesFile_) {
         this->EnableSparesFile();
         this->sparesFile_ = true;
     }
-    FILE_ZERO_DATA_INFORMATION zero;
-    zero.FileOffset.QuadPart = offset;
-    zero.BeyondFinalZero.QuadPart = offset + size;
+    DeallocateStruct *dealloc{new (std::nothrow) DeallocateStruct{}};
+    if (!dealloc) {
+        throw std::bad_alloc{};
+    }
+    dealloc->zeroInfo_.FileOffset.QuadPart = offset;
+    dealloc->zeroInfo_.BeyondFinalZero.QuadPart = offset + size;
+    dealloc->future_ = future;
     sharpen::IocpOverlappedStruct *olStruct = new (std::nothrow) sharpen::IocpOverlappedStruct{};
     if (!olStruct) {
+        delete dealloc;
         throw std::bad_alloc{};
     }
     // init iocp olStruct
     this->InitOverlappedStruct(*olStruct, 0);
+    olStruct->event_.AddEvent(sharpen::IoEvent::EventTypeEnum::Deallocate);
     olStruct->event_.SetData(olStruct);
-    // record future
-    sharpen::AwaitableFuture<std::size_t> future;
-    olStruct->data_ = &future;
+    olStruct->data_ = dealloc;
     if (::DeviceIoControl(this->handle_,
                           FSCTL_SET_ZERO_DATA,
-                          &zero,
-                          sizeof(zero),
+                          &dealloc->zeroInfo_,
+                          sizeof(dealloc->zeroInfo_),
                           nullptr,
                           0,
                           nullptr,
                           &olStruct->ol_) == FALSE) {
         sharpen::ErrorCode err = sharpen::GetLastError();
         if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS) {
+            delete dealloc;
             delete olStruct;
             sharpen::ThrowLastError();
         }
     }
-    // blocking
-    future.Await();
+}
+
+void sharpen::WinFileChannel::DeallocateAsync(sharpen::Future<std::size_t> &future,
+                                              std::uint64_t offset,
+                                              std::size_t size) {
+    if (!this->IsRegistered()) {
+        throw std::logic_error("should register to a loop first");
+    }
+    this->loop_->RunInLoop(std::bind(&Self::RequestDeallocate, this, &future, offset, size));
 }
 
 #endif
