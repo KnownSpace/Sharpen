@@ -44,7 +44,12 @@ namespace sharpen {
 
                 // io_uring only
                 // flush
-                Flush = 1024
+                Flush = 1024,
+
+                // allocate
+                Allocate = 2048,
+                // deallocate
+                Deallocate = 4096
             };
         };
 
@@ -136,6 +141,14 @@ namespace sharpen {
 
         bool IsRequestEvent() const noexcept {
             return this->type_ & EventTypeEnum::Request;
+        }
+
+        bool IsAllocateEvent() const noexcept {
+            return this->type_ & EventTypeEnum::Allocate;
+        }
+
+        bool IsDeallocateEvent() const noexcept {
+            return this->type_ & EventTypeEnum::Deallocate;
         }
 
         sharpen::ChannelPtr GetChannel() const noexcept {

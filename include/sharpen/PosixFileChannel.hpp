@@ -33,6 +33,14 @@ namespace sharpen {
                          std::uint64_t offset,
                          sharpen::Future<std::size_t> *future);
 
+        void NormalAllocate(std::uint64_t offset,
+                            std::size_t size,
+                            sharpen::Future<std::size_t> *future);
+
+        void NormalDeallocate(std::uint64_t offset,
+                              std::size_t size,
+                              sharpen::Future<std::size_t> *future);
+
         void DoRead(char *buf,
                     std::size_t bufSize,
                     std::uint64_t offset,
@@ -42,6 +50,14 @@ namespace sharpen {
                      std::size_t bufSize,
                      std::uint64_t offset,
                      sharpen::Future<std::size_t> *future);
+
+        void DoAllocate(std::uint64_t offset,
+                        std::size_t size,
+                        sharpen::Future<std::size_t> *future);
+
+        void DoDeallocate(std::uint64_t offset,
+                          std::size_t size,
+                          sharpen::Future<std::size_t> *future);
 
 #ifdef SHARPEN_HAS_IOURING
 
@@ -56,7 +72,7 @@ namespace sharpen {
 
         void NormalFlush(sharpen::Future<void> *future);
 
-        void DoFlushAsync(sharpen::Future<void> *future);
+        void DoFlush(sharpen::Future<void> *future);
 
         bool syncWrite_;
 
@@ -101,9 +117,13 @@ namespace sharpen {
 
         virtual void FlushAsync(sharpen::Future<void> &future) override;
 
-        virtual void Allocate(std::uint64_t offset, std::size_t size) override;
+        virtual void AllocateAsync(sharpen::Future<std::size_t> &future,
+                                   std::uint64_t offset,
+                                   std::size_t size) override;
 
-        virtual void Deallocate(std::uint64_t offset, std::size_t size) override;
+        virtual void DeallocateAsync(sharpen::Future<std::size_t> &future,
+                                     std::uint64_t offset,
+                                     std::size_t size) override;
     };
 
 }   // namespace sharpen

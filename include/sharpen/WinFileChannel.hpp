@@ -45,7 +45,11 @@ namespace sharpen {
                          std::uint64_t offset,
                          sharpen::Future<std::size_t> *future);
 
-        void DoFlushAsync(sharpen::Future<void> *future);
+        void RequestFlushAsync(sharpen::Future<void> *future);
+
+        void RequestAllocate(sharpen::Future<std::size_t> *future,std::uint64_t offset, std::size_t size);
+
+        void RequestDeallocate(sharpen::Future<std::size_t> *future,std::uint64_t offset, std::size_t size);
 
     public:
         explicit WinFileChannel(sharpen::FileHandle handle, bool syncWrite);
@@ -90,9 +94,9 @@ namespace sharpen {
 
         void EnableSparesFile();
 
-        virtual void Allocate(std::uint64_t offset, std::size_t size) override;
+        virtual void AllocateAsync(sharpen::Future<std::size_t> &future, std::uint64_t offset, std::size_t size) override;
 
-        virtual void Deallocate(std::uint64_t offset, std::size_t size) override;
+        virtual void DeallocateAsync(sharpen::Future<std::size_t> &future, std::uint64_t offset, std::size_t size) override;
     };
 }   // namespace sharpen
 
