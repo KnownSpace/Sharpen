@@ -403,4 +403,12 @@ void sharpen::WinFileChannel::DeallocateAsync(sharpen::Future<std::size_t> &futu
     this->loop_->RunInLoop(std::bind(&Self::RequestDeallocate, this, &future, offset, size));
 }
 
+std::size_t sharpen::WinFileChannel::GetPath(char *path, std::size_t size) const {
+    DWORD r{::GetFinalPathNameByHandleA(this->handle_, path, static_cast<DWORD>(size), FILE_NAME_NORMALIZED)};
+    if (r == 0 || r > size) {
+        sharpen::ThrowLastError();
+    }
+    return static_cast<std::size_t>(r);
+}
+
 #endif

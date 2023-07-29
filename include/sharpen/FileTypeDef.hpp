@@ -3,6 +3,7 @@
 #define _SHARPEN_FILETYPEDEF_HPP
 
 #include "SystemMacro.hpp"
+#include <cstddef>
 
 namespace sharpen {
 #ifdef SHARPEN_IS_WIN
@@ -50,6 +51,14 @@ namespace sharpen {
         BlockDevice,
         CharDevice
     };
+
+    constexpr inline std::size_t GetMaxPath() noexcept {
+#ifdef SHARPEN_IS_WIN
+        return 260;   // MAX_PATH
+#else
+        return 4096;   // PATH_MAX
+#endif
+    }
 }   // namespace sharpen
 
 #endif

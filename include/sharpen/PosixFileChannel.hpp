@@ -124,6 +124,8 @@ namespace sharpen {
         virtual void DeallocateAsync(sharpen::Future<std::size_t> &future,
                                      std::uint64_t offset,
                                      std::size_t size) override;
+
+        virtual std::size_t GetPath(SHARPEN_OUT char *path, std::size_t size) const override;
     };
 
 }   // namespace sharpen

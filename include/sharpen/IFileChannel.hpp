@@ -7,6 +7,7 @@
 #include "IAsyncRandomWritable.hpp"
 #include "IChannel.hpp"
 #include "SystemMacro.hpp"
+#include "ParameterMacro.hpp"
 
 namespace sharpen {
     class IFileChannel
@@ -62,6 +63,10 @@ namespace sharpen {
         virtual void DeallocateAsync(sharpen::Future<std::size_t> &future,std::uint64_t offset, std::size_t size) = 0;
 
         std::size_t DeallocateAsync(std::uint64_t offset, std::size_t size);
+
+        virtual std::size_t GetPath(SHARPEN_OUT char *path,std::size_t size) const = 0;
+
+        void Remove();
     };
 
     using FileChannelPtr = std::shared_ptr<sharpen::IFileChannel>;

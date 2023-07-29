@@ -32,14 +32,6 @@ namespace sharpen {
 
     extern void SetCurrentWorkDirectory(const char *path);
 
-    constexpr inline std::size_t GetMaxPath() noexcept {
-#ifdef SHARPEN_IS_WIN
-        return 260;   // MAX_PATH
-#else
-        return 4096;   // PATH_MAX
-#endif
-    }
-
     extern void ResolvePath(const char *currentPath,
                             std::size_t currentPathSize,
                             const char *path,

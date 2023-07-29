@@ -4,6 +4,7 @@
 #include <sharpen/EventLoop.hpp>
 #include <sharpen/PosixFileChannel.hpp>
 #include <sharpen/WinFileChannel.hpp>
+#include <sharpen/FileOps.hpp>
 
 #ifdef SHARPEN_IS_NIX
 #include <fcntl.h>
@@ -201,4 +202,12 @@ std::size_t sharpen::IFileChannel::DeallocateAsync(std::uint64_t offset, std::si
     sharpen::AwaitableFuture<std::size_t> future;
     this->DeallocateAsync(future,offset,size);
     return future.Await();
+}
+
+void sharpen::IFileChannel::Remove() {
+    thread_local char path[sharpen::GetMaxPath() + 1] = {0};
+    std::size_t size{this->GetPath(path,sizeof(path))};
+    (void)size;
+    this->Close();
+    sharpen::RemoveFile(path);
 }
