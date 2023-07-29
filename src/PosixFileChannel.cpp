@@ -430,6 +430,7 @@ void sharpen::PosixFileChannel::DeallocateAsync(sharpen::Future<std::size_t> &fu
 
 std::size_t sharpen::PosixFileChannel::GetPath(char *path, std::size_t size) const {
     thread_local char buf[sharpen::GetMaxPath() + 1] = {0};
+    std::memset(buf,0,sizeof(buf));
     snprintf(buf,sizeof(buf), "/proc/self/fd/%d", this->handle_);
     ssize_t r{readlink(buf,path,size)};
     while(r == -1 && sharpen::GetLastError() == EINTR) {

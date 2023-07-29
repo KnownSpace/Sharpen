@@ -206,6 +206,7 @@ std::size_t sharpen::IFileChannel::DeallocateAsync(std::uint64_t offset, std::si
 
 void sharpen::IFileChannel::Remove() {
     thread_local char path[sharpen::GetMaxPath() + 1] = {0};
+    std::memset(path,0,sizeof(path));
     std::size_t size{this->GetPath(path,sizeof(path))};
     (void)size;
     this->Close();

@@ -108,6 +108,7 @@ sharpen::Dentry sharpen::Directory::InternalGetNextEntry() const {
             sharpen::ThrowSystemError(sharpen::ErrorNameTooLong);
         }
         thread_local char path[sharpen::GetMaxPath() + 1] = {0};
+        std::memset(path,0,sizeof(path));
         std::memcpy(path, this->name_.c_str(), this->name_.size());
         std::size_t index{this->name_.size()};
         if (back != '\\') {
@@ -174,6 +175,7 @@ sharpen::Dentry sharpen::Directory::GetNextEntry() const {
                 ? 1
                 : 0 <= sharpen::GetMaxPath()) {
             thread_local char path[sharpen::GetMaxPath() + 1] = {0};
+            std::memset(path,0,sizeof(path));
             std::memcpy(path, this->name_.c_str(), this->name_.size());
             std::size_t index{this->name_.size()};
             if (this->name_.back() != '\\') {
