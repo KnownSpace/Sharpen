@@ -147,13 +147,40 @@ void sharpen::TcpPoster::NviPost(const sharpen::Mail &mail,
     }
     // post mail
     std::size_t size{0};
+#ifdef SHARPEN_IS_WIN
+    try {
+        size = channel->WriteAsync(mail.Header());
+    } catch (const std::system_error &error) {
+        (void)error;
+#ifndef _NDEBUG
+        if (sharpen::GetErrorCode(error) != sharpen::ErrorNotConnected) {
+            assert("failed to write mail header to channel" && false);
+        }
+#endif
+    }
+#else
     size = channel->WriteAsync(mail.Header());
+#endif
     if (!size) {
         cb(sharpen::Mail{});
         return;
     }
     if (!mail.Content().Empty()) {
+        size = 0;
+#ifdef SHARPEN_IS_WIN
+        try {
+            size = channel->WriteAsync(mail.Content());
+        } catch (const std::system_error &error) {
+            (void)error;
+#ifndef _NDEBUG
+            if (sharpen::GetErrorCode(error) != sharpen::ErrorNotConnected) {
+                assert("failed to write mail content to channel" && false);
+            }
+#endif
+        }
+#else
         size = channel->WriteAsync(mail.Content());
+#endif
         if (!size) {
             cb(sharpen::Mail{});
             return;
@@ -181,13 +208,40 @@ sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail) noexcept {
     }
     // post mail
     std::size_t size{0};
+#ifdef SHARPEN_IS_WIN
+    try {
+        size = channel->WriteAsync(mail.Header());
+    } catch (const std::system_error &error) {
+        (void)error;
+#ifndef _NDEBUG
+        if (sharpen::GetErrorCode(error) != sharpen::ErrorNotConnected) {
+            assert("failed to write mail header to channel" && false);
+        }
+#endif
+    }
+#else
     size = channel->WriteAsync(mail.Header());
+#endif
     if (!size) {
         AbortConn(channel.get());
         return sharpen::Mail{};
     }
     if (!mail.Content().Empty()) {
+        size = 0;
+#ifdef SHARPEN_IS_WIN
+        try {
+            size = channel->WriteAsync(mail.Content());
+        } catch (const std::system_error &error) {
+            (void)error;
+#ifndef _NDEBUG
+            if (sharpen::GetErrorCode(error) != sharpen::ErrorNotConnected) {
+                assert("failed to write mail content to channel" && false);
+            }
+#endif
+        }
+#else
         size = channel->WriteAsync(mail.Content());
+#endif
         if (!size) {
             AbortConn(channel.get());
             return sharpen::Mail{};
