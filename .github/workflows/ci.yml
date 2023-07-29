@@ -1,4 +1,4 @@
-name: AutoTest
+name: CI-Tests
 
 on: [push,pull_request]
 
@@ -7,7 +7,7 @@ env:
   BUILD_TYPE: Debug
 
 jobs:
-  build-ubuntu:
+  ci-ubuntu:
     # The CMake configure and build commands are platform agnostic and should work equally
     # well on Windows or Mac.  You can convert this to a matrix build if you need
     # cross-platform coverage.
@@ -55,7 +55,7 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: ctest -C $BUILD_TYPE -VV
-  build-windows:
+  ci-windows:
     runs-on: windows-latest
 
     steps:
