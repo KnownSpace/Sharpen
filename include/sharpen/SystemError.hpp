@@ -54,6 +54,7 @@ namespace sharpen {
     constexpr sharpen::ErrorCode ErrorTimeout = WSAETIMEDOUT;
     constexpr sharpen::ErrorCode ErrorTooManyLinks = ERROR_TOO_MANY_LINKS;
     constexpr sharpen::ErrorCode ErrorDirNotEmpty = ERROR_DIR_NOT_EMPTY;
+    constexpr sharpen::ErrorCode ErrorFileExists = ERROR_ALREADY_EXISTS;
 #else
     constexpr sharpen::ErrorCode ErrorCancel = ECANCELED;
     constexpr sharpen::ErrorCode ErrorConnectionAborted = ECONNABORTED;
@@ -97,6 +98,7 @@ namespace sharpen {
 #else
     constexpr sharpen::ErrorCode ErrorDirNotEmpty = EEXIST;
 #endif
+    constexpr sharpen::ErrorCode ErrorFileExists = EEXIST;
 #endif
 
     inline bool IsFatalError(sharpen::ErrorCode code) noexcept {

@@ -54,15 +54,15 @@ namespace sharpen {
 
         sharpen::Dentry GetNextEntry() const;
 
-        void Remove();
+        sharpen::RmdirResult Remove();
 
-        void RemoveAll();
+        sharpen::RmdirResult RemoveAll();
 
         inline const std::string &Path() const noexcept {
             return this->name_;
         }
 
-        void Create();
+        sharpen::MkdirResult Create();
     };
 }   // namespace sharpen
 

@@ -55,9 +55,9 @@ namespace sharpen {
 #endif
     }
 
-    extern void MakeDirectory(const char *name);
+    extern sharpen::MkdirResult MakeDirectory(const char *name);
 
-    extern void DeleteDirectory(const char *name);
+    extern sharpen::RmdirResult DeleteDirectory(const char *name);
 
     extern void MakeLink(const char *oldName, const char *newName);
 

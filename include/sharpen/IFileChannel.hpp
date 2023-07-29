@@ -6,7 +6,6 @@
 #include "IAsyncRandomReadable.hpp"
 #include "IAsyncRandomWritable.hpp"
 #include "IChannel.hpp"
-#include "Noncopyable.hpp"
 #include "SystemMacro.hpp"
 
 namespace sharpen {

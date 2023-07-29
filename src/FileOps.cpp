@@ -187,28 +187,43 @@ void sharpen::ResolvePath(const char *currentPath,
     std::memset(resolved, 0, resolvedEnd - resolved);
 }
 
-void sharpen::MakeDirectory(const char *name) {
+sharpen::MkdirResult sharpen::MakeDirectory(const char *name) {
 #ifdef SHARPEN_IS_WIN
-    if (::CreateDirectoryA(name, nullptr) == FALSE &&
-        sharpen::GetLastError() != ERROR_ALREADY_EXISTS) {
+    if (::CreateDirectoryA(name, nullptr) == FALSE) {
+        if (sharpen::GetLastError() == sharpen::ErrorFileExists) {
+            return sharpen::MkdirResult::Exists;
+        }
         sharpen::ThrowLastError();
     }
+    return sharpen::MkdirResult::CreateNew;
 #else
-    if (::mkdir(name, S_IRWXU) == -1 && sharpen::GetLastError() != EEXIST) {
+    if (::mkdir(name, S_IRWXU) == -1) {
+        if (sharpen::GetLastError() == sharpen::ErrorFileExists) {
+            return sharpen::MkdirResult::Exists;
+        }
         sharpen::ThrowLastError();
     }
+    return sharpen::MkdirResult::CreateNew;
 #endif
 }
 
-void sharpen::DeleteDirectory(const char *name) {
+sharpen::RmdirResult sharpen::DeleteDirectory(const char *name) {
 #ifdef SHARPEN_IS_WIN
-    if (::RemoveDirectoryA(name) == FALSE && sharpen::GetLastError() != ERROR_FILE_NOT_FOUND) {
+    if (::RemoveDirectoryA(name) == FALSE) {
+        if (sharpen::GetLastError() == sharpen::ErrorFileNotFound) {
+            return sharpen::RmdirResult::NotExists;
+        }
         sharpen::ThrowLastError();
     }
+    return sharpen::RmdirResult::Removed;
 #else
-    if (::rmdir(name) == -1 && sharpen::GetLastError() != ENOENT) {
+    if (::rmdir(name) == -1) {
+        if (sharpen::GetLastError() == sharpen::ErrorFileNotFound) {
+            return sharpen::RmdirResult::NotExists;
+        }
         sharpen::ThrowLastError();
     }
+    return sharpen::RmdirResult::Removed;
 #endif
 }
 

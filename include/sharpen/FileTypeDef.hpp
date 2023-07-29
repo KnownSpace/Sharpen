@@ -29,6 +29,16 @@ namespace sharpen {
         Sync,
         DirectAndSync
     };
+
+    enum class MkdirResult {
+        CreateNew,
+        Exists
+    };
+
+    enum class RmdirResult {
+        Removed,
+        NotExists
+    };
 }   // namespace sharpen
 
 #endif

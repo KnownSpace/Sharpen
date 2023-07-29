@@ -192,14 +192,18 @@ sharpen::Dentry sharpen::Directory::GetNextEntry() const {
     return entry;
 }
 
-void sharpen::Directory::Remove() {
+sharpen::RmdirResult sharpen::Directory::Remove() {
     if (!this->name_.empty()) {
         this->Close();
-        sharpen::DeleteDirectory(this->name_.c_str());
+        return sharpen::DeleteDirectory(this->name_.c_str());
     }
+    return sharpen::RmdirResult::NotExists;
 }
 
-void sharpen::Directory::RemoveAll() {
+sharpen::RmdirResult sharpen::Directory::RemoveAll() {
+    if (!this->Exist()) {
+        return sharpen::RmdirResult::NotExists;
+    }
     std::vector<std::unique_ptr<sharpen::Directory>> dirs;
     std::unique_ptr<sharpen::Directory> dirPtr{new (std::nothrow) sharpen::Directory{this->name_}};
     if (!dirPtr) {
@@ -249,10 +253,10 @@ void sharpen::Directory::RemoveAll() {
         dir->Remove();
     }
     dirs.clear();
-    this->Remove();
+    return this->Remove();
 }
 
-void sharpen::Directory::Create() {
+sharpen::MkdirResult sharpen::Directory::Create() {
     assert(!this->name_.empty());
-    sharpen::MakeDirectory(this->name_.c_str());
+    return sharpen::MakeDirectory(this->name_.c_str());
 }
