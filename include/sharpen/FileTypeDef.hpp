@@ -39,6 +39,17 @@ namespace sharpen {
         Removed,
         NotExists
     };
+
+    
+    enum class FileEntryType {
+        File,
+        Directory,
+        Pipe,
+        UnixSocket,
+        SymbolicLink,
+        BlockDevice,
+        CharDevice
+    };
 }   // namespace sharpen
 
 #endif

@@ -1,15 +1,15 @@
 #include <sharpen/Dentry.hpp>
 
 sharpen::Dentry::Dentry() noexcept
-    : type_(sharpen::DentryType::File)
+    : type_(sharpen::FileEntryType::File)
     , name_() {
 }
 
 sharpen::Dentry::Dentry(std::string name) noexcept
-    : Self{sharpen::DentryType::File, std::move(name)} {
+    : Self{sharpen::FileEntryType::File, std::move(name)} {
 }
 
-sharpen::Dentry::Dentry(sharpen::DentryType type, std::string name) noexcept
+sharpen::Dentry::Dentry(sharpen::FileEntryType type, std::string name) noexcept
     : type_(type)
     , name_(std::move(name)) {
 }
@@ -22,14 +22,14 @@ sharpen::Dentry::Dentry(const Self &other)
 sharpen::Dentry::Dentry(Self &&other) noexcept
     : type_(other.type_)
     , name_(std::move(other.name_)) {
-    other.type_ = sharpen::DentryType::File;
+    other.type_ = sharpen::FileEntryType::File;
 }
 
 sharpen::Dentry &sharpen::Dentry::operator=(Self &&other) noexcept {
     if (this != std::addressof(other)) {
         this->type_ = other.type_;
         this->name_ = std::move(other.name_);
-        other.type_ = sharpen::DentryType::File;
+        other.type_ = sharpen::FileEntryType::File;
     }
     return *this;
 }

@@ -64,7 +64,7 @@ public:
         bool hasTxt{false};
         bool hasDir{false};
         while (entry.Valid()) {
-            if (entry.GetType() == sharpen::DentryType::File) {
+            if (entry.GetType() == sharpen::FileEntryType::File) {
                 if (entry.Name() == "a.txt") {
                     hasLog = true;
                 } else if (entry.Name() == "a.log") {
@@ -116,7 +116,7 @@ public:
         bool hasTxt{false};
         bool hasDir{false};
         for (auto begin = dir.Begin(), end = dir.End(); begin != end; ++begin) {
-            if (begin->GetType() == sharpen::DentryType::File) {
+            if (begin->GetType() == sharpen::FileEntryType::File) {
                 if (begin->Name() == "a.txt") {
                     hasLog = true;
                 } else if (begin->Name() == "a.log") {

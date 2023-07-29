@@ -93,7 +93,7 @@ sharpen::Dentry sharpen::Directory::InternalGetNextEntry() const {
     if (!this->Exist()) {
         sharpen::ThrowSystemError(sharpen::ErrorFileNotFound);
     }
-    sharpen::DentryType type{sharpen::DentryType::File};
+    sharpen::FileEntryType type{sharpen::FileEntryType::File};
     std::string name;
 #ifdef SHARPEN_IS_WIN
     WIN32_FIND_DATA findData;
@@ -124,9 +124,10 @@ sharpen::Dentry sharpen::Directory::InternalGetNextEntry() const {
         found = ::FindNextFileA(this->handle_, &findData) == TRUE;
     }
     if (found) {
-        // findData.
         if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-            type = sharpen::DentryType::Directory;
+            type = sharpen::FileEntryType::Directory;
+        } else if (findData.dwFileAttributes &FILE_ATTRIBUTE_REPARSE_POINT) {
+            type = sharpen::FileEntryType::SymbolicLink;
         }
         name.assign(findData.cFileName);
     }
@@ -140,12 +141,20 @@ sharpen::Dentry sharpen::Directory::InternalGetNextEntry() const {
     }
     dirent *dentry{::readdir(reinterpret_cast<DIR *>(this->handle_))};
     if (dentry != nullptr) {
-        if (dentry->d_type == DT_DIR || dentry->d_type == DT_REG) {
-            if (dentry->d_type == DT_DIR) {
-                type = sharpen::DentryType::Directory;
-            }
-            name.assign(dentry->d_name);
+        if (dentry->d_type == DT_DIR) {
+            type = sharpen::FileEntryType::Directory;
+        } else if(dentry->d_type == DT_FIFO) {
+            type = sharpen::FileEntryType::Pipe;
+        } else if(dentry->d_type == DT_LNK) {
+            type = sharpen::FileEntryType::SymbolicLink;
+        } else if(dentry->d_type == DT_SOCK) {
+            type = sharpen::FileEntryType::UnixSocket;
+        } else if(dentry->d_type == DT_BLK) {
+            type = sharpen::FileEntryType::BlockDevice;
+        } else if(dentry->d_type == DT_CHR) {
+            type = sharpen::FileEntryType::CharDevice;
         }
+        name.assign(dentry->d_name);
     } else if (errno) {
         sharpen::ThrowLastError();
     }
@@ -172,17 +181,20 @@ sharpen::Dentry sharpen::Directory::GetNextEntry() const {
             }
             std::memcpy(path + index, entry.Name().data(), entry.Name().size());
             switch (entry.GetType()) {
-            case sharpen::DentryType::File: {
+            case sharpen::FileEntryType::File: {
                 if (!sharpen::ExistFile(path)) {
                     entry = this->InternalGetNextEntry();
                     continue;
                 }
             } break;
-            case sharpen::DentryType::Directory: {
+            case sharpen::FileEntryType::Directory: {
                 if (!sharpen::ExistDirectory(path)) {
                     entry = this->InternalGetNextEntry();
                     continue;
                 }
+            } break;
+            default: {
+                // do nothing
             } break;
             }
         }
@@ -233,16 +245,22 @@ sharpen::RmdirResult sharpen::Directory::RemoveAll() {
                             begin->Name().data(),
                             begin->Name().size());
                 switch (begin->GetType()) {
-                case sharpen::DentryType::File: {
+                case sharpen::FileEntryType::File: {
                     sharpen::RemoveFile(name.c_str());
                 } break;
-                case sharpen::DentryType::Directory: {
+                case sharpen::FileEntryType::Directory: {
                     dirPtr = std::unique_ptr<sharpen::Directory>{
                         new (std::nothrow) sharpen::Directory{std::move(name)}};
                     if (!dirPtr) {
                         throw std::bad_alloc{};
                     }
                     dirs.emplace_back(std::move(dirPtr));
+                } break;
+                case sharpen::FileEntryType::SymbolicLink: {
+                    sharpen::RemoveFile(name.c_str());
+                }
+                default: {
+                    // do nothing
                 } break;
                 }
             }

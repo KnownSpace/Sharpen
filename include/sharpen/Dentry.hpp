@@ -2,20 +2,16 @@
 #ifndef _SHARPEN_DENTRY_HPP
 #define _SHARPEN_DENTRY_HPP
 
+#include "FileTypeDef.hpp"
 #include <string>
 #include <utility>
 
 namespace sharpen {
-    enum class DentryType {
-        File,
-        Directory
-    };
-
     class Dentry {
     private:
         using Self = sharpen::Dentry;
 
-        sharpen::DentryType type_;
+        sharpen::FileEntryType type_;
         std::string name_;
 
     public:
@@ -23,7 +19,7 @@ namespace sharpen {
 
         explicit Dentry(std::string name) noexcept;
 
-        Dentry(sharpen::DentryType type, std::string name) noexcept;
+        Dentry(sharpen::FileEntryType type, std::string name) noexcept;
 
         Dentry(const Self &other);
 
@@ -45,11 +41,11 @@ namespace sharpen {
             return *this;
         }
 
-        inline sharpen::DentryType GetType() const noexcept {
+        inline sharpen::FileEntryType GetType() const noexcept {
             return this->type_;
         }
 
-        inline void SetType(sharpen::DentryType type) noexcept {
+        inline void SetType(sharpen::FileEntryType type) noexcept {
             this->type_ = type;
         }
 
