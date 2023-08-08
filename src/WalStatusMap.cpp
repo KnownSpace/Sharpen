@@ -143,7 +143,7 @@ void sharpen::WalStatusMap::RebuildFile() {
             writer.Write(tag);
             writer.Write(begin->first);
             writer.Write(begin->second);
-            std::size_t sz{channel->WriteAsync(buf.Data(), writer.GetLength(), offset)};
+            std::size_t sz{channel->WriteFixedAsync(buf.Data(), writer.GetLength(), offset)};
             assert(sz == writer.GetLength());
             if (sz != writer.GetLength()) {
                 sharpen::ThrowSystemError(sharpen::ErrorIo);
@@ -181,7 +181,7 @@ void sharpen::WalStatusMap::NviWrite(sharpen::ByteBuffer key, sharpen::ByteBuffe
             writer.Write(tag);
             writer.Write(key);
             writer.Write(value);
-            std::size_t sz{this->channel_->WriteAsync(buf, this->offset_)};
+            std::size_t sz{this->channel_->WriteFixedAsync(buf, this->offset_)};
             assert(sz == buf.GetSize());
             if (sz != buf.GetSize()) {
                 this->channel_->Truncate(this->offset_);
@@ -210,7 +210,7 @@ void sharpen::WalStatusMap::NviRemove(const sharpen::ByteBuffer &key) {
             sharpen::BufferWriter writer{buf};
             writer.Write(tag);
             writer.Write(key);
-            std::size_t sz{this->channel_->WriteAsync(buf, this->offset_)};
+            std::size_t sz{this->channel_->WriteFixedAsync(buf, this->offset_)};
             assert(sz == buf.GetSize());
             if (sz != buf.GetSize()) {
                 this->channel_->Truncate(this->offset_);

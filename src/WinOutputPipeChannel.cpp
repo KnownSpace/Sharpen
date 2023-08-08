@@ -68,6 +68,9 @@ void sharpen::WinOutputPipeChannel::WriteAsync(const char *buf,
     if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
     }
+    if(bufSize > MaxIoSize) {
+        bufSize = MaxIoSize;
+    }
     this->loop_->RunInLoop(std::bind(&Self::RequestWrite, this, buf, bufSize, &future));
 }
 

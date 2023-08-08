@@ -509,6 +509,9 @@ void sharpen::WinNetStreamChannel::ReadAsync(char *buf,
     if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
     }
+    if(bufSize > MaxIoSize) {
+        bufSize = MaxIoSize;
+    }
     if (this->handle_ == INVALID_HANDLE_VALUE) {
         future.Complete(static_cast<std::size_t>(0));
         return;
@@ -524,6 +527,9 @@ void sharpen::WinNetStreamChannel::WriteAsync(const char *buf,
     if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
     }
+    if(bufSize > MaxIoSize) {
+        bufSize = MaxIoSize;
+    }
     if (this->handle_ == INVALID_HANDLE_VALUE) {
         future.Complete(static_cast<std::size_t>(0));
         return;
@@ -538,6 +544,9 @@ void sharpen::WinNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,
                                                  sharpen::Future<std::size_t> &future) {
     if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
+    }
+    if(size > MaxIoSize) {
+        size = MaxIoSize;
     }
     if (this->handle_ == INVALID_HANDLE_VALUE) {
         future.Complete(static_cast<std::size_t>(0));

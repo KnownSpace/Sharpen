@@ -23,9 +23,9 @@ namespace sharpen {
 
         virtual void NviWriteBatch(std::uint64_t beginIndex, sharpen::LogEntries entires) = 0;
 
-        virtual void NviDropUntil(std::uint64_t index) noexcept = 0;
+        virtual void NviDropUntil(std::uint64_t endIndex) noexcept = 0;
 
-        virtual void NviTruncateFrom(std::uint64_t index) = 0;
+        virtual void NviTruncateFrom(std::uint64_t beginIndex) = 0;
 
     public:
         constexpr static std::uint64_t noneIndex{0};
@@ -72,15 +72,15 @@ namespace sharpen {
             }
         }
 
-        inline void DropUntil(std::uint64_t index) noexcept {
-            if (index <= this->GetLastIndex()) {
-                this->NviDropUntil(index);
+        inline void DropUntil(std::uint64_t endIndex) noexcept {
+            if (endIndex <= this->GetLastIndex()) {
+                this->NviDropUntil(endIndex);
             }
         }
 
-        inline void TruncateFrom(std::uint64_t index) {
-            if (index <= this->GetLastIndex()) {
-                this->NviTruncateFrom(index);
+        inline void TruncateFrom(std::uint64_t beginIndex) {
+            if (beginIndex <= this->GetLastIndex()) {
+                this->NviTruncateFrom(beginIndex);
             }
         }
     };

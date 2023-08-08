@@ -149,7 +149,7 @@ void sharpen::TcpPoster::NviPost(const sharpen::Mail &mail,
     std::size_t size{0};
 #ifdef SHARPEN_IS_WIN
     try {
-        size = channel->WriteAsync(mail.Header());
+        size = channel->WriteFixedAsync(mail.Header());
     } catch (const std::system_error &error) {
         (void)error;
 #ifndef _NDEBUG
@@ -159,7 +159,7 @@ void sharpen::TcpPoster::NviPost(const sharpen::Mail &mail,
 #endif
     }
 #else
-    size = channel->WriteAsync(mail.Header());
+    size = channel->WriteFixedAsync(mail.Header());
 #endif
     if (!size) {
         cb(sharpen::Mail{});
@@ -169,7 +169,7 @@ void sharpen::TcpPoster::NviPost(const sharpen::Mail &mail,
         size = 0;
 #ifdef SHARPEN_IS_WIN
         try {
-            size = channel->WriteAsync(mail.Content());
+            size = channel->WriteFixedAsync(mail.Content());
         } catch (const std::system_error &error) {
             (void)error;
 #ifndef _NDEBUG
@@ -179,7 +179,7 @@ void sharpen::TcpPoster::NviPost(const sharpen::Mail &mail,
 #endif
         }
 #else
-        size = channel->WriteAsync(mail.Content());
+        size = channel->WriteFixedAsync(mail.Content());
 #endif
         if (!size) {
             cb(sharpen::Mail{});
@@ -210,7 +210,7 @@ sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail) noexcept {
     std::size_t size{0};
 #ifdef SHARPEN_IS_WIN
     try {
-        size = channel->WriteAsync(mail.Header());
+        size = channel->WriteFixedAsync(mail.Header());
     } catch (const std::system_error &error) {
         (void)error;
 #ifndef _NDEBUG
@@ -220,7 +220,7 @@ sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail) noexcept {
 #endif
     }
 #else
-    size = channel->WriteAsync(mail.Header());
+    size = channel->WriteFixedAsync(mail.Header());
 #endif
     if (!size) {
         AbortConn(channel.get());
@@ -230,7 +230,7 @@ sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail) noexcept {
         size = 0;
 #ifdef SHARPEN_IS_WIN
         try {
-            size = channel->WriteAsync(mail.Content());
+            size = channel->WriteFixedAsync(mail.Content());
         } catch (const std::system_error &error) {
             (void)error;
 #ifndef _NDEBUG
@@ -240,7 +240,7 @@ sharpen::Mail sharpen::TcpPoster::NviPost(const sharpen::Mail &mail) noexcept {
 #endif
         }
 #else
-        size = channel->WriteAsync(mail.Content());
+        size = channel->WriteFixedAsync(mail.Content());
 #endif
         if (!size) {
             AbortConn(channel.get());

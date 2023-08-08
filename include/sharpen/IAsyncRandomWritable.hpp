@@ -40,6 +40,26 @@ namespace sharpen {
 
         std::size_t WriteAsync(const sharpen::ByteBuffer &buf, std::uint64_t offset);
 
+        inline std::size_t WriteFixedAsync(const char *buf, std::size_t bufSize,std::uint64_t offset) {
+            std::size_t off{0};
+            while (off != bufSize) {
+                std::size_t sz{this->WriteAsync(buf + off,bufSize - off,offset + off)};
+                if (!sz) {
+                    break;
+                }
+                off += sz;
+            }
+            return off;
+        }
+
+        inline std::size_t WriteFixedAsync(const sharpen::ByteBuffer &buf, std::size_t bufferOffset,std::uint64_t offset) {
+            return this->WriteFixedAsync(buf.Data() + bufferOffset,buf.GetSize(),offset);
+        }
+
+        inline std::size_t WriteFixedAsync(const sharpen::ByteBuffer &buf,std::uint64_t offset) {
+            return this->WriteFixedAsync(buf,0,offset);
+        }
+
         template<typename _T,
                  typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>
         inline std::size_t WriteObjectAsync(const _T &obj, std::uint64_t offset) {

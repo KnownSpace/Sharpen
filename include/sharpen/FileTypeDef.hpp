@@ -4,13 +4,21 @@
 
 #include "SystemMacro.hpp"
 #include <cstddef>
+#include <cstdint>
+#include <limits>
 
 namespace sharpen {
+
 #ifdef SHARPEN_IS_WIN
     using FileHandle = void *;
+    using IoSizeType = std::int32_t;
 #else
     using FileHandle = int;
+    using IoSizeType = std::int64_t;
 #endif
+
+    
+    constexpr std::size_t MaxIoSize = static_cast<std::size_t>((std::numeric_limits<IoSizeType>::max)());
 
     enum class FileOpenMethod {
         Open,

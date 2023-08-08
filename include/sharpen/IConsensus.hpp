@@ -27,7 +27,7 @@ namespace sharpen {
 
         virtual sharpen::Mail NviGenerateResponse(sharpen::Mail request) = 0;
 
-        virtual void NviDropLogsUntil(std::uint64_t index) = 0;
+        virtual void NviDropLogsUntil(std::uint64_t endIndex) = 0;
 
         virtual void NviConfiguratePeers(
             std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater) = 0;
@@ -95,8 +95,8 @@ namespace sharpen {
             return sharpen::Mail{};
         }
 
-        inline void DropLogsUntil(std::uint64_t index) {
-            this->NviDropLogsUntil(index);
+        inline void DropLogsUntil(std::uint64_t endIndex) {
+            this->NviDropLogsUntil(endIndex);
         }
 
         inline void ConfiguratePeers(

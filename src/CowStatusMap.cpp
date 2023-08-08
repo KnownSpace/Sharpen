@@ -62,7 +62,7 @@ void sharpen::CowStatusMap::Save() {
             sharpen::BufferWriter writer{buf};
             writer.Write(begin->first);
             writer.Write(begin->second);
-            std::size_t sz{channel->WriteAsync(buf.Data(), writer.GetLength(), offset)};
+            std::size_t sz{channel->WriteFixedAsync(buf.Data(), writer.GetLength(), offset)};
             assert(sz == writer.GetLength());
             if (sz != writer.GetLength()) {
                 sharpen::ThrowSystemError(sharpen::ErrorIo);

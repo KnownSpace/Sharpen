@@ -157,7 +157,7 @@ void sharpen::WalLogStorage::RebuildFile() {
             sharpen::Varuint64 builder{begin->first};
             writer.Write(builder);
             writer.Write(begin->second);
-            std::size_t sz{channel->WriteAsync(buf.Data(), writer.GetLength(), offset)};
+            std::size_t sz{channel->WriteFixedAsync(buf.Data(), writer.GetLength(), offset)};
             assert(sz == writer.GetLength());
             if (sz != writer.GetLength()) {
                 sharpen::ThrowSystemError(sharpen::ErrorIo);
@@ -210,7 +210,7 @@ void sharpen::WalLogStorage::NviWrite(std::uint64_t index, sharpen::ByteSlice lo
             writer.Write(tag);
             writer.Write(builder);
             writer.Write(log);
-            std::size_t sz{this->channel_->WriteAsync(buf, this->offset_)};
+            std::size_t sz{this->channel_->WriteFixedAsync(buf, this->offset_)};
             assert(sz == buf.GetSize());
             if (sz != buf.GetSize()) {
                 this->channel_->Truncate(this->offset_);
@@ -250,7 +250,7 @@ void sharpen::WalLogStorage::NviWriteBatch(std::uint64_t beginIndex, sharpen::Lo
             }
             size = writer.GetLength();
             if (size) {
-                std::size_t sz{this->channel_->WriteAsync(buf.Data(),size, this->offset_)};
+                std::size_t sz{this->channel_->WriteFixedAsync(buf.Data(),size, this->offset_)};
                 assert(sz == size);
                 if (sz != size) {
                     this->channel_->Truncate(this->offset_);
@@ -263,13 +263,13 @@ void sharpen::WalLogStorage::NviWriteBatch(std::uint64_t beginIndex, sharpen::Lo
     }
 }
 
-void sharpen::WalLogStorage::NviDropUntil(std::uint64_t index) noexcept {
+void sharpen::WalLogStorage::NviDropUntil(std::uint64_t endIndex) noexcept {
     {
         this->lock_->LockWrite();
         std::unique_lock<sharpen::AsyncRwLock> lock{*this->lock_, std::adopt_lock};
         std::size_t size{0};
         for (auto begin = this->logs_.begin(), end = this->logs_.end();
-             begin != end && begin->first < index;
+             begin != end && begin->first < endIndex;
              ++begin) {
             sharpen::Varuint64 builder{begin->first};
             size += builder.ComputeSize();
@@ -282,14 +282,14 @@ void sharpen::WalLogStorage::NviDropUntil(std::uint64_t index) noexcept {
         contentSize -= size;
         if (this->offset_ >= contentSize * limitFactor_) {
             for (auto begin = this->logs_.begin(), end = this->logs_.end();
-                 begin != end && begin->first < index;) {
+                 begin != end && begin->first < endIndex;) {
                 begin = this->logs_.erase(begin);
             }
             this->RebuildFile();
             return;
         }
         for (auto begin = this->logs_.begin(), end = this->logs_.end();
-             begin != end && begin->first < index;
+             begin != end && begin->first < endIndex;
              ++begin) {
             size += sizeof(std::uint8_t);
             size -= begin->second.GetSize();
@@ -297,14 +297,14 @@ void sharpen::WalLogStorage::NviDropUntil(std::uint64_t index) noexcept {
         sharpen::ByteBuffer buf{size};
         sharpen::BufferWriter writer{buf};
         for (auto begin = this->logs_.begin(), end = this->logs_.end();
-             begin != end && begin->first < index;
+             begin != end && begin->first < endIndex;
              ++begin) {
             std::uint8_t tag{removeTag_};
             writer.Write(tag);
             sharpen::Varuint64 builder{begin->first};
             writer.Write(builder);
         }
-        std::size_t sz{this->channel_->WriteAsync(buf, this->offset_)};
+        std::size_t sz{this->channel_->WriteFixedAsync(buf, this->offset_)};
         assert(sz == buf.GetSize());
         if (sz != buf.GetSize()) {
             this->channel_->Truncate(this->offset_);
@@ -314,7 +314,7 @@ void sharpen::WalLogStorage::NviDropUntil(std::uint64_t index) noexcept {
         this->contentSize_ = contentSize;
         this->offset_ += sz;
         for (auto begin = this->logs_.begin(), end = this->logs_.end();
-             begin != end && begin->first < index;) {
+             begin != end && begin->first < endIndex;) {
             begin = this->logs_.erase(begin);
         }
     }
@@ -361,7 +361,7 @@ void sharpen::WalLogStorage::NviTruncateFrom(std::uint64_t index) {
             sharpen::Varuint64 builder{begin->first};
             writer.Write(builder);
         }
-        std::size_t sz{this->channel_->WriteAsync(buf, this->offset_)};
+        std::size_t sz{this->channel_->WriteFixedAsync(buf, this->offset_)};
         assert(sz == buf.GetSize());
         if (sz != buf.GetSize()) {
             this->channel_->Truncate(this->offset_);

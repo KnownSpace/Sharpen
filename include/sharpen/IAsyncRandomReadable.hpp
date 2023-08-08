@@ -40,6 +40,27 @@ namespace sharpen {
 
         std::size_t ReadAsync(sharpen::ByteBuffer &buf, std::uint64_t offset);
 
+        inline std::size_t ReadFixedAsync(char *buf, std::size_t size, std::uint64_t offset) {
+            std::size_t off{0};
+            while (off != size) {
+                std::size_t sz{this->ReadAsync(buf + off, size - off,offset + off)};
+                if (!sz) {
+                    break;
+                }
+                off += sz;
+            }
+            return off;
+        }
+
+        inline std::size_t ReadFixedAsync(sharpen::ByteBuffer &buf, std::size_t bufOffset, std::uint64_t offset) {
+            assert(buf.GetSize() >= bufOffset);
+            return this->ReadFixedAsync(buf.Data() + bufOffset, buf.GetSize() - bufOffset,offset);
+        }
+
+        inline std::size_t ReadFixedAsync(sharpen::ByteBuffer &buf, std::uint64_t offset) {
+            return this->ReadFixedAsync(buf, 0,offset);
+        }
+
         template<typename _T,
                  typename _Check = sharpen::EnableIf<std::is_standard_layout<_T>::value>>
         inline std::size_t ReadObjectAsync(_T &obj, std::uint64_t offset) {

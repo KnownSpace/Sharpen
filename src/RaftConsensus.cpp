@@ -700,6 +700,7 @@ void sharpen::RaftConsensus::OnPrevoteResponse(const sharpen::RaftPrevoteRespons
 
 void sharpen::RaftConsensus::OnVoteResponse(const sharpen::RaftVoteForResponse &response,
                                             const sharpen::ActorId &actorId) {
+    (void)actorId;
     assert(this->peers_);
     assert(this->peers_->Exist(actorId));
     if (response.GetTerm() > this->GetTerm()) {

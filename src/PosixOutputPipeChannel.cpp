@@ -78,6 +78,9 @@ void sharpen::PosixOutputPipeChannel::WriteAsync(const char *buf,
     if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
     }
+    if(bufSize > MaxIoSize) {
+        bufSize = MaxIoSize;
+    }
     this->RequestWrite(buf, bufSize, &future);
 }
 

@@ -8,6 +8,7 @@
 #include <cassert>
 #include <cstring>
 #include <functional>
+#include <utility>
 #include <io.h>
 
 namespace sharpen {
@@ -91,6 +92,9 @@ void sharpen::WinFileChannel::WriteAsync(const char *buf,
     if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
     }
+    if (bufSize > MaxIoSize) {
+        bufSize = MaxIoSize;
+    }
     this->loop_->RunInLoopSoon(std::bind(&Self::RequestWrite, this, buf, bufSize, offset, &future));
 }
 
@@ -141,6 +145,9 @@ void sharpen::WinFileChannel::ReadAsync(char *buf,
     assert(buf != nullptr || (buf == nullptr && bufSize == 0));
     if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
+    }
+    if (bufSize > MaxIoSize) {
+        bufSize = MaxIoSize;
     }
     this->loop_->RunInLoop(std::bind(&Self::RequestRead, this, buf, bufSize, offset, &future));
 }
@@ -404,7 +411,8 @@ void sharpen::WinFileChannel::DeallocateAsync(sharpen::Future<std::size_t> &futu
 }
 
 std::size_t sharpen::WinFileChannel::GetPath(char *path, std::size_t size) const {
-    DWORD r{::GetFinalPathNameByHandleA(this->handle_, path, static_cast<DWORD>(size), FILE_NAME_NORMALIZED)};
+    DWORD r{::GetFinalPathNameByHandleA(
+        this->handle_, path, static_cast<DWORD>(size), FILE_NAME_NORMALIZED)};
     if (r == 0 || r > size) {
         sharpen::ThrowLastError();
     }

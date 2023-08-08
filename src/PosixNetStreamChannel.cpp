@@ -437,6 +437,9 @@ void sharpen::PosixNetStreamChannel::WriteAsync(const char *buf,
     if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
     }
+    if(bufSize > MaxIoSize) {
+        bufSize = MaxIoSize;
+    }
     if (this->handle_ == -1) {
         future.Complete(static_cast<std::size_t>(0));
         return;
@@ -459,6 +462,9 @@ void sharpen::PosixNetStreamChannel::ReadAsync(char *buf,
     assert(buf != nullptr || (buf == nullptr && bufSize == 0));
     if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
+    }
+    if(bufSize > MaxIoSize) {
+        bufSize = MaxIoSize;
     }
     if (this->handle_ == -1) {
         future.Complete(static_cast<std::size_t>(0));
@@ -495,6 +501,9 @@ void sharpen::PosixNetStreamChannel::SendFileAsync(sharpen::FileChannelPtr file,
                                                    sharpen::Future<std::size_t> &future) {
     if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
+    }
+    if(size > MaxIoSize) {
+        size = MaxIoSize;
     }
     if (this->handle_ == -1) {
         future.Complete(static_cast<std::size_t>(0));

@@ -78,6 +78,9 @@ void sharpen::PosixInputPipeChannel::ReadAsync(char *buf,
     if (!this->IsRegistered()) {
         throw std::logic_error("should register to a loop first");
     }
+    if(bufSize > MaxIoSize) {
+        bufSize = MaxIoSize;
+    }
     this->RequestRead(buf, bufSize, &future);
 }
 
