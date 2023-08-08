@@ -931,10 +931,7 @@ public:
             batch.Append(std::move(log));
             primary->Write(batch);
             primary->Advance();
-            for (auto begin = rafts.begin() + 1, end = rafts.end(); begin != end; ++begin) {
-                auto backup{begin->get()};
-                backup->WaitNextConsensus();
-            }
+            primary->WaitNextConsensus();
             writable = primary->Writable();
         }
         auto secondTp{std::chrono::system_clock::now()};
@@ -1006,10 +1003,7 @@ public:
             batch.Append(std::move(log));
             primary->Write(batch);
             primary->Advance();
-            for (auto begin = rafts.begin() + 1, end = rafts.end(); begin != end; ++begin) {
-                auto backup{begin->get()};
-                backup->WaitNextConsensus();
-            }
+            primary->WaitNextConsensus();
             writable = primary->Writable();
         }
         auto secondTp{std::chrono::system_clock::now()};
