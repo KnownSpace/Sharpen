@@ -40,14 +40,16 @@ static constexpr std::size_t batchSize{20};
 
 static constexpr std::size_t pipelineLength{2};
 
+static constexpr std::size_t benchmarkCount{100 * 1000};
+
 static std::shared_ptr<sharpen::IConsensus> CreateRaft(std::uint16_t port) {
     sharpen::RaftOption raftOpt;
     raftOpt.SetBatchSize(batchSize);
     raftOpt.SetLearner(false);
     raftOpt.SetPrevote(false);
-    auto raft{CreateRaft(port, magicNumber, nullptr,nullptr, raftOpt,false)};
+    auto raft{CreateRaft(port, magicNumber, nullptr, nullptr, raftOpt, false)};
     raft->ConfiguratePeers(
-        &ConfigPeers, port, beginPort, endPort, &raft->GetReceiver(), magicNumber,false);
+        &ConfigPeers, port, beginPort, endPort, &raft->GetReceiver(), magicNumber, false);
     return raft;
 }
 
@@ -57,9 +59,9 @@ static std::shared_ptr<sharpen::IConsensus> CreatePipelineRaft(std::uint16_t por
     raftOpt.SetLearner(false);
     raftOpt.SetPrevote(false);
     raftOpt.SetPipelineLength(pipelineLength);
-    auto raft{CreateRaft(port, magicNumber, nullptr,nullptr, raftOpt,true)};
+    auto raft{CreateRaft(port, magicNumber, nullptr, nullptr, raftOpt, true)};
     raft->ConfiguratePeers(
-        &ConfigPeers, port, beginPort, endPort, &raft->GetReceiver(), magicNumber,true);
+        &ConfigPeers, port, beginPort, endPort, &raft->GetReceiver(), magicNumber, true);
     return raft;
 }
 
@@ -69,21 +71,31 @@ static std::shared_ptr<sharpen::IConsensus> CreateLeaseRaft(std::uint16_t port) 
     raftOpt.SetLearner(false);
     raftOpt.SetPrevote(false);
     raftOpt.EnableLeaseAwareness();
-    auto raft{CreateRaft(port, magicNumber,nullptr, nullptr, raftOpt,false)};
+    auto raft{CreateRaft(port, magicNumber, nullptr, nullptr, raftOpt, false)};
     raft->ConfiguratePeers(
-        &ConfigPeers, port, beginPort, endPort, &raft->GetReceiver(), magicNumber,false);
+        &ConfigPeers, port, beginPort, endPort, &raft->GetReceiver(), magicNumber, false);
     return raft;
 }
 
-static std::unique_ptr<sharpen::IHostPipeline> ConfigPipeline(std::shared_ptr<sharpen::IConsensus> raft) {
+static std::unique_ptr<sharpen::IHostPipeline> ConfigPipeline(
+    std::shared_ptr<sharpen::IConsensus> raft) {
     std::unique_ptr<sharpen::IHostPipeline> pipe{new (std::nothrow) sharpen::SimpleHostPipeline{}};
     pipe->Register<LogStep>();
     pipe->Register<RaftStep>(magicNumber, std::move(raft));
     return pipe;
 }
 
+static std::unique_ptr<sharpen::IHostPipeline> ConfigNotLoggingPipeline(
+    std::shared_ptr<sharpen::IConsensus> raft) {
+    std::unique_ptr<sharpen::IHostPipeline> pipe{new (std::nothrow) sharpen::SimpleHostPipeline{}};
+    std::unique_ptr<RaftStep> step{new (std::nothrow) RaftStep{magicNumber, std::move(raft)}};
+    step->DisableLogging();
+    pipe->Register(std::move(step));
+    return pipe;
+}
+
 static std::unique_ptr<sharpen::TcpHost> CreateHost(std::uint16_t port,
-                                             std::shared_ptr<sharpen::IConsensus> raft) {
+                                                    std::shared_ptr<sharpen::IConsensus> raft) {
     sharpen::IpEndPoint endPoint;
     endPoint.SetAddrByString("127.0.0.1");
     endPoint.SetPort(port);
@@ -93,6 +105,20 @@ static std::unique_ptr<sharpen::TcpHost> CreateHost(std::uint16_t port,
         throw std::bad_alloc{};
     }
     host->ConfiguratePipeline(&ConfigPipeline, std::move(raft));
+    return host;
+}
+
+static std::unique_ptr<sharpen::TcpHost> CreateNotLoggingHost(std::uint16_t port,
+                                                    std::shared_ptr<sharpen::IConsensus> raft) {
+    sharpen::IpEndPoint endPoint;
+    endPoint.SetAddrByString("127.0.0.1");
+    endPoint.SetPort(port);
+    sharpen::IpTcpStreamFactory streamFactory{endPoint};
+    std::unique_ptr<sharpen::TcpHost> host{new (std::nothrow) sharpen::TcpHost{streamFactory}};
+    if (!host) {
+        throw std::bad_alloc{};
+    }
+    host->ConfiguratePipeline(&ConfigNotLoggingPipeline, std::move(raft));
     return host;
 }
 
@@ -453,7 +479,9 @@ public:
             primary->Advance();
             faultRaft->WaitNextConsensus();
             writable = primary->Writable();
-            sharpen::SyncPrintf("Recovery to %zu/%zu\n", faultRaft->ImmutableLogs().GetLastIndex(),primary->ImmutableLogs().GetLastIndex());
+            sharpen::SyncPrintf("Recovery to %zu/%zu\n",
+                                faultRaft->ImmutableLogs().GetLastIndex(),
+                                primary->ImmutableLogs().GetLastIndex());
         }
         // close all hosts
         for (auto begin = rafts.begin(), end = rafts.end(); begin != end; ++begin) {
@@ -477,24 +505,20 @@ public:
     }
 };
 
-class PipelineAppendTest:public simpletest::ITypenamedTest<PipelineAppendTest>
-{
+class PipelineAppendTest : public simpletest::ITypenamedTest<PipelineAppendTest> {
 private:
     using Self = PipelineAppendTest;
 
 public:
-
     PipelineAppendTest() noexcept = default;
 
     ~PipelineAppendTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         WaitForPorts();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(3);
@@ -555,24 +579,20 @@ public:
     }
 };
 
-class FaultPipelineAppendTest:public simpletest::ITypenamedTest<FaultPipelineAppendTest>
-{
+class FaultPipelineAppendTest : public simpletest::ITypenamedTest<FaultPipelineAppendTest> {
 private:
     using Self = FaultPipelineAppendTest;
 
 public:
-
     FaultPipelineAppendTest() noexcept = default;
 
     ~FaultPipelineAppendTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         WaitForPorts();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(2);
@@ -633,24 +653,20 @@ public:
     }
 };
 
-class RecoveryPipelineAppendTest:public simpletest::ITypenamedTest<RecoveryPipelineAppendTest>
-{
+class RecoveryPipelineAppendTest : public simpletest::ITypenamedTest<RecoveryPipelineAppendTest> {
 private:
     using Self = RecoveryPipelineAppendTest;
 
 public:
-
     RecoveryPipelineAppendTest() noexcept = default;
 
     ~RecoveryPipelineAppendTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         WaitForPorts();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(3);
@@ -704,7 +720,9 @@ public:
             primary->Advance();
             faultRaft->WaitNextConsensus();
             writable = primary->Writable();
-            sharpen::SyncPrintf("Recovery to %zu/%zu\n", faultRaft->ImmutableLogs().GetLastIndex(),primary->ImmutableLogs().GetLastIndex());
+            sharpen::SyncPrintf("Recovery to %zu/%zu\n",
+                                faultRaft->ImmutableLogs().GetLastIndex(),
+                                primary->ImmutableLogs().GetLastIndex());
         }
         // close all hosts
         for (auto begin = rafts.begin(), end = rafts.end(); begin != end; ++begin) {
@@ -728,24 +746,20 @@ public:
     }
 };
 
-class BasicLeaseTest:public simpletest::ITypenamedTest<BasicLeaseTest>
-{
+class BasicLeaseTest : public simpletest::ITypenamedTest<BasicLeaseTest> {
 private:
     using Self = BasicLeaseTest;
 
 public:
-
     BasicLeaseTest() noexcept = default;
 
     ~BasicLeaseTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         WaitForPorts();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(3);
@@ -801,24 +815,20 @@ public:
     }
 };
 
-class FaultLeaseTest:public simpletest::ITypenamedTest<FaultLeaseTest>
-{
+class FaultLeaseTest : public simpletest::ITypenamedTest<FaultLeaseTest> {
 private:
     using Self = FaultLeaseTest;
 
 public:
-
     FaultLeaseTest() noexcept = default;
 
     ~FaultLeaseTest() noexcept = default;
 
-    inline const Self &Const() const noexcept
-    {
+    inline const Self &Const() const noexcept {
         return *this;
     }
 
-    inline virtual simpletest::TestResult Run() noexcept
-    {
+    inline virtual simpletest::TestResult Run() noexcept {
         WaitForPorts();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(2);
@@ -874,6 +884,81 @@ public:
     }
 };
 
+class RttBenchmark : public simpletest::ITypenamedTest<RttBenchmark> {
+private:
+    using Self = RttBenchmark;
+
+public:
+    RttBenchmark() noexcept = default;
+
+    ~RttBenchmark() noexcept = default;
+
+    inline const Self &Const() const noexcept {
+        return *this;
+    }
+
+    inline virtual simpletest::TestResult Run() noexcept {
+        WaitForPorts();
+        std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
+        rafts.reserve(3);
+        std::vector<std::unique_ptr<sharpen::IHost>> hosts;
+        hosts.reserve(3);
+        std::vector<sharpen::AwaitableFuturePtr<void>> process;
+        process.reserve(3);
+        for (std::uint16_t i = beginPort; i != endPort + 1; ++i) {
+            auto raft{CreateRaft(i)};
+            rafts.emplace_back(raft);
+            auto host{CreateNotLoggingHost(i, raft)};
+            hosts.emplace_back(std::move(host));
+        }
+        for (auto begin = hosts.begin(), end = hosts.end(); begin != end; ++begin) {
+            sharpen::IHost *host{begin->get()};
+            auto future{sharpen::Async([host]() { host->Run(); })};
+            process.emplace_back(std::move(future));
+        }
+        auto primary{rafts[0].get()};
+        primary->Advance();
+        primary->WaitNextConsensus();
+        bool writable{primary->Writable()};
+        auto firstTp{std::chrono::system_clock::now()};
+        for (std::size_t i = 0; i != benchmarkCount; ++i) {
+            sharpen::LogBatch batch;
+            sharpen::ByteBuffer log;
+            batch.Append(std::move(log));
+            primary->Write(batch);
+            primary->Advance();
+            for (auto begin = rafts.begin() + 1, end = rafts.end(); begin != end; ++begin) {
+                auto backup{begin->get()};
+                backup->WaitNextConsensus();
+            }
+            writable = primary->Writable();
+        }
+        auto secondTp{std::chrono::system_clock::now()};
+        std::int64_t count{
+            std::chrono::duration_cast<std::chrono::milliseconds>(secondTp - firstTp).count()};
+        // close all hosts
+        for (auto begin = rafts.begin(), end = rafts.end(); begin != end; ++begin) {
+            auto raft{begin->get()};
+            raft->ReleasePeers();
+        }
+        for (auto begin = hosts.begin(), end = hosts.end(); begin != end; ++begin) {
+            auto host{begin->get()};
+            host->Stop();
+        }
+        for (auto begin = process.begin(), end = process.end(); begin != end; ++begin) {
+            auto future{begin->get()};
+            future->WaitAsync();
+        }
+        // remove files
+        for (std::uint16_t i = beginPort; i != endPort + 1; ++i) {
+            RemoveLogStorage(i);
+            RemoveStatusMap(i);
+        }
+        sharpen::SyncPrintf("Using %" PRId64 " ms to append %zu entries\n", count, benchmarkCount);
+        return this->Success();
+    }
+};
+
 int Entry() {
     sharpen::StartupNetSupport();
     simpletest::TestRunner runner{simpletest::DisplayMode::Blocked};
@@ -887,6 +972,7 @@ int Entry() {
     runner.Register<RecoveryPipelineAppendTest>();
     runner.Register<BasicLeaseTest>();
     runner.Register<FaultLeaseTest>();
+    runner.Register<RttBenchmark>();
     int code{runner.Run()};
     sharpen::CleanupNetSupport();
     return code;

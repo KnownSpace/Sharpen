@@ -14,6 +14,7 @@ private:
 
     std::unique_ptr<sharpen::IMailParserFactory> factory_;
     std::shared_ptr<sharpen::IConsensus> raft_;
+    bool logging_;
 
 public:
     RaftStep(std::uint32_t magicNumber,std::shared_ptr<sharpen::IConsensus> raft) noexcept;
@@ -26,6 +27,10 @@ public:
 
     inline const Self &Const() const noexcept {
         return *this;
+    }
+
+    inline void DisableLogging() noexcept {
+        this->logging_ = false;
     }
 
     virtual sharpen::HostPipelineResult Consume(sharpen::INetStreamChannel &channel,

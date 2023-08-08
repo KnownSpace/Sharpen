@@ -6,7 +6,8 @@
 
 RaftStep::RaftStep(std::uint32_t magicNumber, std::shared_ptr<sharpen::IConsensus> raft) noexcept
     : factory_(nullptr)
-    , raft_(std::move(raft)) {
+    , raft_(std::move(raft))
+    , logging_(true) {
     this->factory_.reset(new (std::nothrow) sharpen::GenericMailParserFactory{
         magicNumber, (std::numeric_limits<std::uint32_t>::max)()});
     if (!this->factory_) {
@@ -28,7 +29,9 @@ sharpen::HostPipelineResult RaftStep::Consume(sharpen::INetStreamChannel &channe
     while (size != 0 && active) {
         parser->Parse(buf.GetSlice(0, size));
         while (parser->Completed()) {
-            sharpen::SyncPrintf("Receive Mail from %s:%u\n", remoteIp, remote.GetPort());
+            if (this->logging_) {
+                sharpen::SyncPrintf("Receive Mail from %s:%u\n", remoteIp, remote.GetPort());
+            }
             sharpen::Mail mail{parser->PopCompletedMail()};
             mail = this->raft_->GenerateResponse(mail);
             size = channel.WriteAsync(mail.Header());
@@ -41,11 +44,13 @@ sharpen::HostPipelineResult RaftStep::Consume(sharpen::INetStreamChannel &channe
                     break;
                 }
             }
-            sharpen::SyncPrintf("Reply to %s:%u Header %zu Content %zu\n",
-                                remoteIp,
-                                remote.GetPort(),
-                                mail.Header().GetSize(),
-                                mail.Content().GetSize());
+            if (this->logging_) {
+                sharpen::SyncPrintf("Reply to %s:%u Header %zu Content %zu\n",
+                                    remoteIp,
+                                    remote.GetPort(),
+                                    mail.Header().GetSize(),
+                                    mail.Content().GetSize());
+            }
         }
         size = channel.ReadAsync(buf);
     }
