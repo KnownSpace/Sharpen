@@ -82,48 +82,9 @@ public:
     }
 };
 
-class LogStroageBenchmark : public simpletest::ITypenamedTest<LogStroageBenchmark> {
-private:
-    using Self = LogStroageBenchmark;
-
-public:
-    LogStroageBenchmark() noexcept = default;
-
-    ~LogStroageBenchmark() noexcept = default;
-
-    inline const Self &Const() const noexcept {
-        return *this;
-    }
-
-    inline virtual simpletest::TestResult Run() noexcept {
-        std::unique_ptr<sharpen::ILogStorage> log{new (std::nothrow)
-                                                      sharpen::WalLogStorage{walName}};
-        if (!log) {
-            return this->Fail("failed to alloc memory");
-        }
-        auto first{std::chrono::system_clock::now()};
-        // 32GB
-        const std::size_t totalSize{static_cast<std::size_t>(4)*1024*1024*1024};
-        // 32KB
-        constexpr std::size_t entrySize{1024*1024};
-        sharpen::LogEntries entires;
-        for (std::size_t i = 0; i != totalSize/entrySize; ++i) {
-            entires.Push(sharpen::ByteBuffer{entrySize});
-        }
-        log->WriteBatch(1,entires);
-        auto second{std::chrono::system_clock::now()};
-        auto sec{std::chrono::duration_cast<std::chrono::seconds>(second - first)};
-        sharpen::SyncPrintf("Using %" PRId64" sec to write %zu GB(%zu entries)\n",sec.count(),totalSize/(1024*1024*1024),entrySize);
-        log.reset();
-        sharpen::RemoveFile(walName);
-        return this->Success();
-    }
-};
-
 static int Test() {
     simpletest::TestRunner runner{simpletest::DisplayMode::Blocked};
     runner.Register<LogStorageTest>();
-    runner.Register<LogStroageBenchmark>();
     return runner.Run();
 }
 
