@@ -7,14 +7,22 @@
 #include <cstdint>
 #include <limits>
 
+#ifdef SHARPEN_IS_WIN
+struct _stat64;
+#else
+struct stat64;
+#endif
+
 namespace sharpen {
 
 #ifdef SHARPEN_IS_WIN
     using FileHandle = void *;
     using IoSizeType = std::int32_t;
+    using FileStat = struct ::_stat64;
 #else
     using FileHandle = int;
     using IoSizeType = std::int64_t;
+    using FileStat = struct ::stat64;
 #endif
 
     

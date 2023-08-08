@@ -5,6 +5,9 @@
 #ifdef SHARPEN_IS_WIN
 #include <Windows.h>
 #include <io.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <cstdlib>
 #else
 #include <sys/stat.h>
 #include <unistd.h>
@@ -251,6 +254,18 @@ void sharpen::MakeSymLink(const char *oldName, const char *newName, bool isDir) 
 #else
     (void)isDir;
     if (::symlink(oldName, newName) == -1) {
+        sharpen::ThrowLastError();
+    }
+#endif
+}
+
+void sharpen::GetFileStat(const char *name,sharpen::FileStat &stat) {
+#ifdef SHARPEN_IS_WIN
+    if (::_stat64(name,&stat) == -1) {
+        sharpen::ThrowSystemError(_doserrno);
+    }
+#else
+    if(::stat64(name,&stat) == -1) {
         sharpen::ThrowLastError();
     }
 #endif

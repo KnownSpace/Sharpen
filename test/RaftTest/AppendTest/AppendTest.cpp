@@ -40,7 +40,7 @@ static constexpr std::size_t batchSize{20};
 
 static constexpr std::size_t pipelineLength{2};
 
-static constexpr std::size_t benchmarkCount{100 * 1000};
+static constexpr std::size_t benchmarkCount{1 * 1000};
 
 static std::shared_ptr<sharpen::IConsensus> CreateRaft(std::uint16_t port) {
     sharpen::RaftOption raftOpt;

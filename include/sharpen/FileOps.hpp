@@ -4,6 +4,7 @@
 
 #include "FileTypeDef.hpp"
 #include "SystemMacro.hpp"
+#include "ParameterMacro.hpp"
 #include <cstddef>
 #include <cstdint>
 
@@ -28,7 +29,7 @@ namespace sharpen {
 
     extern void RemoveFile(const char *name);
 
-    extern bool GetCurrentWorkDirectory(char *pathBuf, std::size_t size) noexcept;
+    extern bool GetCurrentWorkDirectory(SHARPEN_OUT char *pathBuf, std::size_t size) noexcept;
 
     extern void SetCurrentWorkDirectory(const char *path);
 
@@ -36,7 +37,7 @@ namespace sharpen {
                             std::size_t currentPathSize,
                             const char *path,
                             std::size_t pathSize,
-                            char *resolvedPath,
+                            SHARPEN_OUT char *resolvedPath,
                             std::size_t resolvedPathSize);
 
     constexpr inline bool IsPathSeparator(char c) noexcept {
@@ -62,6 +63,8 @@ namespace sharpen {
     inline void MakeDirectorySymLink(const char *oldName, const char *newName) {
         return sharpen::MakeSymLink(oldName, newName, true);
     }
+
+    void GetFileStat(const char *name,SHARPEN_OUT sharpen::FileStat &stat);
 }   // namespace sharpen
 
 #endif
