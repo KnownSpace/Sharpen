@@ -108,8 +108,8 @@ static std::unique_ptr<sharpen::TcpHost> CreateHost(std::uint16_t port,
     return host;
 }
 
-static std::unique_ptr<sharpen::TcpHost> CreateNotLoggingHost(std::uint16_t port,
-                                                    std::shared_ptr<sharpen::IConsensus> raft) {
+static std::unique_ptr<sharpen::TcpHost> CreateNotLoggingHost(
+    std::uint16_t port, std::shared_ptr<sharpen::IConsensus> raft) {
     sharpen::IpEndPoint endPoint;
     endPoint.SetAddrByString("127.0.0.1");
     endPoint.SetPort(port);
@@ -959,6 +959,81 @@ public:
     }
 };
 
+class PipelineRttBenchmark : public simpletest::ITypenamedTest<PipelineRttBenchmark> {
+private:
+    using Self = PipelineRttBenchmark;
+
+public:
+    PipelineRttBenchmark() noexcept = default;
+
+    ~PipelineRttBenchmark() noexcept = default;
+
+    inline const Self &Const() const noexcept {
+        return *this;
+    }
+
+    inline virtual simpletest::TestResult Run() noexcept {
+        WaitForPorts();
+        std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
+        rafts.reserve(3);
+        std::vector<std::unique_ptr<sharpen::IHost>> hosts;
+        hosts.reserve(3);
+        std::vector<sharpen::AwaitableFuturePtr<void>> process;
+        process.reserve(3);
+        for (std::uint16_t i = beginPort; i != endPort + 1; ++i) {
+            auto raft{CreatePipelineRaft(i)};
+            rafts.emplace_back(raft);
+            auto host{CreateNotLoggingHost(i, raft)};
+            hosts.emplace_back(std::move(host));
+        }
+        for (auto begin = hosts.begin(), end = hosts.end(); begin != end; ++begin) {
+            sharpen::IHost *host{begin->get()};
+            auto future{sharpen::Async([host]() { host->Run(); })};
+            process.emplace_back(std::move(future));
+        }
+        auto primary{rafts[0].get()};
+        primary->Advance();
+        primary->WaitNextConsensus();
+        bool writable{primary->Writable()};
+        auto firstTp{std::chrono::system_clock::now()};
+        for (std::size_t i = 0; i != benchmarkCount; ++i) {
+            sharpen::LogBatch batch;
+            sharpen::ByteBuffer log;
+            batch.Append(std::move(log));
+            primary->Write(batch);
+            primary->Advance();
+            for (auto begin = rafts.begin() + 1, end = rafts.end(); begin != end; ++begin) {
+                auto backup{begin->get()};
+                backup->WaitNextConsensus();
+            }
+            writable = primary->Writable();
+        }
+        auto secondTp{std::chrono::system_clock::now()};
+        std::int64_t count{
+            std::chrono::duration_cast<std::chrono::milliseconds>(secondTp - firstTp).count()};
+        // close all hosts
+        for (auto begin = rafts.begin(), end = rafts.end(); begin != end; ++begin) {
+            auto raft{begin->get()};
+            raft->ReleasePeers();
+        }
+        for (auto begin = hosts.begin(), end = hosts.end(); begin != end; ++begin) {
+            auto host{begin->get()};
+            host->Stop();
+        }
+        for (auto begin = process.begin(), end = process.end(); begin != end; ++begin) {
+            auto future{begin->get()};
+            future->WaitAsync();
+        }
+        // remove files
+        for (std::uint16_t i = beginPort; i != endPort + 1; ++i) {
+            RemoveLogStorage(i);
+            RemoveStatusMap(i);
+        }
+        sharpen::SyncPrintf("Using %" PRId64 " ms to append %zu entries\n", count, benchmarkCount);
+        return this->Success();
+    }
+};
+
 int Entry() {
     sharpen::StartupNetSupport();
     simpletest::TestRunner runner{simpletest::DisplayMode::Blocked};
@@ -973,6 +1048,7 @@ int Entry() {
     runner.Register<BasicLeaseTest>();
     runner.Register<FaultLeaseTest>();
     runner.Register<RttBenchmark>();
+    runner.Register<PipelineRttBenchmark>();
     int code{runner.Run()};
     sharpen::CleanupNetSupport();
     return code;
