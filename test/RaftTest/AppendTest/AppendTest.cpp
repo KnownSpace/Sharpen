@@ -36,13 +36,15 @@ static const std::uint16_t endPort{10803};
 
 static constexpr std::size_t appendTestCount{60};
 
-static constexpr std::size_t batchSize{200};
+static constexpr std::size_t batchSize{20};
 
-static constexpr std::size_t pipelineLength{20};
+static constexpr std::size_t pipelineLength{2};
 
 static constexpr std::size_t benchmarkCount{1 * 1000};
 
 static constexpr std::size_t benchmarkTime{30};
+
+static constexpr std::size_t benchmarkClientCount{10};
 
 static std::shared_ptr<sharpen::IConsensus> CreateRaft(std::uint16_t port) {
     sharpen::RaftOption raftOpt;
@@ -1076,9 +1078,9 @@ public:
         timer->WaitAsync(timerFuture, std::chrono::seconds{benchmarkTime});
         std::atomic_bool token{false};
         std::vector<sharpen::AwaitableFuturePtr<void>> clients;
-        clients.reserve(10);
+        clients.reserve(benchmarkClientCount);
         std::size_t rounds{0};
-        for (std::size_t i = 0; i != 10; ++i) {
+        for (std::size_t i = 0; i != benchmarkClientCount; ++i) {
             clients.emplace_back(sharpen::Async([&timerFuture, primary, &token, &rounds]() {
                 while (timerFuture.IsPending()) {
                     sharpen::LogBatch batch;
@@ -1115,8 +1117,9 @@ public:
             RemoveLogStorage(i);
             RemoveStatusMap(i);
         }
-        std::printf("Commit %zu entires in %zu second and %zu rounds\n",
+        std::printf("Commit %zu entires with %zu clients in %zu second and %zu rounds\n",
                     primary->GetCommitIndex(),
+                    benchmarkClientCount,
                     benchmarkTime,
                     rounds);
         return this->Success();
@@ -1163,9 +1166,9 @@ public:
         timer->WaitAsync(timerFuture, std::chrono::seconds{benchmarkTime});
         std::atomic_bool token{false};
         std::vector<sharpen::AwaitableFuturePtr<void>> clients;
-        clients.reserve(10);
+        clients.reserve(benchmarkClientCount);
         std::size_t rounds{0};
-        for (std::size_t i = 0; i != 10; ++i) {
+        for (std::size_t i = 0; i != benchmarkClientCount; ++i) {
             clients.emplace_back(sharpen::Async([&timerFuture, primary, &token, &rounds]() {
                 while (timerFuture.IsPending()) {
                     sharpen::LogBatch batch;
@@ -1202,8 +1205,9 @@ public:
             RemoveLogStorage(i);
             RemoveStatusMap(i);
         }
-        std::printf("Commit %zu entires in %zu second and %zu rounds\n",
+        std::printf("Commit %zu entires with %zu clients in %zu second and %zu rounds\n",
                     primary->GetCommitIndex(),
+                    benchmarkClientCount,
                     benchmarkTime,
                     rounds);
         return this->Success();
@@ -1213,19 +1217,19 @@ public:
 int Entry() {
     sharpen::StartupNetSupport();
     simpletest::TestRunner runner{simpletest::DisplayMode::Blocked};
-    // runner.Register<BasicHeartbeatTest>();
-    // runner.Register<FaultHeartbeatTest>();
-    // runner.Register<BasicAppendTest>();
-    // runner.Register<FaultAppendTest>();
-    // runner.Register<RecoveryAppendTest>();
-    // runner.Register<PipelineAppendTest>();
-    // runner.Register<FaultPipelineAppendTest>();
-    // runner.Register<RecoveryPipelineAppendTest>();
-    // runner.Register<BasicLeaseTest>();
-    // runner.Register<FaultLeaseTest>();
-    // runner.Register<RttBenchmark>();
-    // runner.Register<PipelineRttBenchmark>();
-    // runner.Register<BasicAppendBenchmark>();
+    runner.Register<BasicHeartbeatTest>();
+    runner.Register<FaultHeartbeatTest>();
+    runner.Register<BasicAppendTest>();
+    runner.Register<FaultAppendTest>();
+    runner.Register<RecoveryAppendTest>();
+    runner.Register<PipelineAppendTest>();
+    runner.Register<FaultPipelineAppendTest>();
+    runner.Register<RecoveryPipelineAppendTest>();
+    runner.Register<BasicLeaseTest>();
+    runner.Register<FaultLeaseTest>();
+    runner.Register<RttBenchmark>();
+    runner.Register<PipelineRttBenchmark>();
+    runner.Register<BasicAppendBenchmark>();
     runner.Register<PipelineAppendBenchmark>();
     int code{runner.Run()};
     sharpen::CleanupNetSupport();
