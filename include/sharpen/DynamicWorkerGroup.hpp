@@ -36,6 +36,8 @@ namespace sharpen {
 
         virtual void NviSubmit(std::function<void()> task) override;
 
+        virtual void NviSubmitUrgent(std::function<void ()> task) override;
+
     public:
         constexpr static std::size_t defaultBusyMark{256};
 

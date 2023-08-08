@@ -18,7 +18,7 @@ sharpen::SingleWorkerGroup::~SingleWorkerGroup() noexcept {
 
 void sharpen::SingleWorkerGroup::Stop() noexcept {
     if (this->token_.exchange(false)) {
-        this->queue_.Emplace(std::function<void()>{});
+        this->queue_.EmplaceBack(std::function<void()>{});
     }
 }
 
@@ -35,7 +35,7 @@ bool sharpen::SingleWorkerGroup::Running() const noexcept {
 void sharpen::SingleWorkerGroup::Entry() noexcept {
     std::function<void()> task;
     while (this->token_) {
-        task = std::move(this->queue_.Pop());
+        task = this->queue_.Pop();
         if (task) {
             sharpen::NonexceptInvoke(task);
         }
@@ -45,5 +45,10 @@ void sharpen::SingleWorkerGroup::Entry() noexcept {
 
 void sharpen::SingleWorkerGroup::NviSubmit(std::function<void()> task) {
     assert(this->token_);
-    this->queue_.Emplace(std::move(task));
+    this->queue_.EmplaceBack(std::move(task));
+}
+
+void sharpen::SingleWorkerGroup::NviSubmitUrgent(std::function<void()> task) {
+    assert(this->token_);
+    this->queue_.EmplaceFront(std::move(task));
 }

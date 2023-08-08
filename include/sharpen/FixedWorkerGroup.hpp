@@ -20,6 +20,8 @@ namespace sharpen {
 
         virtual void NviSubmit(std::function<void()> task) override;
 
+        virtual void NviSubmitUrgent(std::function<void ()> task) override;
+
         std::atomic_bool token_;
         sharpen::AsyncBlockingQueue<std::function<void()>> queue_;
         std::vector<sharpen::AwaitableFuture<void>> workers_;

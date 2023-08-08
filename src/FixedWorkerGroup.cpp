@@ -23,7 +23,7 @@ void sharpen::FixedWorkerGroup::Stop() noexcept {
     bool token{this->token_.exchange(false)};
     if (token) {
         for (std::size_t i = 0; i != this->workers_.size(); ++i) {
-            this->queue_.Emplace();
+            this->queue_.EmplaceBack();
         }
     }
 }
@@ -51,5 +51,10 @@ void sharpen::FixedWorkerGroup::Entry(std::size_t index) noexcept {
 
 void sharpen::FixedWorkerGroup::NviSubmit(std::function<void()> task) {
     assert(this->token_.load());
-    this->queue_.Emplace(std::move(task));
+    this->queue_.EmplaceBack(std::move(task));
+}
+
+void sharpen::FixedWorkerGroup::NviSubmitUrgent(std::function<void()> task) {
+    assert(this->token_);
+    this->queue_.EmplaceFront(std::move(task));
 }

@@ -55,10 +55,19 @@ namespace sharpen {
         }
 
         template<typename... _Args, typename _Check = decltype(_T{std::declval<_Args>()...})>
-        void Emplace(_Args &&...args) {
+        void EmplaceBack(_Args &&...args) {
             {
                 std::unique_lock<sharpen::SpinLock> lock(this->lock_);
                 this->storage_.emplace_back(std::forward<_Args>(args)...);
+            }
+            this->sign_.Unlock();
+        }
+
+        template<typename... _Args, typename _Check = decltype(_T{std::declval<_Args>()...})>
+        void EmplaceFront(_Args &&...args) {
+            {
+                std::unique_lock<sharpen::SpinLock> lock(this->lock_);
+                this->storage_.emplace_front(std::forward<_Args>(args)...);
             }
             this->sign_.Unlock();
         }

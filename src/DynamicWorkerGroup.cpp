@@ -57,7 +57,16 @@ void sharpen::DynamicWorkerGroup::CreateWorker() {
 void sharpen::DynamicWorkerGroup::NviSubmit(std::function<void()> task) {
     assert(this->token_);
     this->taskCount_ += 1;
-    this->queue_.Emplace(std::move(task));
+    this->queue_.EmplaceBack(std::move(task));
+    if (this->BusyProbe()) {
+        this->CreateWorker();
+    }
+}
+
+void sharpen::DynamicWorkerGroup::NviSubmitUrgent(std::function<void()> task) {
+    assert(this->token_);
+    this->taskCount_ += 1;
+    this->queue_.EmplaceFront(std::move(task));
     if (this->BusyProbe()) {
         this->CreateWorker();
     }
@@ -72,7 +81,7 @@ void sharpen::DynamicWorkerGroup::Stop() noexcept {
         }
         for (std::size_t i = 0; i != size; ++i) {
             this->taskCount_ += 1;
-            this->queue_.Emplace(std::function<void()>{});
+            this->queue_.EmplaceBack(std::function<void()>{});
         }
     }
 }
