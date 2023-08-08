@@ -876,14 +876,14 @@ void sharpen::RaftConsensus::DoReceive(sharpen::Mail mail, sharpen::ActorId acto
 void sharpen::RaftConsensus::NviReceive(sharpen::Mail mail, const sharpen::ActorId &actorId) {
     assert(this->worker_ != nullptr);
     if (this->IsConsensusMail(mail)) {
-        this->worker_->Submit(&Self::DoReceive, this, std::move(mail), actorId);
+        this->worker_->SubmitUrgent(&Self::DoReceive, this, std::move(mail), actorId);
     }
 }
 
 sharpen::Mail sharpen::RaftConsensus::NviGenerateResponse(sharpen::Mail request) {
     assert(this->worker_ != nullptr);
     sharpen::AwaitableFuture<sharpen::Mail> future;
-    this->worker_->Invoke(future, &Self::DoGenerateResponse, this, std::move(request));
+    this->worker_->InvokeUrgent(future, &Self::DoGenerateResponse, this, std::move(request));
     return future.Await();
 }
 
@@ -1022,7 +1022,7 @@ void sharpen::RaftConsensus::DoAdvance() {
 
 void sharpen::RaftConsensus::Advance() {
     this->EnsureConfig();
-    this->worker_->Submit(&Self::DoAdvance, this);
+    this->worker_->SubmitUrgent(&Self::DoAdvance, this);
 }
 
 const sharpen::ILogStorage &sharpen::RaftConsensus::ImmutableLogs() const noexcept {
@@ -1055,7 +1055,7 @@ void sharpen::RaftConsensus::DoConfiguratePeers(
 void sharpen::RaftConsensus::NviConfiguratePeers(
     std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater) {
     sharpen::AwaitableFuture<void> future;
-    this->worker_->Invoke(future, &Self::DoConfiguratePeers, this, std::move(configurater));
+    this->worker_->InvokeUrgent(future, &Self::DoConfiguratePeers, this, std::move(configurater));
     future.Await();
 }
 
@@ -1088,7 +1088,7 @@ sharpen::WriteLogsResult sharpen::RaftConsensus::DoWrite(const sharpen::LogBatch
     assert(!logs->Empty());
     assert(this->logAccesser_ != nullptr);
     std::uint64_t lastIndex{this->GetLastIndex()};
-    if (!this->Writable()) {
+    if (!this->Writable() || logs->Empty()) {
         return sharpen::WriteLogsResult{lastIndex};
     }
     std::uint64_t beginIndex{lastIndex + 1};
@@ -1099,7 +1099,7 @@ sharpen::WriteLogsResult sharpen::RaftConsensus::DoWrite(const sharpen::LogBatch
         this->logs_->Write(beginIndex + i, entry);
     }
     lastIndex += logs->GetSize();
-    return sharpen::WriteLogsResult{beginIndex, lastIndex};
+    return sharpen::WriteLogsResult{lastIndex, beginIndex};
 }
 
 sharpen::ConsensusWriter sharpen::RaftConsensus::GetWriterId() const noexcept {
@@ -1129,7 +1129,7 @@ void sharpen::RaftConsensus::DoStoreLastAppliedIndex(std::uint64_t index) {
 void sharpen::RaftConsensus::NviStoreLastAppliedIndex(std::uint64_t index) {
     assert(this->worker_ != nullptr);
     sharpen::AwaitableFuture<void> future;
-    this->worker_->Invoke(future, &Self::DoStoreLastAppliedIndex, this, index);
+    this->worker_->InvokeUrgent(future, &Self::DoStoreLastAppliedIndex, this, index);
     future.Await();
 }
 

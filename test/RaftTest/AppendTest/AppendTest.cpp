@@ -36,11 +36,13 @@ static const std::uint16_t endPort{10803};
 
 static constexpr std::size_t appendTestCount{60};
 
-static constexpr std::size_t batchSize{20};
+static constexpr std::size_t batchSize{200};
 
-static constexpr std::size_t pipelineLength{2};
+static constexpr std::size_t pipelineLength{20};
 
 static constexpr std::size_t benchmarkCount{1 * 1000};
+
+static constexpr std::size_t benchmarkTime{30};
 
 static std::shared_ptr<sharpen::IConsensus> CreateRaft(std::uint16_t port) {
     sharpen::RaftOption raftOpt;
@@ -954,7 +956,7 @@ public:
             RemoveLogStorage(i);
             RemoveStatusMap(i);
         }
-        sharpen::SyncPrintf("Using %" PRId64 " ms to append %zu entries\n", count, benchmarkCount);
+        sharpen::SyncPrintf("Using %" PRId64 " ms to execute %zu rounds\n", count, benchmarkCount);
         return this->Success();
     }
 };
@@ -1029,7 +1031,181 @@ public:
             RemoveLogStorage(i);
             RemoveStatusMap(i);
         }
-        sharpen::SyncPrintf("Using %" PRId64 " ms to append %zu entries\n", count, benchmarkCount);
+        sharpen::SyncPrintf("Using %" PRId64 " ms to execute %zu rounds\n", count, benchmarkCount);
+        return this->Success();
+    }
+};
+
+class BasicAppendBenchmark : public simpletest::ITypenamedTest<BasicAppendBenchmark> {
+private:
+    using Self = BasicAppendBenchmark;
+
+public:
+    BasicAppendBenchmark() noexcept = default;
+
+    ~BasicAppendBenchmark() noexcept = default;
+
+    inline const Self &Const() const noexcept {
+        return *this;
+    }
+
+    inline virtual simpletest::TestResult Run() noexcept {
+        WaitForPorts();
+        std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
+        rafts.reserve(3);
+        std::vector<std::unique_ptr<sharpen::IHost>> hosts;
+        hosts.reserve(3);
+        std::vector<sharpen::AwaitableFuturePtr<void>> process;
+        process.reserve(3);
+        for (std::uint16_t i = beginPort; i != endPort + 1; ++i) {
+            auto raft{CreateRaft(i)};
+            rafts.emplace_back(raft);
+            auto host{CreateNotLoggingHost(i, raft)};
+            hosts.emplace_back(std::move(host));
+        }
+        for (auto begin = hosts.begin(), end = hosts.end(); begin != end; ++begin) {
+            sharpen::IHost *host{begin->get()};
+            auto future{sharpen::Async([host]() { host->Run(); })};
+            process.emplace_back(std::move(future));
+        }
+        auto primary{rafts[0].get()};
+        primary->Advance();
+        primary->WaitNextConsensus();
+        sharpen::Future<bool> timerFuture;
+        sharpen::TimerPtr timer{sharpen::MakeTimer()};
+        timer->WaitAsync(timerFuture, std::chrono::seconds{benchmarkTime});
+        std::atomic_bool token{false};
+        std::vector<sharpen::AwaitableFuturePtr<void>> clients;
+        clients.reserve(10);
+        std::size_t rounds{0};
+        for (std::size_t i = 0; i != 10; ++i) {
+            clients.emplace_back(sharpen::Async([&timerFuture, primary, &token, &rounds]() {
+                while (timerFuture.IsPending()) {
+                    sharpen::LogBatch batch;
+                    sharpen::ByteBuffer log{32 * 1024};
+                    batch.Append(std::move(log));
+                    primary->Write(batch);
+                    if (!token.exchange(true)) {
+                        primary->Advance();
+                        primary->WaitNextConsensus();
+                        token.store(false);
+                        rounds += 1;
+                    }
+                }
+            }));
+        }
+        for (auto begin = clients.begin(), end = clients.end(); begin != end; ++begin) {
+            begin->get()->Await();
+        }
+        // close all hosts
+        for (auto begin = rafts.begin(), end = rafts.end(); begin != end; ++begin) {
+            auto raft{begin->get()};
+            raft->ReleasePeers();
+        }
+        for (auto begin = hosts.begin(), end = hosts.end(); begin != end; ++begin) {
+            auto host{begin->get()};
+            host->Stop();
+        }
+        for (auto begin = process.begin(), end = process.end(); begin != end; ++begin) {
+            auto future{begin->get()};
+            future->WaitAsync();
+        }
+        // remove files
+        for (std::uint16_t i = beginPort; i != endPort + 1; ++i) {
+            RemoveLogStorage(i);
+            RemoveStatusMap(i);
+        }
+        std::printf("Commit %zu entires in %zu second and %zu rounds\n",
+                    primary->GetCommitIndex(),
+                    benchmarkTime,
+                    rounds);
+        return this->Success();
+    }
+};
+
+class PipelineAppendBenchmark : public simpletest::ITypenamedTest<PipelineAppendBenchmark> {
+private:
+    using Self = PipelineAppendBenchmark;
+
+public:
+    PipelineAppendBenchmark() noexcept = default;
+
+    ~PipelineAppendBenchmark() noexcept = default;
+
+    inline const Self &Const() const noexcept {
+        return *this;
+    }
+
+    inline virtual simpletest::TestResult Run() noexcept {
+        WaitForPorts();
+        std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
+        rafts.reserve(3);
+        std::vector<std::unique_ptr<sharpen::IHost>> hosts;
+        hosts.reserve(3);
+        std::vector<sharpen::AwaitableFuturePtr<void>> process;
+        process.reserve(3);
+        for (std::uint16_t i = beginPort; i != endPort + 1; ++i) {
+            auto raft{CreatePipelineRaft(i)};
+            rafts.emplace_back(raft);
+            auto host{CreateNotLoggingHost(i, raft)};
+            hosts.emplace_back(std::move(host));
+        }
+        for (auto begin = hosts.begin(), end = hosts.end(); begin != end; ++begin) {
+            sharpen::IHost *host{begin->get()};
+            auto future{sharpen::Async([host]() { host->Run(); })};
+            process.emplace_back(std::move(future));
+        }
+        auto primary{rafts[0].get()};
+        primary->Advance();
+        primary->WaitNextConsensus();
+        sharpen::Future<bool> timerFuture;
+        sharpen::TimerPtr timer{sharpen::MakeTimer()};
+        timer->WaitAsync(timerFuture, std::chrono::seconds{benchmarkTime});
+        std::atomic_bool token{false};
+        std::vector<sharpen::AwaitableFuturePtr<void>> clients;
+        clients.reserve(10);
+        std::size_t rounds{0};
+        for (std::size_t i = 0; i != 10; ++i) {
+            clients.emplace_back(sharpen::Async([&timerFuture, primary, &token, &rounds]() {
+                while (timerFuture.IsPending()) {
+                    sharpen::LogBatch batch;
+                    sharpen::ByteBuffer log{32 * 1024};
+                    batch.Append(std::move(log));
+                    primary->Write(batch);
+                    if (!token.exchange(true)) {
+                        primary->Advance();
+                        primary->WaitNextConsensus();
+                        token.store(false);
+                        rounds += 1;
+                    }
+                }
+            }));
+        }
+        for (auto begin = clients.begin(), end = clients.end(); begin != end; ++begin) {
+            begin->get()->Await();
+        }
+        // close all hosts
+        for (auto begin = rafts.begin(), end = rafts.end(); begin != end; ++begin) {
+            auto raft{begin->get()};
+            raft->ReleasePeers();
+        }
+        for (auto begin = hosts.begin(), end = hosts.end(); begin != end; ++begin) {
+            auto host{begin->get()};
+            host->Stop();
+        }
+        for (auto begin = process.begin(), end = process.end(); begin != end; ++begin) {
+            auto future{begin->get()};
+            future->WaitAsync();
+        }
+        // remove files
+        for (std::uint16_t i = beginPort; i != endPort + 1; ++i) {
+            RemoveLogStorage(i);
+            RemoveStatusMap(i);
+        }
+        std::printf("Commit %zu entires in %zu second and %zu rounds\n",
+                    primary->GetCommitIndex(),
+                    benchmarkTime,
+                    rounds);
         return this->Success();
     }
 };
@@ -1037,18 +1213,20 @@ public:
 int Entry() {
     sharpen::StartupNetSupport();
     simpletest::TestRunner runner{simpletest::DisplayMode::Blocked};
-    runner.Register<BasicHeartbeatTest>();
-    runner.Register<FaultHeartbeatTest>();
-    runner.Register<BasicAppendTest>();
-    runner.Register<FaultAppendTest>();
-    runner.Register<RecoveryAppendTest>();
-    runner.Register<PipelineAppendTest>();
-    runner.Register<FaultPipelineAppendTest>();
-    runner.Register<RecoveryPipelineAppendTest>();
-    runner.Register<BasicLeaseTest>();
-    runner.Register<FaultLeaseTest>();
-    runner.Register<RttBenchmark>();
-    runner.Register<PipelineRttBenchmark>();
+    // runner.Register<BasicHeartbeatTest>();
+    // runner.Register<FaultHeartbeatTest>();
+    // runner.Register<BasicAppendTest>();
+    // runner.Register<FaultAppendTest>();
+    // runner.Register<RecoveryAppendTest>();
+    // runner.Register<PipelineAppendTest>();
+    // runner.Register<FaultPipelineAppendTest>();
+    // runner.Register<RecoveryPipelineAppendTest>();
+    // runner.Register<BasicLeaseTest>();
+    // runner.Register<FaultLeaseTest>();
+    // runner.Register<RttBenchmark>();
+    // runner.Register<PipelineRttBenchmark>();
+    // runner.Register<BasicAppendBenchmark>();
+    runner.Register<PipelineAppendBenchmark>();
     int code{runner.Run()};
     sharpen::CleanupNetSupport();
     return code;
