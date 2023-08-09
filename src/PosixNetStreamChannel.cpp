@@ -360,7 +360,8 @@ void sharpen::PosixNetStreamChannel::CompleteIoCallback(sharpen::EventLoop *loop
         sharpen::ErrorCode code{sharpen::GetLastError()};
         if (code == sharpen::ErrorCancel || code == sharpen::ErrorConnectionAborted ||
             code == sharpen::ErrorConnectionReset || code == sharpen::ErrorNotSocket ||
-            code == sharpen::ErrorBadFileHandle || code == sharpen::ErrorBrokenPipe) {
+            code == sharpen::ErrorBadFileHandle || code == sharpen::ErrorBrokenPipe || 
+            code == sharpen::ErrorShutdown) {
             loop->RunInLoopSoon(std::bind(&sharpen::Future<std::size_t>::CompleteForBind,
                                           future,
                                           static_cast<std::size_t>(0)));
@@ -401,7 +402,8 @@ void sharpen::PosixNetStreamChannel::CompleteSendFileCallback(sharpen::EventLoop
         sharpen::ErrorCode code{sharpen::GetLastError()};
         if (code == sharpen::ErrorCancel || code == sharpen::ErrorConnectionAborted ||
             code == sharpen::ErrorConnectionReset || code == sharpen::ErrorNotSocket ||
-            code == sharpen::ErrorBrokenPipe || code == sharpen::ErrorBadFileHandle) {
+            code == sharpen::ErrorBrokenPipe || code == sharpen::ErrorBadFileHandle || 
+            code == sharpen::ErrorShutdown) {
             loop->RunInLoopSoon(std::bind(&sharpen::Future<std::size_t>::CompleteForBind,
                                           future,
                                           static_cast<std::size_t>(0)));

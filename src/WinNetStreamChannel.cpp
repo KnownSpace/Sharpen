@@ -77,7 +77,7 @@ void sharpen::WinNetStreamChannel::RequestWrite(const char *buf,
             if (err == sharpen::ErrorCancel || err == sharpen::ErrorConnectionAborted ||
                 err == sharpen::ErrorConnectionReset || err == sharpen::ErrorNotSocket ||
                 err == sharpen::ErrorBadFileHandle || err == sharpen::ErrorBadSocketHandle ||
-                err == sharpen::ErrorBrokenPipe) {
+                err == sharpen::ErrorBrokenPipe || err == WSAEINTR || err == sharpen::ErrorShutdown) {
                 future->Complete(static_cast<std::size_t>(0));
                 return;
             }
@@ -132,7 +132,7 @@ void sharpen::WinNetStreamChannel::RequestRead(char *buf,
             if (err == sharpen::ErrorCancel || err == sharpen::ErrorConnectionAborted ||
                 err == sharpen::ErrorConnectionReset || err == sharpen::ErrorNotSocket ||
                 err == sharpen::ErrorBadFileHandle || err == sharpen::ErrorBadSocketHandle ||
-                err == sharpen::ErrorBrokenPipe) {
+                err == sharpen::ErrorBrokenPipe || err == WSAEINTR || err == sharpen::ErrorShutdown) {
                 future->Complete(static_cast<std::size_t>(0));
                 return;
             }
@@ -202,7 +202,8 @@ void sharpen::WinNetStreamChannel::RequestSendFile(sharpen::FileChannelPtr file,
         if (err != ERROR_IO_PENDING && err != ERROR_SUCCESS) {
             delete olStruct;
             if (err == sharpen::ErrorCancel || err == sharpen::ErrorConnectionAborted ||
-                err == sharpen::ErrorConnectionReset || err == sharpen::ErrorNotSocket) {
+                err == sharpen::ErrorConnectionReset || err == sharpen::ErrorNotSocket || err == WSAEINTR
+                || err == sharpen::ErrorShutdown) {
                 future->Complete(static_cast<std::size_t>(0));
                 return;
             }
@@ -418,7 +419,7 @@ void sharpen::WinNetStreamChannel::HandleReadAndWrite(sharpen::WSAOverlappedStru
         if (code == sharpen::ErrorCancel || code == sharpen::ErrorConnectionAborted ||
             code == sharpen::ErrorConnectionReset || code == sharpen::ErrorNotSocket ||
             code == sharpen::ErrorBadFileHandle || code == sharpen::ErrorBadSocketHandle ||
-            code == sharpen::ErrorBrokenPipe) {
+            code == sharpen::ErrorBrokenPipe || code == WSAEINTR || code == sharpen::ErrorShutdown) {
             future->Complete(static_cast<std::size_t>(0));
             return;
         }
@@ -459,7 +460,7 @@ void sharpen::WinNetStreamChannel::HandleSendFile(sharpen::WSAOverlappedStruct &
         if (code == sharpen::ErrorCancel || code == sharpen::ErrorConnectionAborted ||
             code == sharpen::ErrorConnectionRefused || code == sharpen::ErrorNotSocket ||
             code == sharpen::ErrorBadFileHandle || code == sharpen::ErrorBadSocketHandle ||
-            code == sharpen::ErrorBrokenPipe) {
+            code == sharpen::ErrorBrokenPipe || code == WSAEINTR || code == sharpen::ErrorShutdown) {
             future->Complete(static_cast<std::size_t>(0));
             return;
         }
