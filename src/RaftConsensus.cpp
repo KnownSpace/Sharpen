@@ -681,7 +681,9 @@ void sharpen::RaftConsensus::StepDown() {
         sharpen::RaftRole role{sharpen::RaftRole::Follower};
         role = this->role_.exchange(role);
         if (role == sharpen::RaftRole::Leader) {
-            this->leaderCount_->StepDown();
+            if (this->leaderCount_) {
+                this->leaderCount_->StepDown();
+            }
             this->OnStatusChanged({sharpen::ConsensusResultEnum::StatusChanged});
         }
     }
@@ -1048,7 +1050,9 @@ void sharpen::RaftConsensus::DoAdvance() {
 
 void sharpen::RaftConsensus::Advance() {
     this->EnsureConfig();
-    this->worker_->Submit(&Self::DoAdvance, this);
+    sharpen::AwaitableFuture<void> future;
+    this->worker_->Invoke(future,&Self::DoAdvance, this);
+    future.Await();
 }
 
 const sharpen::ILogStorage &sharpen::RaftConsensus::ImmutableLogs() const noexcept {

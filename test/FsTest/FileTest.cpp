@@ -31,9 +31,7 @@ public:
         std::size_t size = channel->WriteAsync(str, sizeof(str) - 1, 0);
         try {
             channel->FlushAsync();
-        } catch (const std::system_error &e) {
-            std::printf("%s:%d", e.what(), e.code().value());
-        }
+        } catch (const std::system_error &e) { std::printf("%s:%d", e.what(), e.code().value()); }
         return this->Assert(size == sizeof(str) - 1, "size should == sizeof(str) - 1,but it not");
     }
 };
@@ -292,11 +290,11 @@ public:
                                      sharpen::FileAccessMethod::Write,
                                      sharpen::FileOpenMethod::CreateNew,
                                      sharpen::FileIoMethod::Normal);
-            channel->Register(sharpen::GetLocalLoopGroup());
-            std::size_t size{channel->AllocateAsync(0,4096)};
-            channel->Close();
-            sharpen::RemoveFile("./buf.log");
-            return this->Assert(size == 4096,"size should be 4096");
+        channel->Register(sharpen::GetLocalLoopGroup());
+        std::size_t size{channel->AllocateAsync(0, 4096)};
+        channel->Close();
+        sharpen::RemoveFile("./buf.log");
+        return this->Assert(size == 4096, "size should be 4096");
     }
 };
 

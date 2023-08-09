@@ -1015,9 +1015,7 @@ public:
         auto firstTp{std::chrono::system_clock::now()};
         for (std::size_t i = 0; i != benchmarkCount; ++i) {
             primary->Advance();
-            if ((i + 1) % pipelineLength == 0) {
-                primary->WaitNextConsensus();
-            }
+            primary->WaitNextConsensus();
             writable = primary->Writable();
         }
         auto secondTp{std::chrono::system_clock::now()};
@@ -1128,12 +1126,13 @@ public:
         }
         constexpr static std::size_t MB{1024 * 1024};
         constexpr static std::size_t KB{1024};
-        std::printf("Commit %zu entires with %zu clients in %zu second and %zu rounds, total size "
+        std::printf("Commit %zu entires with %zu clients in %zu second and %zu rounds, avg %zu entires per round, total size "
                     "is %zu MB, entry size %zu KB\n",
                     primary->GetCommitIndex(),
                     benchmarkClientCount,
                     benchmarkTime,
                     rounds,
+                    primary->GetCommitIndex()/rounds,
                     benchmarkEntrySize * primary->GetCommitIndex() / MB,benchmarkEntrySize/KB);
         return this->Success();
     }
@@ -1221,12 +1220,13 @@ public:
         }
         constexpr static std::size_t MB{1024 * 1024};
         constexpr static std::size_t KB{1024};
-        std::printf("Commit %zu entires with %zu clients in %zu second and %zu rounds, total size "
+        std::printf("Commit %zu entires with %zu clients in %zu second and %zu rounds, avg %zu entires per round, total size "
                     "is %zu MB, entry size %zu KB\n",
                     primary->GetCommitIndex(),
                     benchmarkClientCount,
                     benchmarkTime,
                     rounds,
+                    primary->GetCommitIndex()/rounds,
                     benchmarkEntrySize * primary->GetCommitIndex() / MB,benchmarkEntrySize/KB);
         return this->Success();
     }

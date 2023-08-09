@@ -12,6 +12,10 @@ namespace sharpen {
     extern int SyncPrintf(const char *format, ...) noexcept;
 
     extern int SyncPuts(const char *str) noexcept;
+
+    extern int SyncDebugPrintf(const char *format, ...) noexcept;
+
+    extern int SyncDebugPuts(const char *str) noexcept;
 }   // namespace sharpen
 
 #endif
