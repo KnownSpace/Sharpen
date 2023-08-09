@@ -16,10 +16,10 @@ ____  _
 Sharpen is a multithreaded C++ network library
 ```
 #### Requires:
-  - C++ Standard >= 11
+  - C++ Standard >= 14
   - Windows version >= 8 or Linux kernel version >= 2.6.28
   - Cmake version >= 3.15
-  - Msvc >= 19.0 or Clang >= 3.5 or GCC >= 4.9
+  - Msvc >= 19.10 or Clang >= 3.5 or GCC >= 5
 
 #### To build:
 ##### Just run `build.sh` or `build.cmd`
