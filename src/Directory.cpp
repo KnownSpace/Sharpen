@@ -16,8 +16,8 @@
 #include <cassert>
 #include <cstring>
 #include <memory>
+#include <string>
 #include <vector>
-
 
 #ifdef SHARPEN_IS_WIN
 static HANDLE invalidHandle{INVALID_HANDLE_VALUE};
@@ -108,7 +108,7 @@ sharpen::Dentry sharpen::Directory::InternalGetNextEntry() const {
             sharpen::ThrowSystemError(sharpen::ErrorNameTooLong);
         }
         thread_local char path[sharpen::GetMaxPath() + 1] = {0};
-        std::memset(path,0,sizeof(path));
+        std::memset(path, 0, sizeof(path));
         std::memcpy(path, this->name_.c_str(), this->name_.size());
         std::size_t index{this->name_.size()};
         if (back != '\\') {
@@ -127,7 +127,7 @@ sharpen::Dentry sharpen::Directory::InternalGetNextEntry() const {
     if (found) {
         if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
             type = sharpen::FileEntryType::Directory;
-        } else if (findData.dwFileAttributes &FILE_ATTRIBUTE_REPARSE_POINT) {
+        } else if (findData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
             type = sharpen::FileEntryType::SymbolicLink;
         }
         name.assign(findData.cFileName);
@@ -144,15 +144,15 @@ sharpen::Dentry sharpen::Directory::InternalGetNextEntry() const {
     if (dentry != nullptr) {
         if (dentry->d_type == DT_DIR) {
             type = sharpen::FileEntryType::Directory;
-        } else if(dentry->d_type == DT_FIFO) {
+        } else if (dentry->d_type == DT_FIFO) {
             type = sharpen::FileEntryType::Pipe;
-        } else if(dentry->d_type == DT_LNK) {
+        } else if (dentry->d_type == DT_LNK) {
             type = sharpen::FileEntryType::SymbolicLink;
-        } else if(dentry->d_type == DT_SOCK) {
+        } else if (dentry->d_type == DT_SOCK) {
             type = sharpen::FileEntryType::UnixSocket;
-        } else if(dentry->d_type == DT_BLK) {
+        } else if (dentry->d_type == DT_BLK) {
             type = sharpen::FileEntryType::BlockDevice;
-        } else if(dentry->d_type == DT_CHR) {
+        } else if (dentry->d_type == DT_CHR) {
             type = sharpen::FileEntryType::CharDevice;
         }
         name.assign(dentry->d_name);
@@ -171,11 +171,10 @@ sharpen::Dentry sharpen::Directory::GetNextEntry() const {
             continue;
         }
 #ifdef SHARPEN_IS_WIN
-        if (this->name_.size() + entry.Name().size() + this->name_.back() != '\\'
-                ? 1
-                : 0 <= sharpen::GetMaxPath()) {
+        if (this->name_.size() + entry.Name().size() + (this->name_.back() != '\\' ? 1 : 0) <=
+            sharpen::GetMaxPath()) {
             thread_local char path[sharpen::GetMaxPath() + 1] = {0};
-            std::memset(path,0,sizeof(path));
+            std::memset(path, 0, sizeof(path));
             std::memcpy(path, this->name_.c_str(), this->name_.size());
             std::size_t index{this->name_.size()};
             if (this->name_.back() != '\\') {
@@ -260,7 +259,7 @@ sharpen::RmdirResult sharpen::Directory::RemoveAll() {
                 } break;
                 case sharpen::FileEntryType::SymbolicLink: {
                     sharpen::RemoveFile(name.c_str());
-                }
+                } break;
                 default: {
                     // do nothing
                 } break;

@@ -7,6 +7,7 @@
 #include <sharpen/DebugTools.hpp>
 #include <sharpen/EventEngine.hpp>
 #include <sharpen/GenericMailParserFactory.hpp>
+#include <sharpen/IConsensus.hpp>
 #include <sharpen/IMailReceiver.hpp>
 #include <sharpen/IpTcpActorBuilder.hpp>
 #include <sharpen/IpTcpStreamFactory.hpp>
@@ -24,9 +25,12 @@
 #include <sharpen/WalLogStorage.hpp>
 #include <sharpen/WalStatusMap.hpp>
 #include <simpletest/TestRunner.hpp>
+#include <chrono>
 #include <cinttypes>
+#include <memory>
 #include <sstream>
 #include <vector>
+
 
 static const std::uint32_t magicNumber{0x2333};
 
@@ -36,13 +40,13 @@ static const std::uint16_t endPort{10803};
 
 static constexpr std::size_t appendTestCount{60};
 
-static constexpr std::size_t batchSize{20};
+static constexpr std::size_t batchSize{2000};
 
 static constexpr std::size_t pipelineLength{2};
 
 static constexpr std::size_t benchmarkCount{1 * 1000};
 
-static constexpr std::size_t benchmarkTime{30};
+static constexpr std::size_t benchmarkTime{10};
 
 static constexpr std::size_t benchmarkClientCount{10};
 
@@ -81,6 +85,19 @@ static std::shared_ptr<sharpen::IConsensus> CreateLeaseRaft(std::uint16_t port) 
     return raft;
 }
 
+static std::shared_ptr<sharpen::IConsensus> CreateLeasePipelineRaft(std::uint16_t port) {
+    sharpen::RaftOption raftOpt;
+    raftOpt.SetBatchSize(batchSize);
+    raftOpt.SetLearner(false);
+    raftOpt.SetPrevote(false);
+    raftOpt.SetPipelineLength(pipelineLength);
+    raftOpt.EnableLeaseAwareness();
+    auto raft{CreateRaft(port, magicNumber, nullptr, nullptr, raftOpt, true)};
+    raft->ConfiguratePeers(
+        &ConfigPeers, port, beginPort, endPort, &raft->GetReceiver(), magicNumber, false);
+    return raft;
+}
+
 static std::unique_ptr<sharpen::IHostPipeline> ConfigPipeline(
     std::shared_ptr<sharpen::IConsensus> raft) {
     std::unique_ptr<sharpen::IHostPipeline> pipe{new (std::nothrow) sharpen::SimpleHostPipeline{}};
@@ -88,6 +105,7 @@ static std::unique_ptr<sharpen::IHostPipeline> ConfigPipeline(
     pipe->Register<RaftStep>(magicNumber, std::move(raft));
     return pipe;
 }
+
 
 static std::unique_ptr<sharpen::IHostPipeline> ConfigNotLoggingPipeline(
     std::shared_ptr<sharpen::IConsensus> raft) {
@@ -1054,7 +1072,7 @@ public:
         std::vector<sharpen::AwaitableFuturePtr<void>> process;
         process.reserve(3);
         for (std::uint16_t i = beginPort; i != endPort + 1; ++i) {
-            auto raft{CreateRaft(i)};
+            auto raft{CreateLeaseRaft(i)};
             rafts.emplace_back(raft);
             auto host{CreateNotLoggingHost(i, raft)};
             hosts.emplace_back(std::move(host));
@@ -1070,29 +1088,30 @@ public:
         sharpen::Future<bool> timerFuture;
         sharpen::TimerPtr timer{sharpen::MakeTimer()};
         timer->WaitAsync(timerFuture, std::chrono::seconds{benchmarkTime});
-        std::atomic_bool token{false};
         std::vector<sharpen::AwaitableFuturePtr<void>> clients;
         clients.reserve(benchmarkClientCount);
         std::size_t rounds{0};
         for (std::size_t i = 0; i != benchmarkClientCount; ++i) {
-            clients.emplace_back(sharpen::Async([&timerFuture, primary, &token, &rounds]() {
+            clients.emplace_back(sharpen::Async([&timerFuture, primary]() {
                 while (timerFuture.IsPending()) {
                     sharpen::LogBatch batch;
                     sharpen::ByteBuffer log{32 * 1024};
                     batch.Append(std::move(log));
                     primary->Write(batch);
-                    if (!token.exchange(true)) {
-                        primary->Advance();
-                        primary->WaitNextConsensus();
-                        token.store(false);
-                        rounds += 1;
-                    }
                 }
             }));
         }
+        auto advancer{sharpen::Async([&timerFuture, primary,&rounds](){
+            while (timerFuture.IsPending()) {
+                primary->Advance();
+                primary->WaitNextConsensus();
+                rounds += 1;
+            }
+        })};
         for (auto begin = clients.begin(), end = clients.end(); begin != end; ++begin) {
             begin->get()->Await();
         }
+        advancer->Await();
         // close all hosts
         for (auto begin = rafts.begin(), end = rafts.end(); begin != end; ++begin) {
             auto raft{begin->get()};
@@ -1142,7 +1161,7 @@ public:
         std::vector<sharpen::AwaitableFuturePtr<void>> process;
         process.reserve(3);
         for (std::uint16_t i = beginPort; i != endPort + 1; ++i) {
-            auto raft{CreatePipelineRaft(i)};
+            auto raft{CreateLeasePipelineRaft(i)};
             rafts.emplace_back(raft);
             auto host{CreateNotLoggingHost(i, raft)};
             hosts.emplace_back(std::move(host));
@@ -1158,29 +1177,30 @@ public:
         sharpen::Future<bool> timerFuture;
         sharpen::TimerPtr timer{sharpen::MakeTimer()};
         timer->WaitAsync(timerFuture, std::chrono::seconds{benchmarkTime});
-        std::atomic_bool token{false};
         std::vector<sharpen::AwaitableFuturePtr<void>> clients;
         clients.reserve(benchmarkClientCount);
         std::size_t rounds{0};
         for (std::size_t i = 0; i != benchmarkClientCount; ++i) {
-            clients.emplace_back(sharpen::Async([&timerFuture, primary, &token, &rounds]() {
+            clients.emplace_back(sharpen::Async([&timerFuture, primary]() {
                 while (timerFuture.IsPending()) {
                     sharpen::LogBatch batch;
                     sharpen::ByteBuffer log{32 * 1024};
                     batch.Append(std::move(log));
                     primary->Write(batch);
-                    if (!token.exchange(true)) {
-                        primary->Advance();
-                        primary->WaitNextConsensus();
-                        token.store(false);
-                        rounds += 1;
-                    }
                 }
             }));
         }
+        auto advancer{sharpen::Async([&timerFuture, primary,&rounds](){
+            while (timerFuture.IsPending()) {
+                primary->Advance();
+                primary->WaitNextConsensus();
+                rounds += 1;
+            }
+        })};
         for (auto begin = clients.begin(), end = clients.end(); begin != end; ++begin) {
             begin->get()->Await();
         }
+        advancer->Await();
         // close all hosts
         for (auto begin = rafts.begin(), end = rafts.end(); begin != end; ++begin) {
             auto raft{begin->get()};

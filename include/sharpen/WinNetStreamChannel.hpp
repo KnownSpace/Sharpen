@@ -98,7 +98,7 @@ namespace sharpen {
 
         virtual void Cancel() noexcept override;
     };
-};   // namespace sharpen
+}   // namespace sharpen
 
 #endif
 #endif
