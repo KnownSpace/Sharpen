@@ -146,8 +146,7 @@ static std::unique_ptr<sharpen::TcpHost> CreateNotLoggingHost(
     return host;
 }
 
-static void WaitForPorts() {
-    sharpen::Delay(std::chrono::seconds{3});
+static void PrintDebugInfo() {
     sharpen::SyncPrintf("Batch size: %zu\nPieline Length: %zu\n",batchSize,pipelineLength);
 }
 
@@ -165,7 +164,7 @@ public:
     }
 
     inline virtual simpletest::TestResult Run() noexcept {
-        WaitForPorts();
+        PrintDebugInfo();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(3);
         std::vector<std::unique_ptr<sharpen::IHost>> hosts;
@@ -234,7 +233,7 @@ public:
     }
 
     inline virtual simpletest::TestResult Run() noexcept {
-        WaitForPorts();
+        PrintDebugInfo();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(2);
         std::vector<std::unique_ptr<sharpen::IHost>> hosts;
@@ -303,7 +302,7 @@ public:
     }
 
     inline virtual simpletest::TestResult Run() noexcept {
-        WaitForPorts();
+        PrintDebugInfo();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(3);
         std::vector<std::unique_ptr<sharpen::IHost>> hosts;
@@ -377,7 +376,7 @@ public:
     }
 
     inline virtual simpletest::TestResult Run() noexcept {
-        WaitForPorts();
+        PrintDebugInfo();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(2);
         std::vector<std::unique_ptr<sharpen::IHost>> hosts;
@@ -451,7 +450,7 @@ public:
     }
 
     inline virtual simpletest::TestResult Run() noexcept {
-        WaitForPorts();
+        PrintDebugInfo();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(3);
         std::vector<std::unique_ptr<sharpen::IHost>> hosts;
@@ -544,7 +543,7 @@ public:
     }
 
     inline virtual simpletest::TestResult Run() noexcept {
-        WaitForPorts();
+        PrintDebugInfo();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(3);
         std::vector<std::unique_ptr<sharpen::IHost>> hosts;
@@ -618,7 +617,7 @@ public:
     }
 
     inline virtual simpletest::TestResult Run() noexcept {
-        WaitForPorts();
+        PrintDebugInfo();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(2);
         std::vector<std::unique_ptr<sharpen::IHost>> hosts;
@@ -692,7 +691,7 @@ public:
     }
 
     inline virtual simpletest::TestResult Run() noexcept {
-        WaitForPorts();
+        PrintDebugInfo();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(3);
         std::vector<std::unique_ptr<sharpen::IHost>> hosts;
@@ -785,7 +784,7 @@ public:
     }
 
     inline virtual simpletest::TestResult Run() noexcept {
-        WaitForPorts();
+        PrintDebugInfo();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(3);
         std::vector<std::unique_ptr<sharpen::IHost>> hosts;
@@ -854,7 +853,7 @@ public:
     }
 
     inline virtual simpletest::TestResult Run() noexcept {
-        WaitForPorts();
+        PrintDebugInfo();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(2);
         std::vector<std::unique_ptr<sharpen::IHost>> hosts;
@@ -923,7 +922,7 @@ public:
     }
 
     inline virtual simpletest::TestResult Run() noexcept {
-        WaitForPorts();
+        PrintDebugInfo();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(3);
         std::vector<std::unique_ptr<sharpen::IHost>> hosts;
@@ -991,7 +990,7 @@ public:
     }
 
     inline virtual simpletest::TestResult Run() noexcept {
-        WaitForPorts();
+        PrintDebugInfo();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(3);
         std::vector<std::unique_ptr<sharpen::IHost>> hosts;
@@ -1061,7 +1060,7 @@ public:
     }
 
     inline virtual simpletest::TestResult Run() noexcept {
-        WaitForPorts();
+        PrintDebugInfo();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(3);
         std::vector<std::unique_ptr<sharpen::IHost>> hosts;
@@ -1154,7 +1153,7 @@ public:
     }
 
     inline virtual simpletest::TestResult Run() noexcept {
-        WaitForPorts();
+        PrintDebugInfo();
         std::vector<std::shared_ptr<sharpen::IConsensus>> rafts;
         rafts.reserve(3);
         std::vector<std::unique_ptr<sharpen::IHost>> hosts;

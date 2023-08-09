@@ -312,7 +312,9 @@ static int Test() {
     runner.Register<MappingTest>();
     runner.Register<ResolvePathTest>();
     runner.Register<DirectOpeartionTest>();
+#ifndef SHARPEN_ON_WSL
     runner.Register<AllocateTest>();
+#endif
     return runner.Run();
 }
 
