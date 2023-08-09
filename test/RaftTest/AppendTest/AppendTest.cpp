@@ -40,7 +40,7 @@ static const std::uint16_t endPort{10803};
 
 static constexpr std::size_t appendTestCount{60};
 
-static constexpr std::size_t batchSize{2000};
+static constexpr std::size_t batchSize{20};
 
 static constexpr std::size_t pipelineLength{2};
 
@@ -49,6 +49,8 @@ static constexpr std::size_t benchmarkCount{1 * 1000};
 static constexpr std::size_t benchmarkTime{10};
 
 static constexpr std::size_t benchmarkClientCount{10};
+
+static constexpr std::size_t benchmarkEntrySize{32 * 1024};
 
 static std::shared_ptr<sharpen::IConsensus> CreateRaft(std::uint16_t port) {
     sharpen::RaftOption raftOpt;
@@ -146,6 +148,7 @@ static std::unique_ptr<sharpen::TcpHost> CreateNotLoggingHost(
 
 static void WaitForPorts() {
     sharpen::Delay(std::chrono::seconds{3});
+    sharpen::SyncPrintf("Batch size: %zu\nPieline Length: %zu\n",batchSize,pipelineLength);
 }
 
 class BasicHeartbeatTest : public simpletest::ITypenamedTest<BasicHeartbeatTest> {
@@ -928,7 +931,7 @@ public:
         std::vector<sharpen::AwaitableFuturePtr<void>> process;
         process.reserve(3);
         for (std::uint16_t i = beginPort; i != endPort + 1; ++i) {
-            auto raft{CreateRaft(i)};
+            auto raft{CreateLeaseRaft(i)};
             rafts.emplace_back(raft);
             auto host{CreateNotLoggingHost(i, raft)};
             hosts.emplace_back(std::move(host));
@@ -944,10 +947,6 @@ public:
         bool writable{primary->Writable()};
         auto firstTp{std::chrono::system_clock::now()};
         for (std::size_t i = 0; i != benchmarkCount; ++i) {
-            sharpen::LogBatch batch;
-            sharpen::ByteBuffer log;
-            batch.Append(std::move(log));
-            primary->Write(batch);
             primary->Advance();
             primary->WaitNextConsensus();
             writable = primary->Writable();
@@ -1000,7 +999,7 @@ public:
         std::vector<sharpen::AwaitableFuturePtr<void>> process;
         process.reserve(3);
         for (std::uint16_t i = beginPort; i != endPort + 1; ++i) {
-            auto raft{CreatePipelineRaft(i)};
+            auto raft{CreateLeasePipelineRaft(i)};
             rafts.emplace_back(raft);
             auto host{CreateNotLoggingHost(i, raft)};
             hosts.emplace_back(std::move(host));
@@ -1016,12 +1015,10 @@ public:
         bool writable{primary->Writable()};
         auto firstTp{std::chrono::system_clock::now()};
         for (std::size_t i = 0; i != benchmarkCount; ++i) {
-            sharpen::LogBatch batch;
-            sharpen::ByteBuffer log;
-            batch.Append(std::move(log));
-            primary->Write(batch);
             primary->Advance();
-            primary->WaitNextConsensus();
+            if ((i + 1) % pipelineLength == 0) {
+                primary->WaitNextConsensus();
+            }
             writable = primary->Writable();
         }
         auto secondTp{std::chrono::system_clock::now()};
@@ -1095,13 +1092,13 @@ public:
             clients.emplace_back(sharpen::Async([&timerFuture, primary]() {
                 while (timerFuture.IsPending()) {
                     sharpen::LogBatch batch;
-                    sharpen::ByteBuffer log{32 * 1024};
+                    sharpen::ByteBuffer log{benchmarkEntrySize};
                     batch.Append(std::move(log));
                     primary->Write(batch);
                 }
             }));
         }
-        auto advancer{sharpen::Async([&timerFuture, primary,&rounds](){
+        auto advancer{sharpen::Async([&timerFuture, primary, &rounds]() {
             while (timerFuture.IsPending()) {
                 primary->Advance();
                 primary->WaitNextConsensus();
@@ -1130,11 +1127,15 @@ public:
             RemoveLogStorage(i);
             RemoveStatusMap(i);
         }
-        std::printf("Commit %zu entires with %zu clients in %zu second and %zu rounds\n",
+        constexpr static std::size_t MB{1024 * 1024};
+        constexpr static std::size_t KB{1024};
+        std::printf("Commit %zu entires with %zu clients in %zu second and %zu rounds, total size "
+                    "is %zu MB, entry size %zu KB\n",
                     primary->GetCommitIndex(),
                     benchmarkClientCount,
                     benchmarkTime,
-                    rounds);
+                    rounds,
+                    benchmarkEntrySize * primary->GetCommitIndex() / MB,benchmarkEntrySize/KB);
         return this->Success();
     }
 };
@@ -1184,17 +1185,17 @@ public:
             clients.emplace_back(sharpen::Async([&timerFuture, primary]() {
                 while (timerFuture.IsPending()) {
                     sharpen::LogBatch batch;
-                    sharpen::ByteBuffer log{32 * 1024};
+                    sharpen::ByteBuffer log{benchmarkEntrySize};
                     batch.Append(std::move(log));
                     primary->Write(batch);
                 }
             }));
         }
-        auto advancer{sharpen::Async([&timerFuture, primary,&rounds](){
+        auto advancer{sharpen::Async([&timerFuture, primary, &rounds]() {
             while (timerFuture.IsPending()) {
                 primary->Advance();
-                primary->WaitNextConsensus();
                 rounds += 1;
+                primary->WaitNextConsensus();
             }
         })};
         for (auto begin = clients.begin(), end = clients.end(); begin != end; ++begin) {
@@ -1219,11 +1220,15 @@ public:
             RemoveLogStorage(i);
             RemoveStatusMap(i);
         }
-        std::printf("Commit %zu entires with %zu clients in %zu second and %zu rounds\n",
+        constexpr static std::size_t MB{1024 * 1024};
+        constexpr static std::size_t KB{1024};
+        std::printf("Commit %zu entires with %zu clients in %zu second and %zu rounds, total size "
+                    "is %zu MB, entry size %zu KB\n",
                     primary->GetCommitIndex(),
                     benchmarkClientCount,
                     benchmarkTime,
-                    rounds);
+                    rounds,
+                    benchmarkEntrySize * primary->GetCommitIndex() / MB,benchmarkEntrySize/KB);
         return this->Success();
     }
 };
