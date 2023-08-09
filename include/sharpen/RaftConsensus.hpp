@@ -89,9 +89,9 @@ namespace sharpen {
         // learner heartbeat provider
 
 
-        // must be last member
-        // single fiber worker
+        // workers
         std::unique_ptr<sharpen::IWorkerGroup> worker_;
+        std::unique_ptr<sharpen::IWorkerGroup> logWorker_;
 
         sharpen::Optional<std::uint64_t> LoadUint64(sharpen::ByteSlice key);
 

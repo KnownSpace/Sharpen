@@ -47,7 +47,8 @@ sharpen::RaftConsensus::RaftConsensus(
     , peers_(nullptr)
     , peersBroadcaster_(nullptr)
     , heartbeatProvider_(nullptr)
-    , worker_(nullptr) {
+    , worker_(nullptr)
+    , logWorker_(nullptr) {
     // check pointers
     assert(this->statusMap_ != nullptr);
     assert(this->logs_ != nullptr);
@@ -58,6 +59,13 @@ sharpen::RaftConsensus::RaftConsensus(
         throw std::bad_alloc{};
     }
     this->worker_.reset(worker);
+    // set log worker
+    sharpen::IWorkerGroup *logWorker{new (std::nothrow)
+                                         sharpen::SingleWorkerGroup{*this->scheduler_}};
+    if (!logWorker) {
+        throw std::bad_alloc{};
+    }
+    this->logWorker_.reset(logWorker);
     // load status cache
     this->LoadTerm();
     this->LoadVoteFor();
@@ -516,7 +524,12 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(
                 // truncate the logs, make sure our logs shorter than leader
                 bool check{true};
                 if (lastIndex > request.GetPreLogIndex() + request.Entries().GetSize()) {
-                    this->logs_->TruncateFrom(request.GetPreLogIndex() + 1);
+                    sharpen::AwaitableFuture<void> future;
+                    this->logWorker_->InvokeUrgent(future,
+                                                   &sharpen::ILogStorage::TruncateFrom,
+                                                   this->logs_.get(),
+                                                   request.GetPreLogIndex() + 1);
+                    future.Await();
                     check = false;
                 }
                 // write log to logs and fix conflicts
@@ -527,7 +540,12 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(
                         std::uint64_t entryTerm{
                             this->logAccesser_->GetTerm(request.Entries().Get(i))};
                         if (!this->CheckEntry(index, entryTerm)) {
-                            this->logs_->TruncateFrom(index);
+                            sharpen::AwaitableFuture<void> future;
+                            this->logWorker_->InvokeUrgent(future,
+                                                           &sharpen::ILogStorage::TruncateFrom,
+                                                           this->logs_.get(),
+                                                           index);
+                            future.Await();
                             break;
                         }
                         offset = i;
@@ -535,7 +553,15 @@ sharpen::Mail sharpen::RaftConsensus::OnHeartbeatRequest(
                 }
                 std::uint64_t matchIndex{request.GetPreLogIndex() + request.Entries().GetSize()};
                 sharpen::LogEntries entires{request.Entries(), offset};
-                this->logs_->WriteBatch(request.GetPreLogIndex() + 1 + offset, std::move(entires));
+                {
+                    sharpen::AwaitableFuture<void> future;
+                    this->logWorker_->InvokeUrgent(future,
+                                                   &sharpen::ILogStorage::WriteBatch,
+                                                   this->logs_.get(),
+                                                   request.GetPreLogIndex() + 1 + offset,
+                                                   std::move(entires));
+                    future.Await();
+                }
                 response.SetStatus(true);
                 // set match index to last index
                 response.SetMatchIndex(matchIndex);
@@ -633,14 +659,14 @@ void sharpen::RaftConsensus::NotifyWaiter(
 }
 
 void sharpen::RaftConsensus::StepUp() {
-    if (this->leaderCount_ != nullptr &&
-        !this->leaderCount_->TryStepUp(this->prevLeaderCount_)) {
+    if (this->leaderCount_ != nullptr && !this->leaderCount_->TryStepUp(this->prevLeaderCount_)) {
         return;
     }
     this->role_ = sharpen::RaftRole::Leader;
     assert(this->heartbeatProvider_ != nullptr);
     if (this->option_.IsEnableLeaseAwareness()) {
-        this->OnStatusChanged({sharpen::ConsensusResultEnum::StatusChanged,sharpen::ConsensusResultEnum::LeaseConfirmed});
+        this->OnStatusChanged({sharpen::ConsensusResultEnum::StatusChanged,
+                               sharpen::ConsensusResultEnum::LeaseConfirmed});
     } else {
         this->OnStatusChanged({sharpen::ConsensusResultEnum::StatusChanged});
     }
@@ -876,14 +902,14 @@ void sharpen::RaftConsensus::DoReceive(sharpen::Mail mail, sharpen::ActorId acto
 void sharpen::RaftConsensus::NviReceive(sharpen::Mail mail, const sharpen::ActorId &actorId) {
     assert(this->worker_ != nullptr);
     if (this->IsConsensusMail(mail)) {
-        this->worker_->SubmitUrgent(&Self::DoReceive, this, std::move(mail), actorId);
+        this->worker_->Submit(&Self::DoReceive, this, std::move(mail), actorId);
     }
 }
 
 sharpen::Mail sharpen::RaftConsensus::NviGenerateResponse(sharpen::Mail request) {
     assert(this->worker_ != nullptr);
     sharpen::AwaitableFuture<sharpen::Mail> future;
-    this->worker_->InvokeUrgent(future, &Self::DoGenerateResponse, this, std::move(request));
+    this->worker_->Invoke(future, &Self::DoGenerateResponse, this, std::move(request));
     return future.Await();
 }
 
@@ -1022,7 +1048,7 @@ void sharpen::RaftConsensus::DoAdvance() {
 
 void sharpen::RaftConsensus::Advance() {
     this->EnsureConfig();
-    this->worker_->SubmitUrgent(&Self::DoAdvance, this);
+    this->worker_->Submit(&Self::DoAdvance, this);
 }
 
 const sharpen::ILogStorage &sharpen::RaftConsensus::ImmutableLogs() const noexcept {
@@ -1055,7 +1081,7 @@ void sharpen::RaftConsensus::DoConfiguratePeers(
 void sharpen::RaftConsensus::NviConfiguratePeers(
     std::function<std::unique_ptr<sharpen::IQuorum>(sharpen::IQuorum *)> configurater) {
     sharpen::AwaitableFuture<void> future;
-    this->worker_->InvokeUrgent(future, &Self::DoConfiguratePeers, this, std::move(configurater));
+    this->worker_->Invoke(future, &Self::DoConfiguratePeers, this, std::move(configurater));
     future.Await();
 }
 
@@ -1072,14 +1098,14 @@ void sharpen::RaftConsensus::ReleasePeers() {
 
 void sharpen::RaftConsensus::NviDropLogsUntil(std::uint64_t index) {
     index = (std::min)(index, this->GetLastAppliedIndex());
-    this->worker_->Submit(&sharpen::ILogStorage::DropUntil, this->logs_.get(), index);
+    this->logWorker_->Submit(&sharpen::ILogStorage::DropUntil, this->logs_.get(), index);
 }
 
 sharpen::WriteLogsResult sharpen::RaftConsensus::NviWrite(const sharpen::LogBatch &logs) {
     assert(!logs.Empty());
     assert(this->worker_ != nullptr);
     sharpen::AwaitableFuture<sharpen::WriteLogsResult> future;
-    this->worker_->Invoke(future, &Self::DoWrite, this, &logs);
+    this->logWorker_->Invoke(future, &Self::DoWrite, this, &logs);
     return future.Await();
 }
 
@@ -1087,6 +1113,8 @@ sharpen::WriteLogsResult sharpen::RaftConsensus::DoWrite(const sharpen::LogBatch
     assert(logs != nullptr);
     assert(!logs->Empty());
     assert(this->logAccesser_ != nullptr);
+    // 1MB
+    static constexpr std::size_t maxBatchBufSize{1024 * 1024};
     std::uint64_t lastIndex{this->GetLastIndex()};
     if (!this->Writable() || logs->Empty()) {
         return sharpen::WriteLogsResult{lastIndex};
@@ -1094,9 +1122,27 @@ sharpen::WriteLogsResult sharpen::RaftConsensus::DoWrite(const sharpen::LogBatch
     std::uint64_t beginIndex{lastIndex + 1};
     std::uint64_t term{this->GetTerm()};
     assert(term != sharpen::ConsensusWriter::noneEpoch);
+    sharpen::LogEntries batch;
+    batch.Reserve(logs->GetSize());
+    std::size_t bufSize{0};
+    std::size_t offset{0};
     for (std::size_t i = 0; i != logs->GetSize(); ++i) {
         sharpen::ByteBuffer entry{this->logAccesser_->CreateEntry(logs->Get(i), term)};
-        this->logs_->Write(beginIndex + i, entry);
+        bufSize += entry.GetSize();
+        batch.Push(std::move(entry));
+        if (bufSize > maxBatchBufSize) {
+            sharpen::LogEntries tmp;
+            std::swap(tmp, batch);
+            std::size_t count{tmp.GetSize()};
+            this->logs_->WriteBatch(beginIndex + offset, std::move(tmp));
+            offset += count;
+            if (offset != logs->GetSize()) {
+                batch.Reserve(logs->GetSize() - offset);
+            }
+        }
+    }
+    if (!batch.Empty()) {
+        this->logs_->WriteBatch(beginIndex + offset, std::move(batch));
     }
     lastIndex += logs->GetSize();
     return sharpen::WriteLogsResult{lastIndex, beginIndex};
@@ -1129,7 +1175,7 @@ void sharpen::RaftConsensus::DoStoreLastAppliedIndex(std::uint64_t index) {
 void sharpen::RaftConsensus::NviStoreLastAppliedIndex(std::uint64_t index) {
     assert(this->worker_ != nullptr);
     sharpen::AwaitableFuture<void> future;
-    this->worker_->InvokeUrgent(future, &Self::DoStoreLastAppliedIndex, this, index);
+    this->worker_->Invoke(future, &Self::DoStoreLastAppliedIndex, this, index);
     future.Await();
 }
 
